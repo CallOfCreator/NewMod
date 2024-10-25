@@ -1,0 +1,9 @@
+bin/
+obj/
+References/
+/packages/
+riderModule.iml
+.idea
+/tools
+.vscode
+*.DotSettings.user
