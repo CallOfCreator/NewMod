@@ -2,7 +2,7 @@ using MiraAPI.Roles;
 using UnityEngine;
 using MiraAPI.Utilities.Assets;
 
-namespace NewMod.Roles;
+namespace NewMod.Roles.CrewmateRoles;
 
 [RegisterCustomRole]
 public class DoubleAgent : CrewmateRole, ICustomRole

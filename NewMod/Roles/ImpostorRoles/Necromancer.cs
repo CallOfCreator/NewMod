@@ -5,7 +5,7 @@ using MiraAPI.Utilities.Assets;
 using NewMod.Options;
 using UnityEngine;
 
-namespace NewMod.Roles;
+namespace NewMod.Roles.ImpostorRoles;
 
     [RegisterCustomRole]
     public class NecromancerRole : ImpostorRole, ICustomRole

@@ -2,7 +2,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
-using NewMod.Roles;
+using NewMod.Roles.ImpostorRoles;
 using UnityEngine;
 using NewMod.Utilities;
 

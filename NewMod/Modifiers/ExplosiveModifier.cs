@@ -5,7 +5,7 @@ using MiraAPI.Modifiers.Types;
 using MiraAPI.Networking;
 using MiraAPI.Utilities;
 using NewMod.Options;
-using NewMod.Roles;
+using NewMod.Roles.ImpostorRoles;
 
 namespace NewMod.Modifiers;
 

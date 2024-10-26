@@ -6,7 +6,7 @@ using MiraAPI.Hud;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Buttons;
-using NewMod.Roles;
+using NewMod.Roles.ImpostorRoles;
 using TMPro;
 
 namespace NewMod.CustomGameModes

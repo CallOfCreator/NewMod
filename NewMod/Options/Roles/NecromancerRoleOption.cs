@@ -3,7 +3,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
-using NewMod.Roles;
+using NewMod.Roles.ImpostorRoles;
 
 namespace NewMod.Options.Roles;
 

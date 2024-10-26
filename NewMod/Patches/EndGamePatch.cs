@@ -1,11 +1,10 @@
 using UnityEngine;
 using HarmonyLib;
-using NewMod.Roles;
-using NewMod.Buttons;
+using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using System.Linq;
 using MiraAPI.Roles;
-using MiraAPI.Hud;
 using AmongUs.GameOptions;
 using Object = UnityEngine.Object;
 
