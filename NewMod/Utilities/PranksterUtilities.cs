@@ -7,10 +7,12 @@ namespace NewMod.Utilities
     public static class PranksterUtilities
     {
         private const string PranksterBodyName = "PranksterCloneBody";
+        private static Dictionary<byte, int> ReportCounts = new();
         public static void CreatePranksterDeadBody()
         {
             DeadBody deadBody = Object.Instantiate(GameManager.Instance.DeadBodyPrefab);
             deadBody.name = PranksterBodyName;
+            deadBody.ParentId = PlayerControl.LocalPlayer.PlayerId;
             deadBody.transform.position = PlayerControl.LocalPlayer.transform.position;
         }
         public static bool IsPranksterBody(DeadBody body)
@@ -31,6 +33,21 @@ namespace NewMod.Utilities
             }
 
             return pranksterBodies;
+        }
+        public static void IncrementReportCount(byte playerId)
+        {
+            if (!ReportCounts.ContainsKey(playerId))
+            {
+                ReportCounts[playerId] = 1;
+            }
+            else 
+            {
+                 ReportCounts[playerId]++;
+            }
+        }
+        public static int GetReportCount(byte playerId)
+        {
+            return ReportCounts.ContainsKey(playerId) ? ReportCounts[playerId] : 0; 
         }
     }
 }

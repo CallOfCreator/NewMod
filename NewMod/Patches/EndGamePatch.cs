@@ -90,7 +90,11 @@ namespace NewMod.Patches
                     customWinColor = GetRoleColor(GetRoleType<DoubleAgent>());
                     __instance.BackgroundBar.material.SetColor("_Color", customWinColor);
                     break;
-
+                case (GameOverReason)NewModEndReasons.PranksterWin:
+                    customWinText = "Prankster Win!";
+                    customWinColor = GetRoleColor(GetRoleType<Prankster>());
+                    __instance.BackgroundBar.material.SetColor("_Color", customWinColor);
+                    break;
                 default:
                     customWinText = string.Empty;
                     customWinColor = Color.white;
@@ -170,6 +174,7 @@ namespace NewMod.Patches
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
             if (CheckEndGameForEnergyThief(__instance)) return false;
             if (CheckEndGameForDoubleAgent(__instance)) return false;
+            if (CheckEndGameForPrankster(__instance)) return false;
             return true;
         } 
 
@@ -202,6 +207,21 @@ namespace NewMod.Patches
                     }
                 }
             return false;
+        }
+        public static bool CheckEndGameForPrankster(ShipStatus __instance)
+        {
+             if (PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.Data.Role is Prankster)
+             {
+                int WinReportCount = 2;
+                int currentReportCount = PranksterUtilities.GetReportCount(PlayerControl.LocalPlayer.PlayerId);
+                if (WinReportCount >= currentReportCount)
+                {
+                   GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.PranksterWin, false);
+                   StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.PranksterWin, (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<Prankster>());
+                   return true;
+                }
+             }
+             return false;
         }
     }
 }

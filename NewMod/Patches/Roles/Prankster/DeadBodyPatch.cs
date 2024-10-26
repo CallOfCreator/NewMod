@@ -11,7 +11,13 @@ namespace NewMod.Patches.Roles.Prankster
             if (!__instance.Reported && PranksterUtilities.IsPranksterBody(__instance))
             {
                 var reporter = PlayerControl.LocalPlayer;
+
                 reporter.RpcMurderPlayer(reporter, true);
+
+                byte pranksterId = __instance.ParentId;
+
+                PranksterUtilities.IncrementReportCount(pranksterId);
+
                 return false;
             }
             return true;
