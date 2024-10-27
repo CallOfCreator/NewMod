@@ -40,7 +40,7 @@ namespace NewMod.Patches
                     roleColor = role.NameColor;
                 }
 
-                StatsPopup.AppendStat(stringBuilder, StringNames.StatsRoleWins, winCount, $"<color={ColorUtility.ToHtmlStringRGBA(roleColor)}>{roleName}</color>");
+                StatsPopup.AppendStat(stringBuilder, StringNames.StatsRoleWins, winCount, $"<color=#{ColorUtility.ToHtmlStringRGBA(roleColor)}>{roleName}</color>");
             }
 
             foreach (StringNames stringName in StatsPopup.RoleSpecificStatsToShow)

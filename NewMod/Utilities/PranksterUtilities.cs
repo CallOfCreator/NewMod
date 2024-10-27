@@ -42,12 +42,16 @@ namespace NewMod.Utilities
             }
             else 
             {
-                 ReportCounts[playerId]++;
+                ReportCounts[playerId]++;
             }
+        }
+        public static void ResetReportCount()
+        {
+            ReportCounts.Clear();
         }
         public static int GetReportCount(byte playerId)
         {
-            return ReportCounts.ContainsKey(playerId) ? ReportCounts[playerId] : 0; 
+            return ReportCounts.TryGetValue(playerId, out int value) ? value : 0;
         }
     }
 }

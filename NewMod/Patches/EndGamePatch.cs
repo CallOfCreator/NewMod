@@ -214,7 +214,7 @@ namespace NewMod.Patches
              {
                 int WinReportCount = 2;
                 int currentReportCount = PranksterUtilities.GetReportCount(PlayerControl.LocalPlayer.PlayerId);
-                if (WinReportCount >= currentReportCount)
+                if (currentReportCount >= WinReportCount)
                 {
                    GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.PranksterWin, false);
                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.PranksterWin, (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<Prankster>());
