@@ -2,8 +2,8 @@ namespace NewMod
 {
     public enum NewModEndReasons
     {
-        EnergyThiefWin = 10,
-        DoubleAgentWin = 11,
-        PranksterWin = 12
+        EnergyThiefWin = 100,
+        DoubleAgentWin = 111,
+        PranksterWin = 112
     }
 }
