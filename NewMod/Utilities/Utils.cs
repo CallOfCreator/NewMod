@@ -13,16 +13,25 @@ namespace NewMod.Utilities
         public static Dictionary<PlayerControl, int> NecromancerReviveCount = new Dictionary<PlayerControl, int>();
         public static HashSet<PlayerControl> waitingPlayers = new();
 
-        // Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
+        /// <summary>
+        /// Retrieves a PlayerControl instance by its player ID.
+        /// </summary>
+        /// <param name="id">The player's ID.</param>
+        /// <returns>The PlayerControl object or null if not found.</returns>
+        //  Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
         public static PlayerControl PlayerById(byte id)
         {
-            foreach (var player in PlayerControl.AllPlayerControls)
-            {
+             foreach (var player in PlayerControl.AllPlayerControls)
                 if (player.PlayerId == id)
                     return player;
-            }
+
             return null;
         }
+        /// <summary>  
+        /// Records a kill event by mapping a victim to its killer.
+        /// </summary>
+        /// <param name="killer">The player who performed the kill.</param>
+        /// <param name="victim">The player who was killed.</param>
         public static void RecordOnKill(PlayerControl killer, PlayerControl victim)
         {
             if (PlayerKiller.ContainsKey(killer))
@@ -35,11 +44,19 @@ namespace NewMod.Utilities
             }
         }
 
+        /// <summary>
+        /// Retrieves the killer of the specified victim.
+        /// </summary>
+        /// <param name="victim">The player who was killed.</param>
+        /// <returns>The player who killed the victim, or null if not found.</returns>
         public static PlayerControl GetKiller(PlayerControl victim)
         {
             return PlayerKiller.TryGetValue(victim, out var killer) ? killer : null;
         }
-
+        /// <summary>
+        /// Finds the closest dead body to the local player within their kill distance.
+        /// </summary>
+        /// <returns>The closest DeadBody instance, or null if none are found.</returns>
         public static DeadBody GetClosestBody()
         {
             var allocs = Physics2D.OverlapCircleAll(
@@ -69,10 +86,12 @@ namespace NewMod.Utilities
         // Inspired By : https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/CrewmateRoles/AltruistMod/Coroutine.cs#L57
         public static void Revive(DeadBody body)
         {
+             if (body == null) return;
+
             var parentId = body.ParentId;
             var player = PlayerById(parentId);
 
-            if (body != null && player != null)
+            if (player != null)
             {
                 foreach (var deadBody in GameObject.FindObjectsOfType<DeadBody>())
                 {
@@ -90,6 +109,11 @@ namespace NewMod.Utilities
         }
         
         // Thanks to: https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L66
+        /// <summary>
+        /// Checks if a particular system type is active on the current map.
+        /// </summary>
+        /// <param name="type">The SystemTypes to check.</param>
+        /// <returns>True if the system type is active, otherwise false.</returns>
         public static bool IsActive(SystemTypes type)
         {
             int mapId = GameOptionsManager.Instance.CurrentGameOptions.MapId;
@@ -143,6 +167,10 @@ namespace NewMod.Utilities
         }
     }
         // Thanks to : https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L118
+        /// <summary>
+        /// Checks if any sabotage system is currently active.
+        /// </summary>
+        /// <returns>True if a sabotage system is active, otherwise false.</returns>
         public static bool IsSabotage()
         {
             return IsActive(SystemTypes.LifeSupp) ||
@@ -159,7 +187,7 @@ namespace NewMod.Utilities
         /// <param name="energyThief">The player representing the energy thief.</param>
         public static void RecordDrainCount(PlayerControl energyThief)
         {
-            if (energyThief == null) return;
+          /*  if (energyThief == null) return;
 
             var playerId = energyThief.PlayerId;
 
@@ -172,13 +200,21 @@ namespace NewMod.Utilities
                 EnergyThiefDrainCounts.Add(playerId, 1);
             }
             NewMod.Instance.Log.LogInfo(GetDrainCount(playerId));
+            */
+            var playerId = energyThief.PlayerId;
+            EnergyThiefDrainCounts[playerId] = GetDrainCount(playerId) + 1;
+            NewMod.Instance.Log.LogInfo($"Player {playerId} drain count: {GetDrainCount(playerId)}");
         }
 
+        /// <summary>
+        /// Retrieves the drain count for a specific player.
+        /// </summary>
+        /// <param name="playerId">The ID of the player.</param>
+        /// <returns>The drain count for the player.</returns>
         public static int GetDrainCount(byte playerId)
         {
             return EnergyThiefDrainCounts.TryGetValue(playerId, out var count) ? count : 0;
         }
-
         /// <summary>
         /// Resets all drain counts.
         /// </summary>
@@ -187,10 +223,14 @@ namespace NewMod.Utilities
             EnergyThiefDrainCounts.Clear();
         }
 
+        /// <summary>
+        /// Sends an RPC to revive a player from a dead body.
+        /// </summary>
+        /// <param name="body">The DeadBody instance to revive from.</param>
         public static void RpcRevive(DeadBody body)
         {
             Revive(body);
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
+            var writer = AmongUsClient.Instance.StartRpcImmediately(
                 PlayerControl.LocalPlayer.NetId,
                 (byte)CustomRPC.Revive,
                 SendOption.Reliable
@@ -199,25 +239,27 @@ namespace NewMod.Utilities
             writer.Write(body.ParentId);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
+
+        /// <summary>
+        /// Retrieves a random player from the game who is alive and not disconnected.
+        /// </summary>
+        /// <returns>A random PlayerControl instance, or null if none are valid.</returns>
         public static PlayerControl GetRandomPlayer()
         {
-            List<PlayerControl> players = new List<PlayerControl>();
-
-            foreach (var player in PlayerControl.AllPlayerControls)
-            {
-                if (!player.Data.IsDead && !player.Data.Disconnected && player != PlayerControl.LocalPlayer)
-                {
-                    players.Add(player);
-                }
-            }
+            var players = PlayerControl.AllPlayerControls.ToArray().Where(p => !p.Data.IsDead && !p.Data.Disconnected).ToList();
 
             if (players.Count > 0)
             {
-                return players[Random.Range(0, players.Count)];
+                return players[UnityEngine.Random.RandomRange(0, players.Count)];
             }
             return null;
         }
-
+        
+        /// <summary>
+        /// Performs a random draining action on a target player as part of a custom RPC.
+        /// </summary>
+        /// <param name="source">The player who initiates the drain.</param>
+        /// <param name="target">The player who is the target of the drain.</param>
         [MethodRpc((uint)CustomRPC.Drain)]
         public static void RpcRandomDrainActions(PlayerControl source, PlayerControl target)
         {

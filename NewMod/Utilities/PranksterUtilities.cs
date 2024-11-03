@@ -1,28 +1,44 @@
 using UnityEngine;
-using NewMod.Roles.NeutralRoles;
 using System.Collections.Generic;
 
 namespace NewMod.Utilities
 {
     public static class PranksterUtilities
     {
+        // The name assigned to the prankster clone body
         private const string PranksterBodyName = "PranksterCloneBody";
-        private static Dictionary<byte, int> ReportCounts = new();
+
+        // Dictionary tracking how many times each player has reported a Prankster body
+        private static readonly Dictionary<byte, int> ReportCounts = new();
+
+        /// <summary>
+        /// Creates a "prankster clone" dead body at the local player's position.
+        /// </summary>
         public static void CreatePranksterDeadBody()
         {
-            DeadBody deadBody = Object.Instantiate(GameManager.Instance.DeadBodyPrefab);
+            var deadBody = Object.Instantiate(GameManager.Instance.DeadBodyPrefab);
             deadBody.name = PranksterBodyName;
             deadBody.ParentId = PlayerControl.LocalPlayer.PlayerId;
             deadBody.transform.position = PlayerControl.LocalPlayer.transform.position;
         }
+
+        /// <summary>
+        /// Checks if the given DeadBody object is a prankster clone body.
+        /// </summary>
+        /// <param name="body">The DeadBody object to check.</param>
+        /// <returns>True if the body is a prankster clone body; otherwise, false.</returns>
         public static bool IsPranksterBody(DeadBody body)
         {
             return body.name.Equals(PranksterBodyName, System.StringComparison.OrdinalIgnoreCase);
         }
+        /// <summary>
+        /// Finds all prankster clone bodies currently in the game scene.
+        /// </summary>
+        /// <returns>A list of DeadBody objects representing all prankster clone bodies found.</returns>
         public static List<DeadBody> FindAllPranksterBodies()
         {
-            DeadBody[] allDeadBodies = Object.FindObjectsOfType<DeadBody>();
-            List<DeadBody> pranksterBodies = new List<DeadBody>();
+            var allDeadBodies = Object.FindObjectsOfType<DeadBody>();
+            var pranksterBodies = new List<DeadBody>();
 
             foreach (var body in allDeadBodies)
             {
@@ -34,21 +50,29 @@ namespace NewMod.Utilities
 
             return pranksterBodies;
         }
+
+        /// <summary>
+        /// Increments the report count for a specified player when they report a prankster body.
+        /// </summary>
+        /// <param name="playerId">The ID of the player reporting the body.</param>
         public static void IncrementReportCount(byte playerId)
         {
-            if (!ReportCounts.ContainsKey(playerId))
-            {
-                ReportCounts[playerId] = 1;
-            }
-            else 
-            {
-                ReportCounts[playerId]++;
-            }
+            ReportCounts[playerId] = GetReportCount(playerId) + 1;
         }
+
+        /// <summary>
+        /// Clears all recorded report counts for prankster bodies.
+        /// </summary>
         public static void ResetReportCount()
         {
             ReportCounts.Clear();
         }
+
+        /// <summary>
+        /// Retrieves the number of times the specified player has reported a prankster body.
+        /// </summary>
+        /// <param name="playerId">The ID of the player.</param>
+        /// <returns>The report count for the player, or 0 if the player has not reported a prankster body.</returns>
         public static int GetReportCount(byte playerId)
         {
             return ReportCounts.TryGetValue(playerId, out int value) ? value : 0;
