@@ -6,7 +6,7 @@ using UnityEngine;
 namespace NewMod.Roles.NeutralRoles;
 
 [RegisterCustomRole]
-public class Prankster : ImpostorRole, ICustomRole
+public class Prankster : CrewmateRole, ICustomRole
 {
     public string RoleName => "Prankster";
     public string RoleDescription => "Set up fake bodies to trick others. When reported, each fake body triggers a funny or deadly surprise for the reporter";
