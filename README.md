@@ -1,7 +1,7 @@
 ## NewMod Mod Documentation
 
 <p align="center">
-<b>An exciting Among Us mod with new roles, unique abilities, and dynamic gameplay!</b>
+<b>NewMod is a mod for Among Us that introduces a variety of new roles, unique abilities, and custom game modes, offering players exciting new ways to enjoy the game.</b>
 </p>
 
 ---
