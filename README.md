@@ -1,55 +1,86 @@
 ## NewMod Mod Documentation
 
+<p align="center">
+<b>An exciting Among Us mod with new roles, unique abilities, and dynamic gameplay!</b>
+</p>
 
-### Overview : 
-   - NewMod is an innovative mod for Among Us that introduces new roles and mechanics to enhance gameplay. It allows for dynamic gameplay with unique roles that add depth and strategic elements to each session. Below is a breakdown of its key features and installation instructions.
+---
 
-### Features:
+# 📑 Table Of Contents
+- [🚀 Releases](#-releases)
+- [📥 Installation](#-installation)
+- [✨ Features](#-features)
+- [🔗 Compatibility](#-compatibility)
+- [🤝 Contributing](#-contributing)
+- [⚠️ Disclaimer](#-disclaimer)
 
-**1. Crewmate Cam Access (F2):**
+---
 
-- **Description:** Crewmates can access security cameras from anywhere on the map by pressing `F2`.
-- **Strategic Use:** Allows crewmates to monitor other players without having to physically go to the security room.
+# 🚀 Releases
 
-**2. Necromancer Role:**
+| Mod Version | Among Us - Version | Link |
+|-------------|---------------------|------|
+| v1.0.0      | 2024.8.13 & 2024.9.4 & 2024.10.29 | [Download](https://github.com/CallOfCreator/NewMod/releases/download/v1.0.0/NewMod.dll) |
 
-- **Description:** The Necromancer is a special Impostor role with the power to revive one dead player (who wasn't killed by the Necromancer) to join the Impostors.
-- **Keybinds:** Press `F4` for a teleport ability.
+---
 
-**3. Revival Royale GameMode:** ***(currently unavailable)***
+# 📥 Installation
 
-- **Description:** Revival Royale is a custom game mode where every player is a Necromancer. The goal is to revive as many bodies as possible. The first player to achieve a set number of revivals (e.g., 6) wins the game.
+1. **Download the latest version of NewMod** for your Among Us installation from [here](https://github.com/CallOfCreator/NewMod/releases/latest).
+2. Extract the contents into your Among Us folder.
+3. Launch the game with `Among Us.exe`. The first run may take 4-5 minutes as the mod initializes.
 
-**4. Energy Thief Role:**
+---
 
-- **Description:** The Energy Thief can drain energy from other players, weakening them.
+# ✨ Features
 
-**5. Double Agent:**
+### **1. Crewmate Cam Access (F2)**
+   - **🖥️ Description:** Allows crewmates to access security cameras from anywhere.
+   - **👀 Strategic Use:** Monitor other players without needing to go to the security room.
 
-- **Description**: The Double Agent has a hidden objective. While they must complete their tasks, they unlock a new ability once all tasks are finished. After completing their tasks, the Double Agent gains the power to sabotage both neutrals and impostors.
+### **2. Necromancer Role**
+   - **🔮 Description:** A special Impostor role that can revive a dead player to join the Impostors.
+   - **💨 Keybinds:** Press `F4` for teleport ability.
 
-### Installation:
+### **3. Revival Royale GameMode** *(currently unavailable)*
+   - **⚔️ Description:** Every player is a Necromancer, competing to revive bodies. The first to reach a set number of revivals wins.
 
-1. **Download the latest version of NewMod compatible with your installed Among Us version, along with the compatible MiraAPI mod.**
-2. **Extract the contents of the zip file into your Among Us folder.**
-3. **Launch the game using `Among Us.exe`. Note that the first launch may take 4-5 minutes as the mod initializes.**
+### **4. Energy Thief Role**
+   - **💡 Description:** Drains energy from others, making them weaker.
 
+### **5. Double Agent Role**
+   - **🔍 Description:** Completes tasks but can sabotage neutrals and impostors after task completion.
 
-### Credits:
+### **6. Special Agent Role**
+   - **🎖️ Description:** A neutral role that assigns missions to other players.
+      - **📋 Mission Mechanics:** The assigned player must complete the mission or face penalties.
+      - **📹 Surveillance Option:** The Special Agent can monitor the target through a camera if enabled.
+      - **🏆 Win Condition:** Successful mission completions contribute to the Special Agent’s victory.
 
-- **MiraAPI**: [MiraAPI GitHub](https://github.com/Alll-Of-Us-Mods/MiraAPI) - Among Us modding API and utility library, and inspiration for the debug window, as well as the derivation of the gold color from MiraAPIExample Mod.
+---
 
+# 🔗 Compatibility
 
-- **Reactor**: [Reactor GitHub](https://github.com/NuclearPowered/Reactor) - Modding API for Among Us.
+NewMod v1.1.0 is compatible with YanplaRoles, allowing for an enhanced experience with combined custom roles. Below is the supported version of YanplaRoles:
 
-- **TownOfUs-R**: - Portions of code (PlayerById, GetClosestBody) and asset (ReviveSprite) are derived from [Town-Of-Us-R](https://github.com/eDonnes124/Town-Of-Us-R).
+| Mod Name     | Mod Version | GitHub Link                                          |
+|--------------|-------------|------------------------------------------------------|
+| YanplaRoles  | v0.1.7      | [Download](https://github.com/yanpla/yanplaRoles)    |
 
-- **MoreGamemodes**: [MoreGamemodes](https://github.com/Rabek009/MoreGamemodes) - Derivation of IsActive and IsSabotage code.
+For more information on YanplaRoles, visit their official [GitHub page](https://github.com/yanpla/yanplaRoles).
 
+---
 
-### Contact : 
-For any questions, feedback, or bug reports related to NewMod, please reach out by opening an issue on [GitHub](https://github.com/CallOfCreator/NewMod/issues)
+# 🤝 Contributing
 
-### Disclaimer:
+If you’d like to contribute, feel free to join and improve the project!
 
-NewMod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC. © Innersloth LLC.
+---
+
+# ⚠️ Disclaimer
+
+NewMod is not affiliated with Among Us or Innersloth LLC, and the content contained herein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC. © Innersloth LLC.
+
+---
+
+Enjoy an enhanced Among Us experience with NewMod!
