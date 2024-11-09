@@ -12,6 +12,7 @@
 - [✨ Features](#-features)
 - [🔗 Compatibility](#-compatibility)
 - [🤝 Contributing](#-contributing)
+- [👥 Credits](#-credits)
 - [⚠️ Disclaimer](#-disclaimer)
 
 ---
@@ -20,7 +21,7 @@
 
 | Mod Version | Among Us - Version | Link |
 |-------------|---------------------|------|
-| v1.0.0      | 2024.8.13 & 2024.9.4 & 2024.10.29 | [Download](https://github.com/CallOfCreator/NewMod/releases/download/v1.0.0/NewMod.dll) |
+| v1.0.0      | 2024.8.13 & 2024.10.29 | [Download](https://github.com/CallOfCreator/NewMod/releases/download/v1.0.0/NewMod.dll) |
 
 ---
 
@@ -65,7 +66,7 @@ NewMod v1.1.0 is compatible with YanplaRoles, allowing for an enhanced experienc
 
 | Mod Name     | Mod Version | GitHub Link                                          |
 |--------------|-------------|------------------------------------------------------|
-| YanplaRoles  | v0.1.7      | [Download](https://github.com/yanpla/yanplaRoles)    |
+| YanplaRoles  | v0.1.6+     | [Download](https://github.com/yanpla/yanplaRoles)    |
 
 For more information on YanplaRoles, visit their official [GitHub page](https://github.com/yanpla/yanplaRoles).
 
@@ -74,6 +75,15 @@ For more information on YanplaRoles, visit their official [GitHub page](https://
 # 🤝 Contributing
 
 If you’d like to contribute, feel free to join and improve the project!
+
+---
+
+# 👥 Credits
+
+- **MiraAPI**: [MiraAPI GitHub](https://github.com/Alll-Of-Us-Mods/MiraAPI) - Among Us modding API and utility library, with inspiration for the debug window and the derivation of the gold color from MiraAPIExample Mod.
+- **Reactor**: [Reactor GitHub](https://github.com/NuclearPowered/Reactor) - Modding API for Among Us.
+- **TownOfUs-R**: - Portions of code (PlayerById, GetClosestBody) and asset (ReviveSprite) derived from [Town-Of-Us-R](https://github.com/eDonnes124/Town-Of-Us-R).
+- **MoreGamemodes**: [MoreGamemodes](https://github.com/Rabek009/MoreGamemodes) - Derivation of IsActive and IsSabotage code.
 
 ---
 
