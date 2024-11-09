@@ -3,6 +3,9 @@ using System.Linq;
 using Hazel;
 using Reactor.Networking.Attributes;
 using UnityEngine;
+using MiraAPI.Utilities;
+using System.Collections;
+using Reactor.Utilities;
 
 namespace NewMod.Utilities
 {
@@ -317,6 +320,132 @@ namespace NewMod.Utilities
 
             int randomIndex = Random.Range(0, actions.Count);
             actions[randomIndex].Invoke();
+        }
+        public static string GetMission(PlayerControl target)
+        {
+           var mostwantedTarget = GetRandomPlayer();
+
+           var missions = new List<string>()
+           {
+              $"Kill the Most Wanted Target: {mostwantedTarget.Data.PlayerName}",
+              "Drain one player using Energy Thief abilities",
+              "Disguise yourself as a random player and create fake dead bodies around the map using Prankster abilities!",
+              "Sabotage the lights, then kill a player during the blackout.",
+              "Revive a dead player using Necromancer powers and kill him again"
+           };
+           int randomIndex = Random.Range(0, missions.Count);
+           string selectedMission = missions[randomIndex];
+
+           switch (randomIndex)
+           {
+             case 0:
+             // Set up arrow for most wanted target
+             var gameObj = new GameObject();
+             var arrow = gameObj.AddComponent<ArrowBehaviour>();
+             gameObj.transform.parent = mostwantedTarget.gameObject.transform;
+             gameObj.layer = 5;
+             var renderer = gameObj.AddComponent<SpriteRenderer>();
+             renderer.sprite = NewModAsset.Arrow.LoadAsset();
+             arrow.target = mostwantedTarget.transform.position;
+             arrow.image = renderer;
+
+             if (!target.Data.Role.IsImpostor)
+             {
+                RoleManager.Instance.SetRole(target, AmongUs.GameOptions.RoleTypes.Impostor);
+             }
+             var killer = GetKiller(mostwantedTarget);
+
+             if (killer != null && killer == target)
+             {
+               MissionSucess(target, PlayerControl.LocalPlayer);
+             }
+             else
+             {
+               MissionFails(target, PlayerControl.LocalPlayer);
+             }
+             break;
+            // TODO: Implement other cases.
+           }
+           return selectedMission;
+        }
+        public static void MissionSucess(PlayerControl target, PlayerControl specialAgent)
+        {
+           if (specialAgent.AmOwner)
+           {
+              Coroutines.Start(CoNotify($"<color=#FFD700>Target {target.Data.PlayerName} has completed their mission! Current count for win: 1/3</color>"));
+           }
+           else
+           {
+             Coroutines.Start(CoNotify("<color=#32CD32>Mission Completed! You are free to go!</color>"));
+           }
+        }
+        public static void MissionFails(PlayerControl target, PlayerControl specialAgent)
+        {
+           if (specialAgent.AmOwner)
+           {
+             Coroutines.Start(CoNotify($"<color=#FF0000>Target {target.Data.PlayerName} has failed their mission!</color>"));
+           }
+           else
+           {
+             Coroutines.Start(CoNotify("<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
+           }
+           specialAgent.RpcMurderPlayer(target, true);
+
+            if (savedTasks.ContainsKey(target))
+            {
+                target.myTasks = savedTasks[target];
+                savedTasks.Remove(target);
+            }
+        }
+        public static IEnumerator CoNotify(string message)
+        {
+            if (Constants.ShouldPlaySfx())
+            {
+                SoundManager.Instance.PlaySound(HudManager.Instance.TaskCompleteSound, false, 1f, null);
+            }
+            var textComponent = HudManager.Instance.TaskCompleteOverlay.GetComponentInChildren<TMPro.TextMeshPro>();
+
+            if (textComponent != null)
+            {
+                textComponent.text = message;
+                textComponent.fontSize = 3.5f;
+            }
+            HudManager.Instance.TaskCompleteOverlay.gameObject.SetActive(true);
+
+            yield return Effects.Slide2D(HudManager.Instance.TaskCompleteOverlay, new Vector2(0f, -8f), Vector2.zero, 0.25f);
+
+            for (float time = 0f; time < 0.75f; time += Time.deltaTime)
+            {
+                yield return null;
+            }
+            yield return Effects.Slide2D(HudManager.Instance.TaskCompleteOverlay, Vector2.zero, new Vector2(0f, 8f), 0.25f);
+
+            HudManager.Instance.TaskCompleteOverlay.gameObject.SetActive(false);
+        }
+        public static Il2CppSystem.Collections.Generic.Dictionary<PlayerControl, Il2CppSystem.Collections.Generic.List<PlayerTask>> savedTasks = new();
+        public static void AssignMission(PlayerControl target)
+        {
+            // Save the target's tasks
+            if (!savedTasks.ContainsKey(target))
+            {
+               var newTaskList = new Il2CppSystem.Collections.Generic.List<PlayerTask>();
+               
+               foreach (var task in target.myTasks)
+               {
+                 newTaskList.Add(task);
+               }
+               savedTasks[target] = newTaskList;
+            }
+
+           // Clear all assigned tasks for the specified target player
+           target.myTasks.Clear();
+           
+           // Add the mission message to the player's tasks
+           ImportantTextTask Missionmessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
+           Missionmessage.transform.SetParent(AmongUsClient.Instance.transform, false);
+           Missionmessage.Text = $"<color=red>Special Agent</color> has given you a mission! <b>Mission:</b> {GetMission(target)} <i>Complete it or face the consequences!</i>";
+
+           target.myTasks.Insert(0, Missionmessage);
         }
     }
 }

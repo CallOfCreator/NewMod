@@ -2,7 +2,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles;
+using NewMod.Options.Roles.EnergyThiefOptions;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
 using NewMod.Utilities;

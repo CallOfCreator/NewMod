@@ -5,7 +5,7 @@ using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Options.Roles;
+namespace NewMod.Options.Roles.EnergyThiefOptions;
 
 public class EnergyThiefOptions : AbstractOptionGroup
 {
