@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Reactor.Networking.Attributes;
 
 namespace NewMod.Utilities
 {
@@ -14,12 +15,13 @@ namespace NewMod.Utilities
         /// <summary>
         /// Creates a "prankster clone" dead body at the local player's position.
         /// </summary>
-        public static void CreatePranksterDeadBody()
+        [MethodRpc((uint)CustomRPC.FakeBody, LocalHandling = Reactor.Networking.Rpc.RpcLocalHandling.After)]
+        public static void CreatePranksterDeadBody(PlayerControl player, byte parentId)
         {
             var deadBody = Object.Instantiate(GameManager.Instance.DeadBodyPrefab);
             deadBody.name = PranksterBodyName;
-            deadBody.ParentId = PlayerControl.LocalPlayer.PlayerId;
-            deadBody.transform.position = PlayerControl.LocalPlayer.transform.position;
+            deadBody.ParentId = parentId;
+            deadBody.transform.position = player.transform.position;
         }
 
         /// <summary>
@@ -47,7 +49,6 @@ namespace NewMod.Utilities
                     pranksterBodies.Add(body);
                 }
             }
-
             return pranksterBodies;
         }
 

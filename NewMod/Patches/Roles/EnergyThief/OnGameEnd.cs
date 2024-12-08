@@ -10,7 +10,11 @@ public static class OnGameEndPatch
     {
         Utils.ResetDrainCount();
         PranksterUtilities.ResetReportCount();
+        Utils.ResetMissionSuccessCount();
+        Utils.ResetMissionFailureCount();
         NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
+        NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
+        NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
     }
 }

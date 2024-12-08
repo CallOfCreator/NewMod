@@ -9,12 +9,11 @@ using UnityEngine;
 using AmongUs.GameOptions;
 using Object = UnityEngine.Object;
 using NewMod.Utilities;
-using Innersloth.Assets;
 
 namespace NewMod.Buttons
 {
     [RegisterButton]
-    public class AssignMissionButton : CustomActionButton
+    public class AssignButton : CustomActionButton
     {
         public override string Name => "ASSIGN MISSION";
         public override float Cooldown => OptionGroupSingleton<SpecialAgentOptions>.Instance.AssignCooldown;
@@ -22,7 +21,9 @@ namespace NewMod.Buttons
         public override ButtonLocation Location => ButtonLocation.BottomRight;
         public override float EffectDuration => 0f;
         public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+
         private NetworkedPlayerInfo targetPlayer;
+
         public override bool Enabled(RoleBehaviour role)
         {
             return role is SpecialAgent;
@@ -30,18 +31,35 @@ namespace NewMod.Buttons
 
         protected override void OnClick()
         {
+            
             ShapeshifterRole shapeshifterRole = Object.Instantiate(
                 RoleManager.Instance.AllRoles.First(r => r.Role == RoleTypes.Shapeshifter)
-            ).Cast<ShapeshifterRole>();
+            ).TryCast<ShapeshifterRole>();
 
             ShapeshifterMinigame minigame = Object.Instantiate(shapeshifterRole.ShapeshifterMenu);
             Object.Destroy(shapeshifterRole.gameObject);
             minigame.name = "SpecialAgent Mission";
             minigame.transform.SetParent(Camera.main.transform, false);
             minigame.transform.localPosition = new Vector3(0f, 0f, -50f);
+            Minigame.Instance = minigame;
+            minigame.MyTask = null;
+            minigame.MyNormTask = null;
+
+            
+            if (PlayerControl.LocalPlayer)
+            {
+                if (MapBehaviour.Instance)
+                {
+                    MapBehaviour.Instance.Close();
+                }
+                PlayerControl.LocalPlayer.MyPhysics.SetNormalizedVelocity(Vector2.zero);
+            }
+
             minigame.StartCoroutine(minigame.CoAnimateOpen());
+            DestroyableSingleton<DebugAnalytics>.Instance.Analytics.MinigameOpened(PlayerControl.LocalPlayer.Data, minigame.TaskType);
             minigame.potentialVictims = new Il2CppSystem.Collections.Generic.List<ShapeshifterPanel>();
 
+            
             List<PlayerControl> playerList = PlayerControl.AllPlayerControls.ToArray()
                 .Where(p => !p.Data.IsDead && !p.Data.Disconnected)
                 .ToList();
@@ -50,42 +68,41 @@ namespace NewMod.Buttons
 
             for (int i = 0; i < playerList.Count; i++)
             {
+                var player = playerList[i];
                 int num = i % 3;
                 int num2 = i / 3;
+                bool flag = PlayerControl.LocalPlayer.Data.Role.NameColor == player.Data.Role.NameColor;
 
                 ShapeshifterPanel panel = Object.Instantiate(minigame.PanelPrefab, minigame.transform);
                 panel.transform.localPosition = new Vector3(
-                    minigame.XStart + num2 * minigame.XOffset,
-                    minigame.YStart + num * minigame.YOffset,
+                    minigame.XStart + num * minigame.XOffset,
+                    minigame.YStart + num2 * minigame.YOffset,
                     -1f
                 );
 
-                NetworkedPlayerInfo playerInfo = playerList[i].Data;
+                NetworkedPlayerInfo playerInfo = player.Data;
 
-                panel.SetPlayer(i, playerInfo, (System.Action) (() => {
-                targetPlayer = playerInfo;
+                panel.SetPlayer(i, playerInfo, (Il2CppSystem.Action)(() =>
+                {
+                    targetPlayer = playerInfo;
 
-                Utils.AssignMission(targetPlayer.Object);
+                    Utils.AssignMission(targetPlayer.Object);
 
-                minigame.Close();
+                    minigame.Close();
                 }));
 
-                uiElements.Add(panel.GetComponent<UiElement>());
+                panel.NameText.color = flag ? player.Data.Role.NameColor : Color.white;
                 minigame.potentialVictims.Add(panel);
+                uiElements.Add(panel.Button);
             }
 
+            
             ControllerManager.Instance.OpenOverlayMenu(
                 minigame.name,
                 minigame.BackButton,
                 minigame.DefaultButtonSelected,
-                uiElements,
-                false
+                uiElements
             );
-
-            if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
-            {
-                FollowerCamera cam = Camera.main!.GetComponent<FollowerCamera>();
-            }
         }
     }
 }

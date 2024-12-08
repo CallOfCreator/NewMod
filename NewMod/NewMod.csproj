@@ -23,5 +23,6 @@
         <EmbeddedResource Include="Resources\Revive2.png" />
 		<EmbeddedResource Include="Resources\deadbody.png" />
 		<EmbeddedResource Include="Resources\Arrow.png" />
+		<EmbeddedResource Include="Resources\Logo.png" />
     </ItemGroup>
 </Project>

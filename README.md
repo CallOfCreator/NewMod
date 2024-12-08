@@ -1,8 +1,19 @@
 ## NewMod Mod Documentation
-
 <p align="center">
-<b>An exciting Among Us mod with new roles, unique abilities, and dynamic gameplay!</b>
+<b>NewMod is a mod for Among Us that introduces a variety of new roles, unique abilities, and custom game modes, offering players exciting new ways to enjoy the game.</b>
 </p>
+<p align="center">
+    <a href="https://github.com/CallOfCreator/NewMod/stargazers">
+        <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod?style=social" alt="GitHub stars">
+    </a>
+    <a href="https://github.com/CallOfCreator/NewMod/network/members">
+        <img src="https://img.shields.io/github/forks/CallOfCreator/NewMod?style=social" alt="GitHub forks">
+    </a>
+    <a href="https://github.com/CallOfCreator/NewMod/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/CallOfCreator/NewMod" alt="License">
+    </a>
+</p>
+
 
 ---
 
@@ -55,6 +66,7 @@
 ### **6. Special Agent Role**
    - **🎖️ Description:** A neutral role that assigns missions to other players.
       - **📋 Mission Mechanics:** The assigned player must complete the mission or face penalties.
+         - If the target fails the mission, the Special Agent loses a point toward their win condition.
       - **📹 Surveillance Option:** The Special Agent can monitor the target through a camera if enabled.
       - **🏆 Win Condition:** Successful mission completions contribute to the Special Agent’s victory.
 
@@ -84,6 +96,7 @@ If you’d like to contribute, feel free to join and improve the project!
 - **Reactor**: [Reactor GitHub](https://github.com/NuclearPowered/Reactor) - Modding API for Among Us.
 - **TownOfUs-R**: - Portions of code (PlayerById, GetClosestBody) and asset (ReviveSprite) derived from [Town-Of-Us-R](https://github.com/eDonnes124/Town-Of-Us-R).
 - **MoreGamemodes**: [MoreGamemodes](https://github.com/Rabek009/MoreGamemodes) - Derivation of IsActive and IsSabotage code.
+- **yanplaRoles**: [yanplaRoles](https://github.com/yanpla/yanplaRoles) - Portions of code (SavePlayerRole, GetPlayerRolesHistory).
 
 ---
 

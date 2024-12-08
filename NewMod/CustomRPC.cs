@@ -2,5 +2,7 @@ namespace NewMod;
 public enum CustomRPC
 {
     Revive,
-    Drain
+    Drain,
+    FakeBody,
+    AssignMission
 }
