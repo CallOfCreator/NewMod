@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.GameOptions;
@@ -9,6 +10,7 @@ using UnityEngine;
 using AmongUs.GameOptions;
 using Object = UnityEngine.Object;
 using NewMod.Utilities;
+using Reactor.Utilities;
 
 namespace NewMod.Buttons
 {
@@ -88,6 +90,15 @@ namespace NewMod.Buttons
 
                     Utils.AssignMission(targetPlayer.Object);
 
+                    if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
+                    {
+                        var cam = Camera.main.GetComponent<FollowerCamera>();
+                        if (cam != null)
+                        {
+                            cam.SetTarget(targetPlayer.Object);
+                            Coroutines.Start(CoResetCamera(cam, OptionGroupSingleton<SpecialAgentOptions>.Instance.CameraTrackingDuration));
+                        }
+                    }
                     minigame.Close();
                 }));
 
@@ -103,6 +114,21 @@ namespace NewMod.Buttons
                 minigame.DefaultButtonSelected,
                 uiElements
             );
+        }
+        public static IEnumerator CoResetCamera(FollowerCamera cam, float duration)
+        {
+            float timeElapsed = 0f;
+
+            while (timeElapsed < duration)
+            {
+                timeElapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (cam != null)
+            {
+                cam.SetTarget(PlayerControl.LocalPlayer);
+            }
         }
     }
 }

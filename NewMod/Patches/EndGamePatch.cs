@@ -7,6 +7,8 @@ using System.Linq;
 using MiraAPI.Roles;
 using AmongUs.GameOptions;
 using Object = UnityEngine.Object;
+using MiraAPI.GameOptions;
+using NewMod.Options.Roles.SpecialAgentOptions;
 
 namespace NewMod.Patches
 {
@@ -237,7 +239,7 @@ namespace NewMod.Patches
                 int missionFailureCount = Utils.GetMissionFailureCount(PlayerControl.LocalPlayer.PlayerId);
                 int netScore = missionSuccessCount - missionFailureCount;
 
-                 if (netScore >= 3)
+                 if (netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin)
                  {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.SpecialAgentWin, false);
                     StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.SpecialAgentWin, (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<SpecialAgent>());

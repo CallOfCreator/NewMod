@@ -2,7 +2,6 @@ using System;
 using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
-using MiraAPI.Utilities;
 using NewMod.Roles.NeutralRoles;
 
 namespace NewMod.Options.Roles.SpecialAgentOptions

@@ -1,11 +1,11 @@
-using System;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
-using MiraAPI.Networking;
 using MiraAPI.Utilities;
-using NewMod.Options;
 using NewMod.Roles.ImpostorRoles;
+using NewMod.Utilities;
+using NewMod.Options;
+using MiraAPI.Networking;
 
 namespace NewMod.Modifiers;
 
@@ -45,14 +45,23 @@ public class ExplosiveModifier : GameModifier
     }
     public override void OnDeath(DeathReason deathReason)
     {
-        var closestPlayer = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<GeneralOption>.Instance.KillDistance, true);
+        var murderer = Utils.GetKiller(Player);
+        if (murderer == null) return;
 
-        foreach (var player in closestPlayer)
+        var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<GeneralOption>.Instance.KillDistance, true);
+
+        foreach (var player in closestPlayers)
         {
-            if (player == null) return;
-            if (player.Data.IsDead || player.Data.Disconnected) return;
+            if (player.Data.IsDead || player.Data.Disconnected) continue;
 
-            Player.RpcCustomMurder(player, createDeadBody:true, teleportMurderer:false, showKillAnim:false, playKillSound:true);
+            murderer.RpcCustomMurder(
+            player,
+            createDeadBody: true,
+            didSucceed: true,
+            showKillAnim: false,
+            playKillSound: true,
+            teleportMurderer: false
+          );
         }
     }
 }
