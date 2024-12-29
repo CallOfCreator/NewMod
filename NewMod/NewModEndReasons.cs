@@ -5,6 +5,7 @@ namespace NewMod
         EnergyThiefWin = 100,
         DoubleAgentWin = 111,
         PranksterWin = 112,
-        SpecialAgentWin = 113
+        SpecialAgentWin = 113,
+        TheVisionaryWin = 114
     }
 }

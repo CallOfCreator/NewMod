@@ -19,8 +19,8 @@ namespace NewMod.Utilities
         public static Dictionary<byte, int> MissionFailureCount = new Dictionary<byte, int>();
         public static HashSet<PlayerControl> waitingPlayers = new();
         public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles = new Dictionary<byte, List<RoleBehaviour>>();
-
         public static Dictionary<byte, TMPro.TextMeshPro> MissionTimer = new Dictionary<byte, TMPro.TextMeshPro>(); 
+        public static Dictionary<PlayerControl, bool> activeMissions = new Dictionary<PlayerControl, bool>();
     
         /// <summary>
         /// Retrieves a PlayerControl instance by its player ID.
@@ -396,25 +396,16 @@ namespace NewMod.Utilities
              {
                target.RpcSetRole(RoleTypes.Impostor, true);
              }
-             var killer = GetKiller(mostwantedTarget);
+             Coroutines.Start(CoroutinesHelper.CoHandleWantedTarget(arrow, mostwantedTarget, target));
 
-             if (killer != null && killer == target)
+             var rolesHistory = GetPlayerRolesHistory(target.PlayerId);
+             if (rolesHistory.Count > 0)
              {
-               MissionSuccess(target, PlayerControl.LocalPlayer);
+                var lastIndex = rolesHistory.Count - 1;
+                var originalRole = rolesHistory[lastIndex];
+                rolesHistory.RemoveAt(lastIndex);
+                target.RpcSetRole(originalRole.Role, true);
              }
-             else
-             {
-               MissionFails(target, PlayerControl.LocalPlayer);
-             }
-               var rolesHistory = GetPlayerRolesHistory(target.PlayerId);
-               if (rolesHistory.Count > 0)
-               {
-                 var lastIndex = rolesHistory.Count - 1;
-                 var originalRole = rolesHistory[lastIndex];
-                 rolesHistory.RemoveAt(lastIndex);
-
-                 target.RpcSetRole(originalRole.Role, true);
-               }
              break;
           
              case MissionType.CreateFakeBodies:
@@ -444,10 +435,26 @@ namespace NewMod.Utilities
             break;
             }
             return selectedMission;
-         }
+        }
+        public static bool HasActiveMission(PlayerControl target)
+        {
+            return activeMissions.ContainsKey(target) && activeMissions[target];
+        }
+        public static void SetActiveMission(PlayerControl target, bool isActive)
+        {
+            if (activeMissions.ContainsKey(target))
+            {
+                activeMissions[target] = isActive;
+            }
+            else
+            {
+                activeMissions.Add(target, isActive);
+            }
+        }
         public static void MissionSuccess(PlayerControl target, PlayerControl specialAgent)
         {
            RecordMissionSuccess(specialAgent);
+           SetActiveMission(target, false);
 
            if (specialAgent.AmOwner)
            {
@@ -468,6 +475,7 @@ namespace NewMod.Utilities
         public static void MissionFails(PlayerControl target, PlayerControl specialAgent)
         {
            RecordMissionFailure(specialAgent);
+           SetActiveMission(target, true);
 
            if (specialAgent.AmOwner)
            {
@@ -492,6 +500,11 @@ namespace NewMod.Utilities
         [MethodRpc((uint)CustomRPC.AssignMission)]
         public static void AssignMission(PlayerControl target)
         {
+            if (HasActiveMission(target))
+            {
+                return;
+            }
+            SetActiveMission(target, true);
             // Save the target's tasks
             if (!savedTasks.ContainsKey(target))
             {
@@ -522,6 +535,16 @@ namespace NewMod.Utilities
            target.myTasks.Insert(0, Missionmessage);
 
            Coroutines.Start(CoroutinesHelper.CoMissionTimer(target, 60f));
+        }
+        public static Color32[] ShuffleArrays(Color32[] array)
+        {
+            Color32[] shuffled = array.Clone() as Color32[];
+            for (int i = shuffled.Length - 1; i > 0; i--)
+            {
+                int j = Random.Range(0, i + 1);
+                (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]); 
+            }
+            return shuffled;
         }
     }
 }

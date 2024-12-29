@@ -30,14 +30,19 @@ namespace NewMod.Buttons
         {
             return role is SpecialAgent;
         }
+        public override bool CanUse()
+        {
+            bool isTimerDone = Timer <= 0;
+            bool hasUsesLeft = UsesLeft > 0;
 
+            return isTimerDone && hasUsesLeft && !Utils.HasActiveMission(targetPlayer?.Object);
+        }
         protected override void OnClick()
         {
-            
             ShapeshifterRole shapeshifterRole = Object.Instantiate(
                 RoleManager.Instance.AllRoles.First(r => r.Role == RoleTypes.Shapeshifter)
             ).TryCast<ShapeshifterRole>();
-
+            
             ShapeshifterMinigame minigame = Object.Instantiate(shapeshifterRole.ShapeshifterMenu);
             Object.Destroy(shapeshifterRole.gameObject);
             minigame.name = "SpecialAgent Mission";
@@ -47,7 +52,6 @@ namespace NewMod.Buttons
             minigame.MyTask = null;
             minigame.MyNormTask = null;
 
-            
             if (PlayerControl.LocalPlayer)
             {
                 if (MapBehaviour.Instance)
@@ -60,10 +64,9 @@ namespace NewMod.Buttons
             minigame.StartCoroutine(minigame.CoAnimateOpen());
             DestroyableSingleton<DebugAnalytics>.Instance.Analytics.MinigameOpened(PlayerControl.LocalPlayer.Data, minigame.TaskType);
             minigame.potentialVictims = new Il2CppSystem.Collections.Generic.List<ShapeshifterPanel>();
-
             
             List<PlayerControl> playerList = PlayerControl.AllPlayerControls.ToArray()
-                .Where(p => !p.Data.IsDead && !p.Data.Disconnected)
+                .Where(p => !p.Data.IsDead && !p.Data.Disconnected && p.PlayerId != PlayerControl.LocalPlayer.PlayerId)
                 .ToList();
 
             Il2CppSystem.Collections.Generic.List<UiElement> uiElements = new();

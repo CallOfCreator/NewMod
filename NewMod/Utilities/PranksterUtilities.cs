@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using Reactor.Networking.Attributes;
@@ -21,7 +22,14 @@ namespace NewMod.Utilities
             var deadBody = Object.Instantiate(GameManager.Instance.DeadBodyPrefab);
             deadBody.name = PranksterBodyName;
             deadBody.ParentId = parentId;
-            deadBody.transform.position = player.transform.position;
+            // Shuffle the player colors
+            var shuffledColors = Utils.ShuffleArrays(Palette.PlayerColors.ToArray());
+
+            for (int i = 0; i < deadBody.bodyRenderers.Length; i++)
+            {
+                deadBody.bodyRenderers[i].color = shuffledColors[i % shuffledColors.Length];
+            }
+            deadBody.transform.position = player.GetTruePosition();
         }
 
         /// <summary>

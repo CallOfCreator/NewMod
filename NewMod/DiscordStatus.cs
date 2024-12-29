@@ -12,7 +12,7 @@ namespace NewMod
         {
             if (activity == null) return;
             
-            var isBeta = false;
+            var isBeta = true;
 
             string details = $"New Mod v{NewMod.ModVersion}" + (isBeta ? " (Beta)" : "(dev)");
 
@@ -38,7 +38,7 @@ namespace NewMod
                     }
                 }
                 
-                activity.Assets.SmallText = "New Mod Made With MiraAPI";
+                activity.Assets.SmallText = "NewMod Made With MiraAPI";
             }
             catch (System.Exception e)
             {

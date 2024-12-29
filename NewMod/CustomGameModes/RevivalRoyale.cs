@@ -79,14 +79,6 @@ namespace NewMod.CustomGameModes
         {
             return false;
         }
-        public override bool AreRoleSettingsEnabled()
-        {
-            return true;
-        }
-        public override bool ShowGameModeIntroCutscene()
-        {
-            return true;
-        }
         public override bool CanReport(DeadBody body)
         {
             return false;

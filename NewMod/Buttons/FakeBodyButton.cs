@@ -20,7 +20,7 @@ namespace NewMod.Buttons
        public override LoadableAsset<Sprite> Sprite => NewModAsset.DeadBodySprite;
        protected override void OnClick()
        {
-          PranksterUtilities.CreatePranksterDeadBody(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.PlayerId);
+         PranksterUtilities.CreatePranksterDeadBody(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.PlayerId);
        }
         public override bool Enabled(RoleBehaviour role)
         {

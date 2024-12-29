@@ -13,6 +13,7 @@ namespace NewMod.Utilities
     {
         public static Dictionary<byte, int> bodiesCreated = new Dictionary<byte, int>();
         public static Dictionary<byte, int> drainCount = new Dictionary<byte, int>();
+        private static TextMeshPro timerLabel;
 
         public static IEnumerator CoNotify(string message)
         {
@@ -33,7 +34,7 @@ namespace NewMod.Utilities
 
             yield return Effects.Slide2D(HudManager.Instance.TaskCompleteOverlay, new Vector2(0f, -8f), Vector2.zero, 0.25f);
 
-            for (float time = 0f; time < 0.75f; time += Time.deltaTime)
+            for (float time = 0f; time < 0.95f; time += Time.deltaTime)
             {
                 yield return null;
             }
@@ -45,17 +46,13 @@ namespace NewMod.Utilities
 
         public static IEnumerator CoMissionTimer(PlayerControl target, float duration)
         {
-            TextMeshPro timerLabel = Helpers.CreateTextLabel(
-                "MissionTimer",
-                HudManager.Instance.TaskPanel.transform,
-                AspectPosition.EdgeAlignments.Top,
-                new Vector3(0f, -2f, 0f),
-                fontSize: 3f,
-                textAlignment: TextAlignmentOptions.Center
-            );
+            duration = Mathf.Min(duration, 30f);
 
-            timerLabel.text = $"Time Remaining: {duration}s";
+            timerLabel = Helpers.CreateTextLabel("MissionTimerText", HudManager.Instance.transform, AspectPosition.EdgeAlignments.LeftTop, new(10, 1.5f, 0f), fontSize:3f, textAlignment: TextAlignmentOptions.Left);
+     
+            timerLabel!.text = $"Time Remaining: {duration}s";
             timerLabel.color = Color.yellow;
+
             float timeRemaining = duration;
 
             while (timeRemaining > 0)
@@ -68,8 +65,14 @@ namespace NewMod.Utilities
                 if (timeRemaining <= 10f)
                 {
                     timerLabel.color = Color.red;
+                    if (Constants.ShouldPlaySfx())
+                    {
+                        SoundManager.Instance.PlaySound(ShipStatus.Instance.SabotageSound, false, 0.8f);
+                    }
+                    HudManager.Instance.FullScreen.color = new Color(1f, 0f, 0f, 0.1f);
+                    HudManager.Instance.FullScreen.gameObject.SetActive(true);
                 }
-                else if (timeRemaining <= 30f)
+                else if (timeRemaining <= 20f)
                 {
                     timerLabel.color = Color.yellow;
                 }
@@ -134,7 +137,7 @@ namespace NewMod.Utilities
                         drainRange,
                         ignoreColliders: true,
                         ignoreSource: true
-                    ).Where(p => !p.Data.IsDead && !p.Data.Disconnected).ToList();
+                    ).Where(p => !p.Data.IsDead && !p.Data.Disconnected && p != PlayerControl.LocalPlayer).ToList();
 
                     if (playersInRange.Count > 0)
                     {
@@ -142,9 +145,10 @@ namespace NewMod.Utilities
 
                         Utils.RpcRandomDrainActions(target, victim);
                         drainCount[target.PlayerId]++;
-
-                        Coroutines.Start(CoNotify($"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
-
+                        if (target.AmOwner)
+                        {
+                            Coroutines.Start(CoNotify($"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
+                        }
                         if (victim.AmOwner)
                         {
                             Coroutines.Start(CoNotify("<color=#FF0000><b><i>Your energy has been drained!</i></b></color>"));
@@ -207,7 +211,7 @@ namespace NewMod.Utilities
                         var revivedData = GameData.Instance.GetPlayerById(revivedParentId);
                         if (revivedData != null && revivedData.Object != null && !revivedData.Object.Data.IsDead)
                         {
-                            PlayerControl.LocalPlayer.RpcCustomMurder(revivedData.Object,createDeadBody: true, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer:false);
+                            PlayerControl.LocalPlayer.RpcCustomMurder(revivedData.Object, createDeadBody: true, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer:false);
                             Utils.MissionSuccess(target, PlayerControl.LocalPlayer);
                             yield break;
                         }
@@ -215,6 +219,28 @@ namespace NewMod.Utilities
                 }
                 yield return null;
             }
+        }
+        public static IEnumerator CoHandleWantedTarget(ArrowBehaviour arrow, PlayerControl mostwantedTarget, PlayerControl target)
+        {
+            while (!mostwantedTarget.Data.IsDead && !mostwantedTarget.Data.Disconnected)
+            {
+                arrow.target = mostwantedTarget.transform.position;
+                yield return null;
+            }
+            Object.Destroy(arrow.gameObject);
+
+            yield return new WaitForSeconds(0.5f);
+
+            var killer = Utils.GetKiller(mostwantedTarget);
+            if (killer != null && killer == target)
+            {
+                Utils.MissionSuccess(target, PlayerControl.LocalPlayer);
+            }
+            else
+            {
+                Utils.MissionFails(target, PlayerControl.LocalPlayer);
+            }
+            yield break;
         }
     }
 }
