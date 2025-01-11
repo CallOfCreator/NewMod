@@ -4,23 +4,29 @@ using MiraAPI.GameOptions;
 using NewMod.Options.Roles.VisionaryOptions;
 using NewMod.Roles.CrewmateRoles;
 using UnityEngine;
-using Reactor.Utilities;
 using NewMod.Utilities;
+using Reactor.Utilities;
+using System.IO;
+using System.Linq;
 
 namespace NewMod.Buttons
 {
     [RegisterButton]
-    public class CaptureButton : CustomActionButton
+    public class ShowScreenshot : CustomActionButton
     {
-        public override string Name => "Capture";
+        public override string Name => "ShowScreenshot";
         public override float Cooldown => OptionGroupSingleton<VisionaryOptions>.Instance.ScreenshotCooldown;
         public override float EffectDuration => 0;
         public override int MaxUses => (int)OptionGroupSingleton<VisionaryOptions>.Instance.MaxScreenshots;
-        public override LoadableAsset<Sprite> Sprite => NewModAsset.Camera;
-        public override ButtonLocation Location => ButtonLocation.BottomLeft;
+        public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+        public override ButtonLocation Location => ButtonLocation.BottomRight;
+        public override bool CanUse()
+        {
+           return VisionaryUtilities.CapturedScreenshotPaths.Any();
+        }
         protected override void OnClick()
         {
-            Coroutines.Start(Utils.CaptureScreenshot());
+            Coroutines.Start(VisionaryUtilities.ShowScreenshots(OptionGroupSingleton<VisionaryOptions>.Instance.MaxDisplayDuration));
         }
         public override bool Enabled(RoleBehaviour role)
         {

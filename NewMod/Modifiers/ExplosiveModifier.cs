@@ -2,29 +2,29 @@ using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.Utilities;
-using NewMod.Roles.ImpostorRoles;
 using NewMod.Utilities;
 using NewMod.Options;
 using MiraAPI.Networking;
+using UnityEngine;
 
 namespace NewMod.Modifiers;
 
 [RegisterModifier]
-public class ExplosiveModifier : GameModifier
+public class ExplosiveModifier : TimedModifier
 {
-     public override string ModifierName => "Explosive";
-     public override bool HideOnUi => false;
-     public override bool CanVent()
+    public override string ModifierName => "Explosive";
+    public override bool HideOnUi => false;
+    public override bool AutoStart => true;
+    public override float Duration => OptionGroupSingleton<GeneralOption>.Instance.Duration;
+    public override bool RemoveOnComplete => true;
+    private bool isFlashing = false;
+    public override bool CanVent()
     {
         return Player.Data.Role.CanVent;
     }
     public override string GetHudString()
     {
         return ModifierName + "\nif you die, all nearby players are killed";
-    }
-    public override bool IsModifierValidOn(RoleBehaviour role)
-    {
-        return role is not NecromancerRole;
     }
     public override void OnActivate()
     {
@@ -34,14 +34,31 @@ public class ExplosiveModifier : GameModifier
     {
         NewMod.Instance.Log.LogInfo("Deactivated!");
     }
-    
-    public override int GetAmountPerGame()
+    public override void FixedUpdate()
     {
-        return 3;
+        base.FixedUpdate();
+
+        if (Player.AmOwner)
+        {
+            if (Duration <= 5f)
+            {
+                isFlashing = !isFlashing;
+                var color = isFlashing ? new Color(1f, 0f, 0f) : new Color(0.5f, 0.5f, 0.5f);
+                Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor, color);
+            }
+            else if (Duration <= 10f)
+            {
+                Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor, new Color(0f, 0.8f, 1f));
+            }
+            else if (Duration <= 30f)
+            {
+                Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor, new Color(0f, 1.5f, 0f));
+            }
+        }
     }
-    public override int GetAssignmentChance()
+    public override void OnTimerComplete()
     {
-      return 100;
+       
     }
     public override void OnDeath(DeathReason deathReason)
     {
@@ -62,6 +79,7 @@ public class ExplosiveModifier : GameModifier
             playKillSound: true,
             teleportMurderer: false
           );
+          NewMod.Instance.Log.LogInfo($"{player.Data.PlayerName} has been killed by the explosion.");
         }
     }
 }

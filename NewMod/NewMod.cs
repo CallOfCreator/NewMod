@@ -1,4 +1,5 @@
 using System.Linq;
+using System.IO;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using BepInEx;
@@ -16,6 +17,7 @@ using HarmonyLib;
 using NewMod.Options;
 using NewMod.Utilities;
 using NewMod.Roles.ImpostorRoles;
+using Sentry.Unity;
 
 namespace NewMod;
 
@@ -43,7 +45,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         Harmony.PatchAll();
         CheckVersionCompatibility();
         ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", false, "Whether to enable BepInEx Console for debugging");
-        Instance.Log.LogMessage($"Loaded Successfully NewMod With MiraAPI Version : {MiraApiPlugin.Version} with ID : {MiraApiPlugin.Id}");
+        Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version} with ID : {MiraApiPlugin.Id}");
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole(); 
     }
     public static void CheckVersionCompatibility()
@@ -95,16 +97,10 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     [HarmonyPatch(typeof(CustomMurderRpc), nameof(CustomMurderRpc.RpcCustomMurder))]
     public static class CustomMurderPatch
     {
-     public static void Postfix(PlayerControl target,
-        bool didSucceed,
-        bool resetKillTimer,
-        bool createDeadBody,
-        bool teleportMurderer,
-        bool showKillAnim,
-        bool playKillSound)
-      {
-         Utils.RecordOnKill(PlayerControl.LocalPlayer, target);
-      }
+     public static void Postfix(PlayerControl target, bool didSucceed, bool resetKillTimer, bool createDeadBody, bool teleportMurderer, bool showKillAnim, bool playKillSound)
+     {
+       Utils.RecordOnKill(PlayerControl.LocalPlayer, target);
+     }
    }
    
     [HarmonyPatch(typeof(TaskPanelBehaviour), nameof(TaskPanelBehaviour.SetTaskText))]

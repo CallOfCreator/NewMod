@@ -4,7 +4,7 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using NewMod.Roles.CrewmateRoles;
 
-namespace NewMod.Options.Roles.ImageCollectorOptions
+namespace NewMod.Options.Roles.VisionaryOptions
 {
     public class VisionaryOptions : AbstractOptionGroup
     {

@@ -8,6 +8,7 @@ using AmongUs.GameOptions;
 using MiraAPI.Networking;
 using NewMod.Roles.NeutralRoles;
 using MiraAPI.Roles;
+using System.Collections;
 
 namespace NewMod.Utilities
 {
@@ -20,7 +21,6 @@ namespace NewMod.Utilities
         public static HashSet<PlayerControl> waitingPlayers = new();
         public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles = new Dictionary<byte, List<RoleBehaviour>>();
         public static Dictionary<byte, TMPro.TextMeshPro> MissionTimer = new Dictionary<byte, TMPro.TextMeshPro>(); 
-        public static Dictionary<PlayerControl, bool> activeMissions = new Dictionary<PlayerControl, bool>();
     
         /// <summary>
         /// Retrieves a PlayerControl instance by its player ID.
@@ -436,25 +436,9 @@ namespace NewMod.Utilities
             }
             return selectedMission;
         }
-        public static bool HasActiveMission(PlayerControl target)
-        {
-            return activeMissions.ContainsKey(target) && activeMissions[target];
-        }
-        public static void SetActiveMission(PlayerControl target, bool isActive)
-        {
-            if (activeMissions.ContainsKey(target))
-            {
-                activeMissions[target] = isActive;
-            }
-            else
-            {
-                activeMissions.Add(target, isActive);
-            }
-        }
         public static void MissionSuccess(PlayerControl target, PlayerControl specialAgent)
         {
            RecordMissionSuccess(specialAgent);
-           SetActiveMission(target, false);
 
            if (specialAgent.AmOwner)
            {
@@ -471,11 +455,14 @@ namespace NewMod.Utilities
              target.myTasks = savedTasks[target];
              savedTasks.Remove(target);
            }
+           if (SpecialAgent.AssignedPlayer = target)
+           {
+            SpecialAgent.AssignedPlayer = null;
+           }
         }
         public static void MissionFails(PlayerControl target, PlayerControl specialAgent)
         {
            RecordMissionFailure(specialAgent);
-           SetActiveMission(target, true);
 
            if (specialAgent.AmOwner)
            {
@@ -485,7 +472,7 @@ namespace NewMod.Utilities
            }
            else
            {
-             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
+            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
            }
             specialAgent.RpcCustomMurder(target, createDeadBody:false, didSucceed:true, showKillAnim:false, playKillSound:true, teleportMurderer:false);
 
@@ -494,17 +481,16 @@ namespace NewMod.Utilities
                 target.myTasks = savedTasks[target];
                 savedTasks.Remove(target);
             }
+            if (SpecialAgent.AssignedPlayer = target)
+            {
+                SpecialAgent.AssignedPlayer = null;
+            }
         }
         public static Il2CppSystem.Collections.Generic.Dictionary<PlayerControl, Il2CppSystem.Collections.Generic.List<PlayerTask>> savedTasks = new();
         
         [MethodRpc((uint)CustomRPC.AssignMission)]
         public static void AssignMission(PlayerControl target)
         {
-            if (HasActiveMission(target))
-            {
-                return;
-            }
-            SetActiveMission(target, true);
             // Save the target's tasks
             if (!savedTasks.ContainsKey(target))
             {
@@ -545,6 +531,20 @@ namespace NewMod.Utilities
                 (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]); 
             }
             return shuffled;
+        }
+        public static IEnumerator CaptureScreenshot()
+        {
+            string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            string filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
+
+            HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
+            ScreenCapture.CaptureScreenshot(filePath, 4);
+            VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);
+            NewMod.Instance.Log.LogInfo($"Capturing screenshot at {System.IO.Path.GetFileName(filePath)}.");
+
+            yield return new WaitForSeconds(0.2f);
+
+            HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
         }
     }
 }

@@ -21,7 +21,7 @@ public class TheVisionary : CrewmateRole, ICustomRole
         CanGetKilled = true,
         UseVanillaKillButton = false,
         CanUseVent = false,
-        TasksCountForProgress = false,
+        TasksCountForProgress = true,
         Icon = MiraAssets.Empty,
         OptionsScreenshot  = MiraAssets.Empty,
         CanModifyChance = true,

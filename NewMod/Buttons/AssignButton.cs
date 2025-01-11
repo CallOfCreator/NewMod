@@ -32,10 +32,7 @@ namespace NewMod.Buttons
         }
         public override bool CanUse()
         {
-            bool isTimerDone = Timer <= 0;
-            bool hasUsesLeft = UsesLeft > 0;
-
-            return isTimerDone && hasUsesLeft && !Utils.HasActiveMission(targetPlayer?.Object);
+            return SpecialAgent.AssignedPlayer == null; // FALSE OR TRUE
         }
         protected override void OnClick()
         {
@@ -89,9 +86,9 @@ namespace NewMod.Buttons
 
                 panel.SetPlayer(i, playerInfo, (Il2CppSystem.Action)(() =>
                 {
-                    targetPlayer = playerInfo;
+                    SpecialAgent.AssignedPlayer = playerInfo.Object;
 
-                    Utils.AssignMission(targetPlayer.Object);
+                    Utils.AssignMission(playerInfo.Object);
 
                     if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
                     {
@@ -110,7 +107,6 @@ namespace NewMod.Buttons
                 uiElements.Add(panel.Button);
             }
 
-            
             ControllerManager.Instance.OpenOverlayMenu(
                 minigame.name,
                 minigame.BackButton,
