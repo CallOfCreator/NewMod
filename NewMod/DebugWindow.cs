@@ -5,7 +5,9 @@ using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Buttons;
 using NewMod.Modifiers;
-using NewMod.Roles;
+using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
 using Reactor.Utilities.Attributes;
 using Reactor.Utilities.ImGui;
 using UnityEngine;
@@ -56,6 +58,11 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
             if (!isFreeplay) return;
             PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<EnergyThief>(), false);
          }
+         if (GUILayout.Button("Become SpecialAgent"))
+         {
+            if (!isFreeplay) return;
+             PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<SpecialAgent>(), false);
+         }
          if (GUILayout.Button("Force Start Game"))
          {
             if (GameOptionsManager.Instance.CurrentGameOptions.NumImpostors is 1) return;
@@ -71,6 +78,19 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
             else if (player.Data.Role is EnergyThief)
             {
                CustomButtonSingleton<DrainButton>.Instance.IncreaseUses(3);
+            }
+            else if (player.Data.Role is SpecialAgent)
+            {
+               CustomButtonSingleton<AssignButton>.Instance.IncreaseUses(3);
+            }
+            else if (player.Data.Role is Prankster)
+            {
+               CustomButtonSingleton<FakeBodyButton>.Instance.IncreaseUses(3);
+            }
+            else
+            {
+               CustomButtonSingleton<CaptureButton>.Instance.IncreaseUses(3);
+               CustomButtonSingleton<ShowScreenshotButton>.Instance.IncreaseUses(3);
             }
          }
     });

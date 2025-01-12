@@ -1,13 +1,14 @@
 using UnityEngine;
 using HarmonyLib;
-using NewMod.Roles;
-using NewMod.Buttons;
+using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using System.Linq;
 using MiraAPI.Roles;
-using MiraAPI.Hud;
 using AmongUs.GameOptions;
 using Object = UnityEngine.Object;
+using MiraAPI.GameOptions;
+using NewMod.Options.Roles.SpecialAgentOptions;
 
 namespace NewMod.Patches
 {
@@ -91,7 +92,16 @@ namespace NewMod.Patches
                     customWinColor = GetRoleColor(GetRoleType<DoubleAgent>());
                     __instance.BackgroundBar.material.SetColor("_Color", customWinColor);
                     break;
-
+                case (GameOverReason)NewModEndReasons.PranksterWin:
+                    customWinText = "Prankster Win!";
+                    customWinColor = GetRoleColor(GetRoleType<Prankster>());
+                    __instance.BackgroundBar.material.SetColor("_Color", customWinColor);
+                    break;
+                case (GameOverReason)NewModEndReasons.SpecialAgentWin:
+                    customWinText = "Special Agent Victory";
+                    customWinColor = GetRoleColor(GetRoleType<SpecialAgent>());
+                    __instance.BackgroundBar.material.SetColor("_Color", customWinColor);
+                    break;
                 default:
                     customWinText = string.Empty;
                     customWinColor = Color.white;
@@ -171,6 +181,8 @@ namespace NewMod.Patches
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
             if (CheckEndGameForEnergyThief(__instance)) return false;
             if (CheckEndGameForDoubleAgent(__instance)) return false;
+            if (CheckEndGameForPrankster(__instance)) return false;
+            if (CheckEndGameForSpecialAgent(__instance)) return false;
             return true;
         } 
 
@@ -202,6 +214,38 @@ namespace NewMod.Patches
                         return true;
                     }
                 }
+            return false;
+        }
+        public static bool CheckEndGameForPrankster(ShipStatus __instance)
+        {
+             if (PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.Data.Role is Prankster)
+             {
+                int WinReportCount = 2;
+                int currentReportCount = PranksterUtilities.GetReportCount(PlayerControl.LocalPlayer.PlayerId);
+                if (currentReportCount >= WinReportCount)
+                {
+                   GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.PranksterWin, false);
+                   StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.PranksterWin, (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<Prankster>());
+                   return true;
+                }
+             }
+             return false;
+        }
+        public static bool CheckEndGameForSpecialAgent(ShipStatus __instance)
+        {
+             if (PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.Data.Role is SpecialAgent)
+             {
+                int missionSuccessCount = Utils.GetMissionSuccessCount(PlayerControl.LocalPlayer.PlayerId);
+                int missionFailureCount = Utils.GetMissionFailureCount(PlayerControl.LocalPlayer.PlayerId);
+                int netScore = missionSuccessCount - missionFailureCount;
+
+                 if (netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin)
+                 {
+                    GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.SpecialAgentWin, false);
+                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.SpecialAgentWin, (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<SpecialAgent>());
+                    return true;
+                 }
+            }
             return false;
         }
     }

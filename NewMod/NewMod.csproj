@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<VersionPrefix>1.0.0</VersionPrefix>
+		<VersionPrefix>1.1.0</VersionPrefix>
 		<VersionSuffix>dev</VersionSuffix>
 		<Description>Among Us Mod</Description>
 		<Authors>CallofCreator</Authors>
@@ -10,16 +10,20 @@
     </PropertyGroup>
 	
 	<ItemGroup>
+	    <PackageReference Include="Reactor" Version="2.3.1" />
         <PackageReference Include="AllOfUs.MiraAPI" Version="0.1.9"/>
-        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.9.4" />
+        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.10.29" />
 		<PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" PrivateAssets="all" />
 		<PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1" PrivateAssets="all" ExcludeAssets="runtime" />
 		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.725" />
-		<PackageReference Include="Reactor" Version="2.3.1" />
 	</ItemGroup>	
 	
 	<ItemGroup>
         <EmbeddedResource Include="Resources\optionImage.png" />
         <EmbeddedResource Include="Resources\Revive2.png" />
+		<EmbeddedResource Include="Resources\deadbody.png" />
+		<EmbeddedResource Include="Resources\Arrow.png" />
+		<EmbeddedResource Include="Resources\Logo.png" />
+		<EmbeddedResource Include="Resources\cam.png" />
     </ItemGroup>
 </Project>

@@ -1,14 +1,12 @@
-using MiraAPI.Hud;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
-using NewMod.Buttons;
 using UnityEngine;
 
-namespace NewMod.Roles;
+namespace NewMod.Roles.NeutralRoles;
 
 [RegisterCustomRole]
-public class EnergyThief : ImpostorRole, ICustomRole
+public class EnergyThief : CrewmateRole, ICustomRole
 {  
     public string RoleName => "EnergyThief";
     public string RoleDescription => "Drains energy from others, making them weak";

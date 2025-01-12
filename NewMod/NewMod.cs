@@ -1,19 +1,23 @@
 using System.Linq;
+using System.IO;
+using UnityEngine;
+using Object = UnityEngine.Object;
+using BepInEx;
+using BepInEx.Unity.IL2CPP;
+using BepInEx.Configuration;
 using MiraAPI;
 using MiraAPI.Networking;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
-using BepInEx;
-using BepInEx.Unity.IL2CPP;
-using BepInEx.Configuration;
+using MiraAPI.Utilities;
 using Reactor;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
-using UnityEngine;
-using Object = UnityEngine.Object;
+using HarmonyLib;
 using NewMod.Options;
 using NewMod.Utilities;
-using HarmonyLib;
+using NewMod.Roles.ImpostorRoles;
+using Sentry.Unity;
 
 namespace NewMod;
 
@@ -25,11 +29,11 @@ namespace NewMod;
 public partial class NewMod : BasePlugin, IMiraPlugin
 {
     public const string Id = "com.callofcreator.newmod";
-    public const string ModVersion = "1.0.0";
+    public const string ModVersion = "1.1.0";
     public Harmony Harmony { get; } = new Harmony(Id);
     public static BasePlugin Instance;
     public static Minigame minigame;
-    public const string SupportedAmongUsVersion = "2024.10.29";
+    public const string SupportedAmongUsVersion = "2024.11.26";
     public static ConfigEntry<bool> ShouldEnableBepInExConsole {get; set;}
     public ConfigFile GetConfigFile() => Config;
     public string OptionsTitleText => "NewMod"; 
@@ -41,7 +45,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         Harmony.PatchAll();
         CheckVersionCompatibility();
         ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", false, "Whether to enable BepInEx Console for debugging");
-        Instance.Log.LogMessage($"Loaded Successfully NewMod With MiraAPI Version : {MiraApiPlugin.Version} with ID : {MiraApiPlugin.Id}");
+        Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version} with ID : {MiraApiPlugin.Id}");
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole(); 
     }
     public static void CheckVersionCompatibility()
@@ -72,15 +76,20 @@ public partial class NewMod : BasePlugin, IMiraPlugin
                  minigame = Object.Instantiate(cam.MinigamePrefab, Camera.main.transform, false);
                  minigame.transform.localPosition = new Vector3(0f, 0f, -50f);
                  minigame.Begin(null);
-                 Instance.Log.LogDebug("Open Cams");
-              }   
+              }
            }
-           if (Input.GetKeyDown(KeyCode.F4) && PlayerControl.LocalPlayer.Data.Role is not CrewmateRole && OptionGroupSingleton<GeneralOption>.Instance.EnableTeleportation)
+           if (Input.GetKeyDown(KeyCode.F4) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole && OptionGroupSingleton<GeneralOption>.Instance.EnableTeleportation)
            {
-              var rand = Utils.GetRandomPlayer();
-              if (rand != null)
+              var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
+              if (deadBodies != null && deadBodies.Count > 0)
               {
-                PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(rand.GetTruePosition());
+               var randomIndex = Random.Range(0, deadBodies.Count);
+               var randomBodyPosition = deadBodies[randomIndex].transform.position;
+               PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(randomBodyPosition);
+              }
+              else
+              {
+               CoroutinesHelper.CoNotify("<b><color=#FF0000>No dead bodies nearby to teleport to.</color></b>");
               }
            }
     }
@@ -88,16 +97,10 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     [HarmonyPatch(typeof(CustomMurderRpc), nameof(CustomMurderRpc.RpcCustomMurder))]
     public static class CustomMurderPatch
     {
-     public static void Postfix(PlayerControl target,
-        bool didSucceed,
-        bool resetKillTimer,
-        bool createDeadBody,
-        bool teleportMurderer,
-        bool showKillAnim,
-        bool playKillSound)
-      {
-         Utils.RecordOnKill(PlayerControl.LocalPlayer, target);
-      }
+     public static void Postfix(PlayerControl target, bool didSucceed, bool resetKillTimer, bool createDeadBody, bool teleportMurderer, bool showKillAnim, bool playKillSound)
+     {
+       Utils.RecordOnKill(PlayerControl.LocalPlayer, target);
+     }
    }
    
     [HarmonyPatch(typeof(TaskPanelBehaviour), nameof(TaskPanelBehaviour.SetTaskText))]

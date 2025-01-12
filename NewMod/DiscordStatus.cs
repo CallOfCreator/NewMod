@@ -38,7 +38,7 @@ namespace NewMod
                     }
                 }
                 
-                activity.Assets.SmallText = "New Mod Made With MiraAPI";
+                activity.Assets.SmallText = "NewMod Made With MiraAPI";
             }
             catch (System.Exception e)
             {

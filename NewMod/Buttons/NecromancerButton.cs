@@ -1,8 +1,8 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles;
-using NewMod.Roles;
+using NewMod.Options.Roles.NecromancerOptions;
+using NewMod.Roles.ImpostorRoles;
 using UnityEngine;
 using NewMod.Utilities;
 
@@ -37,6 +37,7 @@ public class NecromancerButton : CustomActionButton
             bool hasUsesLeft = UsesLeft > 0;
             var closestBody = Utils.GetClosestBody();
             bool isNearDeadBody = closestBody != null;
+            bool isFakeBody = isNearDeadBody && PranksterUtilities.IsPranksterBody(closestBody);
 
             if (closestBody == null)
             {
@@ -57,7 +58,7 @@ public class NecromancerButton : CustomActionButton
                     }
                 }
             }
-            return isTimerDone && hasUsesLeft && isNearDeadBody && wasNotKilledByNecromancer;
-        }
+            return isTimerDone && hasUsesLeft && isNearDeadBody && wasNotKilledByNecromancer && !isFakeBody;
+    }
 }
     

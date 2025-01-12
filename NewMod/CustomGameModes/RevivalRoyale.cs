@@ -6,7 +6,7 @@ using MiraAPI.Hud;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Buttons;
-using NewMod.Roles;
+using NewMod.Roles.ImpostorRoles;
 using TMPro;
 
 namespace NewMod.CustomGameModes
@@ -78,14 +78,6 @@ namespace NewMod.CustomGameModes
         public override bool AreGameSettingsEnabled()
         {
             return false;
-        }
-        public override bool AreRoleSettingsEnabled()
-        {
-            return true;
-        }
-        public override bool ShowGameModeIntroCutscene()
-        {
-            return true;
         }
         public override bool CanReport(DeadBody body)
         {
