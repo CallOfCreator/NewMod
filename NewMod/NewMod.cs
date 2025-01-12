@@ -29,7 +29,7 @@ namespace NewMod;
 public partial class NewMod : BasePlugin, IMiraPlugin
 {
     public const string Id = "com.callofcreator.newmod";
-    public const string ModVersion = "1.0.0";
+    public const string ModVersion = "1.1.0";
     public Harmony Harmony { get; } = new Harmony(Id);
     public static BasePlugin Instance;
     public static Minigame minigame;

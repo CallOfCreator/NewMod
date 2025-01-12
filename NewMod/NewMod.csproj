@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<VersionPrefix>1.0.0</VersionPrefix>
+		<VersionPrefix>1.1.0</VersionPrefix>
 		<VersionSuffix>dev</VersionSuffix>
 		<Description>Among Us Mod</Description>
 		<Authors>CallofCreator</Authors>
