@@ -32,7 +32,7 @@ namespace NewMod.Buttons
         }
         public override bool CanUse()
         {
-            return SpecialAgent.AssignedPlayer == null; // FALSE OR TRUE
+            return SpecialAgent.AssignedPlayer == null;
         }
         protected override void OnClick()
         {
@@ -88,7 +88,7 @@ namespace NewMod.Buttons
                 {
                     SpecialAgent.AssignedPlayer = playerInfo.Object;
 
-                    Utils.AssignMission(playerInfo.Object);
+                    Utils.AssignMission(SpecialAgent.AssignedPlayer);
 
                     if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
                     {

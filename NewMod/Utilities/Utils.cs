@@ -532,11 +532,10 @@ namespace NewMod.Utilities
             }
             return shuffled;
         }
-        public static IEnumerator CaptureScreenshot()
+        public static IEnumerator CaptureScreenshot(string filePath)
         {
             string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-            string filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-
+        
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
             ScreenCapture.CaptureScreenshot(filePath, 4);
             VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);

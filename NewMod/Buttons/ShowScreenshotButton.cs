@@ -12,7 +12,7 @@ using System.Linq;
 namespace NewMod.Buttons
 {
     [RegisterButton]
-    public class ShowScreenshot : CustomActionButton
+    public class ShowScreenshotButton : CustomActionButton
     {
         public override string Name => "ShowScreenshot";
         public override float Cooldown => OptionGroupSingleton<VisionaryOptions>.Instance.ScreenshotCooldown;

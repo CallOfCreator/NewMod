@@ -23,9 +23,7 @@ namespace NewMod.Patches.Roles.Visionary
                     VisionaryUtilities.ScreenshotDirectory, 
                     $"screenshot_{timestamp}.png"
                 );
-                ScreenCapture.CaptureScreenshot(filePath, 4);
-
-                VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);
+                Coroutines.Start(Utils.CaptureScreenshot(filePath));
 
                 if (__instance.myPlayer.AmOwner)
                 {
@@ -47,9 +45,7 @@ namespace NewMod.Patches.Roles.Visionary
                     VisionaryUtilities.ScreenshotDirectory, 
                     $"screenshot_{timestamp}.png"
                 );
-                ScreenCapture.CaptureScreenshot(filePath, 4);
-
-                VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);
+                Coroutines.Start(Utils.CaptureScreenshot(filePath));
 
                 if (__instance.myPlayer.AmOwner)
                 {
@@ -73,9 +69,7 @@ namespace NewMod.Patches.Roles.Visionary
                     VisionaryUtilities.ScreenshotDirectory, 
                     $"screenshot_{timestamp}.png"
                 );
-                ScreenCapture.CaptureScreenshot(filePath, 4);
-
-                VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);
+                Coroutines.Start(Utils.CaptureScreenshot(filePath));
 
                 if (PlayerControl.LocalPlayer.AmOwner)
                 {
@@ -89,21 +83,30 @@ namespace NewMod.Patches.Roles.Visionary
     {
         [HarmonyPatch(typeof(ChatController), nameof(ChatController.SetVisible))]
         [HarmonyPrefix]
-        public static bool StartPrefix(ChatController __instance, bool visible, ref bool __result)
+        public static bool StartPrefix(ChatController __instance, bool visible)
         {
             if (PlayerControl.LocalPlayer.Data.Role is not ICustomRole) return true;
+            if (MeetingHud.Instance) return true;
 
-           __result = VisionaryUtilities.CapturedScreenshotPaths.Count > 2;
-           NewMod.Instance.Log.LogMessage("SetVisible() : true");
-           return false;
+            bool allowChat = VisionaryUtilities.CapturedScreenshotPaths.Count > 2;
+            if (allowChat)
+            {
+                __instance.gameObject.SetActive(true);
+            }
+            else
+            {
+                __instance.gameObject.SetActive(false);
+            }
+            return false;
         }
-        [HarmonyPatch(typeof(ChatController), nameof(ChatController.AddChat))]
+        [HarmonyPatch(typeof(ChatController), nameof(ChatController.SendChat))]
         [HarmonyPrefix]
-        public static bool StartPrefix(ChatController __instance, [HarmonyArgument(0)] ref PlayerControl sourcePlayer, ref string chatText)
+        public static bool StartPrefix(ChatController __instance)
         {
             if (PlayerControl.LocalPlayer.Data.Role is not ICustomRole) return true;
             if (PlayerControl.LocalPlayer.Data.Role is not TheVisionary) return true;
-            
+            string chatText = __instance.freeChatField.Text;
+
             if (chatText.ToLower().StartsWith("/") && chatText.Length > 1)
             {
                 string commandPart = chatText[1..].Trim();

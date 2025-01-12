@@ -79,9 +79,18 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
             {
                CustomButtonSingleton<DrainButton>.Instance.IncreaseUses(3);
             }
-            else
+            else if (player.Data.Role is SpecialAgent)
             {
                CustomButtonSingleton<AssignButton>.Instance.IncreaseUses(3);
+            }
+            else if (player.Data.Role is Prankster)
+            {
+               CustomButtonSingleton<FakeBodyButton>.Instance.IncreaseUses(3);
+            }
+            else
+            {
+               CustomButtonSingleton<CaptureButton>.Instance.IncreaseUses(3);
+               CustomButtonSingleton<ShowScreenshotButton>.Instance.IncreaseUses(3);
             }
          }
     });

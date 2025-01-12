@@ -1,3 +1,4 @@
+using System.IO;
 using MiraAPI.Utilities.Assets;
 using MiraAPI.Hud;
 using MiraAPI.GameOptions;
@@ -20,7 +21,9 @@ namespace NewMod.Buttons
         public override ButtonLocation Location => ButtonLocation.BottomLeft;
         protected override void OnClick()
         {
-            Coroutines.Start(Utils.CaptureScreenshot());
+            var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
+            string path = Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
+            Coroutines.Start(Utils.CaptureScreenshot(path));
         }
         public override bool Enabled(RoleBehaviour role)
         {

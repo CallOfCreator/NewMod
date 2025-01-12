@@ -12,7 +12,7 @@ namespace NewMod
         {
             if (activity == null) return;
             
-            var isBeta = true;
+            var isBeta = false;
 
             string details = $"New Mod v{NewMod.ModVersion}" + (isBeta ? " (Beta)" : "(dev)");
 
