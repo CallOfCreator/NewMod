@@ -33,6 +33,7 @@
 | Mod Version | Among Us - Version | Link |
 |-------------|---------------------|------|
 | v1.0.0      | 2024.8.13 & 2024.10.29 | [Download](https://github.com/CallOfCreator/NewMod/releases/download/v1.0.0/NewMod.dll) |
+| v1.1.0      | 2024.11.26             | [Download](https://github.com/CallOfCreator/NewMod/releases/download/v1.1.0/NewMod.dll) |
 
 ---
 
@@ -69,6 +70,13 @@
          - If the target fails the mission, the Special Agent loses a point toward their win condition.
       - **📹 Surveillance Option:** The Special Agent can monitor the target through a camera if enabled.
       - **🏆 Win Condition:** Successful mission completions contribute to the Special Agent’s victory.
+
+### **7. Visionary Role**  
+- **📸 Description:** A unique Crewmate role with the ability to take in-game screenshots to capture key moments like kills, venting, or suspicious activities.  
+- **🖱️ How It Works:**  
+  - The Visionary can take multiple screenshots, but the limit depends on game settings.  
+  - If multiple screenshots are taken, the Visionary can open the in-game chat to see available screenshots (e.g., `/1`, `/2`) and select which one to display during a meeting.  
+- **🧩 Strategy:** Use screenshots to catch impostors or prove innocence.  
 
 ---
 
