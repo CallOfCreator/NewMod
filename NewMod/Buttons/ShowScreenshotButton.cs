@@ -6,7 +6,6 @@ using NewMod.Roles.CrewmateRoles;
 using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
-using System.IO;
 using System.Linq;
 
 namespace NewMod.Buttons
@@ -22,7 +21,7 @@ namespace NewMod.Buttons
         public override ButtonLocation Location => ButtonLocation.BottomRight;
         public override bool CanUse()
         {
-           return VisionaryUtilities.CapturedScreenshotPaths.Any();
+           return base.CanUse() && VisionaryUtilities.CapturedScreenshotPaths.Any();
         }
         protected override void OnClick()
         {
