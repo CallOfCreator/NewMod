@@ -4,7 +4,6 @@ using MiraAPI.Utilities.Assets;
 
 namespace NewMod.Roles.CrewmateRoles;
 
-[RegisterCustomRole]
 public class TheVisionary : CrewmateRole, ICustomRole
 {
     public string RoleName => "TheVisionary";
