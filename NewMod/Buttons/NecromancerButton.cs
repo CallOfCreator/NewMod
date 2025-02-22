@@ -7,8 +7,6 @@ using UnityEngine;
 using NewMod.Utilities;
 
 namespace NewMod.Buttons;
-
-[RegisterButton]
 public class NecromancerButton : CustomActionButton
 {
     public override string Name => ""; // It's currently empty since the button has already a name on it
@@ -19,46 +17,45 @@ public class NecromancerButton : CustomActionButton
     public override LoadableAsset<Sprite> Sprite => NewModAsset.NecromancerButton;
     protected override void OnClick()
     {
-       NewMod.Instance.Log.LogMessage("Button Clicked!");
+        NewMod.Instance.Log.LogMessage("Button Clicked!");
 
-       var closestBody = Utils.GetClosestBody();
-       if (closestBody != null)
-       {
-         Utils.RpcRevive(closestBody);
-       }
+        var closestBody = Utils.GetClosestBody();
+        if (closestBody != null)
+        {
+            Utils.RpcRevive(closestBody);
+        }
     }
     public override bool Enabled(RoleBehaviour role)
     {
-       return role is NecromancerRole;
+        return role is NecromancerRole;
     }
     public override bool CanUse()
     {
-            bool isTimerDone = Timer <= 0;
-            bool hasUsesLeft = UsesLeft > 0;
-            var closestBody = Utils.GetClosestBody();
-            bool isNearDeadBody = closestBody != null;
-            bool isFakeBody = isNearDeadBody && PranksterUtilities.IsPranksterBody(closestBody);
+        bool isTimerDone = Timer <= 0;
+        bool hasUsesLeft = UsesLeft > 0;
+        var closestBody = Utils.GetClosestBody();
+        bool isNearDeadBody = closestBody != null;
+        bool isFakeBody = isNearDeadBody && PranksterUtilities.IsPranksterBody(closestBody);
 
-            if (closestBody == null)
-            {
-                return false;
-            }
+        if (closestBody == null)
+        {
+            return false;
+        }
 
-            bool wasNotKilledByNecromancer = true;
-            var deadBody = closestBody.GetComponent<DeadBody>();
-            if (deadBody != null)
+        bool wasNotKilledByNecromancer = true;
+        var deadBody = closestBody.GetComponent<DeadBody>();
+        if (deadBody != null)
+        {
+            var killedPlayer = GameData.Instance.GetPlayerById(deadBody.ParentId)?.Object;
+            if (killedPlayer != null)
             {
-                var killedPlayer = GameData.Instance.GetPlayerById(deadBody.ParentId)?.Object;
-                if (killedPlayer != null)
+                var killer = Utils.GetKiller(killedPlayer);
+                if (killer != null && killer.Data.Role is NecromancerRole)
                 {
-                    var killer = Utils.GetKiller(killedPlayer);
-                    if (killer != null && killer.Data.Role is NecromancerRole)
-                    {
-                        wasNotKilledByNecromancer = false;
-                    }
+                    wasNotKilledByNecromancer = false;
                 }
             }
-            return isTimerDone && hasUsesLeft && isNearDeadBody && wasNotKilledByNecromancer && !isFakeBody;
+        }
+        return isTimerDone && hasUsesLeft && isNearDeadBody && wasNotKilledByNecromancer && !isFakeBody;
     }
 }
-    

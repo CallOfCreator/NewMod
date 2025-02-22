@@ -11,8 +11,7 @@ using TMPro;
 
 namespace NewMod.CustomGameModes
 {
-    [RegisterGameMode]
-    public class RevivalRoyale : CustomGameMode 
+    public class RevivalRoyale : CustomGameMode
     {
         public TextMeshPro ReviveCounter;
         public Dictionary<PlayerControl, int> playerReviveCounts = new Dictionary<PlayerControl, int>();
@@ -26,11 +25,11 @@ namespace NewMod.CustomGameModes
         {
             foreach (var player in PlayerControl.AllPlayerControls)
             {
-             player.RpcSetRole((RoleTypes)RoleId.Get<NecromancerRole>());
-             playerReviveCounts[player] = ReviveCount;
-             playerStates[player] = player.Data.IsDead; 
-             CustomButtonSingleton<NecromancerButton>.Instance.IncreaseUses(3);
-             NewMod.Instance.Log.LogMessage("Initialize RevivalRoyale GameMode done!");
+                player.RpcSetRole((RoleTypes)RoleId.Get<NecromancerRole>());
+                playerReviveCounts[player] = ReviveCount;
+                playerStates[player] = player.Data.IsDead;
+                CustomButtonSingleton<NecromancerButton>.Instance.IncreaseUses(3);
+                NewMod.Instance.Log.LogMessage("Initialize RevivalRoyale GameMode done!");
             }
         }
 

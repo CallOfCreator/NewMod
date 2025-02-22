@@ -32,7 +32,7 @@
 
 | Mod Version | Among Us - Version | Link |
 |-------------|---------------------|------|
-| v1.0.0      | 2024.8.13 & 2024.10.29 | [Download](https://github.com/CallOfCreator/NewMod/releases/download/v1.0.0/NewMod.dll) |
+| v1.0.0      | 2024.8.13 & 2024.10.29 | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.0.0/NewMod.dll) |
 | v1.1.0      | 2024.11.26             | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.1.0/NewMod.dll) |
 
 ---

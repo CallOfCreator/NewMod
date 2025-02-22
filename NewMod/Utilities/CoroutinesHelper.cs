@@ -48,8 +48,8 @@ namespace NewMod.Utilities
         {
             duration = Mathf.Min(duration, 30f);
 
-            timerLabel = Helpers.CreateTextLabel("MissionTimerText", HudManager.Instance.transform, AspectPosition.EdgeAlignments.LeftTop, new(10, 1.5f, 0f), fontSize:3f, textAlignment: TextAlignmentOptions.Left);
-     
+            timerLabel = Helpers.CreateTextLabel("MissionTimerText", HudManager.Instance.transform, AspectPosition.EdgeAlignments.RightTop, new(5f, 1.5f, 0f), fontSize: 3f, textAlignment: TextAlignmentOptions.Right);
+
             timerLabel!.text = $"Time Remaining: {duration}s";
             timerLabel.color = Color.yellow;
 
@@ -174,7 +174,7 @@ namespace NewMod.Utilities
         {
             bool revived = false;
             byte revivedParentId = 255;
-            
+
             Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Press F5 to revive a dead player!</b></i></color>"));
 
             while (true)
@@ -195,23 +195,23 @@ namespace NewMod.Utilities
                         }
                         else
                         {
-                        revivedParentId = deadBody.ParentId;
+                            revivedParentId = deadBody.ParentId;
 
-                        Utils.RpcRevive(deadBody);
-                           
-                        yield return new WaitForSeconds(0.5f);
+                            Utils.RpcRevive(deadBody);
 
-                        Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Player revived! Press F5 to kill them again!</b></i></color>"));
+                            yield return new WaitForSeconds(0.5f);
 
-                        revived = true;
-                        }      
+                            Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Player revived! Press F5 to kill them again!</b></i></color>"));
+
+                            revived = true;
+                        }
                     }
                     else
                     {
                         var revivedData = GameData.Instance.GetPlayerById(revivedParentId);
                         if (revivedData != null && revivedData.Object != null && !revivedData.Object.Data.IsDead)
                         {
-                            PlayerControl.LocalPlayer.RpcCustomMurder(revivedData.Object, createDeadBody: true, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer:false);
+                            PlayerControl.LocalPlayer.RpcCustomMurder(revivedData.Object, createDeadBody: true, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
                             Utils.MissionSuccess(target, PlayerControl.LocalPlayer);
                             yield break;
                         }

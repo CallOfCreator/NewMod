@@ -10,7 +10,6 @@ using System.Linq;
 
 namespace NewMod.Buttons
 {
-    [RegisterButton]
     public class ShowScreenshotButton : CustomActionButton
     {
         public override string Name => "ShowScreenshot";
@@ -21,7 +20,7 @@ namespace NewMod.Buttons
         public override ButtonLocation Location => ButtonLocation.BottomRight;
         public override bool CanUse()
         {
-           return base.CanUse() && VisionaryUtilities.CapturedScreenshotPaths.Any();
+            return base.CanUse() && VisionaryUtilities.CapturedScreenshotPaths.Any();
         }
         protected override void OnClick()
         {

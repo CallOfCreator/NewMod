@@ -7,7 +7,6 @@ using Reactor.Utilities;
 using AmongUs.GameOptions;
 using MiraAPI.Networking;
 using NewMod.Roles.NeutralRoles;
-using MiraAPI.Roles;
 using System.Collections;
 
 namespace NewMod.Utilities
@@ -20,8 +19,8 @@ namespace NewMod.Utilities
         public static Dictionary<byte, int> MissionFailureCount = new Dictionary<byte, int>();
         public static HashSet<PlayerControl> waitingPlayers = new();
         public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles = new Dictionary<byte, List<RoleBehaviour>>();
-        public static Dictionary<byte, TMPro.TextMeshPro> MissionTimer = new Dictionary<byte, TMPro.TextMeshPro>(); 
-    
+        public static Dictionary<byte, TMPro.TextMeshPro> MissionTimer = new Dictionary<byte, TMPro.TextMeshPro>();
+
         /// <summary>
         /// Retrieves a PlayerControl instance by its player ID.
         /// </summary>
@@ -30,7 +29,7 @@ namespace NewMod.Utilities
         //  Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
         public static PlayerControl PlayerById(byte id)
         {
-             foreach (var player in PlayerControl.AllPlayerControls)
+            foreach (var player in PlayerControl.AllPlayerControls)
                 if (player.PlayerId == id)
                     return player;
 
@@ -95,10 +94,11 @@ namespace NewMod.Utilities
         // Inspired By : https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/CrewmateRoles/AltruistMod/Coroutine.cs#L57
         public static void Revive(DeadBody body)
         {
-             if (body == null) return;
+            if (body == null) return;
 
             var parentId = body.ParentId;
             var player = PlayerById(parentId);
+            var reviveSound = NewModAsset.ReviveSound.LoadAsset();
 
             if (player != null)
             {
@@ -109,14 +109,19 @@ namespace NewMod.Utilities
                 }
 
                 player.Revive();
+
+                if (Constants.ShouldPlaySfx())
+                {
+                    SoundManager.Instance.PlaySound(reviveSound, false, 1f, null);
+                }
                 if (player.Data.Role is NoisemakerRole role)
                 {
                     Object.Destroy(role.deathArrowPrefab.gameObject);
                 }
-                player.RpcSetRole(AmongUs.GameOptions.RoleTypes.Impostor, true);
+                player.RpcSetRole(RoleTypes.Impostor, true);
             }
         }
-        
+
         // Thanks to: https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L66
         /// <summary>
         /// Checks if a particular system type is active on the current map.
@@ -126,11 +131,11 @@ namespace NewMod.Utilities
         public static bool IsActive(SystemTypes type)
         {
             int mapId = GameOptionsManager.Instance.CurrentGameOptions.MapId;
-            
+
             if (!ShipStatus.Instance.Systems.ContainsKey(type))
             {
-              return false;
-            }   
+                return false;
+            }
             switch (type)
             {
                 case SystemTypes.Electrical:
@@ -138,7 +143,7 @@ namespace NewMod.Utilities
                     var SwitchSystem = ShipStatus.Instance.Systems[type].TryCast<SwitchSystem>();
                     return SwitchSystem != null && SwitchSystem.IsActive;
                 case SystemTypes.Reactor:
-                    if (mapId == 2) return false; 
+                    if (mapId == 2) return false;
                     else
                     {
                         var ReactorSystemType = ShipStatus.Instance.Systems[type].TryCast<ReactorSystemType>();
@@ -171,10 +176,10 @@ namespace NewMod.Utilities
                     if (mapId != 5) return false;
                     var MushroomMixupSabotageSystem = ShipStatus.Instance.Systems[type].TryCast<MushroomMixupSabotageSystem>();
                     return MushroomMixupSabotageSystem != null && MushroomMixupSabotageSystem.IsActive;
-            default:
-                return false;
+                default:
+                    return false;
+            }
         }
-    }
         // Thanks to : https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L118
         /// <summary>
         /// Checks if any sabotage system is currently active.
@@ -219,16 +224,16 @@ namespace NewMod.Utilities
         }
         public static void RecordMissionSuccess(PlayerControl specialAgent)
         {
-          var playerId = specialAgent.PlayerId;
-          MissionSuccessCount[playerId] = GetMissionSuccessCount(playerId) + 1;
+            var playerId = specialAgent.PlayerId;
+            MissionSuccessCount[playerId] = GetMissionSuccessCount(playerId) + 1;
         }
         public static int GetMissionSuccessCount(byte playerId)
         {
-           return MissionSuccessCount.TryGetValue(playerId, out var count) ? count : 0;
+            return MissionSuccessCount.TryGetValue(playerId, out var count) ? count : 0;
         }
         public static void ResetMissionSuccessCount()
         {
-            MissionSuccessCount.Clear();     
+            MissionSuccessCount.Clear();
         }
         public static void RecordMissionFailure(PlayerControl specialAgent)
         {
@@ -281,19 +286,19 @@ namespace NewMod.Utilities
         /// <returns>A list of RoleBehaviour representing the player's role history.</returns>
         public static List<RoleBehaviour> GetPlayerRolesHistory(byte playerId)
         {
-             if (savedPlayerRoles.ContainsKey(playerId))
-             {
+            if (savedPlayerRoles.ContainsKey(playerId))
+            {
                 return savedPlayerRoles[playerId];
-             }
-             return new List<RoleBehaviour>();
+            }
+            return new List<RoleBehaviour>();
         }
         /// <summary>
-        /// Retrieves a random player from the game who is alive and not disconnected.
+        /// Retrieves a random player from the game meets a specified condition.
         /// </summary>
         /// <returns>A random PlayerControl instance, or null if none are valid.</returns>
-        public static PlayerControl GetRandomPlayer()
+        public static PlayerControl GetRandomPlayer(System.Predicate<PlayerControl> match)
         {
-            var players = PlayerControl.AllPlayerControls.ToArray().Where(p => !p.Data.IsDead && !p.Data.Disconnected).ToList();
+            var players = PlayerControl.AllPlayerControls.ToArray().Where(p => match(p)).ToList();
 
             if (players.Count > 0)
             {
@@ -309,7 +314,7 @@ namespace NewMod.Utilities
         [MethodRpc((uint)CustomRPC.Drain)]
         public static void RpcRandomDrainActions(PlayerControl source, PlayerControl target)
         {
-            List<System.Action> actions = new List<System.Action>
+            List<System.Action> actions = new()
             {
                 () =>
                 {
@@ -349,7 +354,7 @@ namespace NewMod.Utilities
                 },
                 () =>
                 {
-                    var randomPlayer = GetRandomPlayer();
+                    var randomPlayer = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
                     if (randomPlayer != null)
                     {
                         target.NetTransform.RpcSnapTo(randomPlayer.GetTruePosition());
@@ -366,115 +371,116 @@ namespace NewMod.Utilities
         }
         public static string GetMission(PlayerControl target, MissionType mission)
         {
-           var mostwantedTarget = GetRandomPlayer();
+            var mostwantedTarget = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
 
             string selectedMission = mission switch
-           {
-            MissionType.KillMostWanted => $"Kill the Most Wanted Target: {mostwantedTarget.Data.PlayerName}",
-            MissionType.DrainEnergy => "Drain one player using Energy Thief abilities",
-            MissionType.CreateFakeBodies => "Disguise yourself as a random player and create fake dead bodies around the map using Prankster abilities!",
-            MissionType.ReviveAndKill => "Revive a dead player using Necromancer powers and kill them again",
-            _ => "Unknown mission."
-          };
+            {
+                MissionType.KillMostWanted => $"Kill the Most Wanted Target: {mostwantedTarget.Data.PlayerName}",
+                MissionType.DrainEnergy => "Drain one player using Energy Thief abilities",
+                MissionType.CreateFakeBodies => "Disguise yourself as a random player and create fake dead bodies around the map using Prankster abilities!",
+                MissionType.ReviveAndKill => "Revive a dead player using Necromancer powers and kill them again",
+                _ => "Unknown mission."
+            };
             switch (mission)
             {
-             case MissionType.KillMostWanted:
-             // Set up arrow for most wanted target
-             var gameObj = new GameObject();
-             var arrow = gameObj.AddComponent<ArrowBehaviour>();
-             gameObj.transform.parent = mostwantedTarget.gameObject.transform;
-             gameObj.layer = 5;
-             var renderer = gameObj.AddComponent<SpriteRenderer>();
-             renderer.sprite = NewModAsset.Arrow.LoadAsset();
-             arrow.target = mostwantedTarget.transform.position;
-             arrow.image = renderer;
-             
-             // Save the current role of the target
-             SavePlayerRole(target.PlayerId, target.Data.Role);
+                case MissionType.KillMostWanted:
+                    // Set up arrow for most wanted target
+                    var gameObj = new GameObject();
+                    var arrow = gameObj.AddComponent<ArrowBehaviour>();
+                    gameObj.transform.parent = mostwantedTarget.gameObject.transform;
+                    gameObj.layer = 5;
+                    var renderer = gameObj.AddComponent<SpriteRenderer>();
+                    renderer.sprite = NewModAsset.Arrow.LoadAsset();
+                    arrow.target = mostwantedTarget.transform.position;
+                    arrow.image = renderer;
 
-             if (!target.Data.Role.IsImpostor)
-             {
-               target.RpcSetRole(RoleTypes.Impostor, true);
-             }
-             Coroutines.Start(CoroutinesHelper.CoHandleWantedTarget(arrow, mostwantedTarget, target));
+                    // Save the current role of the target
+                    SavePlayerRole(target.PlayerId, target.Data.Role);
 
-             var rolesHistory = GetPlayerRolesHistory(target.PlayerId);
-             if (rolesHistory.Count > 0)
-             {
-                var lastIndex = rolesHistory.Count - 1;
-                var originalRole = rolesHistory[lastIndex];
-                rolesHistory.RemoveAt(lastIndex);
-                target.RpcSetRole(originalRole.Role, true);
-             }
-             break;
-          
-             case MissionType.CreateFakeBodies:
-             // Disguise as a random player
-             var randPlayer = GetRandomPlayer();
-             target.RpcShapeshift(randPlayer, false);
+                    if (!target.Data.Role.IsImpostor)
+                    {
+                        target.RpcSetRole(RoleTypes.Impostor, true);
+                    }
+                    Coroutines.Start(CoroutinesHelper.CoHandleWantedTarget(arrow, mostwantedTarget, target));
 
-             if (target.AmOwner)
-             {
-                 Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
-             }
-             Coroutines.Start(CoroutinesHelper.UsePranksterAbilities(target));
-             break;
+                    var rolesHistory = GetPlayerRolesHistory(target.PlayerId);
+                    if (rolesHistory.Count > 0)
+                    {
+                        var lastIndex = rolesHistory.Count - 1;
+                        var originalRole = rolesHistory[lastIndex];
+                        rolesHistory.RemoveAt(lastIndex);
+                        target.RpcSetRole(originalRole.Role, true);
+                    }
+                    break;
 
-             case MissionType.DrainEnergy:
+                case MissionType.CreateFakeBodies:
+                    // Disguise as a random player
+                    var randPlayer = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
+                    target.RpcShapeshift(randPlayer, false);
 
-             if (target.AmOwner)
-             {
-               Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain nearby players'energy</b></i></color>"));
-             }
-             Coroutines.Start(CoroutinesHelper.UseEnergyThiefAbilities(target));
-            break;
+                    if (target.AmOwner)
+                    {
+                        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
+                    }
+                    Coroutines.Start(CoroutinesHelper.UsePranksterAbilities(target));
+                    break;
 
-            case MissionType.ReviveAndKill:
+                case MissionType.DrainEnergy:
 
-            Coroutines.Start(CoroutinesHelper.CoReviveAndKill(target));
-            break;
+                    if (target.AmOwner)
+                    {
+                        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain nearby players'energy</b></i></color>"));
+                    }
+                    Coroutines.Start(CoroutinesHelper.UseEnergyThiefAbilities(target));
+                    break;
+
+                case MissionType.ReviveAndKill:
+
+                    Coroutines.Start(CoroutinesHelper.CoReviveAndKill(target));
+                    break;
             }
             return selectedMission;
         }
         public static void MissionSuccess(PlayerControl target, PlayerControl specialAgent)
         {
-           RecordMissionSuccess(specialAgent);
+            RecordMissionSuccess(specialAgent);
 
-           if (specialAgent.AmOwner)
-           {
-              int currentSuccessCount = GetMissionSuccessCount(specialAgent.PlayerId);
-              int netScore = currentSuccessCount - GetMissionFailureCount(specialAgent.PlayerId);
-              Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD700>Target {target.Data.PlayerName} has completed their mission!\nCurrent net score: {netScore}/3</color>"));
-           }
-           else
-           {
-             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32>Mission Completed! You are free to go!</color>"));
-           }
-           if (savedTasks.ContainsKey(target))
-           {
-             target.myTasks = savedTasks[target];
-             savedTasks.Remove(target);
-           }
-           if (SpecialAgent.AssignedPlayer = target)
-           {
-            SpecialAgent.AssignedPlayer = null;
-           }
+            if (specialAgent.AmOwner)
+            {
+                int currentSuccessCount = GetMissionSuccessCount(specialAgent.PlayerId);
+                int netScore = currentSuccessCount - GetMissionFailureCount(specialAgent.PlayerId);
+                Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD700>Target {target.Data.PlayerName} has completed their mission!\nCurrent net score: {netScore}/3</color>"));
+            }
+            else
+            {
+                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32>Mission Completed! You are free to go!</color>"));
+            }
+            if (savedTasks.ContainsKey(target))
+            {
+                target.myTasks = savedTasks[target];
+                savedTasks.Remove(target);
+            }
+            if (SpecialAgent.AssignedPlayer = target)
+            {
+                SpecialAgent.AssignedPlayer = null;
+            }
+            target.Data.Role.buttonManager.SetEnabled();
         }
         public static void MissionFails(PlayerControl target, PlayerControl specialAgent)
         {
-           RecordMissionFailure(specialAgent);
+            RecordMissionFailure(specialAgent);
 
-           if (specialAgent.AmOwner)
-           {
-             int currentFailureCount = GetMissionFailureCount(specialAgent.PlayerId);
-             int netScore = GetMissionSuccessCount(specialAgent.PlayerId) - currentFailureCount;
-             Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF0000>Target {target.Data.PlayerName} has failed their mission! <b>Current net score: {netScore}/3</b></color>"));
-           }
-           else
-           {
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
-           }
-            specialAgent.RpcCustomMurder(target, createDeadBody:false, didSucceed:true, showKillAnim:false, playKillSound:true, teleportMurderer:false);
+            if (specialAgent.AmOwner)
+            {
+                int currentFailureCount = GetMissionFailureCount(specialAgent.PlayerId);
+                int netScore = GetMissionSuccessCount(specialAgent.PlayerId) - currentFailureCount;
+                Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF0000>Target {target.Data.PlayerName} has failed their mission! <b>Current net score: {netScore}/3</b></color>"));
+            }
+            else
+            {
+                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
+            }
+            specialAgent.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
 
             if (savedTasks.ContainsKey(target))
             {
@@ -485,57 +491,50 @@ namespace NewMod.Utilities
             {
                 SpecialAgent.AssignedPlayer = null;
             }
+            target.Data.Role.buttonManager.SetEnabled();
         }
         public static Il2CppSystem.Collections.Generic.Dictionary<PlayerControl, Il2CppSystem.Collections.Generic.List<PlayerTask>> savedTasks = new();
-        
+
         [MethodRpc((uint)CustomRPC.AssignMission)]
         public static void AssignMission(PlayerControl target)
         {
             // Save the target's tasks
             if (!savedTasks.ContainsKey(target))
             {
-               var newTaskList = new Il2CppSystem.Collections.Generic.List<PlayerTask>();
-               
-               foreach (var task in target.myTasks)
-               {
-                 newTaskList.Add(task);
-               }
-               savedTasks[target] = newTaskList;
+                var newTaskList = new Il2CppSystem.Collections.Generic.List<PlayerTask>();
+
+                foreach (var task in target.myTasks)
+                {
+                    newTaskList.Add(task);
+                }
+                savedTasks[target] = newTaskList;
             }
 
-           // Clear all assigned tasks for the specified target player
-           target.myTasks.Clear();
-           
-           // Get all values of the MissionType enum
-           MissionType[] missions = (MissionType[])System.Enum.GetValues(typeof(MissionType));
-           // Pick a random mission
-           MissionType randomMission = missions[Random.Range(0, missions.Length)]; 
-           
-           // Add the mission message to the player's tasks
-           ImportantTextTask Missionmessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
-           Missionmessage.transform.SetParent(AmongUsClient.Instance.transform, false);
-           Missionmessage.Text = $"<color=red>Special Agent</color> has given you a mission!\n" +
-                      $"<b><color=blue>Mission:</color></b> {GetMission(target, randomMission)}\n" +
-                      $"<i><color=green>Complete it or face the consequences!</color></i>";
+            // Clear all assigned tasks for the specified target player
+            target.myTasks.Clear();
 
-           target.myTasks.Insert(0, Missionmessage);
+            // Get all values of the MissionType enum
+            MissionType[] missions = (MissionType[])System.Enum.GetValues(typeof(MissionType));
+            // Pick a random mission
+            MissionType randomMission = missions[Random.Range(0, missions.Length)];
 
-           Coroutines.Start(CoroutinesHelper.CoMissionTimer(target, 60f));
-        }
-        public static Color32[] ShuffleArrays(Color32[] array)
-        {
-            Color32[] shuffled = array.Clone() as Color32[];
-            for (int i = shuffled.Length - 1; i > 0; i--)
-            {
-                int j = Random.Range(0, i + 1);
-                (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]); 
-            }
-            return shuffled;
+            // Add the mission message to the player's tasks
+            ImportantTextTask Missionmessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
+            Missionmessage.transform.SetParent(AmongUsClient.Instance.transform, false);
+            Missionmessage.Text = $"<color=red>Special Agent</color> has given you a mission!\n" +
+                       $"<b><color=blue>Mission:</color></b> {GetMission(target, randomMission)}\n" +
+                       $"<i><color=green>Complete it or face the consequences!</color></i>";
+
+            target.myTasks.Insert(0, Missionmessage);
+            // Disable the Role Player's Ability
+            target.Data.Role.buttonManager.SetDisabled();
+
+            Coroutines.Start(CoroutinesHelper.CoMissionTimer(target, 60f));
         }
         public static IEnumerator CaptureScreenshot(string filePath)
         {
             string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-        
+
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
             ScreenCapture.CaptureScreenshot(filePath, 4);
             VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);

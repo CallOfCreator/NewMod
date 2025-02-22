@@ -9,19 +9,18 @@ using NewMod.Utilities;
 
 namespace NewMod.Buttons
 {
-    [RegisterButton]
     public class FakeBodyButton : CustomActionButton
     {
-       public override string Name => "Prank";
-       public override float Cooldown => OptionGroupSingleton<PranksterOptions>.Instance.PrankCooldown;
-       public override int MaxUses => (int)OptionGroupSingleton<PranksterOptions>.Instance.PrankMaxUses;
-       public override ButtonLocation Location => ButtonLocation.BottomRight;
-       public override float EffectDuration => 0f;
-       public override LoadableAsset<Sprite> Sprite => NewModAsset.DeadBodySprite;
-       protected override void OnClick()
-       {
-         PranksterUtilities.CreatePranksterDeadBody(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.PlayerId);
-       }
+        public override string Name => "Prank";
+        public override float Cooldown => OptionGroupSingleton<PranksterOptions>.Instance.PrankCooldown;
+        public override int MaxUses => (int)OptionGroupSingleton<PranksterOptions>.Instance.PrankMaxUses;
+        public override ButtonLocation Location => ButtonLocation.BottomRight;
+        public override float EffectDuration => 0f;
+        public override LoadableAsset<Sprite> Sprite => NewModAsset.DeadBodySprite;
+        protected override void OnClick()
+        {
+            PranksterUtilities.CreatePranksterDeadBody(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.PlayerId);
+        }
         public override bool Enabled(RoleBehaviour role)
         {
             return role is Prankster;

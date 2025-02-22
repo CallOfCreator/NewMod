@@ -10,7 +10,6 @@ using NewMod.Utilities;
 
 namespace NewMod.Buttons
 {
-    [RegisterButton]
     public class CaptureButton : CustomActionButton
     {
         public override string Name => "Capture";

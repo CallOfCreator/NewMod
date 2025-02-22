@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles;
 
-[RegisterCustomRole]
 public class EnergyThief : CrewmateRole, ICustomRole
 {  
     public string RoleName => "EnergyThief";
     public string RoleDescription => "Drains energy from others, making them weak";
     public string RoleLongDescription => $"The Energy Thief can drain energy from Crewmates or Impostors, weakening them and gaining temporary buffs\nDrain 3 players to win.";
     public Color RoleColor => Color.magenta.GetAlternateColor();
-    public ModdedRoleTeams Team => ModdedRoleTeams.Neutral;
+    public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
+    public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
     public CustomRoleConfiguration Configuration => new(this)
     {
         MaxRoleCount = 5,
