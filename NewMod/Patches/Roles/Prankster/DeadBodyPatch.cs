@@ -1,4 +1,5 @@
 using HarmonyLib;
+using MiraAPI.Networking;
 using NewMod.Utilities;
 
 namespace NewMod.Patches.Roles.Prankster
@@ -11,8 +12,8 @@ namespace NewMod.Patches.Roles.Prankster
             if (!__instance.Reported && PranksterUtilities.IsPranksterBody(__instance))
             {
                 var reporter = PlayerControl.LocalPlayer;
-
-                reporter.RpcMurderPlayer(reporter, true);
+            
+                reporter.RpcCustomMurder(reporter, true, teleportMurderer:false, showKillAnim:true);
 
                 byte pranksterId = __instance.ParentId;
 

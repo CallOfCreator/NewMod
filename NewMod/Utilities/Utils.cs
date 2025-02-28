@@ -107,13 +107,10 @@ namespace NewMod.Utilities
                     if (deadBody.ParentId == body.ParentId)
                         Object.Destroy(deadBody.gameObject);
                 }
-
+                SoundManager.Instance.PlaySound(reviveSound, false, 1f, null);
+                
                 player.Revive();
 
-                if (Constants.ShouldPlaySfx())
-                {
-                    SoundManager.Instance.PlaySound(reviveSound, false, 1f, null);
-                }
                 if (player.Data.Role is NoisemakerRole role)
                 {
                     Object.Destroy(role.deathArrowPrefab.gameObject);
@@ -306,6 +303,17 @@ namespace NewMod.Utilities
             }
             return null;
         }
+        public static PlayerControl AnyDeadPlayer()
+        {
+            foreach (var player in PlayerControl.AllPlayerControls)
+            {
+                if (player.Data.IsDead)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
         /// <summary>
         /// Performs a random draining action on a target player as part of a custom RPC.
         /// </summary>
@@ -415,9 +423,8 @@ namespace NewMod.Utilities
 
                 case MissionType.CreateFakeBodies:
                     // Disguise as a random player
-                    var randPlayer = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
-                    target.RpcShapeshift(randPlayer, false);
-
+                    //var randPlayer = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
+                    //target.RpcShapeshift(randPlayer, false);
                     if (target.AmOwner)
                     {
                         Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
@@ -460,7 +467,7 @@ namespace NewMod.Utilities
                 target.myTasks = savedTasks[target];
                 savedTasks.Remove(target);
             }
-            if (SpecialAgent.AssignedPlayer = target)
+            if (SpecialAgent.AssignedPlayer == target)
             {
                 SpecialAgent.AssignedPlayer = null;
             }
@@ -487,7 +494,7 @@ namespace NewMod.Utilities
                 target.myTasks = savedTasks[target];
                 savedTasks.Remove(target);
             }
-            if (SpecialAgent.AssignedPlayer = target)
+            if (SpecialAgent.AssignedPlayer == target)
             {
                 SpecialAgent.AssignedPlayer = null;
             }
@@ -533,8 +540,6 @@ namespace NewMod.Utilities
         }
         public static IEnumerator CaptureScreenshot(string filePath)
         {
-            string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
             ScreenCapture.CaptureScreenshot(filePath, 4);
             VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);

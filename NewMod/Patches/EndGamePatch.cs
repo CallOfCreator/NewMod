@@ -10,7 +10,6 @@ using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using NewMod.Options.Roles.SpecialAgentOptions;
 using MiraAPI.GameOptions;
-using MiraAPI.Events;
 
 namespace NewMod.Patches
 {
@@ -18,7 +17,7 @@ namespace NewMod.Patches
     {
         public static void OnGameEnd(GameEndEvent evt)
         {
-            EndGameManager endGameManager = evt.EndGameManager;
+            EndGameManager endGameManager = evt?.EndGameManager;
 
             foreach (var playerObj in endGameManager.GetComponentsInChildren<PoolablePlayer>())
             {
@@ -197,7 +196,7 @@ namespace NewMod.Patches
                 if (drainCount > 3)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.EnergyThiefWin, false);
-                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.EnergyThiefWin, 
+                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.EnergyThiefWin,
                         (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<EnergyThief>());
                     return true;
                 }
@@ -214,7 +213,7 @@ namespace NewMod.Patches
                 if (tasksCompleted && isSabotageActive)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.DoubleAgentWin, false);
-                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.DoubleAgentWin, 
+                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.DoubleAgentWin,
                         (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<DoubleAgent>());
                     return true;
                 }
@@ -231,7 +230,7 @@ namespace NewMod.Patches
                 if (currentReportCount >= WinReportCount)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.PranksterWin, false);
-                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.PranksterWin, 
+                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.PranksterWin,
                         (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<Prankster>());
                     return true;
                 }
@@ -250,7 +249,7 @@ namespace NewMod.Patches
                 if (netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.SpecialAgentWin, false);
-                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.SpecialAgentWin, 
+                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.SpecialAgentWin,
                         (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<SpecialAgent>());
                     return true;
                 }

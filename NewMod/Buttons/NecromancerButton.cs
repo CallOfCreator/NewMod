@@ -18,10 +18,12 @@ public class NecromancerButton : CustomActionButton
     protected override void OnClick()
     {
         NewMod.Instance.Log.LogMessage("Button Clicked!");
-
+        SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
+        
         var closestBody = Utils.GetClosestBody();
         if (closestBody != null)
         {
+
             Utils.RpcRevive(closestBody);
         }
     }

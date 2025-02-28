@@ -25,5 +25,8 @@ namespace NewMod.Options.Roles.SpecialAgentOptions
 
         [ModdedNumberOption("Required Missions to Win", min:1, max:5)]
         public float RequiredMissionsToWin { get; set; } = 3f; 
+
+        [ModdedToggleOption("The camera should shake when the timer is close to the target")]
+        public bool ShouldShakeCamera { get; set; } = false;
     }
 }

@@ -12,7 +12,7 @@ namespace NewMod.Buttons
 {
     public class ShowScreenshotButton : CustomActionButton
     {
-        public override string Name => "ShowScreenshot";
+        public override string Name => "Show Screenshot";
         public override float Cooldown => OptionGroupSingleton<VisionaryOptions>.Instance.ScreenshotCooldown;
         public override float EffectDuration => 0;
         public override int MaxUses => (int)OptionGroupSingleton<VisionaryOptions>.Instance.MaxScreenshots;

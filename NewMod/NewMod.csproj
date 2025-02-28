@@ -19,11 +19,6 @@
 	</ItemGroup>	
 	
 	<ItemGroup>
-        <EmbeddedResource Include="Resources\optionImage.png" />
-        <EmbeddedResource Include="Resources\Revive2.png" />
-		<EmbeddedResource Include="Resources\deadbody.png" />
-		<EmbeddedResource Include="Resources\Arrow.png" />
-		<EmbeddedResource Include="Resources\Logo.png" />
-		<EmbeddedResource Include="Resources\cam.png" />
+        <EmbeddedResource Include="Resources\**\*.*" />
     </ItemGroup>
 </Project>

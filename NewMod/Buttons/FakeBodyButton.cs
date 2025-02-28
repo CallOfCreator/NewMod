@@ -17,6 +17,10 @@ namespace NewMod.Buttons
         public override ButtonLocation Location => ButtonLocation.BottomRight;
         public override float EffectDuration => 0f;
         public override LoadableAsset<Sprite> Sprite => NewModAsset.DeadBodySprite;
+        public override bool CanUse()
+        {
+            return base.CanUse() && Utils.AnyDeadPlayer();
+        }
         protected override void OnClick()
         {
             PranksterUtilities.CreatePranksterDeadBody(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.PlayerId);

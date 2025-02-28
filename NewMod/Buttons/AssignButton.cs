@@ -1,17 +1,12 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.SpecialAgentOptions;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
-using AmongUs.GameOptions;
-using Object = UnityEngine.Object;
 using NewMod.Utilities;
 using Reactor.Utilities;
-using System;
 
 namespace NewMod.Buttons
 {
@@ -29,11 +24,13 @@ namespace NewMod.Buttons
         }
         public override bool CanUse()
         {
-            return SpecialAgent.AssignedPlayer == null;
+            return base.CanUse() && SpecialAgent.AssignedPlayer == null;
         }
         protected override void OnClick()
         {
             CustomPlayerMenu menu = CustomPlayerMenu.Create();
+
+            SetTimerPaused(true);
 
             menu.Begin(player => !player.Data.IsDead && !player.Data.Disconnected && player.PlayerId != PlayerControl.LocalPlayer.PlayerId, (player) =>
             {
@@ -46,22 +43,34 @@ namespace NewMod.Buttons
                     cam?.SetTarget(player);
                     Coroutines.Start(CoResetCamera(cam, OptionGroupSingleton<SpecialAgentOptions>.Instance.CameraTrackingDuration));
                 }
+                menu.Close();
+                SetTimerPaused(false);
             });
         }
         public static IEnumerator CoResetCamera(FollowerCamera cam, float duration)
         {
             float timeElapsed = 0f;
+            Vector3 originalPosition = cam.transform.position;
+            float shakeThreshold = 1.5f;
+            bool shouldShake = OptionGroupSingleton<SpecialAgentOptions>.Instance.ShouldShakeCamera;
 
             while (timeElapsed < duration)
             {
                 timeElapsed += Time.deltaTime;
+                if (shouldShake && (duration - timeElapsed) <= shakeThreshold)
+                {
+                    float shakeMagnitude = 0.3f;
+                    Vector3 shakeOffset = Random.insideUnitSphere * shakeMagnitude;
+                    cam.transform.localPosition = originalPosition + shakeOffset;
+                }
+                else
+                {
+                    cam.transform.localPosition = originalPosition;
+                }
                 yield return null;
             }
-
-            if (cam != null)
-            {
-                cam.SetTarget(PlayerControl.LocalPlayer);
-            }
+            cam.transform.localPosition = originalPosition;
+            cam?.SetTarget(PlayerControl.LocalPlayer);
         }
     }
 }

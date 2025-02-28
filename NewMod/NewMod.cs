@@ -17,6 +17,7 @@ using HarmonyLib;
 using NewMod.Options;
 using NewMod.Utilities;
 using NewMod.Roles.ImpostorRoles;
+using MiraAPI.Events.Vanilla.Gameplay;
 
 namespace NewMod;
 
@@ -78,7 +79,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             minigame.Begin(null);
          }
       }
-      if (Input.GetKeyDown(KeyCode.F4) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole && OptionGroupSingleton<GeneralOption>.Instance.EnableTeleportation)
+      if (Input.GetKeyDown(KeyCode.F3) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole && OptionGroupSingleton<GeneralOption>.Instance.EnableTeleportation)
       {
          var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
          if (deadBodies != null && deadBodies.Count > 0)
@@ -93,16 +94,12 @@ public partial class NewMod : BasePlugin, IMiraPlugin
          }
       }
    }
-
-   [HarmonyPatch(typeof(CustomMurderRpc), nameof(CustomMurderRpc.RpcCustomMurder))]
-   public static class CustomMurderPatch
+   public static void OnAfterMurder(AfterMurderEvent evt)
    {
-      public static void Postfix(PlayerControl target, bool didSucceed, bool resetKillTimer, bool createDeadBody, bool teleportMurderer, bool showKillAnim, bool playKillSound)
-      {
-         Utils.RecordOnKill(PlayerControl.LocalPlayer, target);
-      }
+      PlayerControl source = evt.Source;
+      PlayerControl target = evt.Target;
+      Utils.RecordOnKill(source, target);
    }
-
    [HarmonyPatch(typeof(TaskPanelBehaviour), nameof(TaskPanelBehaviour.SetTaskText))]
    public static class SetTaskTextPatch
    {

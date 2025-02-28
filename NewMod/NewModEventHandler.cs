@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Usables;
@@ -19,13 +20,13 @@ namespace NewMod
             MiraEventManager.RegisterEventHandler<EnterVentEvent>(VisionaryVentPatch.OnEnterVent);
             registrations.Add($"{nameof(EnterVentEvent)}: {nameof(VisionaryVentPatch.OnEnterVent)}");
 
-            MiraEventManager.RegisterEventHandler<ExitVentEvent>(VisionaryVentPatch.OnExitVent);
-            registrations.Add($"{nameof(ExitVentEvent)}: {nameof(VisionaryVentPatch.OnExitVent)}");
-
             MiraEventManager.RegisterEventHandler<BeforeMurderEvent>(VisionaryMurderPatch.OnBeforeMurder);
             registrations.Add($"{nameof(BeforeMurderEvent)}: {nameof(VisionaryMurderPatch.OnBeforeMurder)}");
 
-            NewMod.Instance.Log.LogInfo("Registered events: " + string.Join(", ", registrations));
+            MiraEventManager.RegisterEventHandler<AfterMurderEvent>(NewMod.OnAfterMurder);
+            registrations.Add($"{nameof(AfterMurderEvent)}: {nameof(NewMod.OnAfterMurder)}");
+
+            NewMod.Instance.Log.LogInfo("Registered events: " + "\n" + string.Join(", ", registrations));
         }
     }
 }

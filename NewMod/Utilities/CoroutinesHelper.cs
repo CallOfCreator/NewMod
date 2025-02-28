@@ -6,6 +6,7 @@ using MiraAPI.Utilities;
 using System.Linq;
 using TMPro;
 using MiraAPI.Networking;
+using NewMod.Roles.NeutralRoles;
 
 namespace NewMod.Utilities
 {
@@ -22,33 +23,42 @@ namespace NewMod.Utilities
                 SoundManager.Instance.PlaySound(HudManager.Instance.TaskCompleteSound, false, 1f, null);
             }
 
-            HudManager.Instance.TaskCompleteOverlay.gameObject.SetActive(true);
+            var overlay = HudManager.Instance.TaskCompleteOverlay;
+            var obj = Object.Instantiate(overlay.gameObject, overlay.transform.parent);
 
-            var textComponent = HudManager.Instance.TaskCompleteOverlay.GetComponentInChildren<TextMeshPro>();
+            var textComponent = obj.GetComponentInChildren<TextMeshPro>();
 
             if (textComponent != null)
             {
                 textComponent.text = message;
                 textComponent.fontSize = Mathf.Clamp(3.5f - (message.Length / 20f), 2f, 3.5f);
             }
+            obj.gameObject.SetActive(true);
 
-            yield return Effects.Slide2D(HudManager.Instance.TaskCompleteOverlay, new Vector2(0f, -8f), Vector2.zero, 0.25f);
+            yield return new WaitForEndOfFrame();
+
+            if (textComponent != null)
+            {
+                textComponent.text = message;
+            }
+
+            yield return Effects.Slide2D(obj.transform, new Vector2(0f, -8f), Vector2.zero, 0.25f);
 
             for (float time = 0f; time < 0.95f; time += Time.deltaTime)
             {
                 yield return null;
             }
 
-            yield return Effects.Slide2D(HudManager.Instance.TaskCompleteOverlay, Vector2.zero, new Vector2(0f, 8f), 0.25f);
+            yield return Effects.Slide2D(obj.transform, Vector2.zero, new Vector2(0f, 8f), 0.25f);
 
-            HudManager.Instance.TaskCompleteOverlay.gameObject.SetActive(false);
+            GameObject.Destroy(obj);
         }
 
         public static IEnumerator CoMissionTimer(PlayerControl target, float duration)
         {
             duration = Mathf.Min(duration, 30f);
 
-            timerLabel = Helpers.CreateTextLabel("MissionTimerText", HudManager.Instance.transform, AspectPosition.EdgeAlignments.RightTop, new(5f, 1.5f, 0f), fontSize: 3f, textAlignment: TextAlignmentOptions.Right);
+            timerLabel = Helpers.CreateTextLabel("MissionTimerText", HudManager.Instance.transform, AspectPosition.EdgeAlignments.LeftBottom, new(9.9f, 3.5f, 0f), fontSize: 3f, textAlignment: TextAlignmentOptions.BottomLeft);
 
             timerLabel!.text = $"Time Remaining: {duration}s";
             timerLabel.color = Color.yellow;
@@ -57,6 +67,13 @@ namespace NewMod.Utilities
 
             while (timeRemaining > 0)
             {
+                if (SpecialAgent.AssignedPlayer == null)
+                {
+                    if (HudManager.Instance.FullScreen.gameObject.activeSelf)
+                        HudManager.Instance.FullScreen.gameObject.SetActive(false);
+                    Object.Destroy(timerLabel.gameObject);
+                    yield break;
+                }
                 yield return new WaitForSeconds(1f);
                 timeRemaining -= 1f;
 
@@ -75,13 +92,19 @@ namespace NewMod.Utilities
                 else if (timeRemaining <= 20f)
                 {
                     timerLabel.color = Color.yellow;
+                    if (HudManager.Instance.FullScreen.gameObject.activeSelf)
+                        HudManager.Instance.FullScreen.gameObject.SetActive(false);
                 }
                 else
                 {
                     timerLabel.color = Color.green;
+                    if (HudManager.Instance.FullScreen.gameObject.activeSelf)
+                        HudManager.Instance.FullScreen.gameObject.SetActive(false);
                 }
             }
             Object.Destroy(timerLabel.gameObject);
+            SoundManager.Instance.StopSound(ShipStatus.Instance.SabotageSound);
+            HudManager.Instance.FullScreen.gameObject.SetActive(false);
             Utils.MissionFails(target, PlayerControl.LocalPlayer);
         }
 
@@ -103,9 +126,10 @@ namespace NewMod.Utilities
                 {
                     PranksterUtilities.CreatePranksterDeadBody(target, target.PlayerId);
                     bodiesCreated[target.PlayerId]++;
-
-                    Coroutines.Start(CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
-
+                    if (target.AmOwner)
+                    {
+                        Coroutines.Start(CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
+                    }
                     if (bodiesCreated[target.PlayerId] >= 2)
                     {
                         Utils.MissionSuccess(target, PlayerControl.LocalPlayer);
@@ -174,9 +198,10 @@ namespace NewMod.Utilities
         {
             bool revived = false;
             byte revivedParentId = 255;
-
-            Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Press F5 to revive a dead player!</b></i></color>"));
-
+            if (target.AmOwner)
+            {
+                Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Press F5 to revive a dead player!</b></i></color>"));
+            }
             while (true)
             {
                 if (target.Data.IsDead)
@@ -189,7 +214,7 @@ namespace NewMod.Utilities
                     if (!revived)
                     {
                         var deadBody = Utils.GetClosestBody();
-                        if (deadBody == null)
+                        if (deadBody == null && target.AmOwner)
                         {
                             Coroutines.Start(CoNotify("<color=#FFA500><b>No dead body found! Move closer and press F5 again.</b></color>"));
                         }
