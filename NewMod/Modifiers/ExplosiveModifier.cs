@@ -1,11 +1,10 @@
 using MiraAPI.GameOptions;
-using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.Utilities;
 using NewMod.Utilities;
-using NewMod.Options;
 using MiraAPI.Networking;
 using UnityEngine;
+using NewMod.Options.Modifiers;
 
 namespace NewMod.Modifiers;
 
@@ -14,7 +13,7 @@ public class ExplosiveModifier : TimedModifier
     public override string ModifierName => "Explosive";
     public override bool HideOnUi => false;
     public override bool AutoStart => true;
-    public override float Duration => OptionGroupSingleton<GeneralOption>.Instance.Duration;
+    public override float Duration => OptionGroupSingleton<ExplosiveModifierOptions>.Instance.Duration;
     public override bool RemoveOnComplete => true;
     private bool isFlashing = false;
     public override bool? CanVent()
@@ -56,7 +55,7 @@ public class ExplosiveModifier : TimedModifier
         var murderer = Utils.GetKiller(Player);
         if (murderer == null) return;
 
-        var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<GeneralOption>.Instance.KillDistance, true);
+        var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<ExplosiveModifierOptions>.Instance.KillDistance, true);
 
         foreach (var player in closestPlayers)
         {

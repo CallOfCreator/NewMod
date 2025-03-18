@@ -8,7 +8,7 @@ using NewMod.Utilities;
 using Reactor.Utilities;
 using System.Linq;
 
-namespace NewMod.Buttons
+namespace NewMod.Buttons.Visionary
 {
     public class ShowScreenshotButton : CustomActionButton
     {

@@ -30,29 +30,37 @@ namespace NewMod.Patches.Roles
 
                 return true;
             }
-        }
-        [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.PopulateButtons))]
-        public static class MeetingHud_PopulateButtons_Patch
-        {
-            public static bool Prefix(MeetingHud __instance, byte reporter)
+
+            [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.PopulateButtons))]
+            public static class MeetingHud_PopulateButtons_Patch
             {
-                var fakeBodies = PranksterUtilities.FindAllPranksterBodies();
-                var voteArea = GameData.Instance.AllPlayers
-                    .ToArray()
-                    .Where(player => 
-                        !player.IsDead && 
-                        !fakeBodies.Any(body => body.ParentId == player.PlayerId)
-                    )
-                    .Select(player =>
+                public static bool Prefix(MeetingHud __instance, byte reporter)
+                {
+                    var fakeBodies = PranksterUtilities.FindAllPranksterBodies();
+                    var realPlayers = GameData.Instance.AllPlayers
+                       .ToArray()
+                       .Where(p => !fakeBodies.Any(body => body.ParentId == p.PlayerId))
+                       .ToList();
+
+                    __instance.playerStates = new Il2CppReferenceArray<PlayerVoteArea>(realPlayers.Count);
+
+                    for (int i = 0; i < realPlayers.Count; i++)
                     {
+                        var player = realPlayers[i];
                         PlayerVoteArea voteArea = __instance.CreateButton(player);
+                        voteArea.Parent = __instance;
                         voteArea.SetTargetPlayerId(player.PlayerId);
-                        voteArea.SetDead(false, player.Disconnected || player.IsDead, player.Role?.Role == RoleTypes.GuardianAngel);
-                        return voteArea;
-                    });
-                __instance.playerStates = new Il2CppReferenceArray<PlayerVoteArea>(voteArea.ToArray());
-                __instance.SortButtons();
-                return false;
+                        voteArea.SetDead(
+                            didReport: (player.PlayerId == reporter),
+                            isDead: player.Disconnected || player.IsDead,
+                            isGuardian: player.Role != null && player.Role.Role == RoleTypes.GuardianAngel
+                        );
+                        __instance.playerStates[i] = voteArea;
+                    }
+                    __instance.SortButtons();
+                    
+                    return false;
+                }
             }
         }
     }

@@ -3,12 +3,12 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.SpecialAgentOptions;
-using NewMod.Roles.NeutralRoles;
+using SA = NewMod.Roles.NeutralRoles.SpecialAgent;
 using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
 
-namespace NewMod.Buttons
+namespace NewMod.Buttons.SpecialAgent
 {
     public class AssignButton : CustomActionButton
     {
@@ -20,11 +20,11 @@ namespace NewMod.Buttons
         public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is SpecialAgent;
+            return role is SA;
         }
         public override bool CanUse()
         {
-            return base.CanUse() && SpecialAgent.AssignedPlayer == null;
+            return base.CanUse() && SA.AssignedPlayer == null;
         }
         protected override void OnClick()
         {
@@ -34,8 +34,8 @@ namespace NewMod.Buttons
 
             menu.Begin(player => !player.Data.IsDead && !player.Data.Disconnected && player.PlayerId != PlayerControl.LocalPlayer.PlayerId, (player) =>
             {
-                SpecialAgent.AssignedPlayer = player;
-                Utils.AssignMission(SpecialAgent.AssignedPlayer);
+                SA.AssignedPlayer = player;
+                Utils.AssignMission(SA.AssignedPlayer);
 
                 if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
                 {

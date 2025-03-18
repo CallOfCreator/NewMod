@@ -3,11 +3,11 @@ using MiraAPI.Hud;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.EnergyThiefOptions;
-using NewMod.Roles.NeutralRoles;
+using ET = NewMod.Roles.NeutralRoles.EnergyThief;
 using UnityEngine;
 using NewMod.Utilities;
 
-namespace NewMod.Buttons;
+namespace NewMod.Buttons.EnergyThief;
 public class DrainButton : CustomActionButton<PlayerControl>
 {
     public override string Name => "DRAIN";
@@ -24,13 +24,13 @@ public class DrainButton : CustomActionButton<PlayerControl>
     {
         Target?.cosmetics.SetOutline(active, new Il2CppSystem.Nullable<Color>(Color.magenta));
     }
-    public override bool IsTargetValid(PlayerControl? target)
+    public override bool IsTargetValid(PlayerControl target)
     {
         return true;
     }
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is EnergyThief;
+        return role is ET;
     }
     protected override void OnClick()
     {

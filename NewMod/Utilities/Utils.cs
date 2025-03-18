@@ -6,8 +6,13 @@ using UnityEngine;
 using Reactor.Utilities;
 using AmongUs.GameOptions;
 using MiraAPI.Networking;
+using MiraAPI.Roles;
 using NewMod.Roles.NeutralRoles;
 using System.Collections;
+using NewMod.Roles.ImpostorRoles;
+using MiraAPI.Utilities;
+using MiraAPI.Hud;
+using NewMod.Buttons.Revenant;
 
 namespace NewMod.Utilities
 {
@@ -98,7 +103,6 @@ namespace NewMod.Utilities
 
             var parentId = body.ParentId;
             var player = PlayerById(parentId);
-            var reviveSound = NewModAsset.ReviveSound.LoadAsset();
 
             if (player != null)
             {
@@ -107,8 +111,6 @@ namespace NewMod.Utilities
                     if (deadBody.ParentId == body.ParentId)
                         Object.Destroy(deadBody.gameObject);
                 }
-                SoundManager.Instance.PlaySound(reviveSound, false, 1f, null);
-                
                 player.Revive();
 
                 if (player.Data.Role is NoisemakerRole role)
@@ -116,6 +118,31 @@ namespace NewMod.Utilities
                     Object.Destroy(role.deathArrowPrefab.gameObject);
                 }
                 player.RpcSetRole(RoleTypes.Impostor, true);
+            }
+        }
+        // Inspired By : https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/CrewmateRoles/AltruistMod/Coroutine.cs#L57
+        public static void ReviveV2(DeadBody body)
+        {
+            if (body == null) return;
+
+            var parentId = body.ParentId;
+            var player = PlayerById(parentId);
+
+            if (player != null)
+            {
+                foreach (var deadBody in GameObject.FindObjectsOfType<DeadBody>())
+                {
+                    if (deadBody.ParentId == body.ParentId)
+                        Object.Destroy(deadBody.gameObject);
+                }
+                player.Revive();
+
+                if (player.Data.Role is NoisemakerRole role)
+                {
+                    Object.Destroy(role.deathArrowPrefab.gameObject);
+                }
+                player.RpcSetRole((RoleTypes)RoleId.Get<Revenant>(), true);
+                NewMod.Instance.Log.LogError($"---------------^^^^^^SETTING ROLE TO REVENANT-------------^^^^ NEW ROLE: {player.Data.Role.NiceName}");
             }
         }
 
@@ -261,6 +288,22 @@ namespace NewMod.Utilities
             writer.Write(body.ParentId);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
+        /// <summary>
+        /// Sends an RPC to revive a player from a dead body and set their role to Revenant.
+        /// </summary>
+        /// <param name="body">The DeadBody instance to revive from.</param>
+        public static void RpcReviveV2(DeadBody body)
+        {
+            ReviveV2(body);
+            var writer = AmongUsClient.Instance.StartRpcImmediately(
+                PlayerControl.LocalPlayer.NetId,
+                (byte)CustomRPC.Revive,
+                SendOption.Reliable
+            );
+            writer.Write(PlayerControl.LocalPlayer.PlayerId);
+            writer.Write(body.ParentId);
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
+        }
         // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L55
         /// <summary>
         /// Records a player's role in their role history.
@@ -373,7 +416,6 @@ namespace NewMod.Utilities
                     }
                 }
             };
-
             int randomIndex = Random.Range(0, actions.Count);
             actions[randomIndex].Invoke();
         }
@@ -548,6 +590,74 @@ namespace NewMod.Utilities
             yield return new WaitForSeconds(0.2f);
 
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
+        }
+        public static IEnumerator StartFeignDeath(PlayerControl player)
+        {
+            player.RpcCustomMurder(player,
+                didSucceed: true,
+                resetKillTimer: false,
+                createDeadBody: true,
+                teleportMurderer: false,
+                showKillAnim: false,
+                playKillSound: false);
+
+            if (player.AmOwner)
+            {
+                HudManager.Instance.SetHudActive(false);
+            }
+            yield return new WaitForSeconds(0.5f);
+
+            var body = player.GetNearestDeadBody(15f);
+
+            var info = new Revenant.FeignDeathInfo
+            {
+                Timer = 10f,
+                DeadBody = body,
+                Reported = false,
+            };
+            Revenant.FeignDeathStates[player.PlayerId] = info;
+            Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You are now feigning death.\nYou will be revived in 10 seconds if unreported.</color>"));
+
+            float timer = 10f;
+            while (timer > 0)
+            {
+                timer -= Time.deltaTime;
+                info.Timer = timer;
+                yield return null;
+
+                if (info.Reported)
+                {
+                    yield return CoroutinesHelper.CoNotify("<color=red>Your feign death has been reported. You remain dead.</color>");
+                    yield break;
+                }
+            }
+            RpcReviveV2(body);
+            player.transform.position = body.transform.position;
+            player.RpcShapeshift(GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected), false);
+            Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You have been revived in a new body!</color>"));
+            Revenant.HasUsedFeignDeath = true;
+            Revenant.StalkingStates[player.PlayerId] = true;
+            Revenant.FeignDeathStates.Remove(player.PlayerId);
+
+            if (player.AmOwner)
+            {
+                DestroyableSingleton<HudManager>.Instance.SetHudActive(player, player.Data.Role, true);
+            }
+        }
+        public static IEnumerator FadeAndDestroy(GameObject ghost, float fadeDuration)
+        {
+            SpriteRenderer ghostRenderer = ghost.GetComponent<SpriteRenderer>();
+            float alpha = 0.5f;
+            while (alpha > 0)
+            {
+                alpha -= Time.deltaTime / fadeDuration * 0.5f;
+                if (ghostRenderer != null)
+                {
+                    ghostRenderer.color = new Color(1f, 0f, 0f, alpha);
+                }
+                yield return null;
+            }
+            Object.Destroy(ghost);
         }
     }
 }

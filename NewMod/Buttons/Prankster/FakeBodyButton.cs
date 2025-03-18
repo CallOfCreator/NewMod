@@ -3,11 +3,11 @@ using MiraAPI.Hud;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.PranksterOptions;
-using NewMod.Roles.NeutralRoles;
+using PRK = NewMod.Roles.NeutralRoles.Prankster;
 using UnityEngine;
 using NewMod.Utilities;
 
-namespace NewMod.Buttons
+namespace NewMod.Buttons.Prankster
 {
     public class FakeBodyButton : CustomActionButton
     {
@@ -27,7 +27,7 @@ namespace NewMod.Buttons
         }
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is Prankster;
+            return role is PRK;
         }
     }
 }

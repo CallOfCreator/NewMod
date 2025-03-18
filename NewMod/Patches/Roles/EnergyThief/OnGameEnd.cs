@@ -1,7 +1,7 @@
 using HarmonyLib;
 using MiraAPI.Hud;
 using NewMod.Utilities;
-using NewMod.Buttons;
+using NewMod.Roles.ImpostorRoles;
 
 namespace NewMod.Patches.Roles.EnergyThief;
 
@@ -15,6 +15,9 @@ public static class OnGameEndPatch
         Utils.ResetMissionFailureCount();
         PranksterUtilities.ResetReportCount();
         VisionaryUtilities.DeleteAllScreenshots();
+        Revenant.HasUsedFeignDeath = false;
+        Revenant.FeignDeathStates.Remove(PlayerControl.LocalPlayer.PlayerId);
+        Revenant.StalkingStates[PlayerControl.LocalPlayer.PlayerId] = false;
         NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");

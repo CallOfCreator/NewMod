@@ -8,7 +8,7 @@ using UnityEngine;
 using Reactor.Utilities;
 using NewMod.Utilities;
 
-namespace NewMod.Buttons
+namespace NewMod.Buttons.Visionary
 {
     public class CaptureButton : CustomActionButton
     {

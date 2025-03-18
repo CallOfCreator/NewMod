@@ -1,12 +1,10 @@
 using System.Linq;
-using System.IO;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using BepInEx.Configuration;
 using MiraAPI;
-using MiraAPI.Networking;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities;

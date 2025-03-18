@@ -2,8 +2,8 @@ using HarmonyLib;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Usables;
 using NewMod.Utilities;
+using MiraAPI.Utilities;
 using Reactor.Utilities;
-using UnityEngine;
 
 namespace NewMod.Patches.Roles.Visionary
 {
@@ -12,12 +12,13 @@ namespace NewMod.Patches.Roles.Visionary
         public static void OnEnterVent(EnterVentEvent evt)
         {
             PlayerControl player = evt.Player;
-            float chance = 0.3f;
-            if (Random.Range(0f, 1f) < chance)
+            var chancePercentage = (int)(0.2f * 100);
+            if (Helpers.CheckChance(chancePercentage))
             {
                 string timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
                 string filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
                 Coroutines.Start(Utils.CaptureScreenshot(filePath));
+
                 if (player.AmOwner)
                 {
                     Coroutines.Start(CoroutinesHelper.CoNotify("<color=red>Warning: Visionary might have seen you vent!</color>"));
@@ -27,8 +28,8 @@ namespace NewMod.Patches.Roles.Visionary
         [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.RpcExitVent))]
         public static void Postfix(PlayerPhysics __instance, int id)
         {
-            float chance = 0.3f;
-            if (Random.Range(0f, 1f) < chance)
+            var chancePercentage = (int)(0.2f * 100);
+            if (Helpers.CheckChance(chancePercentage))
             {
                 var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
                 string filePath = System.IO.Path.Combine(
@@ -49,9 +50,9 @@ namespace NewMod.Patches.Roles.Visionary
         public static void OnBeforeMurder(BeforeMurderEvent evt)
         {
             PlayerControl source = evt.Source;
-            float chance = 0.5f;
+            int chancePercentage = (int)(0.2f * 100);
 
-            if (Random.Range(0f, 1f) < chance)
+            if (Helpers.CheckChance(chancePercentage))
             {
                 var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
                 string filePath = System.IO.Path.Combine(

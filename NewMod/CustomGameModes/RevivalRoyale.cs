@@ -5,7 +5,7 @@ using MiraAPI.GameModes;
 using MiraAPI.Hud;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using NewMod.Buttons;
+using NewMod.Buttons.Necromancer;
 using NewMod.Roles.ImpostorRoles;
 using TMPro;
 
@@ -20,7 +20,6 @@ namespace NewMod.CustomGameModes
         public override string Name => "Revival Royale";
         public override string Description => "Everyone is a Necromancer. Revive as many bodies as you can to outlast your opponents.\n<b>The one with the most revivals wins the Revival Royale</b>";
         public override int Id => 1;
-
         public override void Initialize()
         {
             foreach (var player in PlayerControl.AllPlayerControls)
@@ -28,11 +27,10 @@ namespace NewMod.CustomGameModes
                 player.RpcSetRole((RoleTypes)RoleId.Get<NecromancerRole>());
                 playerReviveCounts[player] = ReviveCount;
                 playerStates[player] = player.Data.IsDead;
-                CustomButtonSingleton<NecromancerButton>.Instance.IncreaseUses(3);
+                CustomButtonSingleton<ReviveButton>.Instance.IncreaseUses(3);
                 NewMod.Instance.Log.LogMessage("Initialize RevivalRoyale GameMode done!");
             }
         }
-
         public override void HudUpdate(HudManager instance)
         {
             foreach (var player in PlayerControl.AllPlayerControls)
@@ -73,10 +71,6 @@ namespace NewMod.CustomGameModes
         public override void CheckGameEnd(out bool runOriginal, LogicGameFlowNormal instance)
         {
             runOriginal = false;
-        }
-        public override bool AreGameSettingsEnabled()
-        {
-            return false;
         }
         public override bool CanReport(DeadBody body)
         {

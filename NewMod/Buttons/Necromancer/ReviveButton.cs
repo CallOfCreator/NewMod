@@ -6,8 +6,8 @@ using NewMod.Roles.ImpostorRoles;
 using UnityEngine;
 using NewMod.Utilities;
 
-namespace NewMod.Buttons;
-public class NecromancerButton : CustomActionButton
+namespace NewMod.Buttons.Necromancer;
+public class ReviveButton : CustomActionButton
 {
     public override string Name => ""; // It's currently empty since the button has already a name on it
     public override float Cooldown => OptionGroupSingleton<NecromancerOption>.Instance.ButtonCooldown;
