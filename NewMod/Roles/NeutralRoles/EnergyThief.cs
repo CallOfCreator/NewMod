@@ -7,7 +7,7 @@ namespace NewMod.Roles.NeutralRoles;
 
 public class EnergyThief : CrewmateRole, ICustomRole
 {  
-    public string RoleName => "EnergyThief";
+    public string RoleName => "Energy Thief";
     public string RoleDescription => "Drains energy from others, making them weak";
     public string RoleLongDescription => $"The Energy Thief can drain energy from Crewmates or Impostors, weakening them and gaining temporary buffs\nDrain 3 players to win.";
     public Color RoleColor => Color.magenta.FindAlternateColor();
