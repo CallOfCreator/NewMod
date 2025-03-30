@@ -75,8 +75,7 @@ namespace NewMod.Buttons.Revenant
                     ghostRenderer.flipX = playerRenderer.flipX;
                     ghostRenderer.flipY = playerRenderer.flipY;
                     ghostRenderer.material = new Material(playerRenderer.material);
-                    var color = player.cosmetics.currentBodySprite.BodySprite.color;
-                    ghostRenderer.material.SetColor(ShaderID.BodyColor, color);
+                    PlayerMaterial.SetColors(player.Data.DefaultOutfit.ColorId, ghostRenderer);
                     ghostRenderer.sortingLayerID = playerRenderer.sortingLayerID;
                     ghostRenderer.sortingOrder = playerRenderer.sortingOrder + 1;
                     ghost.transform.position = player.transform.position;

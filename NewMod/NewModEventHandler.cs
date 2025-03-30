@@ -18,8 +18,6 @@ namespace NewMod
             MiraEventManager.RegisterEventHandler<GameEndEvent>(EndGamePatch.OnGameEnd, 1);
             registrations.Add($"{nameof(GameEndEvent)}: {nameof(EndGamePatch.OnGameEnd)}");
 
-            registrations.Add($"{nameof(EjectionEvent)}: {nameof(OverloadRole.OnPlayerExiled)}");
-
             MiraEventManager.RegisterEventHandler<EnterVentEvent>(VisionaryVentPatch.OnEnterVent);
             registrations.Add($"{nameof(EnterVentEvent)}: {nameof(VisionaryVentPatch.OnEnterVent)}");
 

@@ -17,7 +17,7 @@ namespace NewMod.Buttons.SpecialAgent
         public override int MaxUses => (int)OptionGroupSingleton<SpecialAgentOptions>.Instance.AssignMaxUses;
         public override ButtonLocation Location => ButtonLocation.BottomLeft;
         public override float EffectDuration => 0f;
-        public override LoadableAsset<Sprite> Sprite => MiraAssets.SpecialAgentButton;
+        public override LoadableAsset<Sprite> Sprite => NewModAsset.SpecialAgentButton;
         public override bool Enabled(RoleBehaviour role)
         {
             return role is SA;
