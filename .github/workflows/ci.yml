@@ -47,13 +47,13 @@ jobs:
       - name: Upload NewMod DLL (Release)
         uses: actions/upload-artifact@v4
         with:
-          name: NewMod.dll
+          name: NewMod
           path: NewMod/bin/Release/net8.0/NewMod.dll
 
       - name: Upload NewMod DLL (Debug)
         uses: actions/upload-artifact@v4
         with:
-          name: NewMod.dll
+          name: NewMod-Debug
           path: NewMod/bin/Debug/net8.0/NewMod.dll
 
   release:
