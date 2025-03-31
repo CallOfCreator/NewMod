@@ -10,6 +10,7 @@ using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using NewMod.Options.Roles.SpecialAgentOptions;
 using MiraAPI.GameOptions;
+using AmongUs.Data;
 
 namespace NewMod.Patches
 {
@@ -196,8 +197,8 @@ namespace NewMod.Patches
                 if (drainCount > 3)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.EnergyThiefWin, false);
-                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.EnergyThiefWin,
-                        (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<EnergyThief>());
+                    DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.EnergyThiefWin,
+                        (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<EnergyThief>());
                     return true;
                 }
             }
@@ -213,8 +214,8 @@ namespace NewMod.Patches
                 if (tasksCompleted && isSabotageActive)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.DoubleAgentWin, false);
-                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.DoubleAgentWin,
-                        (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<DoubleAgent>());
+                    DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.DoubleAgentWin,
+                        (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<DoubleAgent>());
                     return true;
                 }
             }
@@ -230,8 +231,8 @@ namespace NewMod.Patches
                 if (currentReportCount >= WinReportCount)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.PranksterWin, false);
-                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.PranksterWin,
-                        (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<Prankster>());
+                    DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.PranksterWin,
+                        (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<Prankster>());
                     return true;
                 }
             }
@@ -249,8 +250,8 @@ namespace NewMod.Patches
                 if (netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.SpecialAgentWin, false);
-                    StatsManager.Instance.AddWinReason((GameOverReason)NewModEndReasons.SpecialAgentWin,
-                        (int)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<SpecialAgent>());
+                    DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.SpecialAgentWin,
+                        (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<SpecialAgent>());
                     return true;
                 }
             }

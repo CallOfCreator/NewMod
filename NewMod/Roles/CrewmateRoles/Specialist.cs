@@ -94,6 +94,6 @@ public class Specialist : CrewmateRole, ICustomRole
     }
     public override bool DidWin(GameOverReason gameOverReason)
     {
-        return gameOverReason == GameOverReason.HumansByTask;
+        return gameOverReason == GameOverReason.CrewmatesByTask;
     }
 }

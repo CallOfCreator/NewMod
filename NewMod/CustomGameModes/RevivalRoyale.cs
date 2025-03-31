@@ -47,7 +47,7 @@ namespace NewMod.CustomGameModes
                     ReviveCounter.text = $"Revive Count: {ReviveCount}";
                     if (ReviveCount >= 6)
                     {
-                        GameManager.Instance.RpcEndGame(GameOverReason.ImpostorByKill, true);
+                        GameManager.Instance.RpcEndGame(GameOverReason.ImpostorsByKill, true);
                         break;
                     }
                 }

@@ -6,6 +6,8 @@ using Il2CppSystem.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using AmongUs.Data.Player;
+using AmongUs.Data;
 
 namespace NewMod.Patches
 {
@@ -82,7 +84,7 @@ namespace NewMod.Patches
         }
     }
 
-    [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.SaveStats))]
+    [HarmonyPatch(typeof(PlayerStatsData), nameof(PlayerStatsData.SaveStats))]
     public class SaveStatsPatch
     {
         public static void Postfix()
@@ -91,7 +93,7 @@ namespace NewMod.Patches
         }
     }
 
-    [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.LoadStats))]
+    [HarmonyPatch(typeof(LegacyStatsManager), nameof(LegacyStatsManager.LoadStats))]
     public class LoadStatsPatch
     {
         public static void Postfix()
@@ -117,8 +119,7 @@ namespace NewMod.Patches
                     continue;
                 }
 
-                var winCount = StatsManager.Instance.GetRoleWinCount(roleType);
-                uint customCount = CustomStatsManager.GetCustomStat(roleType.ToString());
+                uint winCount = DataManager.Player.Stats.GetRoleStat(roleType, RoleStat.Wins);
 
                 string roleName;
                 Color roleColor;
@@ -135,12 +136,14 @@ namespace NewMod.Patches
                 }
 
                 StatsPopup.AppendStat(stringBuilder, StringNames.StatsRoleWins, winCount, $"<color=#{ColorUtility.ToHtmlStringRGBA(roleColor)}>{roleName}</color>");
-                StatsPopup.AppendStat(stringBuilder, StringNames.StatsTasksCompleted, customCount, $"<color=#{ColorUtility.ToHtmlStringRGBA(roleColor)}>{roleName} (Custom)</color>");
             }
 
-            foreach (StringNames stringName in StatsPopup.RoleSpecificStatsToShow)
+            foreach (var entry in StatsPopup.RoleSpecificStatsToShow)
             {
-                StatsPopup.AppendStat(stringBuilder, stringName, StatsManager.Instance.GetStat(stringName));
+                StatID statID = entry.Key; 
+                StringNames stringNames = entry.Value;
+
+                StatsPopup.AppendStat(stringBuilder, stringNames, DataManager.Player.Stats.GetStat(statID));
             }
             __instance.StatsText.text = stringBuilder.ToString();
 
