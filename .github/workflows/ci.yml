@@ -21,7 +21,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Cache Dependencies
         uses: actions/cache@v4
@@ -38,24 +38,42 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
+      - name: Restore NuGet Packages
+        run: dotnet restore NewMod/NewMod.csproj
+
       - name: Build NewMod (Release)
-        if: github.ref == 'refs/heads/main'
-        run: dotnet build NewMod/NewMod.csproj --configuration Release
+        run: dotnet build NewMod/NewMod.csproj --configuration Release --no-restore
 
       - name: Build NewMod (Debug)
-        if: github.ref != 'refs/heads/main'
-        run: dotnet build NewMod/NewMod.csproj --configuration Debug
+        run: dotnet build NewMod/NewMod.csproj --configuration Debug --no-restore
 
-      - name: Upload Debug Build
-        if: github.ref != 'refs/heads/main'
+      - name: Upload NewMod DLL (Release)
         uses: actions/upload-artifact@v4
         with:
           name: NewMod
-          path: NewMod/bin/Debug/net6.0/NewMod.dll
+          path: NewMod/bin/Release/net6.0/NewMod.dll
 
-      - name: Upload Release Build (main only)
-        if: github.ref == 'refs/heads/main'
+      - name: Upload NewMod DLL (Debug)
         uses: actions/upload-artifact@v4
         with:
-          name: NewMod-Release
-          path: NewMod/bin/Release/net6.0/NewMod.dll
+          name: NewMod-Debug
+          path: NewMod/bin/Debug/net6.0/NewMod.dll
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download Release DLL
+        uses: actions/download-artifact@v4
+        with:
+          name: NewMod
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.2.${{ github.run_number }}
+          files: NewMod/bin/Release/net6.0/NewMod.dll
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
