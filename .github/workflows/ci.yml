@@ -33,44 +33,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Setup .NET 8.0
+      - name: Setup .NET 6.0
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 6.0.x
 
       - name: Build NewMod (Release)
+        if: github.ref == 'refs/heads/main'
         run: dotnet build NewMod/NewMod.csproj --configuration Release
 
       - name: Build NewMod (Debug)
+        if: github.ref != 'refs/heads/main'
         run: dotnet build NewMod/NewMod.csproj --configuration Debug
 
-      - name: Upload NewMod DLL (Release)
+      - name: Upload Debug Build
+        if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: NewMod
-          path: NewMod/bin/Release/net8.0/NewMod.dll
+          path: NewMod/bin/Debug/net6.0/NewMod.dll
 
-      - name: Upload NewMod DLL (Debug)
+      - name: Upload Release Build (main only)
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: NewMod-Debug
-          path: NewMod/bin/Debug/net8.0/NewMod.dll
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Only releases when pushing to main
-
-    steps:
-      - name: Download Release DLL
-        uses: actions/download-artifact@v4
-        with:
-          name: NewMod.dll
-
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v1.2.${{ github.run_number }}
-          files: NewMod/bin/Release/net8.0/NewMod.dll
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: NewMod-Release
+          path: NewMod/bin/Release/net6.0/NewMod.dll

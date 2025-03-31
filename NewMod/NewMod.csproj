@@ -4,7 +4,7 @@
 		<VersionSuffix>dev</VersionSuffix>
 		<Description>Among Us Mod</Description>
 		<Authors>CallofCreator</Authors>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<DebugType>embedded</DebugType>
 	</PropertyGroup>
