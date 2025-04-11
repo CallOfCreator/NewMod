@@ -31,7 +31,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
    public Harmony Harmony { get; } = new Harmony(Id);
    public static BasePlugin Instance;
    public static Minigame minigame;
-   public const string SupportedAmongUsVersion = "2024.11.26";
+   public const string SupportedAmongUsVersion = "16.0.0";
    public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
    public ConfigFile GetConfigFile() => Config;
    public string OptionsTitleText => "NewMod";

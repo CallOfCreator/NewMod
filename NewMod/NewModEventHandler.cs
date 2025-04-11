@@ -15,7 +15,7 @@ namespace NewMod
         {
             var registrations = new List<string>();
 
-            MiraEventManager.RegisterEventHandler<GameEndEvent>(EndGamePatch.OnGameEnd, 1);
+            MiraEventManager.RegisterEventHandler<GameEndEvent>(EndGamePatch.OnGameEnd);
             registrations.Add($"{nameof(GameEndEvent)}: {nameof(EndGamePatch.OnGameEnd)}");
 
             MiraEventManager.RegisterEventHandler<EnterVentEvent>(VisionaryVentPatch.OnEnterVent);

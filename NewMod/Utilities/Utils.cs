@@ -11,8 +11,6 @@ using NewMod.Roles.NeutralRoles;
 using System.Collections;
 using NewMod.Roles.ImpostorRoles;
 using MiraAPI.Utilities;
-using MiraAPI.Hud;
-using NewMod.Buttons.Revenant;
 
 namespace NewMod.Utilities
 {
