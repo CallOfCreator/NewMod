@@ -3,6 +3,9 @@
 <b>NewMod is a mod for Among Us that introduces a variety of new roles, unique abilities, and custom game modes, offering players exciting new ways to enjoy the game.</b>
 </p>
 <p align="center">
+<i>📱 Android support coming soon™!</i>
+</p>
+<p align="center">
     <a href="https://github.com/CallOfCreator/NewMod/stargazers">
         <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod?style=social" alt="GitHub stars">
     </a>
@@ -40,8 +43,10 @@
 # 📥 Installation
 
 1. **Download the latest version of NewMod** for your Among Us installation from [here](https://github.com/CallOfCreator/NewMod/releases/latest).
-2. Extract the contents into your Among Us folder.
-3. Launch the game with `Among Us.exe`. The first run may take 4-5 minutes as the mod initializes.
+2. Copy all contents of your *vanilla* Among Us folder to a new folder (this will be your modded Among Us).
+3. Extract all contents of `BepInEx.Unity.Il2CPP-win-x86_be.725.zip` into your modded Among Us folder.
+4. Download the latest version of **Reactor** and **MiraAPI**, then place them into the `BepInEx/plugins` folder.
+5. Launch the game with `Among Us.exe`. The first run may take 4-5 minutes as the mod initializes.
 
 ---
 
@@ -100,7 +105,7 @@ If you’d like to contribute, feel free to join and improve the project!
 
 # 👥 Credits
 
-- **MiraAPI**: [MiraAPI GitHub](https://github.com/Alll-Of-Us-Mods/MiraAPI) - Among Us modding API and utility library, with inspiration for the debug window and the derivation of the gold color from MiraAPIExample Mod.
+- **MiraAPI**: [MiraAPI GitHub](https://github.com/All-Of-Us-Mods/MiraAPI) - Among Us modding API and utility library, with inspiration for the debug window and the derivation of the gold color from MiraAPIExample Mod.
 - **Reactor**: [Reactor GitHub](https://github.com/NuclearPowered/Reactor) - Modding API for Among Us.
 - **TownOfUs-R**: - Portions of code (PlayerById, GetClosestBody) and asset (ReviveSprite) derived from [Town-Of-Us-R](https://github.com/eDonnes124/Town-Of-Us-R).
 - **MoreGamemodes**: [MoreGamemodes](https://github.com/Rabek009/MoreGamemodes) - Derivation of IsActive and IsSabotage code.

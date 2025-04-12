@@ -1,9 +1,6 @@
-using UnityEngine;
 using MiraAPI.Utilities.Assets;
-using Reactor.Utilities;
 
 namespace NewMod;
-
 public static class NewModAsset
 {
    public static LoadableResourceAsset Banner { get; } = new("NewMod.Resources.optionImage.png");
