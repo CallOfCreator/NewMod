@@ -100,10 +100,10 @@ namespace NewMod.Patches
         }
     }
 
-    [HarmonyPatch(typeof(PlayerStatsData), nameof(PlayerStatsData.GetStat))]
+    [HarmonyPatch(typeof(PlayerStatsData), nameof(PlayerStatsData.GetRoleStat))]
     public class LoadStatsPatch
     {
-        public static void Postfix(PlayerStatsData __instance, StatID stat)
+        public static void Postfix(PlayerStatsData __instance, RoleTypes role, StatID stat)
         {
             CustomStatsManager.LoadCustomStats();
         }
