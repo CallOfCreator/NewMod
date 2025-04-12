@@ -1,5 +1,6 @@
 bin/
 obj/
+libs/Android/
 References/
 /packages/
 riderModule.iml

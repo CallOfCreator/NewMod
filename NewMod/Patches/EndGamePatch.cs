@@ -176,7 +176,7 @@ namespace NewMod.Patches
         }
     }
 
-    [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
+    [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))] 
     public static class CheckGameEndPatch
     {
         public static bool Prefix(ShipStatus __instance)
@@ -220,9 +220,6 @@ namespace NewMod.Patches
                 }
                 if (shouldEndGame)
                 {
-                    GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.SpecialAgentWin, false);
-                    DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.SpecialAgentWin,
-                        (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<SpecialAgent>());
                     GameManager.Instance.RpcEndGame(winReason, false);
                     CustomStatsManager.IncrementRoleWin((ICustomRole)player.Data.Role);
                     return true;
