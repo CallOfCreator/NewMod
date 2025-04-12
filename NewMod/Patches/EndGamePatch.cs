@@ -182,76 +182,49 @@ namespace NewMod.Patches
         public static bool Prefix(ShipStatus __instance)
         {
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
-            if (CheckEndGameForEnergyThief(__instance)) return false;
-            if (CheckEndGameForDoubleAgent(__instance)) return false;
-            if (CheckEndGameForPrankster(__instance)) return false;
-            if (CheckEndGameForSpecialAgent(__instance)) return false;
+            if (CheckEndGameForRole<DoubleAgent>(__instance, (GameOverReason)NewModEndReasons.DoubleAgentWin)) return false;
+            if (CheckEndGameForRole<SpecialAgent>(__instance, (GameOverReason)NewModEndReasons.SpecialAgentWin)) return false;
+            if (CheckEndGameForRole<Prankster>(__instance, (GameOverReason)NewModEndReasons.PranksterWin, 3)) return false;
+            if (CheckEndGameForRole<EnergyThief>(__instance, (GameOverReason)NewModEndReasons.EnergyThiefWin)) return false;
             return true;
         }
-
-        public static bool CheckEndGameForEnergyThief(ShipStatus __instance)
+        public static bool CheckEndGameForRole<T>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where T : RoleBehaviour
         {
-            if (PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.Data.Role is EnergyThief)
+            var rolePlayers = PlayerControl.AllPlayerControls.ToArray()
+            .Where(p => p.Data.Role is T)
+            .Take(maxCount)
+            .ToList();
+
+            foreach (var player in rolePlayers)
             {
-                int drainCount = Utils.GetDrainCount(PlayerControl.LocalPlayer.PlayerId);
-                if (drainCount > 3)
+                bool shouldEndGame = false;
+
+                if (typeof(T) == typeof(DoubleAgent))
                 {
-                    GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.EnergyThiefWin, false);
-                    DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.EnergyThiefWin,
-                        (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<EnergyThief>());
-                    return true;
+                    bool tasksCompleted = player.AllTasksCompleted();
+                    bool isSabotageActive = Utils.IsSabotage();
+                    shouldEndGame = tasksCompleted && isSabotageActive;
                 }
-            }
-            return false;
-        }
-
-        public static bool CheckEndGameForDoubleAgent(ShipStatus __instance)
-        {
-            if (PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.Data.Role is DoubleAgent)
-            {
-                bool tasksCompleted = PlayerControl.LocalPlayer.AllTasksCompleted();
-                bool isSabotageActive = Utils.IsSabotage();
-                if (tasksCompleted && isSabotageActive)
+                if (typeof(T) == typeof(EnergyThief))
                 {
-                    GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.DoubleAgentWin, false);
-                    DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.DoubleAgentWin,
-                        (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<DoubleAgent>());
-                    return true;
+                    int WinReportCount = 2;
+                    int currentReportCount = PranksterUtilities.GetReportCount(player.PlayerId);
+                    shouldEndGame = currentReportCount >= WinReportCount;
                 }
-            }
-            return false;
-        }
-
-        public static bool CheckEndGameForPrankster(ShipStatus __instance)
-        {
-            if (PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.Data.Role is Prankster)
-            {
-                int WinReportCount = 2;
-                int currentReportCount = PranksterUtilities.GetReportCount(PlayerControl.LocalPlayer.PlayerId);
-                if (currentReportCount >= WinReportCount)
+                if (typeof(T) == typeof(SpecialAgent))
                 {
-                    GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.PranksterWin, false);
-                    DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.PranksterWin,
-                        (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<Prankster>());
-                    return true;
+                    int missionSuccessCount = Utils.GetMissionSuccessCount(player.PlayerId);
+                    int missionFailureCount = Utils.GetMissionFailureCount(player.PlayerId);
+                    int netScore = missionSuccessCount - missionFailureCount;
+                    shouldEndGame = netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
                 }
-            }
-            return false;
-        }
-
-        public static bool CheckEndGameForSpecialAgent(ShipStatus __instance)
-        {
-            if (PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.Data.Role is SpecialAgent)
-            {
-                int missionSuccessCount = Utils.GetMissionSuccessCount(PlayerControl.LocalPlayer.PlayerId);
-                int missionFailureCount = Utils.GetMissionFailureCount(PlayerControl.LocalPlayer.PlayerId);
-                int netScore = missionSuccessCount - missionFailureCount;
-
-                if (netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin)
+                if (shouldEndGame)
                 {
                     GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.SpecialAgentWin, false);
                     DataManager.Player.Stats.IncrementWinStats((GameOverReason)NewModEndReasons.SpecialAgentWin,
                         (MapNames)GameManager.Instance.LogicOptions.MapId, (RoleTypes)RoleId.Get<SpecialAgent>());
+                    GameManager.Instance.RpcEndGame(winReason, false);
+                    CustomStatsManager.IncrementRoleWin((ICustomRole)player.Data.Role);
                     return true;
                 }
             }

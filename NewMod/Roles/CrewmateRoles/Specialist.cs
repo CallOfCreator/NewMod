@@ -79,7 +79,7 @@ public class Specialist : CrewmateRole, ICustomRole
             },
             () =>
             {
-                Utils.AssignMission(PlayerControl.LocalPlayer);
+                Utils.RpcAssignMission(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer);
                 Coroutines.Start(CoroutinesHelper.CoNotify(
                       "<color=red>You have been assigned a mission. Complete it or die.</color>"));
             }

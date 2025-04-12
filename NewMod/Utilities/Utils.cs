@@ -14,14 +14,44 @@ using MiraAPI.Utilities;
 
 namespace NewMod.Utilities
 {
+    /// <summary>
+    /// Provides various utility methods and fields for the mod.
+    /// </summary>
     public static class Utils
     {
+        /// <summary>
+        /// Tracks the number of drains performed by each Energy Thief, keyed by player ID.
+        /// </summary>
         public static Dictionary<byte, int> EnergyThiefDrainCounts = new Dictionary<byte, int>();
+
+        /// <summary>
+        /// Maps a victim player to its killer.
+        /// </summary>
         public static Dictionary<PlayerControl, PlayerControl> PlayerKiller = new Dictionary<PlayerControl, PlayerControl>();
+
+        /// <summary>
+        /// Stores the number of successful missions per player, keyed by their ID.
+        /// </summary>
         public static Dictionary<byte, int> MissionSuccessCount = new Dictionary<byte, int>();
+
+        /// <summary>
+        /// Stores the number of failed missions per player, keyed by their ID.
+        /// </summary>
         public static Dictionary<byte, int> MissionFailureCount = new Dictionary<byte, int>();
+
+        /// <summary>
+        /// Holds a set of players who are currently waiting for an event or action.
+        /// </summary>
         public static HashSet<PlayerControl> waitingPlayers = new();
+
+        /// <summary>
+        /// Maintains saved roles for players, keyed by their ID.
+        /// </summary>
         public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles = new Dictionary<byte, List<RoleBehaviour>>();
+
+        /// <summary>
+        /// Maps a player ID to a TextMeshPro timer display for missions.
+        /// </summary>
         public static Dictionary<byte, TMPro.TextMeshPro> MissionTimer = new Dictionary<byte, TMPro.TextMeshPro>();
 
         /// <summary>
@@ -38,6 +68,7 @@ namespace NewMod.Utilities
 
             return null;
         }
+
         /// <summary>  
         /// Records a kill event by mapping a victim to its killer.
         /// </summary>
@@ -64,6 +95,7 @@ namespace NewMod.Utilities
         {
             return PlayerKiller.TryGetValue(victim, out var killer) ? killer : null;
         }
+
         /// <summary>
         /// Finds the closest dead body to the local player within their kill distance.
         /// </summary>
@@ -94,6 +126,7 @@ namespace NewMod.Utilities
             }
             return closestBody;
         }
+
         // Inspired By : https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/CrewmateRoles/AltruistMod/Coroutine.cs#L57
         public static void Revive(DeadBody body)
         {
@@ -118,6 +151,7 @@ namespace NewMod.Utilities
                 player.RpcSetRole(RoleTypes.Impostor, true);
             }
         }
+
         // Inspired By : https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/CrewmateRoles/AltruistMod/Coroutine.cs#L57
         public static void ReviveV2(DeadBody body)
         {
@@ -202,6 +236,7 @@ namespace NewMod.Utilities
                     return false;
             }
         }
+
         // Thanks to : https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L118
         /// <summary>
         /// Checks if any sabotage system is currently active.
@@ -217,6 +252,7 @@ namespace NewMod.Utilities
                    IsActive(SystemTypes.MushroomMixupSabotage) ||
                    IsActive(SystemTypes.HeliSabotage);
         }
+
         /// <summary>
         /// Records a drain count for the specified player.
         /// </summary>
@@ -237,6 +273,7 @@ namespace NewMod.Utilities
         {
             return EnergyThiefDrainCounts.TryGetValue(playerId, out var count) ? count : 0;
         }
+
         /// <summary>
         /// Resets all drain counts.
         /// </summary>
@@ -244,32 +281,63 @@ namespace NewMod.Utilities
         {
             EnergyThiefDrainCounts.Clear();
         }
+
+        /// <summary>
+        /// Records a successful mission for the given Special Agent player.
+        /// </summary>
+        /// <param name="specialAgent">The player who successfully completed the mission.</param>
         public static void RecordMissionSuccess(PlayerControl specialAgent)
         {
             var playerId = specialAgent.PlayerId;
             MissionSuccessCount[playerId] = GetMissionSuccessCount(playerId) + 1;
         }
+
+        /// <summary>
+        /// Retrieves the number of successful missions for a given player.
+        /// </summary>
+        /// <param name="playerId">The player's ID.</param>
+        /// <returns>The count of successful missions.</returns>
         public static int GetMissionSuccessCount(byte playerId)
         {
             return MissionSuccessCount.TryGetValue(playerId, out var count) ? count : 0;
         }
+
+        /// <summary>
+        /// Resets the count of successful missions for all players.
+        /// </summary>
         public static void ResetMissionSuccessCount()
         {
             MissionSuccessCount.Clear();
         }
+
+        /// <summary>
+        /// Records a failed mission for the given Special Agent player.
+        /// </summary>
+        /// <param name="specialAgent">The player who failed the mission.</param>
         public static void RecordMissionFailure(PlayerControl specialAgent)
         {
             var playerId = specialAgent.PlayerId;
             MissionFailureCount[playerId] = GetMissionFailureCount(playerId) + 1;
         }
+
+        /// <summary>
+        /// Retrieves the number of failed missions for a given player.
+        /// </summary>
+        /// <param name="playerId">The player's ID.</param>
+        /// <returns>The count of failed missions.</returns>
         public static int GetMissionFailureCount(byte playerId)
         {
             return MissionFailureCount.TryGetValue(playerId, out var count) ? count : 0;
         }
+
+        /// <summary>
+        /// Resets the count of failed missions for all players.
+        /// </summary>
         public static void ResetMissionFailureCount()
         {
             MissionFailureCount.Clear();
         }
+
         /// <summary>
         /// Sends an RPC to revive a player from a dead body.
         /// </summary>
@@ -286,6 +354,7 @@ namespace NewMod.Utilities
             writer.Write(body.ParentId);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
+
         /// <summary>
         /// Sends an RPC to revive a player from a dead body and set their role to Revenant.
         /// </summary>
@@ -302,6 +371,7 @@ namespace NewMod.Utilities
             writer.Write(body.ParentId);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
+
         // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L55
         /// <summary>
         /// Records a player's role in their role history.
@@ -316,6 +386,7 @@ namespace NewMod.Utilities
             }
             savedPlayerRoles[playerId].Add(role);
         }
+
         // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L64
         /// <summary>
         /// Retrieves the role history for a specific player.
@@ -330,9 +401,11 @@ namespace NewMod.Utilities
             }
             return new List<RoleBehaviour>();
         }
+
         /// <summary>
-        /// Retrieves a random player from the game meets a specified condition.
+        /// Retrieves a random player from the game who meets a specified condition.
         /// </summary>
+        /// <param name="match">A predicate to filter eligible players.</param>
         /// <returns>A random PlayerControl instance, or null if none are valid.</returns>
         public static PlayerControl GetRandomPlayer(System.Predicate<PlayerControl> match)
         {
@@ -344,6 +417,11 @@ namespace NewMod.Utilities
             }
             return null;
         }
+
+        /// <summary>
+        /// Checks if there is at least one dead player in the game.
+        /// </summary>
+        /// <returns>A PlayerControl who is dead, or null if none.</returns>
         public static PlayerControl AnyDeadPlayer()
         {
             foreach (var player in PlayerControl.AllPlayerControls)
@@ -355,6 +433,7 @@ namespace NewMod.Utilities
             }
             return null;
         }
+
         /// <summary>
         /// Performs a random draining action on a target player as part of a custom RPC.
         /// </summary>
@@ -417,6 +496,13 @@ namespace NewMod.Utilities
             int randomIndex = Random.Range(0, actions.Count);
             actions[randomIndex].Invoke();
         }
+
+        /// <summary>
+        /// Selects and processes a mission for the specified target player based on the provided MissionType.
+        /// </summary>
+        /// <param name="target">The target player receiving the mission.</param>
+        /// <param name="mission">The type of mission assigned.</param>
+        /// <returns>A formatted string describing the selected mission.</returns>
         public static string GetMission(PlayerControl target, MissionType mission)
         {
             var mostwantedTarget = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
@@ -432,7 +518,6 @@ namespace NewMod.Utilities
             switch (mission)
             {
                 case MissionType.KillMostWanted:
-                    // Set up arrow for most wanted target
                     var gameObj = new GameObject();
                     var arrow = gameObj.AddComponent<ArrowBehaviour>();
                     gameObj.transform.parent = mostwantedTarget.gameObject.transform;
@@ -442,7 +527,6 @@ namespace NewMod.Utilities
                     arrow.target = mostwantedTarget.transform.position;
                     arrow.image = renderer;
 
-                    // Save the current role of the target
                     SavePlayerRole(target.PlayerId, target.Data.Role);
 
                     if (!target.Data.Role.IsImpostor)
@@ -462,9 +546,6 @@ namespace NewMod.Utilities
                     break;
 
                 case MissionType.CreateFakeBodies:
-                    // Disguise as a random player
-                    //var randPlayer = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
-                    //target.RpcShapeshift(randPlayer, false);
                     if (target.AmOwner)
                     {
                         Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
@@ -473,7 +554,6 @@ namespace NewMod.Utilities
                     break;
 
                 case MissionType.DrainEnergy:
-
                     if (target.AmOwner)
                     {
                         Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain nearby players'energy</b></i></color>"));
@@ -482,20 +562,21 @@ namespace NewMod.Utilities
                     break;
 
                 case MissionType.ReviveAndKill:
-
                     Coroutines.Start(CoroutinesHelper.CoReviveAndKill(target));
                     break;
             }
             return selectedMission;
         }
-        public static void MissionSuccess(PlayerControl target, PlayerControl specialAgent)
-        {
-            RecordMissionSuccess(specialAgent);
 
-            if (specialAgent.AmOwner)
+        [MethodRpc((uint)CustomRPC.MissionSuccess)]
+        public static void RpcMissionSuccess(PlayerControl source, PlayerControl target)
+        {
+            RecordMissionSuccess(source);
+
+            if (source.AmOwner)
             {
-                int currentSuccessCount = GetMissionSuccessCount(specialAgent.PlayerId);
-                int netScore = currentSuccessCount - GetMissionFailureCount(specialAgent.PlayerId);
+                int currentSuccessCount = GetMissionSuccessCount(source.PlayerId);
+                int netScore = currentSuccessCount - GetMissionFailureCount(source.PlayerId);
                 Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD700>Target {target.Data.PlayerName} has completed their mission!\nCurrent net score: {netScore}/3</color>"));
             }
             else
@@ -513,21 +594,23 @@ namespace NewMod.Utilities
             }
             target.Data.Role.buttonManager.SetEnabled();
         }
-        public static void MissionFails(PlayerControl target, PlayerControl specialAgent)
-        {
-            RecordMissionFailure(specialAgent);
 
-            if (specialAgent.AmOwner)
+        [MethodRpc((uint)CustomRPC.MissionFails)]
+        public static void RpcMissionFails(PlayerControl source, PlayerControl target)
+        {
+            RecordMissionFailure(source);
+
+            if (source.AmOwner)
             {
-                int currentFailureCount = GetMissionFailureCount(specialAgent.PlayerId);
-                int netScore = GetMissionSuccessCount(specialAgent.PlayerId) - currentFailureCount;
+                int currentFailureCount = GetMissionFailureCount(source.PlayerId);
+                int netScore = GetMissionSuccessCount(source.PlayerId) - currentFailureCount;
                 Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF0000>Target {target.Data.PlayerName} has failed their mission! <b>Current net score: {netScore}/3</b></color>"));
             }
             else
             {
                 Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
             }
-            specialAgent.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
+            source.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
 
             if (savedTasks.ContainsKey(target))
             {
@@ -540,10 +623,19 @@ namespace NewMod.Utilities
             }
             target.Data.Role.buttonManager.SetEnabled();
         }
+
+        /// <summary>
+        /// Stores tasks that have been saved for a given player, allowing restoration after missions.
+        /// </summary>
         public static Il2CppSystem.Collections.Generic.Dictionary<PlayerControl, Il2CppSystem.Collections.Generic.List<PlayerTask>> savedTasks = new();
 
+        /// <summary>
+        /// Assigns a random mission to the target player as a custom RPC.
+        /// </summary>
+        /// <param name="source">The player initiating the assignment (Special Agent).</param>
+        /// <param name="target">The player who will receive the mission.</param>
         [MethodRpc((uint)CustomRPC.AssignMission)]
-        public static void AssignMission(PlayerControl target)
+        public static void RpcAssignMission(PlayerControl source, PlayerControl target)
         {
             // Save the target's tasks
             if (!savedTasks.ContainsKey(target))
@@ -578,6 +670,12 @@ namespace NewMod.Utilities
 
             Coroutines.Start(CoroutinesHelper.CoMissionTimer(target, 60f));
         }
+
+        /// <summary>
+        /// Captures a screenshot of the current game screen, hides the HUD, and then reactivates it.
+        /// </summary>
+        /// <param name="filePath">The path to save the screenshot file.</param>
+        /// <returns>An IEnumerator for coroutine control.</returns>
         public static IEnumerator CaptureScreenshot(string filePath)
         {
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
@@ -589,6 +687,12 @@ namespace NewMod.Utilities
 
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
         }
+
+        /// <summary>
+        /// Causes the player to feign death, creating a body. If unreported, the player is revived after 10 seconds.
+        /// </summary>
+        /// <param name="player">The player feigning death.</param>
+        /// <returns>An IEnumerator for coroutine control.</returns>
         public static IEnumerator StartFeignDeath(PlayerControl player)
         {
             player.RpcCustomMurder(player,
@@ -642,6 +746,13 @@ namespace NewMod.Utilities
                 DestroyableSingleton<HudManager>.Instance.SetHudActive(player, player.Data.Role, true);
             }
         }
+
+        /// <summary>
+        /// Gradually fades out the provided ghost object and then destroys it.
+        /// </summary>
+        /// <param name="ghost">The GameObject representing the ghost.</param>
+        /// <param name="fadeDuration">The duration of the fade effect.</param>
+        /// <returns>An IEnumerator for coroutine control.</returns>
         public static IEnumerator FadeAndDestroy(GameObject ghost, float fadeDuration)
         {
             SpriteRenderer ghostRenderer = ghost.GetComponent<SpriteRenderer>();

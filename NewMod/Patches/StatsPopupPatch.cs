@@ -13,74 +13,81 @@ namespace NewMod.Patches
 {
     public static class CustomStatsManager
     {
-        private static readonly string SavePath = Path.Combine(PlatformPaths.persistentDataPath, "customStats.dat");
-        public static Dictionary<string, uint> CustomRoleStates = new();
-
+        private static readonly string SavePath = Path.Combine(Application.persistentDataPath, "customStats.dat");
+        public static Dictionary<string, int> CustomRoleWins = new();
         public static void SaveCustomStats()
         {
             try
             {
                 using var writer = new BinaryWriter(File.Open(SavePath, FileMode.Create));
-                writer.Write(CustomRoleStates.Count);
 
-                foreach (var entry in CustomRoleStates)
+                var allRoles = RoleManager.Instance.AllRoles;
+                writer.Write(allRoles.Count);
+
+                foreach (var role in allRoles)
                 {
-                    writer.Write(entry.Key);
-                    writer.Write(entry.Value);
-                }
+                    RoleTypes roleType = role.Role;
+                    int winCount = 0;
 
-                NewMod.Instance.Log.LogInfo("Custom stats saved successfully.");
+                    if (role is ICustomRole customRole)
+                    {
+                        string roleName = customRole.RoleName;
+                        winCount = CustomRoleWins.ContainsKey(roleName) ? CustomRoleWins[roleName] : 0;
+                        writer.Write(roleName);
+                    }
+                    else
+                    {
+                        winCount = (int)DataManager.Player.Stats.GetRoleStat(roleType, RoleStat.Wins);
+                        writer.Write(roleType.ToString());
+                    }
+                    writer.Write(winCount);
+                }
             }
             catch (Exception ex)
             {
                 NewMod.Instance.Log.LogError($"Failed saving custom stats: {ex}");
             }
         }
-
         public static void LoadCustomStats()
         {
             try
             {
                 if (!File.Exists(SavePath))
                 {
-                    NewMod.Instance.Log.LogInfo("No custom stats file found.");
                     return;
                 }
 
                 using var reader = new BinaryReader(File.Open(SavePath, FileMode.Open));
-                CustomRoleStates.Clear();
 
-                int count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
+                int roleCount = reader.ReadInt32();
+                for (int i = 0; i < roleCount; i++)
                 {
-                    var key = reader.ReadString();
-                    var value = reader.ReadUInt32();
-                    CustomRoleStates[key] = value;
-                }
+                    string roleIdentifier = reader.ReadString();
+                    int winCount = reader.ReadInt32();
+                    CustomRoleWins[roleIdentifier] = winCount;
 
-                NewMod.Instance.Log.LogInfo("Custom stats loaded successfully.");
+                }
             }
             catch (Exception ex)
             {
-                NewMod.Instance.Log.LogError($"Failed loading custom stats: {ex}");
+                NewMod.Instance.Log.LogError(ex.ToString());
             }
         }
-
-        public static void IncrementCustomStat(string key)
+        public static void IncrementRoleWin(ICustomRole customRole)
         {
-            if (CustomRoleStates.ContainsKey(key))
+            string roleName = customRole.RoleName;
+            if (CustomRoleWins.ContainsKey(roleName))
             {
-                CustomRoleStates[key]++;
+                CustomRoleWins[roleName]++;
             }
             else
             {
-                CustomRoleStates[key] = 1;
+                CustomRoleWins[roleName] = 1;
             }
         }
-
-        public static uint GetCustomStat(string key)
+        public static int GetRoleWins(ICustomRole customRole)
         {
-            return CustomRoleStates.ContainsKey(key) ? CustomRoleStates[key] : 0;
+            return CustomRoleWins.ContainsKey(customRole.RoleName) ? CustomRoleWins[customRole.RoleName] : 0;
         }
     }
 
@@ -93,10 +100,10 @@ namespace NewMod.Patches
         }
     }
 
-    [HarmonyPatch(typeof(LegacyStatsManager), nameof(LegacyStatsManager.LoadStats))]
+    [HarmonyPatch(typeof(PlayerStatsData), nameof(PlayerStatsData.GetStat))]
     public class LoadStatsPatch
     {
-        public static void Postfix()
+        public static void Postfix(PlayerStatsData __instance, StatID stat)
         {
             CustomStatsManager.LoadCustomStats();
         }
@@ -113,26 +120,21 @@ namespace NewMod.Patches
             foreach (var role in allRoles)
             {
                 RoleTypes roleType = role.Role;
-
-                if (roleType == RoleTypes.ImpostorGhost || roleType == RoleTypes.CrewmateGhost)
-                {
-                    continue;
-                }
-
-                uint winCount = DataManager.Player.Stats.GetRoleStat(roleType, RoleStat.Wins);
-
                 string roleName;
                 Color roleColor;
+                int winCount;
 
                 if (role is ICustomRole customRole)
                 {
                     roleName = customRole.RoleName;
                     roleColor = customRole.RoleColor;
+                    winCount = CustomStatsManager.GetRoleWins(customRole);
                 }
                 else
                 {
                     roleName = role.NiceName;
                     roleColor = role.NameColor;
+                    winCount = (int)DataManager.Player.Stats.GetRoleStat(roleType, RoleStat.Wins);
                 }
 
                 StatsPopup.AppendStat(stringBuilder, StringNames.StatsRoleWins, winCount, $"<color=#{ColorUtility.ToHtmlStringRGBA(roleColor)}>{roleName}</color>");
@@ -140,7 +142,7 @@ namespace NewMod.Patches
 
             foreach (var entry in StatsPopup.RoleSpecificStatsToShow)
             {
-                StatID statID = entry.Key; 
+                StatID statID = entry.Key;
                 StringNames stringNames = entry.Value;
 
                 StatsPopup.AppendStat(stringBuilder, stringNames, DataManager.Player.Stats.GetStat(statID));
