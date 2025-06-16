@@ -20,7 +20,7 @@ public class ExplosiveModifier : TimedModifier
     {
         return Player.Data.Role.CanVent;
     }
-    public override string GetHudString()
+    public override string GetDescription()
     {
         return ModifierName + "\nif you die, all nearby players are killed";
     }

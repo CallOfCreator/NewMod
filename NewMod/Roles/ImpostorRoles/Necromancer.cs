@@ -20,6 +20,6 @@ public class NecromancerRole : ImpostorRole, ICustomRole
     {
         Icon = MiraAssets.Empty,
         OptionsScreenshot = NewModAsset.Banner,
-        MaxRoleCount = 3
+        MaxRoleCount = 3,
     };
 }

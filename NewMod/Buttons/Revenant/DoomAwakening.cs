@@ -20,7 +20,7 @@ namespace NewMod.Buttons.Revenant
         /// <summary>
         /// The name displayed on the button.
         /// </summary>
-        public override string Name => "Doom Awakening";
+        public override string Name => "";
 
         /// <summary>
         /// Cooldown time for this ability, as configured in <see cref="RevenantOptions"/>.
@@ -43,9 +43,9 @@ namespace NewMod.Buttons.Revenant
         public override float EffectDuration => OptionGroupSingleton<RevenantOptions>.Instance.DoomAwakeningDuration;
 
         /// <summary>
-        /// The icon or sprite representing this button. Here, set to an empty sprite.
+        /// The icon or sprite representing this button.
         /// </summary>
-        public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+        public override LoadableAsset<Sprite> Sprite => NewModAsset.DoomAwakeningButton;
 
         /// <summary>
         /// Specifies whether this button is enabled for the specified role.
@@ -74,6 +74,7 @@ namespace NewMod.Buttons.Revenant
             var player = PlayerControl.LocalPlayer;
             Coroutines.Start(StartDoomAwakening(player));
         }
+        public static List<PlayerControl> killedPlayers = new();
 
         /// <summary>
         /// Executes the Doom Awakening effect, increasing speed, fading the screen, and killing nearby players.
@@ -84,6 +85,8 @@ namespace NewMod.Buttons.Revenant
         {
             float originalSpeed = player.MyPhysics.Speed;
             player.MyPhysics.Speed *= 2f;
+
+            SoundManager.Instance.PlaySound(NewModAsset.DoomAwakeningSound.LoadAsset(), false, 1f, null);
 
             var fullScreen = HudManager.Instance.FullScreen;
             fullScreen.color = new Color(1f, 0f, 0f, 0f);
@@ -103,34 +106,33 @@ namespace NewMod.Buttons.Revenant
             float duration = EffectDuration;
             float timer = 0f;
             int killCount = 0;
+
             float ghostInterval = 0.2f;
             float ghostTimer = 0f;
 
             Queue<GameObject> ghosts = new Queue<GameObject>();
             SpriteRenderer playerRenderer = player.cosmetics.normalBodySprite.BodySprite;
 
-            // Doom Awakening loop
             while (timer < duration)
             {
                 timer += Time.deltaTime;
                 ghostTimer += Time.deltaTime;
 
-                // Create a trailing ghost sprite
                 if (ghostTimer >= ghostInterval && player.MyPhysics.Speed > 0.01f)
                 {
                     ghostTimer = 0f;
-                    GameObject ghost = new GameObject("Revenant-Ghost");
+                    GameObject ghost = new("Revenant-Ghost");
                     var ghostRenderer = ghost.AddComponent<SpriteRenderer>();
                     ghostRenderer.sprite = playerRenderer.sprite;
                     ghostRenderer.flipX = playerRenderer.flipX;
                     ghostRenderer.flipY = playerRenderer.flipY;
-                    ghostRenderer.material = new Material(playerRenderer.material);
+                    ghostRenderer.sharedMaterial = playerRenderer.sharedMaterial;
                     PlayerMaterial.SetColors(player.Data.DefaultOutfit.ColorId, ghostRenderer);
                     ghostRenderer.sortingLayerID = playerRenderer.sortingLayerID;
                     ghostRenderer.sortingOrder = playerRenderer.sortingOrder + 1;
                     ghost.transform.position = player.transform.position;
                     ghost.transform.rotation = player.transform.rotation;
-                    ghost.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
+                    ghost.transform.localScale = player.transform.lossyScale;
 
                     Coroutines.Start(Utils.FadeAndDestroy(ghost, 1f));
                     ghosts.Enqueue(ghost);
@@ -143,11 +145,10 @@ namespace NewMod.Buttons.Revenant
                             Object.Destroy(oldGhost);
                     }
                 }
-
                 // Kill any nearby players
                 foreach (var target in PlayerControl.AllPlayerControls)
                 {
-                    if (target == player || target.Data.IsDead || target.Data.Disconnected || target.inVent)
+                    if (target == player || target.Data.IsDead || target.Data.Disconnected || target.inVent || target.Data.Role.IsImpostor)
                         continue;
 
                     if (Vector2.Distance(player.GetTruePosition(), target.GetTruePosition()) < 1f)
@@ -160,9 +161,18 @@ namespace NewMod.Buttons.Revenant
                             showKillAnim: false,
                             playKillSound: true);
                         killCount++;
+                        killedPlayers.Add(target);
+                    }
+                    if (target.AmOwner)
+                    {
+                        SoundManager.Instance.PlaySound(NewModAsset.DoomAwakeningEndSound.LoadAsset(), false, 1f, null);
                     }
                 }
                 yield return null;
+            }
+            if (killedPlayers.Count >= 3)
+            {
+                SoundManager.Instance.PlaySound(NewModAsset.DoomAwakeningEndSound.LoadAsset(), false, 1f, null);
             }
 
             // Fade out the red overlay
@@ -177,9 +187,11 @@ namespace NewMod.Buttons.Revenant
 
             // Restore original speed and conclude
             player.MyPhysics.Speed = originalSpeed;
+            SoundManager.Instance.StopSound(NewModAsset.DoomAwakeningSound.LoadAsset());
             RV.StalkingStates.Remove(player.PlayerId);
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>Doom Awakening ended.</color>"));
             Helpers.CreateAndShowNotification($"Doom Awakening killed {killCount} players", Color.red, null, null);
+            killedPlayers.Clear();
         }
     }
 }

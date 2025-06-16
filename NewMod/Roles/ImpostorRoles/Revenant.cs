@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Roles;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
 
 namespace NewMod.Roles.ImpostorRoles;
+
 public class Revenant : ImpostorRole, ICustomRole
 {
     public string RoleName => "Revenant";
@@ -29,12 +32,26 @@ public class Revenant : ImpostorRole, ICustomRole
         RoleHintType = RoleHintType.RoleTab
     };
     public static Dictionary<byte, FeignDeathInfo> FeignDeathStates = new Dictionary<byte, FeignDeathInfo>();
-    public static bool HasUsedFeignDeath = false;    
+    public static bool HasUsedFeignDeath = false;
     public static Dictionary<byte, bool> StalkingStates = new Dictionary<byte, bool>();
     public class FeignDeathInfo
     {
         public float Timer;
         public DeadBody DeadBody;
         public bool Reported;
+    }
+
+    [RegisterEvent]
+    public static void OnPlayerExit(PlayerLeaveEvent evt)
+    {
+        if (FeignDeathStates.ContainsKey(evt.ClientData.Character.PlayerId))
+        {
+            FeignDeathStates.Remove(evt.ClientData.Character.PlayerId);
+        }
+        if (StalkingStates.ContainsKey(evt.ClientData.Character.PlayerId))
+        {
+            StalkingStates.Remove(evt.ClientData.Character.PlayerId);
+        }
+        HasUsedFeignDeath = false;
     }
 }

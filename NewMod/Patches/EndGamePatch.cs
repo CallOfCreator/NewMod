@@ -10,12 +10,13 @@ using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using NewMod.Options.Roles.SpecialAgentOptions;
 using MiraAPI.GameOptions;
-using AmongUs.Data;
+using MiraAPI.Events;
 
 namespace NewMod.Patches
 {
     public static class EndGamePatch
     {
+        [RegisterEvent]
         public static void OnGameEnd(GameEndEvent evt)
         {
             EndGameManager endGameManager = evt?.EndGameManager;

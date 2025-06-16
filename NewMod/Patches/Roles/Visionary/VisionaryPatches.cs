@@ -4,11 +4,13 @@ using MiraAPI.Events.Vanilla.Usables;
 using NewMod.Utilities;
 using MiraAPI.Utilities;
 using Reactor.Utilities;
+using MiraAPI.Events;
 
 namespace NewMod.Patches.Roles.Visionary
 {
     public static class VisionaryVentPatch
     {
+        [RegisterEvent]
         public static void OnEnterVent(EnterVentEvent evt)
         {
             PlayerControl player = evt.Player;
@@ -26,7 +28,7 @@ namespace NewMod.Patches.Roles.Visionary
             }
         }
         [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.RpcExitVent))]
-        public static void Postfix(PlayerPhysics __instance, int id)
+        public static void Postfix(PlayerPhysics __instance, int ventId)
         {
             var chancePercentage = (int)(0.2f * 100);
             if (Helpers.CheckChance(chancePercentage))
@@ -47,6 +49,7 @@ namespace NewMod.Patches.Roles.Visionary
     }
     public static class VisionaryMurderPatch
     {
+        [RegisterEvent]
         public static void OnBeforeMurder(BeforeMurderEvent evt)
         {
             PlayerControl source = evt.Source;

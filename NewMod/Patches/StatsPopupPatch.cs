@@ -6,6 +6,9 @@ using Il2CppSystem.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
+
+using System.Linq;
+using System.Reflection;
 #if PC
 using AmongUs.Data.Player;
 using AmongUs.Data;
@@ -15,39 +18,45 @@ namespace NewMod.Patches
 {
     public static class CustomStatsManager
     {
-        private static readonly string SavePath = Path.Combine(Application.persistentDataPath, "customStats.dat");
+        private static readonly string SavePath = Path.Combine(Application.consoleLogPath, "customStats.dat");
         public static Dictionary<string, int> CustomRoleWins = new();
+        public static bool _loaded = false;
         public static void SaveCustomStats()
         {
             try
             {
-                using var writer = new BinaryWriter(File.Open(SavePath, FileMode.Create));
+                using var fs = new FileStream(
+                      SavePath,
+                      FileMode.Create,
+                      FileAccess.Write,
+                      FileShare.Write
+                  );
+                using var writer = new BinaryWriter(fs);
 
                 var allRoles = RoleManager.Instance.AllRoles;
                 writer.Write(allRoles.Count);
 
                 foreach (var role in allRoles)
                 {
-                    RoleTypes roleType = role.Role;
-                    int winCount = 0;
+                    string key;
+                    int wins;
 
                     if (role is ICustomRole customRole)
                     {
-                        string roleName = customRole.RoleName;
-                        winCount = CustomRoleWins.ContainsKey(roleName) ? CustomRoleWins[roleName] : 0;
-                        writer.Write(roleName);
+                        key = customRole.RoleName;
+                        wins = CustomRoleWins.TryGetValue(key, out var w) ? w : 0;
                     }
                     else
                     {
-                        #if PC
-                        winCount = (int)DataManager.Player.Stats.GetRoleStat(roleType, RoleStat.Wins);
-                        writer.Write(roleType.ToString());
-                        #else 
-                        winCount = (int)StatsManager.Instance.GetRoleWinCount(roleType);
-                        writer.Write(roleType.ToString());
-                        #endif
+#if PC
+                        key = role.NiceName;
+                        wins = (int)DataManager.Player.Stats.GetRoleStat(role.Role, RoleStat.Wins);
+#else
+                        wins = (int)StatsManager.Instance.GetRoleWinCount(roleType);
+#endif
                     }
-                    writer.Write(winCount);
+                    writer.Write(key);
+                    writer.Write(wins);
                 }
             }
             catch (Exception ex)
@@ -57,32 +66,34 @@ namespace NewMod.Patches
         }
         public static void LoadCustomStats()
         {
-            try
+            if (_loaded) return;
+
+            if (!File.Exists(SavePath))
             {
-                if (!File.Exists(SavePath))
-                {
-                    return;
-                }
-
-                using var reader = new BinaryReader(File.Open(SavePath, FileMode.Open));
-
-                int roleCount = reader.ReadInt32();
-                for (int i = 0; i < roleCount; i++)
-                {
-                    string roleIdentifier = reader.ReadString();
-                    int winCount = reader.ReadInt32();
-                    CustomRoleWins[roleIdentifier] = winCount;
-
-                }
+                return;
             }
-            catch (Exception ex)
+
+            using var fs = new FileStream(
+               SavePath,
+               FileMode.Open,
+               FileAccess.Read,
+               FileShare.ReadWrite
+           );
+            using var reader = new BinaryReader(fs);
+
+            int count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
             {
-                NewMod.Instance.Log.LogError(ex.ToString());
+                var key = reader.ReadString();
+                var wins = reader.ReadInt32();
+                CustomRoleWins[key] = wins;
             }
+            _loaded = true;
         }
         public static void IncrementRoleWin(ICustomRole customRole)
         {
             string roleName = customRole.RoleName;
+
             if (CustomRoleWins.ContainsKey(roleName))
             {
                 CustomRoleWins[roleName]++;
@@ -94,15 +105,15 @@ namespace NewMod.Patches
         }
         public static int GetRoleWins(ICustomRole customRole)
         {
-            return CustomRoleWins.ContainsKey(customRole.RoleName) ? CustomRoleWins[customRole.RoleName] : 0;
+            return CustomRoleWins.TryGetValue(customRole.RoleName, out var w) ? w : 0;
         }
     }
-    
-    #if PC
+
+#if PC
     [HarmonyPatch(typeof(PlayerStatsData), nameof(PlayerStatsData.SaveStats))]
-    #else
+#else
     [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.SaveStats))]
-    #endif
+#endif
     public class SaveStatsPatch
     {
         public static void Postfix()
@@ -111,26 +122,25 @@ namespace NewMod.Patches
         }
     }
 
-    #if PC
+#if PC
     [HarmonyPatch(typeof(PlayerStatsData), nameof(PlayerStatsData.GetRoleStat))]
-    #else
+#else
     [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.LoadStats))]
-    #endif
+#endif
     public class LoadStatsPatch
     {
-        #if PC
+#if PC
         public static void Postfix(PlayerStatsData __instance, RoleTypes role, StatID stat)
         {
             CustomStatsManager.LoadCustomStats();
         }
-        #else
+#else
         public static void Postfix(StatsManager __instance)
         {
             CustomStatsManager.LoadCustomStats();
         }
-        #endif
+#endif
     }
-
     [HarmonyPatch(typeof(StatsPopup), nameof(StatsPopup.DisplayRoleStats))]
     public class DisplayRoleStatsPatch
     {
@@ -156,32 +166,32 @@ namespace NewMod.Patches
                 {
                     roleName = role.NiceName;
                     roleColor = role.NameColor;
-                    #if PC
+#if PC
                     winCount = (int)DataManager.Player.Stats.GetRoleStat(roleType, RoleStat.Wins);
-                    #else
+#else
                     winCount = (int)StatsManager.Instance.GetRoleWinCount(roleType);
-                    #endif
+#endif
                 }
 
                 StatsPopup.AppendStat(stringBuilder, StringNames.StatsRoleWins, winCount, $"<color=#{ColorUtility.ToHtmlStringRGBA(roleColor)}>{roleName}</color>");
             }
 
-            #if PC
+#if PC
             foreach (var entry in StatsPopup.RoleSpecificStatsToShow)
             {
-               
+
                 StatID statID = entry.Key;
                 StringNames stringNames = entry.Value;
 
                 StatsPopup.AppendStat(stringBuilder, stringNames, DataManager.Player.Stats.GetStat(statID));
-    
+
             }
-            #else
+#else
             foreach (StringNames stringName in StatsPopup.RoleSpecificStatsToShow)
             {
                  StatsPopup.AppendStat(stringBuilder, stringName, StatsManager.Instance.GetStat(stringName));
             }
-            #endif
+#endif
             __instance.StatsText.text = stringBuilder.ToString();
 
             return false;

@@ -718,6 +718,7 @@ namespace NewMod.Utilities
                 Reported = false,
             };
             Revenant.FeignDeathStates[player.PlayerId] = info;
+
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You are now feigning death.\nYou will be revived in 10 seconds if unreported.</color>"));
 
             float timer = 10f;
