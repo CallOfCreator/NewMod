@@ -9,6 +9,8 @@ namespace NewMod.Patches.Compatibility
     {
         public static bool Prefix(AmongUsClient __instance)
         {
+            if (!ModCompatibility.IsLaunchpadLoaded()) return true;
+            
             var settings = OptionGroupSingleton<CompatibilityOptions>.Instance;
 
             if (!settings.AllowRevenantHitmanCombo)

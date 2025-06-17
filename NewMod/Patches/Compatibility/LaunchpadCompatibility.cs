@@ -6,15 +6,12 @@ using UnityEngine;
 
 namespace NewMod.Patches.Compatibility
 {
-    [HarmonyPatch]
     public static class LaunchpadCompatibility
     {
         static MethodBase TargetMethod()
         {
-            if (!ModCompatibility.LaunchpadLoaded(out var asm))
-            {
+            if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
                 return null;
-            }
 
             var type = asm.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
             var method = type?.GetMethod("OnTimerComplete", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -36,16 +33,12 @@ namespace NewMod.Patches.Compatibility
             return true;
         }
     }
-
-    [HarmonyPatch]
     public static class LaunchpadHackTextPatch
     {
         static MethodBase TargetMethod()
         {
-            if (!ModCompatibility.LaunchpadLoaded(out var asm))
-            {
+            if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
                 return null;
-            }
 
             var type = asm.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
             var method = type?.GetMethod("FixedUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);

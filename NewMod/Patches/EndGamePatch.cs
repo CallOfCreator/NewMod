@@ -149,7 +149,7 @@ namespace NewMod.Patches
             }
         }
 
-        private static RoleTypes GetRoleType<T>() where T : RoleBehaviour
+        private static RoleTypes GetRoleType<T>() where T : ICustomRole
         {
             ushort roleId = RoleId.Get<T>();
             return (RoleTypes)roleId;

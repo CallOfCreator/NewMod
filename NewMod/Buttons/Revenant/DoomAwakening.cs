@@ -86,7 +86,8 @@ namespace NewMod.Buttons.Revenant
             float originalSpeed = player.MyPhysics.Speed;
             player.MyPhysics.Speed *= 2f;
 
-            SoundManager.Instance.PlaySound(NewModAsset.DoomAwakeningSound.LoadAsset(), false, 1f, null);
+            var clip = NewModAsset.DoomAwakeningSound.LoadAsset();
+            SoundManager.Instance.PlaySound(clip, true, 1f, null);
 
             var fullScreen = HudManager.Instance.FullScreen;
             fullScreen.color = new Color(1f, 0f, 0f, 0f);
@@ -187,7 +188,7 @@ namespace NewMod.Buttons.Revenant
 
             // Restore original speed and conclude
             player.MyPhysics.Speed = originalSpeed;
-            SoundManager.Instance.StopSound(NewModAsset.DoomAwakeningSound.LoadAsset());
+            SoundManager.Instance.StopSound(clip);
             RV.StalkingStates.Remove(player.PlayerId);
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>Doom Awakening ended.</color>"));
             Helpers.CreateAndShowNotification($"Doom Awakening killed {killCount} players", Color.red, null, null);
