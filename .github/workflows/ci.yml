@@ -1,0 +1,81 @@
+name: NewMod CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - au-2025.3.25
+  pull_request:
+    branches:
+      - main
+      - dev
+      - au-2025.3.25
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BuildingInsideCI: true
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.cache/bepinex
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Setup .NET 8.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore NuGet Packages
+        run: dotnet restore NewMod/NewMod.csproj
+
+      - name: Build NewMod (Release)
+        run: dotnet build NewMod/NewMod.csproj --configuration Release --no-restore
+
+      - name: Build NewMod (Debug)
+        run: dotnet build NewMod/NewMod.csproj --configuration Debug --no-restore
+
+      - name: Upload NewMod DLL (Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NewMod
+          path: NewMod/bin/Release/net6.0/NewMod.dll
+
+      - name: Upload NewMod DLL (Debug)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NewMod-Debug
+          path: NewMod/bin/Debug/net6.0/NewMod.dll
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download Release DLL
+        uses: actions/download-artifact@v4
+        with:
+          name: NewMod
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.2.${{ github.run_number }}
+          files: NewMod/bin/Release/net6.0/NewMod.dll
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

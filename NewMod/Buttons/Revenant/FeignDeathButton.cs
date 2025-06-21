@@ -53,6 +53,14 @@ namespace NewMod.Buttons.Revenant
         {
             return role is Rev && !Rev.HasUsedFeignDeath;
         }
+        /// <summary>
+        /// Checks if this button can be used
+        /// </summary>
+        /// <returns>True if base conditions are met and the player hasn't used Feign Death; otherwise, false.</returns>
+        public override bool CanUse()
+        {
+            return base.CanUse() && !Rev.HasUsedFeignDeath;
+        }
 
         /// <summary>
         /// Invoked when the Feign Death button is clicked, starting the feign death coroutine.

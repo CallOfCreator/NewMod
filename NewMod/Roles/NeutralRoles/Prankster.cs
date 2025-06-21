@@ -7,8 +7,8 @@ namespace NewMod.Roles.NeutralRoles;
 public class Prankster : CrewmateRole, ICustomRole
 {
     public string RoleName => "Prankster";
-    public string RoleDescription => "Set up fake bodies to trick others. When reported, each fake body triggers a funny or deadly surprise for the reporter";
-    public string RoleLongDescription => RoleDescription;
+    public string RoleDescription => "Set up fake bodies to trick others";
+    public string RoleLongDescription => "When reported, each fake body triggers a funny or deadly surprise for the reporter";
     public Color RoleColor => new Color(1f, 0.55f, 0f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;

@@ -18,7 +18,7 @@ namespace NewMod.Buttons.Visionary
         /// <summary>
         /// The name displayed on this button.
         /// </summary>
-        public override string Name => "Show Screenshot";
+        public override string Name => "";
 
         /// <summary>
         /// The cooldown time for this button, based on <see cref="VisionaryOptions"/>.
@@ -36,9 +36,9 @@ namespace NewMod.Buttons.Visionary
         public override int MaxUses => (int)OptionGroupSingleton<VisionaryOptions>.Instance.MaxScreenshots;
 
         /// <summary>
-        /// The sprite asset for this button. Here, set to an empty sprite.
+        /// The sprite asset for this button.
         /// </summary>
-        public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+        public override LoadableAsset<Sprite> Sprite => NewModAsset.ShowScreenshotButton;
 
         /// <summary>
         /// The on-screen location where the button will appear.

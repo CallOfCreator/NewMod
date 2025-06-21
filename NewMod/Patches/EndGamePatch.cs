@@ -10,11 +10,13 @@ using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using NewMod.Options.Roles.SpecialAgentOptions;
 using MiraAPI.GameOptions;
+using MiraAPI.Events;
 
 namespace NewMod.Patches
 {
     public static class EndGamePatch
     {
+        [RegisterEvent]
         public static void OnGameEnd(GameEndEvent evt)
         {
             EndGameManager endGameManager = evt?.EndGameManager;
@@ -147,7 +149,7 @@ namespace NewMod.Patches
             }
         }
 
-        private static RoleTypes GetRoleType<T>() where T : RoleBehaviour
+        private static RoleTypes GetRoleType<T>() where T : ICustomRole
         {
             ushort roleId = RoleId.Get<T>();
             return (RoleTypes)roleId;
@@ -175,7 +177,7 @@ namespace NewMod.Patches
         }
     }
 
-    [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
+    [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))] 
     public static class CheckGameEndPatch
     {
         public static bool Prefix(ShipStatus __instance)
