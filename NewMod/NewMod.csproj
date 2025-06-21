@@ -14,7 +14,7 @@
 		<DefineConstants>TRACE;PC</DefineConstants>
 	</PropertyGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)' == 'ANDROID' ">
+	<PropertyGroup Condition=" '$(Configuration)' == 'ANDROID' And '$(BuildingInsideCI)' != 'true' ">
 	    <RestoreSources>$(RestoreSources);$(MSBuildProjectDirectory)\..\libs\Android</RestoreSources>
 		<DefineConstants>TRACE;ANDROID_BUILD</DefineConstants>
 	</PropertyGroup>
