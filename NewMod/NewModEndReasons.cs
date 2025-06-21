@@ -7,6 +7,7 @@ namespace NewMod
         PranksterWin = 112,
         SpecialAgentWin = 113,
         TheVisionaryWin = 114,
-        OverloadWin = 115
+        OverloadWin = 115,
+        EgoistWin = 116
     }
 }

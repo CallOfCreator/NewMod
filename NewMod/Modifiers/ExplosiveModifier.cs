@@ -13,6 +13,7 @@ public class ExplosiveModifier : TimedModifier
     public override string ModifierName => "Explosive";
     public override bool HideOnUi => false;
     public override bool AutoStart => true;
+    public override bool ShowInFreeplay => true;
     public override float Duration => OptionGroupSingleton<ExplosiveModifierOptions>.Instance.Duration;
     public override bool RemoveOnComplete => true;
     private bool isFlashing = false;
