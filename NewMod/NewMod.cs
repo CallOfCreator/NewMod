@@ -24,6 +24,7 @@ using UnityEngine.Events;
 using NewMod.Options.Roles.OverloadOptions;
 using MiraAPI.Events;
 using NewMod.Patches.Compatibility;
+using NewMod.Buttons.Overload;
 
 namespace NewMod;
 
@@ -119,9 +120,17 @@ public partial class NewMod : BasePlugin, IMiraPlugin
 
       foreach (var pc in PlayerControl.AllPlayerControls.ToArray().Where(p => p.AmOwner && p.Data.Role is OverloadRole))
       {
-         if (target.Data.Role is ICustomRole customRole)
+         if (target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
          {
-            // TODO: Awaiting appropriate event in MiraAPI to implement this functionality.
+            foreach (var buttonType in buttonsType)
+            {
+               var button = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == buttonType);
+
+               if (button != null)
+               {
+                  CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
+               }
+            }
          }
          else if (target.Data.Role is not ICustomRole)
          {

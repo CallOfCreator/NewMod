@@ -11,24 +11,16 @@ namespace NewMod.Modifiers
     public class StickyModifier : TimedModifier
     {
         public override string ModifierName => "Sticky";
-
-        public override bool AutoStart =>
-            OptionGroupSingleton<StickyModifierOptions>.Instance.EnableModifier;
-
-        public override float Duration =>
-            (int)OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDuration;
-
+        public override bool AutoStart => OptionGroupSingleton<StickyModifierOptions>.Instance.EnableModifier;
+        public override float Duration => (int)OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDuration;
         public override bool HideOnUi => false;
         public override bool ShowInFreeplay => true;
         public override bool RemoveOnComplete => true;
-
         public static List<PlayerControl> linkedPlayers = new();
-
         public override bool? CanVent()
         {
             return Player.Data.Role.CanVent;
         }
-
         public override string GetDescription()
         {
             float distance = OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDistance.Value;
@@ -36,7 +28,6 @@ namespace NewMod.Modifiers
 
             return $"{ModifierName}: Pulls nearby players within {distance} units for {duration} seconds.";
         }
-
         public override void FixedUpdate()
         {
             base.FixedUpdate();
@@ -56,10 +47,9 @@ namespace NewMod.Modifiers
                 }
             }
         }
-
         public IEnumerator CoFollowStickyPlayer(PlayerControl player)
         {
-            float duration = 5f;
+            float duration = Duration;
 
             var info = new StickyState
             {

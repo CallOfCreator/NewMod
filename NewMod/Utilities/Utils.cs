@@ -1,16 +1,23 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Hazel;
-using Reactor.Networking.Attributes;
-using UnityEngine;
-using Reactor.Utilities;
 using AmongUs.GameOptions;
+using Hazel;
 using MiraAPI.Networking;
 using MiraAPI.Roles;
-using NewMod.Roles.NeutralRoles;
-using System.Collections;
-using NewMod.Roles.ImpostorRoles;
 using MiraAPI.Utilities;
+using Reactor.Networking.Attributes;
+using Reactor.Utilities;
+using UnityEngine;
+using NewMod.Buttons.EnergyThief;
+using NewMod.Buttons.Necromancer;
+using NewMod.Buttons.Prankster;
+using NewMod.Buttons.Revenant;
+using NewMod.Buttons.SpecialAgent;
+using NewMod.Buttons.Visionary;
+using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
 
 namespace NewMod.Utilities
 {
@@ -769,5 +776,20 @@ namespace NewMod.Utilities
             }
             Object.Destroy(ghost);
         }
+
+        /// <summary>
+        /// Maps each role to its associated list of custom action button types.
+        /// Used by Overload to absorb abilities based on the prey's role.
+        /// </summary>
+        public static readonly Dictionary<System.Type, List<System.Type>> RoleToButtonsMap = new()
+        {
+            { typeof(EnergyThief),     new() { typeof(DrainButton) } },
+            { typeof(NecromancerRole), new() { typeof(ReviveButton) } },
+            { typeof(Prankster),       new() { typeof(FakeBodyButton) } },
+            { typeof(Revenant),        new() { typeof(FeignDeathButton), typeof(DoomAwakening) } },
+            { typeof(SpecialAgent),    new() { typeof(AssignButton) } },
+            { typeof(TheVisionary),    new() { typeof(CaptureButton), typeof(ShowScreenshotButton) } }
+            // TODO: Add Launchpad roles and their associated buttons here
+        };     
     }
 }

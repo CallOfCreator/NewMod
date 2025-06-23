@@ -21,21 +21,20 @@ namespace NewMod.Roles.NeutralRoles
         public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
         public RoleOptionsGroup RoleOptionsGroup => RoleOptionsGroup.Neutral;
 
-        public CustomRoleConfiguration Configuration =>
-            new(this)
-            {
-                AffectedByLightOnAirship = false,
-                CanGetKilled = true,
-                UseVanillaKillButton = false,
-                CanUseVent = false,
-                CanUseSabotage = false,
-                TasksCountForProgress = false,
-                ShowInFreeplay = true,
-                HideSettings = false,
-                MaxRoleCount = 1,
-                OptionsScreenshot = null,
-                Icon = null,
-            };
+        public CustomRoleConfiguration Configuration => new(this)
+        {
+            AffectedByLightOnAirship = false,
+            CanGetKilled = true,
+            UseVanillaKillButton = false,
+            CanUseVent = false,
+            CanUseSabotage = false,
+            TasksCountForProgress = false,
+            ShowInFreeplay = true,
+            HideSettings = false,
+            MaxRoleCount = 1,
+            OptionsScreenshot = null,
+            Icon = null,
+        };
 
         [RegisterEvent]
         public static void OnEjection(EjectionEvent evt)

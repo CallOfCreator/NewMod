@@ -67,8 +67,9 @@ public class OverloadRole : ImpostorRole, ICustomRole
     public static void UnlockFinalAbility()
     {
         var btn = Instantiate(HudManager.Instance.AbilityButton, HudManager.Instance.AbilityButton.transform.parent);
+        btn.name = "FinalButton";
+
         var rect = btn.GetComponent<RectTransform>();
-        rect.SetParent(HudManager.Instance.transform, false);
         rect.anchorMin = new(0.5f, 0.5f);
         rect.anchorMax = new(0.5f, 0.5f);
         rect.pivot = new(0.5f, 0.5f);

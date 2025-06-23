@@ -9,10 +9,8 @@ namespace NewMod.Modifiers
     public class FalseFormModifier : TimedModifier
     {
         public override string ModifierName => "FalseForm";
-        public override bool AutoStart =>
-            OptionGroupSingleton<FalseFormModifierOptions>.Instance.EnableModifier;
-        public override float Duration =>
-            (int)OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormDuration;
+        public override bool AutoStart => OptionGroupSingleton<FalseFormModifierOptions>.Instance.EnableModifier;
+        public override float Duration => (int)OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormDuration;
         public override bool ShowInFreeplay => true;
         public override bool HideOnUi => false;
         public override bool RemoveOnComplete => true;

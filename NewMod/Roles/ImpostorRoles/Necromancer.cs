@@ -22,4 +22,9 @@ public class NecromancerRole : ImpostorRole, ICustomRole
         OptionsScreenshot = NewModAsset.Banner,
         MaxRoleCount = 3,
     };
+    public TeamIntroConfiguration TeamConfiguration => new()
+    {
+        IntroTeamDescription = RoleDescription,
+        IntroTeamColor = RoleColor     
+    };
 }

@@ -19,6 +19,7 @@ using Reactor.Utilities.ImGui;
 using UnityEngine;
 using UnityEngine.Events;
 using Il2CppInterop.Runtime.Attributes;
+using NewMod.Buttons.Overload;
 
 namespace NewMod
 {
@@ -123,9 +124,20 @@ namespace NewMod
                   p.PlayerId != PlayerControl.LocalPlayer.PlayerId);
             if (prey != null)
             {
-               if (prey.Data.Role is ICustomRole customRole)
+               if (prey.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
                {
-                  Debug.Log("[Overload] Absorbing ability from custom role...");
+                  Debug.Log("Starting to absorb ability...");
+
+                  foreach (var buttonType in buttonsType)
+                  {
+                     var button = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == buttonType);
+
+                     if (button != null)
+                     {
+                        CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
+                     }
+                     Debug.Log($"[Overload] Successfully absorbed ability: {button.Name}");
+                  }
                }
                else if (prey.Data.Role.Ability != null)
                {

@@ -58,13 +58,14 @@
 
 # 🔗 Compatibility
 
-NewMod is compatible with yanplaRoles and LaunchpadReloaded, allowing for an enhanced experience with combined custom roles. Below are the supported versions of both mods:
+NewMod is compatible with the following mods, enabling an enhanced experience with combined custom roles. Below are the supported versions of each mod:
 
 
 | Mod Name     | Mod Version | GitHub Link                                          |
 |--------------|-------------|------------------------------------------------------|
 | yanplaRoles  | v0.1.6+     | [Download](https://github.com/yanpla/yanplaRoles)    |
 | LaunchpadReloaded | v0.3.4+ | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) |
+| LevelImposter | v0.20.3+ | [Download](https://github.com/DigiWorm0/LevelImposter) |
 
 
 ---
