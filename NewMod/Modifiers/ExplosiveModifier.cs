@@ -1,38 +1,29 @@
 using MiraAPI.GameOptions;
-using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.Utilities;
 using NewMod.Utilities;
-using NewMod.Options;
 using MiraAPI.Networking;
 using UnityEngine;
+using NewMod.Options.Modifiers;
 
 namespace NewMod.Modifiers;
 
-[RegisterModifier]
 public class ExplosiveModifier : TimedModifier
 {
     public override string ModifierName => "Explosive";
     public override bool HideOnUi => false;
     public override bool AutoStart => true;
-    public override float Duration => OptionGroupSingleton<GeneralOption>.Instance.Duration;
+    public override bool ShowInFreeplay => true;
+    public override float Duration => OptionGroupSingleton<ExplosiveModifierOptions>.Instance.Duration;
     public override bool RemoveOnComplete => true;
     private bool isFlashing = false;
-    public override bool CanVent()
+    public override bool? CanVent()
     {
         return Player.Data.Role.CanVent;
     }
-    public override string GetHudString()
+    public override string GetDescription()
     {
         return ModifierName + "\nif you die, all nearby players are killed";
-    }
-    public override void OnActivate()
-    {
-       NewMod.Instance.Log.LogInfo("Activated!");
-    }
-    public override void OnDeactivate()
-    {
-        NewMod.Instance.Log.LogInfo("Deactivated!");
     }
     public override void FixedUpdate()
     {
@@ -58,14 +49,14 @@ public class ExplosiveModifier : TimedModifier
     }
     public override void OnTimerComplete()
     {
-       
+
     }
     public override void OnDeath(DeathReason deathReason)
     {
         var murderer = Utils.GetKiller(Player);
         if (murderer == null) return;
 
-        var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<GeneralOption>.Instance.KillDistance, true);
+        var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<ExplosiveModifierOptions>.Instance.KillDistance, true);
 
         foreach (var player in closestPlayers)
         {
@@ -79,7 +70,7 @@ public class ExplosiveModifier : TimedModifier
             playKillSound: true,
             teleportMurderer: false
           );
-          NewMod.Instance.Log.LogInfo($"{player.Data.PlayerName} has been killed by the explosion.");
+            NewMod.Instance.Log.LogInfo($"{player.Data.PlayerName} has been killed by the explosion.");
         }
     }
 }

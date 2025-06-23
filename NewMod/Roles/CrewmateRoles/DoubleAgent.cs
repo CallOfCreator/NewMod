@@ -4,7 +4,6 @@ using MiraAPI.Utilities.Assets;
 
 namespace NewMod.Roles.CrewmateRoles;
 
-[RegisterCustomRole]
 public class DoubleAgent : CrewmateRole, ICustomRole
 {
     public string RoleName => "Double Agent";
@@ -12,6 +11,7 @@ public class DoubleAgent : CrewmateRole, ICustomRole
     public string RoleLongDescription => RoleDescription;
     public Color RoleColor => Palette.ImpostorRed;
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
+    public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Crewmate;
     public CustomRoleConfiguration Configuration => new(this)
     {
         MaxRoleCount = 1,

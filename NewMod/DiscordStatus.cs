@@ -8,13 +8,13 @@ namespace NewMod
     [HarmonyPatch(typeof(ActivityManager), nameof(ActivityManager.UpdateActivity))]
     public static class DiscordPlayStatusPatch
     {
-        public static void Prefix([HarmonyArgument(0)] Activity activity)
+        public static void Postfix([HarmonyArgument(0)] Activity activity)
         {
             if (activity == null) return;
             
-            var isBeta = false;
+            var isBeta = true;
 
-            string details = $"New Mod v{NewMod.ModVersion}" + (isBeta ? " (Beta)" : "(dev)");
+            string details = $"NewMod v{NewMod.ModVersion}" + (isBeta ? " (Beta)" : "(dev)");
 
             activity.Details = details;
 

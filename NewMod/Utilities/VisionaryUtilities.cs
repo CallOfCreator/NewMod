@@ -56,7 +56,7 @@ namespace NewMod.Utilities
             var screenshotPanel = new GameObject("Visionary_ScreenshotPanel");
             var canvas = screenshotPanel.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
+           
             var group = screenshotPanel.AddComponent<CanvasGroup>();
             group.alpha = 0;
 
@@ -84,10 +84,9 @@ namespace NewMod.Utilities
 
             var labelObj = new GameObject("Screenshot Label");
             labelObj.transform.SetParent(screenshotPanel.transform, false);
-            var label = labelObj.AddComponent<TextMeshPro>();
-            label.alignment = TextAlignmentOptions.Center;
+            var label = labelObj.AddComponent<Text>();
+            label.alignment = TextAnchor.MiddleCenter;
             label.fontSize = 20;
-
             DateTime captureTime = File.GetCreationTime(latestScreenshot);
             label.text = $"<color=green>*Screenshot taken at: {captureTime.ToShortTimeString()}*</color>";
 
@@ -168,10 +167,9 @@ namespace NewMod.Utilities
 
             var labelObj = new GameObject("Screenshot Label");
             labelObj.transform.SetParent(screenshotPanel.transform, false);
-            var label = labelObj.AddComponent<TextMeshPro>();
-            label.alignment = TextAlignmentOptions.Center;
+            var label = labelObj.AddComponent<Text>();
+            label.alignment = TextAnchor.MiddleCenter;
             label.fontSize = 20;
-
             DateTime captureTime = File.GetCreationTime(filePath);
             label.text = $"<color=green>*Screenshot taken at: {captureTime.ToShortTimeString()}*</color>";
 

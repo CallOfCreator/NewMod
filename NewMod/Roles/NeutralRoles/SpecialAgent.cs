@@ -1,11 +1,9 @@
 using MiraAPI.Roles;
-using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles;
 
-[RegisterCustomRole]
 public class SpecialAgent : CrewmateRole, ICustomRole
 {
     public static PlayerControl AssignedPlayer {get; set;}
@@ -13,7 +11,8 @@ public class SpecialAgent : CrewmateRole, ICustomRole
     public string RoleDescription => "Assigns secret missions to players, who must complete them or face consequences.";
     public string RoleLongDescription => RoleDescription;
     public Color RoleColor => Color.gray;
-    public ModdedRoleTeams Team => ModdedRoleTeams.Neutral;
+    public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
+    public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
     public CustomRoleConfiguration Configuration => new(this)
     {
         MaxRoleCount = 1,

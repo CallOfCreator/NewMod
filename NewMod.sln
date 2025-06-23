@@ -1,5 +1,4 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -9,12 +8,15 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		ANDROID|Any CPU = ANDROID|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{FC05DD49-CE3A-41F4-8452-37686FE23D0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FC05DD49-CE3A-41F4-8452-37686FE23D0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC05DD49-CE3A-41F4-8452-37686FE23D0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC05DD49-CE3A-41F4-8452-37686FE23D0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC05DD49-CE3A-41F4-8452-37686FE23D0A}.ANDROID|Any CPU.ActiveCfg = ANDROID|Any CPU
+		{FC05DD49-CE3A-41F4-8452-37686FE23D0A}.ANDROID|Any CPU.Build.0 = ANDROID|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

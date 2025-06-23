@@ -4,5 +4,7 @@ public enum CustomRPC
     Revive,
     Drain,
     FakeBody,
-    AssignMission
+    AssignMission,
+    MissionSuccess,
+    MissionFails
 }

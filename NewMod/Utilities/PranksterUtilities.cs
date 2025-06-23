@@ -2,6 +2,7 @@ using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using Reactor.Networking.Attributes;
+using MiraAPI.Utilities;
 
 namespace NewMod.Utilities
 {
@@ -19,15 +20,14 @@ namespace NewMod.Utilities
         [MethodRpc((uint)CustomRPC.FakeBody, LocalHandling = Reactor.Networking.Rpc.RpcLocalHandling.After)]
         public static void CreatePranksterDeadBody(PlayerControl player, byte parentId)
         {
+            var randPlayer = Utils.GetRandomPlayer(p => p.Data.IsDead);
             var deadBody = Object.Instantiate(GameManager.Instance.DeadBodyPrefab);
             deadBody.name = PranksterBodyName;
             deadBody.ParentId = parentId;
-            // Shuffle the player colors
-            var shuffledColors = Utils.ShuffleArrays(Palette.PlayerColors.ToArray());
 
-            for (int i = 0; i < deadBody.bodyRenderers.Length; i++)
+            foreach (SpriteRenderer renderer in deadBody.bodyRenderers)
             {
-                deadBody.bodyRenderers[i].color = shuffledColors[i % shuffledColors.Length];
+                randPlayer.SetPlayerMaterialColors(renderer);
             }
             deadBody.transform.position = player.GetTruePosition();
         }
