@@ -1,6 +1,5 @@
 bin/
 obj/
-libs/*
 References/
 /packages/
 riderModule.iml

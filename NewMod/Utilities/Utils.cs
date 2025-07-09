@@ -685,13 +685,17 @@ namespace NewMod.Utilities
         /// <returns>An IEnumerator for coroutine control.</returns>
         public static IEnumerator CaptureScreenshot(string filePath)
         {
+            var clip = NewModAsset.VisionarySound.LoadAsset();
+
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
+            SoundManager.Instance.PlaySound(clip, false, 1f, null);
             ScreenCapture.CaptureScreenshot(filePath, 4);
             VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);
             NewMod.Instance.Log.LogInfo($"Capturing screenshot at {System.IO.Path.GetFileName(filePath)}.");
 
             yield return new WaitForSeconds(0.2f);
-
+            
+            SoundManager.Instance.StopSound(clip);
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
         }
 
@@ -702,6 +706,8 @@ namespace NewMod.Utilities
         /// <returns>An IEnumerator for coroutine control.</returns>
         public static IEnumerator StartFeignDeath(PlayerControl player)
         {
+            var clip = NewModAsset.FeignDeathSound.LoadAsset();
+
             player.RpcCustomMurder(player,
                 didSucceed: true,
                 resetKillTimer: false,
@@ -709,6 +715,9 @@ namespace NewMod.Utilities
                 teleportMurderer: false,
                 showKillAnim: false,
                 playKillSound: false);
+
+
+            SoundManager.Instance.PlaySound(clip, false, 1f, null);
 
             if (player.AmOwner)
             {
@@ -738,6 +747,7 @@ namespace NewMod.Utilities
                 if (info.Reported)
                 {
                     yield return CoroutinesHelper.CoNotify("<color=red>Your feign death has been reported. You remain dead.</color>");
+                    SoundManager.Instance.StopSound(clip);
                     yield break;
                 }
             }
@@ -751,8 +761,9 @@ namespace NewMod.Utilities
 
             if (player.AmOwner)
             {
-                DestroyableSingleton<HudManager>.Instance.SetHudActive(player, player.Data.Role, true);
+                HudManager.Instance.SetHudActive(player, player.Data.Role, true);
             }
+            SoundManager.Instance.StopSound(clip);
         }
 
         /// <summary>

@@ -88,7 +88,10 @@ namespace NewMod.Buttons.EnergyThief
         /// </summary>
         protected override void OnClick()
         {
+            var clip = NewModAsset.DrainSound.LoadAsset();
+
             PendingEffectManager.AddPendingEffect(Target);
+            SoundManager.Instance.PlaySound(clip, false, 1f, null);
 
             Utils.RecordDrainCount(PlayerControl.LocalPlayer);
 
