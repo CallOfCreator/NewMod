@@ -1,7 +1,7 @@
 bin/
 obj/
-libs/*
 References/
+NewMod/Components
 /packages/
 riderModule.iml
 .idea

@@ -13,6 +13,7 @@ public static class OnGameEndPatch
         Utils.ResetDrainCount();
         Utils.ResetMissionSuccessCount();
         Utils.ResetMissionFailureCount();
+        Utils.ClearInjections();
         PranksterUtilities.ResetReportCount();
         VisionaryUtilities.DeleteAllScreenshots();
         Revenant.HasUsedFeignDeath = false;

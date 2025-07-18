@@ -5,12 +5,10 @@ on:
     branches:
       - main
       - dev
-      - au-2025.3.25
   pull_request:
     branches:
       - main
       - dev
-      - au-2025.3.25
   workflow_dispatch:
 
 jobs:
@@ -49,6 +47,9 @@ jobs:
       - name: Build NewMod (Debug)
         run: dotnet build NewMod/NewMod.csproj --configuration Debug --no-restore
 
+      - name: Build NewMod Android (Debug)
+        run: dotnet build NewMod/NewMod.csproj --configuration ANDROID --no-restore
+
       - name: Upload NewMod DLL (Release)
         uses: actions/upload-artifact@v4
         with:
@@ -60,6 +61,13 @@ jobs:
         with:
           name: NewMod-Debug
           path: NewMod/bin/Debug/net6.0/NewMod.dll
+
+      - name: Upload NewMod DLL (Android)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NewMod-Android
+          path: NewMod/bin/ANDROID/net6.0/NewMod.dll
+
 
   release:
     needs: build

@@ -18,6 +18,8 @@ using NewMod.Buttons.Visionary;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
+using MiraAPI.GameOptions;
+using NewMod.Options.Roles.InjectorOptions;
 
 namespace NewMod.Utilities
 {
@@ -45,6 +47,12 @@ namespace NewMod.Utilities
         /// Stores the number of failed missions per player, keyed by their ID.
         /// </summary>
         public static Dictionary<byte, int> MissionFailureCount = new Dictionary<byte, int>();
+
+        /// <summary>
+        /// Stores the player IDs of all players who have been injected by the Injector role.
+        /// Used to track injection progress for win condition.
+        /// </summary>
+        public static readonly HashSet<byte> InjectedPlayerIds = new();
 
         /// <summary>
         /// Holds a set of players who are currently waiting for an event or action.
@@ -343,6 +351,35 @@ namespace NewMod.Utilities
         public static void ResetMissionFailureCount()
         {
             MissionFailureCount.Clear();
+        }
+
+        /// <summary>
+        /// Registers a player as having been injected by the Injector.
+        /// Adds the player's ID to the injected players tracking list.
+        /// </summary>
+        /// <param name="target">The player who was injected.</param>
+        public static void RegisterPlayerInjection(PlayerControl target)
+        {
+            InjectedPlayerIds.Add(target.PlayerId);
+        }
+
+        /// <summary>
+        /// Gets the number of unique players that have been injected by the Injector.
+        /// Used to evaluate the Injector's win condition.
+        /// </summary>
+        /// <returns>The total number of unique injected players.</returns>
+        public static int GetInjectedCount()
+        {
+            return InjectedPlayerIds.Count;
+        }
+
+
+        /// <summary>
+        /// Clear's InjectedPlayerIds at end of the game
+        /// </summary>
+        public static void ClearInjections()
+        {
+            InjectedPlayerIds.Clear();
         }
 
         /// <summary>
@@ -685,13 +722,17 @@ namespace NewMod.Utilities
         /// <returns>An IEnumerator for coroutine control.</returns>
         public static IEnumerator CaptureScreenshot(string filePath)
         {
+            var clip = NewModAsset.VisionarySound.LoadAsset();
+
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
+            SoundManager.Instance.PlaySound(clip, false, 1f, null);
             ScreenCapture.CaptureScreenshot(filePath, 4);
             VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);
             NewMod.Instance.Log.LogInfo($"Capturing screenshot at {System.IO.Path.GetFileName(filePath)}.");
 
             yield return new WaitForSeconds(0.2f);
 
+            SoundManager.Instance.StopSound(clip);
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
         }
 
@@ -702,6 +743,8 @@ namespace NewMod.Utilities
         /// <returns>An IEnumerator for coroutine control.</returns>
         public static IEnumerator StartFeignDeath(PlayerControl player)
         {
+            var clip = NewModAsset.FeignDeathSound.LoadAsset();
+
             player.RpcCustomMurder(player,
                 didSucceed: true,
                 resetKillTimer: false,
@@ -709,6 +752,9 @@ namespace NewMod.Utilities
                 teleportMurderer: false,
                 showKillAnim: false,
                 playKillSound: false);
+
+
+            SoundManager.Instance.PlaySound(clip, false, 1f, null);
 
             if (player.AmOwner)
             {
@@ -738,6 +784,7 @@ namespace NewMod.Utilities
                 if (info.Reported)
                 {
                     yield return CoroutinesHelper.CoNotify("<color=red>Your feign death has been reported. You remain dead.</color>");
+                    SoundManager.Instance.StopSound(clip);
                     yield break;
                 }
             }
@@ -751,8 +798,9 @@ namespace NewMod.Utilities
 
             if (player.AmOwner)
             {
-                DestroyableSingleton<HudManager>.Instance.SetHudActive(player, player.Data.Role, true);
+                HudManager.Instance.SetHudActive(player, player.Data.Role, true);
             }
+            SoundManager.Instance.StopSound(clip);
         }
 
         /// <summary>
@@ -790,6 +838,112 @@ namespace NewMod.Utilities
             { typeof(SpecialAgent),    new() { typeof(AssignButton) } },
             { typeof(TheVisionary),    new() { typeof(CaptureButton), typeof(ShowScreenshotButton) } }
             // TODO: Add Launchpad roles and their associated buttons here
-        };     
+        };
+
+        /// <summary>
+        /// Represents the different types of serums that the Injector role can apply to players.
+        /// Each serum causes a unique effect that alters gameplay.
+        /// </summary>
+        public enum SerumType
+        {
+            /// <summary>
+            /// Grants the target a burst of speed for a limited duration.
+            /// </summary>
+            Adrenaline,
+
+            /// <summary>
+            /// Immobilizes the target, preventing them from moving for a short time.
+            /// </summary>
+            Paralysis,
+
+            /// <summary>
+            /// Causes nearby players to be gently pushed away from the target for several seconds,
+            /// as if repelled by a magnetic force.
+            /// </summary>
+            RepelSerum,
+
+            /// <summary>
+            /// Causes the target to bounce erratically for a few seconds.
+            /// </summary>
+            BounceSerum
+
+            // More Coming Soon!
+        }
+        [MethodRpc((uint)CustomRPC.ApplySerum)]
+
+        /// <summary>
+        /// Handles applying serum effects to target players for the Injector role.
+        /// </summary>
+        public static void RpcApplySerum(PlayerControl source, PlayerControl target, SerumType serumType)
+        {
+            switch (serumType)
+            {
+                case SerumType.Adrenaline:
+                    {
+                        float boostPercent = OptionGroupSingleton<InjectorOptions>.Instance.AdrenalineSpeedBoost;
+                        float multiplier = 1f + (boostPercent / 100f);
+                        float originalSpeed = target.MyPhysics.Speed;
+
+                        target.MyPhysics.Speed *= multiplier;
+
+                        Coroutines.Start(CoroutinesHelper.ResetSpeedAfterDelay(target, originalSpeed, 10f));
+                        break;
+                    }
+
+                case SerumType.Paralysis:
+                    {
+                        float duration = OptionGroupSingleton<InjectorOptions>.Instance.ParalysisDuration;
+
+                        target.MyPhysics.body.velocity = Vector2.zero;
+
+                        Coroutines.Start(CoroutinesHelper.EnableMovementAfterDelay(target, duration));
+                        break;
+                    }
+                case SerumType.BounceSerum:
+                    {
+                        float bounceDuration = OptionGroupSingleton<InjectorOptions>.Instance.BounceDuration;
+                        float h = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceHorizontal;
+                        float v = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceVertical;
+                        float maxRotate = OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect.Value;
+
+                        Vector2 force = new(Random.Range(-h, h), Random.Range(-v, v));
+
+                        target.MyPhysics.body.AddForce(force);
+
+                        if (OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants)
+                        {
+                            if (Helpers.CheckChance(OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect))
+                            {
+                                target.transform.Rotate(0, 0, Random.Range(-maxRotate, maxRotate));
+                            }
+                            Coroutines.Start(CoroutinesHelper.ResetRotationAfterDelay(target, bounceDuration));
+                        }
+                    }
+                    break;
+                case SerumType.RepelSerum:
+                    {
+                        float RepelDuration = OptionGroupSingleton<InjectorOptions>.Instance.RepelDuration;
+                        float RepelRange = OptionGroupSingleton<InjectorOptions>.Instance.RepelRange;
+                        float RepelForce = OptionGroupSingleton<InjectorOptions>.Instance.RepelForce;
+
+                        foreach (var other in PlayerControl.AllPlayerControls)
+                        {
+                            if (other == target || other.Data.IsDead && other.Data.Disconnected) continue;
+
+                            float dist = Vector2.Distance(other.GetTruePosition(), target.GetTruePosition());
+
+                            if (dist < RepelRange)
+                            {
+                                Vector2 dir = (other.GetTruePosition() - target.GetTruePosition()).normalized;
+                                other.MyPhysics.body.velocity += dir * RepelForce;
+                            }
+                        }
+                        Coroutines.Start(CoroutinesHelper.ResetRepelEffect(target, RepelDuration));
+                    }
+                    break;
+            }
+            RegisterPlayerInjection(target);
+        }
     }
 }
+

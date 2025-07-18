@@ -15,6 +15,7 @@ namespace NewMod.Patches.Roles.Visionary
         {
             PlayerControl player = evt.Player;
             var chancePercentage = (int)(0.2f * 100);
+
             if (Helpers.CheckChance(chancePercentage))
             {
                 string timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");

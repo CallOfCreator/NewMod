@@ -31,7 +31,7 @@ namespace NewMod
             var plugin = MiraPluginManager.GetPluginByGuid(pluginGuid);
             if (plugin == null) return;
 
-            foreach (var kv in plugin.GetRoles())
+            foreach (var kv in plugin.Roles)
             {
                 var role = kv.Value;
 

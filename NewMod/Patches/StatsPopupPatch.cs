@@ -6,13 +6,9 @@ using Il2CppSystem.Text;
 using System;
 using System.Collections.Generic;
 using System.IO;
-
-using System.Linq;
-using System.Reflection;
-#if PC
 using AmongUs.Data.Player;
 using AmongUs.Data;
-#endif
+
 
 namespace NewMod.Patches
 {
@@ -48,12 +44,9 @@ namespace NewMod.Patches
                     }
                     else
                     {
-#if PC
+
                         key = role.NiceName;
                         wins = (int)DataManager.Player.Stats.GetRoleStat(role.Role, RoleStat.Wins);
-#else
-                        wins = (int)StatsManager.Instance.GetRoleWinCount(roleType);
-#endif
                     }
                     writer.Write(key);
                     writer.Write(wins);
@@ -109,11 +102,8 @@ namespace NewMod.Patches
         }
     }
 
-#if PC
+
     [HarmonyPatch(typeof(PlayerStatsData), nameof(PlayerStatsData.SaveStats))]
-#else
-    [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.SaveStats))]
-#endif
     public class SaveStatsPatch
     {
         public static void Postfix()
@@ -122,31 +112,21 @@ namespace NewMod.Patches
         }
     }
 
-#if PC
+
     [HarmonyPatch(typeof(PlayerStatsData), nameof(PlayerStatsData.GetRoleStat))]
-#else
-    [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.LoadStats))]
-#endif
     public class LoadStatsPatch
     {
-#if PC
         public static void Postfix(PlayerStatsData __instance, RoleTypes role, StatID stat)
         {
             CustomStatsManager.LoadCustomStats();
         }
-#else
-        public static void Postfix(StatsManager __instance)
-        {
-            CustomStatsManager.LoadCustomStats();
-        }
-#endif
     }
     [HarmonyPatch(typeof(StatsPopup), nameof(StatsPopup.DisplayRoleStats))]
     public class DisplayRoleStatsPatch
     {
         public static bool Prefix(StatsPopup __instance)
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new();
             var allRoles = RoleManager.Instance.AllRoles;
 
             foreach (var role in allRoles)
@@ -166,17 +146,13 @@ namespace NewMod.Patches
                 {
                     roleName = role.NiceName;
                     roleColor = role.NameColor;
-#if PC
+
                     winCount = (int)DataManager.Player.Stats.GetRoleStat(roleType, RoleStat.Wins);
-#else
-                    winCount = (int)StatsManager.Instance.GetRoleWinCount(roleType);
-#endif
                 }
 
                 StatsPopup.AppendStat(stringBuilder, StringNames.StatsRoleWins, winCount, $"<color=#{ColorUtility.ToHtmlStringRGBA(roleColor)}>{roleName}</color>");
             }
 
-#if PC
             foreach (var entry in StatsPopup.RoleSpecificStatsToShow)
             {
 
@@ -186,12 +162,6 @@ namespace NewMod.Patches
                 StatsPopup.AppendStat(stringBuilder, stringNames, DataManager.Player.Stats.GetStat(statID));
 
             }
-#else
-            foreach (StringNames stringName in StatsPopup.RoleSpecificStatsToShow)
-            {
-                 StatsPopup.AppendStat(stringBuilder, stringName, StatsManager.Instance.GetStat(stringName));
-            }
-#endif
             __instance.StatsText.text = stringBuilder.ToString();
 
             return false;

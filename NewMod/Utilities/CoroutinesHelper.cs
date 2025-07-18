@@ -355,5 +355,67 @@ namespace NewMod.Utilities
             }
             yield break;
         }
+        /// <summary>
+        /// Resets the player's movement speed after the given delay.
+        /// Used to revert Adrenaline serum effect.
+        /// </summary>
+        /// <param name="target">The player whose speed will be reset.</param>
+        /// <param name="originalSpeed">The original speed value to restore.</param>
+        /// <param name="delay">The delay in seconds before restoring speed.</param>
+        public static IEnumerator ResetSpeedAfterDelay(PlayerControl target, float originalSpeed, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            if (target != null && !target.Data.IsDead)
+            {
+                target.MyPhysics.Speed = originalSpeed;
+            }
+        }
+
+        /// <summary>
+        /// Enables movement for a player after a given delay.
+        /// Used to revert Paralysis serum effect.
+        /// </summary>
+        /// <param name="target">The player to re-enable movement for.</param>
+        /// <param name="delay">The delay in seconds before allowing movement.</param>
+        public static IEnumerator EnableMovementAfterDelay(PlayerControl target, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            if (target != null && !target.Data.IsDead)
+            {
+                target.moveable = true;
+            }
+        }
+        /// <summary>
+        /// Resets the player's rotation after a specified delay.
+        /// Useful for restoring normal orientation after bounce/spin effects (e.g. Bounce Serum).
+        /// </summary>
+        /// <param name="target">The player whose rotation will be reset.</param>
+        /// <param name="delay">The delay in seconds before resetting rotation.</param>
+        public static IEnumerator ResetRotationAfterDelay(PlayerControl target, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            if (target != null && !target.Data.IsDead)
+            {
+                target.transform.rotation = Quaternion.identity;
+            }
+        }
+
+        /// <summary>
+        /// Resets any lingering repel-related effects on the target player after the Repel Serum expires.
+        /// </summary>
+        /// <param name="target">The player to reset after the repel effect.</param>
+        /// <param name="delay">The delay in seconds before performing the reset.</param>
+        public static IEnumerator ResetRepelEffect(PlayerControl target, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            if (!target.Data.IsDead && !target.Data.Disconnected)
+            {
+                target.MyPhysics.body.velocity = Vector2.zero;
+            }
+        }
     }
 }
