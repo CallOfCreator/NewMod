@@ -1,4 +1,5 @@
 namespace NewMod;
+
 public enum CustomRPC
 {
     Revive,
@@ -6,5 +7,6 @@ public enum CustomRPC
     FakeBody,
     AssignMission,
     MissionSuccess,
-    MissionFails
+    MissionFails,
+    ApplySerum
 }

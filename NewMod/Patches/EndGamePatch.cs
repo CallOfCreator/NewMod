@@ -11,6 +11,7 @@ using NewMod.Utilities;
 using NewMod.Options.Roles.SpecialAgentOptions;
 using MiraAPI.GameOptions;
 using MiraAPI.Events;
+using NewMod.Options.Roles.InjectorOptions;
 
 namespace NewMod.Patches
 {
@@ -177,7 +178,7 @@ namespace NewMod.Patches
         }
     }
 
-    [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))] 
+    [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
     public static class CheckGameEndPatch
     {
         public static bool Prefix(ShipStatus __instance)
@@ -218,6 +219,12 @@ namespace NewMod.Patches
                     int missionFailureCount = Utils.GetMissionFailureCount(player.PlayerId);
                     int netScore = missionSuccessCount - missionFailureCount;
                     shouldEndGame = netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
+                }
+                if (typeof(T) == typeof(InjectorRole))
+                {
+                    int injectedCount = Utils.GetInjectedCount();
+                    int required = OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
+                    shouldEndGame = injectedCount >= required;
                 }
                 if (shouldEndGame)
                 {
