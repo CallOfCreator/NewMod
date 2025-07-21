@@ -223,7 +223,7 @@ namespace NewMod.Patches
                 if (typeof(T) == typeof(InjectorRole))
                 {
                     int injectedCount = Utils.GetInjectedCount();
-                    int required = OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
+                    int required = (int)OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
                     shouldEndGame = injectedCount >= required;
                 }
                 if (shouldEndGame)

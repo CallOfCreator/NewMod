@@ -29,7 +29,7 @@ namespace NewMod.Buttons.Injector
         /// <summary>
         /// Maximum allowed injections, configured via <see cref="InjectorOptions"/>.
         /// </summary>
-        public override int MaxUses => OptionGroupSingleton<InjectorOptions>.Instance.MaxSerumUses;
+        public override int MaxUses => (int)OptionGroupSingleton<InjectorOptions>.Instance.MaxSerumUses;
 
         /// <summary>
         /// Effect duration — unused here since injection is instant.

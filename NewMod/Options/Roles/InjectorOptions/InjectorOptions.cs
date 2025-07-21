@@ -15,10 +15,10 @@ public class InjectorOptions : AbstractOptionGroup<InjectorRole>
     public float SerumCooldown { get; set; } = 20f;
 
     [ModdedNumberOption("Max Serum Uses", min: 1, max: 10)]
-    public int MaxSerumUses { get; set; } = 3;
+    public float MaxSerumUses { get; set; } = 3;
 
     [ModdedNumberOption("Injections Required to Win", min: 1, max: 10)]
-    public int RequiredInjectCount { get; set; } = 3;
+    public float RequiredInjectCount { get; set; } = 3;
 
     [ModdedNumberOption("Adrenaline Effect (+% Speed)", min: 10, max: 200, increment: 5, suffixType: MiraNumberSuffixes.Percent)]
     public float AdrenalineSpeedBoost { get; set; } = 10f;
