@@ -15,6 +15,9 @@
     <a href="https://github.com/CallOfCreator/NewMod/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/CallOfCreator/NewMod" alt="License">
     </a>
+     <a href="https://discord.gg/7UKG528WxZ">
+        <img src="https://img.shields.io/discord/1345441098851422259?label=Discord&logo=discord&color=5865F2&style=flat)" alt="Join">
+    </a>
 </p>
 
 
