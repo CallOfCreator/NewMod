@@ -9,6 +9,9 @@
     <a href="https://github.com/CallOfCreator/NewMod/stargazers">
         <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod?style=social" alt="GitHub stars">
     </a>
+    <a href="https://github.com/CallOfCreator/NewMod/releases">
+        <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
+    </a>
     <a href="https://github.com/CallOfCreator/NewMod/network/members">
         <img src="https://img.shields.io/github/forks/CallOfCreator/NewMod?style=social" alt="GitHub forks">
     </a>
