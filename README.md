@@ -51,7 +51,7 @@
 
 # 📥 Installation
 
-### For installation instructions, please visit: https://newmod.up.railway.app
+### For installation instructions, please visit: https://newmodau.vercel.app
 
 ---
 
@@ -61,7 +61,7 @@
    - **🖥️ Description:** Allows crewmates to access security cameras from anywhere.
    - **👀 Strategic Use:** Monitor other players without needing to go to the security room.
 
-### For role information, please visit: https://newmod.up.railway.app/roles
+### For role information, please visit: https://newmodau.vercel.app/roles
 ---
 
 # 🔗 Compatibility
