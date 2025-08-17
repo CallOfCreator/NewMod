@@ -15,10 +15,10 @@ public class InjectorOptions : AbstractOptionGroup<InjectorRole>
     public float SerumCooldown { get; set; } = 20f;
 
     [ModdedNumberOption("Max Serum Uses", min: 1, max: 10)]
-    public int MaxSerumUses { get; set; } = 3;
+    public float MaxSerumUses { get; set; } = 3f;
 
     [ModdedNumberOption("Injections Required to Win", min: 1, max: 10)]
-    public int RequiredInjectCount { get; set; } = 3;
+    public float RequiredInjectCount { get; set; } = 3f;
 
     [ModdedNumberOption("Adrenaline Effect (+% Speed)", min: 10, max: 200, increment: 5, suffixType: MiraNumberSuffixes.Percent)]
     public float AdrenalineSpeedBoost { get; set; } = 10f;
@@ -26,11 +26,8 @@ public class InjectorOptions : AbstractOptionGroup<InjectorRole>
     [ModdedNumberOption("Immobilize Duration", min: 1, max: 10, suffixType: MiraNumberSuffixes.Seconds)]
     public float ParalysisDuration { get; set; } = 4f;
 
-    [ModdedNumberOption("Bounce Force (Horizontal)", min: 0f, max: 2f, increment: 0.1f)]
-    public float BounceForceHorizontal { get; set; } = 0.5f;
-
-    [ModdedNumberOption("Bounce Force (Vertical)", min: 0f, max: 2f, increment: 0.1f)]
-    public float BounceForceVertical { get; set; } = 0.5f;
+    [ModdedNumberOption("Bounce Force (Horizontal)", min: 1f, max: 2f, increment: 0.1f)]
+    public float BounceForceHorizontal { get; set; } = 2f;
 
     [ModdedToggleOption("Enable Random Bounce Effects")]
     public bool EnableBounceVariants { get; set; } = true;

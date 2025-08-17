@@ -52,7 +52,8 @@ namespace NewMod.Roles.NeutralRoles
             int minVotes = OptionGroupSingleton<EgoistRoleOptions>.Instance.MinimumVotesToWin;
 
             var voters = PlayerControl
-                .AllPlayerControls.ToArray()
+                .AllPlayerControls
+                .ToArray()
                 .Where(p =>
                 {
                     var voteData = p.GetVoteData();

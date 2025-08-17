@@ -6,6 +6,7 @@ using NewMod.Options.Roles.EnergyThiefOptions;
 using ET = NewMod.Roles.NeutralRoles.EnergyThief;
 using UnityEngine;
 using NewMod.Utilities;
+using Rewired;
 
 namespace NewMod.Buttons.EnergyThief
 {
@@ -33,6 +34,11 @@ namespace NewMod.Buttons.EnergyThief
         /// The on-screen position of this button.
         /// </summary>
         public override ButtonLocation Location => ButtonLocation.BottomRight;
+        
+        /// <summary>
+        /// Default keybind for EnergyThief's Drain ability.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.F;
 
         /// <summary>
         /// The duration of the effect applied by this button; in this case, zero.
@@ -50,7 +56,7 @@ namespace NewMod.Buttons.EnergyThief
         /// <returns>The closest valid PlayerControl, or null if none.</returns>
         public override PlayerControl GetTarget()
         {
-              return PlayerControl.LocalPlayer.GetClosestPlayer(true, Distance, false, p => !p.Data.IsDead && !p.Data.Disconnected);
+            return PlayerControl.LocalPlayer.GetClosestPlayer(true, Distance, false, false, p => !p.Data.IsDead && !p.Data.Disconnected);
         }
 
         /// <summary>

@@ -21,7 +21,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Reactor" Version="2.3.1" />
-		<PackageReference Include="AllOfUs.MiraAPI" Version="0.2.0"/>
 		<PackageReference Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' " Include="AmongUs.GameLibs.Steam" Version="2025.4.15" PrivateAssets="all" />
 		<PackageReference Condition="'$(Configuration)' == 'ANDROID' " Include="AmongUs.GameLibs.Android" Version="2025.6.10" PrivateAssets="all" />
 		<PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" PrivateAssets="all" />
@@ -32,4 +31,10 @@
 	<ItemGroup>
 		<EmbeddedResource Include="Resources\**\*.*" />
 	</ItemGroup>
+
+	<ItemGroup>
+      <Reference Include="MiraAPI">
+      <HintPath>..\libs\MiraAPI.dll</HintPath>
+      </Reference>
+    </ItemGroup>
 </Project>

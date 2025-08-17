@@ -8,5 +8,10 @@ public enum CustomRPC
     AssignMission,
     MissionSuccess,
     MissionFails,
-    ApplySerum
+    ApplySerum,
+    Dash,
+    FearPulse,
+    SuppressionDome,
+    WitnessTrap,
+    NotifyChampion
 }

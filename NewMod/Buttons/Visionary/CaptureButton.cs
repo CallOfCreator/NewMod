@@ -7,6 +7,7 @@ using NewMod.Roles.CrewmateRoles;
 using UnityEngine;
 using Reactor.Utilities;
 using NewMod.Utilities;
+using Rewired;
 
 namespace NewMod.Buttons.Visionary
 {
@@ -44,6 +45,10 @@ namespace NewMod.Buttons.Visionary
         /// The location on-screen where this button appears.
         /// </summary>
         public override ButtonLocation Location => ButtonLocation.BottomLeft;
+        /// <summary>
+        /// Default keybind for Visionary's Capture ability.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.N;
 
         /// <summary>
         /// Handles the button click, capturing a screenshot and saving it to a unique path.

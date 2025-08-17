@@ -6,6 +6,7 @@ using Rev = NewMod.Roles.ImpostorRoles.Revenant;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
+using Rewired;
 
 namespace NewMod.Buttons.Revenant
 {
@@ -33,6 +34,13 @@ namespace NewMod.Buttons.Revenant
         /// Determines where on the screen this button appears.
         /// </summary>
         public override ButtonLocation Location => ButtonLocation.BottomRight;
+
+        /// <summary>
+        /// Default keybind for Revenant's Feign Death ability.  
+        /// Requires Ctrl as a modifier to prevent accidental use.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.T;
+        public override ModifierKey Modifier1 => ModifierKey.Control;
 
         /// <summary>
         /// The duration of any effect from this button. In this case, zero.

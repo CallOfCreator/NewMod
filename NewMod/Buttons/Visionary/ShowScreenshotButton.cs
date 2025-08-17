@@ -7,6 +7,8 @@ using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using System.Linq;
+using Rewired;
+using System.IO;
 
 namespace NewMod.Buttons.Visionary
 {
@@ -46,12 +48,17 @@ namespace NewMod.Buttons.Visionary
         public override ButtonLocation Location => ButtonLocation.BottomRight;
 
         /// <summary>
+        /// Default keybind for Visionary's Show ability.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.M;
+
+        /// <summary>
         /// Checks if the button can be used, ensuring there's at least one captured screenshot.
         /// </summary>
         /// <returns>True if base conditions are met and there is a screenshot, otherwise false.</returns>
         public override bool CanUse()
         {
-            return base.CanUse() && VisionaryUtilities.CapturedScreenshotPaths.Any();
+            return base.CanUse() && Directory.GetFiles(VisionaryUtilities.ScreenshotDirectory, "screenshot_*.png").Any();
         }
 
         /// <summary>

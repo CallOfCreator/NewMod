@@ -20,6 +20,8 @@ using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
 using MiraAPI.GameOptions;
 using NewMod.Options.Roles.InjectorOptions;
+using MiraAPI.Hud;
+using NewMod.Buttons.Pulseblade;
 
 namespace NewMod.Utilities
 {
@@ -68,7 +70,15 @@ namespace NewMod.Utilities
         /// Maps a player ID to a TextMeshPro timer display for missions.
         /// </summary>
         public static Dictionary<byte, TMPro.TextMeshPro> MissionTimer = new Dictionary<byte, TMPro.TextMeshPro>();
+        /// <summary>
+        /// A dictionary holding the strike kill counts for each player, indexed by their player ID.
+        /// </summary>
+        public static readonly Dictionary<byte, int> StrikeKills = new();
 
+        /// <summary>
+        /// The faction associated with the current role.
+        /// </summary>
+        public static NewModFaction Faction { get; }
         /// <summary>
         /// Retrieves a PlayerControl instance by its player ID.
         /// </summary>
@@ -354,6 +364,33 @@ namespace NewMod.Utilities
         }
 
         /// <summary>
+        /// Resets the strike count for all players.
+        /// Clears the stored strike kill counts for all players.
+        /// </summary>
+        public static void ResetStrikeCount()
+        {
+            StrikeKills.Clear();
+        }
+
+        /// <summary>
+        /// Registers a strike kill for a specific player.
+        /// Increments the strike kill count for the given killer player.
+        /// </summary>
+        /// <param name="killer">The player who made the strike kill.</param>
+        /// <param name="victim">The player who was struck (victim).</param>
+        public static void RegisterStrikeKill(PlayerControl killer, PlayerControl victim)
+        {
+            var playerId = killer.PlayerId;
+            StrikeKills[playerId] = StrikeKills.GetValueOrDefault(playerId) + 1;
+        }
+        /// <summary>
+        /// Retrieves the total number of strike kills for a specific player.
+        /// </summary>
+        /// <param name="playerId">The unique ID of the player whose strike count is being queried.</param>
+        /// <returns>The number of strike kills for the specified player.</returns>
+        public static int GetStrikes(byte playerId) => StrikeKills.GetValueOrDefault(playerId);
+
+        /// <summary>
         /// Registers a player as having been injected by the Injector.
         /// Adds the player's ID to the injected players tracking list.
         /// </summary>
@@ -373,15 +410,13 @@ namespace NewMod.Utilities
             return InjectedPlayerIds.Count;
         }
 
-
         /// <summary>
         /// Clear's InjectedPlayerIds at end of the game
         /// </summary>
-        public static void ClearInjections()
+        public static void ResetInjections()
         {
             InjectedPlayerIds.Clear();
         }
-
         /// <summary>
         /// Sends an RPC to revive a player from a dead body.
         /// </summary>
@@ -559,55 +594,64 @@ namespace NewMod.Utilities
                 MissionType.ReviveAndKill => "Revive a dead player using Necromancer powers and kill them again",
                 _ => "Unknown mission."
             };
-            switch (mission)
+            try
             {
-                case MissionType.KillMostWanted:
-                    var gameObj = new GameObject();
-                    var arrow = gameObj.AddComponent<ArrowBehaviour>();
-                    gameObj.transform.parent = mostwantedTarget.gameObject.transform;
-                    gameObj.layer = 5;
-                    var renderer = gameObj.AddComponent<SpriteRenderer>();
-                    renderer.sprite = NewModAsset.Arrow.LoadAsset();
-                    arrow.target = mostwantedTarget.transform.position;
-                    arrow.image = renderer;
+                switch (mission)
+                {
+                    case MissionType.KillMostWanted:
+                        NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: KillMostWanted");
+                        var gameObj = new GameObject();
+                        var arrow = gameObj.AddComponent<ArrowBehaviour>();
+                        gameObj.transform.parent = mostwantedTarget.gameObject.transform;
+                        gameObj.layer = 5;
+                        var renderer = gameObj.AddComponent<SpriteRenderer>();
+                        renderer.sprite = NewModAsset.Arrow.LoadAsset();
+                        arrow.target = mostwantedTarget.transform.position;
+                        arrow.image = renderer;
 
-                    SavePlayerRole(target.PlayerId, target.Data.Role);
+                        SavePlayerRole(target.PlayerId, target.Data.Role);
 
-                    if (!target.Data.Role.IsImpostor)
-                    {
                         target.RpcSetRole(RoleTypes.Impostor, true);
-                    }
-                    Coroutines.Start(CoroutinesHelper.CoHandleWantedTarget(arrow, mostwantedTarget, target));
 
-                    var rolesHistory = GetPlayerRolesHistory(target.PlayerId);
-                    if (rolesHistory.Count > 0)
-                    {
-                        var lastIndex = rolesHistory.Count - 1;
-                        var originalRole = rolesHistory[lastIndex];
-                        rolesHistory.RemoveAt(lastIndex);
-                        target.RpcSetRole(originalRole.Role, true);
-                    }
-                    break;
+                        Coroutines.Start(CoroutinesHelper.CoHandleWantedTarget(arrow, mostwantedTarget, target));
 
-                case MissionType.CreateFakeBodies:
-                    if (target.AmOwner)
-                    {
-                        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
-                    }
-                    Coroutines.Start(CoroutinesHelper.UsePranksterAbilities(target));
-                    break;
+                        var rolesHistory = GetPlayerRolesHistory(target.PlayerId);
+                        if (rolesHistory.Count > 0)
+                        {
+                            var lastIndex = rolesHistory.Count - 1;
+                            var originalRole = rolesHistory[lastIndex];
+                            rolesHistory.RemoveAt(lastIndex);
+                            target.RpcSetRole(originalRole.Role, true);
+                        }
+                        break;
 
-                case MissionType.DrainEnergy:
-                    if (target.AmOwner)
-                    {
-                        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain nearby players'energy</b></i></color>"));
-                    }
-                    Coroutines.Start(CoroutinesHelper.UseEnergyThiefAbilities(target));
-                    break;
+                    case MissionType.CreateFakeBodies:
+                        NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: CreateFakeBodies");
+                        if (target.AmOwner)
+                        {
+                            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
+                        }
+                        Coroutines.Start(CoroutinesHelper.UsePranksterAbilities(target));
+                        break;
 
-                case MissionType.ReviveAndKill:
-                    Coroutines.Start(CoroutinesHelper.CoReviveAndKill(target));
-                    break;
+                    case MissionType.DrainEnergy:
+                        NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: DrainEnergy");
+                        if (target.AmOwner)
+                        {
+                            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain nearby players'energy</b></i></color>"));
+                        }
+                        Coroutines.Start(CoroutinesHelper.UseEnergyThiefAbilities(target));
+                        break;
+
+                    case MissionType.ReviveAndKill:
+                        NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: ReviveAndKill");
+                        Coroutines.Start(CoroutinesHelper.CoReviveAndKill(target));
+                        break;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                NewMod.Instance.Log.LogError($"Failed to assign mission to {target.Data.PlayerName}. Reason: {ex.Message} | StackTrace: {ex.StackTrace}");
             }
             return selectedMission;
         }
@@ -636,7 +680,19 @@ namespace NewMod.Utilities
             {
                 SpecialAgent.AssignedPlayer = null;
             }
-            target.Data.Role.buttonManager.SetEnabled();
+            if (target.Data.Role is ICustomRole role)
+            {
+                if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
+                {
+                    foreach (var btnType in buttonTypes)
+                    {
+                        var btn = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == btnType);
+
+                        btn.Button.SetEnabled();
+                    }
+                }
+            }
+
         }
 
         [MethodRpc((uint)CustomRPC.MissionFails)]
@@ -665,7 +721,28 @@ namespace NewMod.Utilities
             {
                 SpecialAgent.AssignedPlayer = null;
             }
-            target.Data.Role.buttonManager.SetEnabled();
+            if (target.Data.Role is ICustomRole role)
+            {
+                if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
+                {
+                    foreach (var btnType in buttonTypes)
+                    {
+                        var btn = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == btnType);
+
+                        btn.Button.SetEnabled();
+                    }
+                }
+            }
+
+        }
+        public static string GetFactionDisplay()
+        {
+            return Faction switch
+            {
+                NewModFaction.Apex => $"<b><color=#FF5A5A>Apex</color></b>",
+                NewModFaction.Entropy => $"<b><color=#EAAA3E>Entropy</color></b>",
+                _ => $"Unknown"
+            };
         }
 
         /// <summary>
@@ -710,8 +787,18 @@ namespace NewMod.Utilities
 
             target.myTasks.Insert(0, Missionmessage);
             // Disable the Role Player's Ability
-            target.Data.Role.buttonManager.SetDisabled();
+            if (target.Data.Role is ICustomRole role)
+            {
+                if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
+                {
+                    foreach (var btnType in buttonTypes)
+                    {
+                        var btn = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == btnType);
 
+                        btn.Button.SetDisabled();
+                    }
+                }
+            }
             Coroutines.Start(CoroutinesHelper.CoMissionTimer(target, 60f));
         }
 
@@ -727,7 +814,6 @@ namespace NewMod.Utilities
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
             SoundManager.Instance.PlaySound(clip, false, 1f, null);
             ScreenCapture.CaptureScreenshot(filePath, 4);
-            VisionaryUtilities.CapturedScreenshotPaths.Add(filePath);
             NewMod.Instance.Log.LogInfo($"Capturing screenshot at {System.IO.Path.GetFileName(filePath)}.");
 
             yield return new WaitForSeconds(0.2f);
@@ -752,7 +838,6 @@ namespace NewMod.Utilities
                 teleportMurderer: false,
                 showKillAnim: false,
                 playKillSound: false);
-
 
             SoundManager.Instance.PlaySound(clip, false, 1f, null);
 
@@ -836,7 +921,8 @@ namespace NewMod.Utilities
             { typeof(Prankster),       new() { typeof(FakeBodyButton) } },
             { typeof(Revenant),        new() { typeof(FeignDeathButton), typeof(DoomAwakening) } },
             { typeof(SpecialAgent),    new() { typeof(AssignButton) } },
-            { typeof(TheVisionary),    new() { typeof(CaptureButton), typeof(ShowScreenshotButton) } }
+            { typeof(TheVisionary),    new() { typeof(CaptureButton), typeof(ShowScreenshotButton) } },
+            { typeof(PulseBlade),      new() { typeof(StrikeButton)}},
             // TODO: Add Launchpad roles and their associated buttons here
         };
 
@@ -869,8 +955,8 @@ namespace NewMod.Utilities
 
             // More Coming Soon!
         }
-        [MethodRpc((uint)CustomRPC.ApplySerum)]
 
+        [MethodRpc((uint)CustomRPC.ApplySerum)]
         /// <summary>
         /// Handles applying serum effects to target players for the Injector role.
         /// </summary>
@@ -894,7 +980,8 @@ namespace NewMod.Utilities
                     {
                         float duration = OptionGroupSingleton<InjectorOptions>.Instance.ParalysisDuration;
 
-                        target.MyPhysics.body.velocity = Vector2.zero;
+                        target.moveable = false;
+                        target.MyPhysics.inputHandler.enabled = false;
 
                         Coroutines.Start(CoroutinesHelper.EnableMovementAfterDelay(target, duration));
                         break;
@@ -903,12 +990,14 @@ namespace NewMod.Utilities
                     {
                         float bounceDuration = OptionGroupSingleton<InjectorOptions>.Instance.BounceDuration;
                         float h = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceHorizontal;
-                        float v = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceVertical;
+                        //float v = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceVertical;
                         float maxRotate = OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect.Value;
 
-                        Vector2 force = new(Random.Range(-h, h), Random.Range(-v, v));
+                        //Vector2 force = new(Random.Range(-h, h), Random.Range(-v, v));
 
-                        target.MyPhysics.body.AddForce(force);
+                        //target.MyPhysics.body.AddForce(force);
+
+                        Effects.Bounce(target.transform, bounceDuration, h);
 
                         if (OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants)
                         {
@@ -928,7 +1017,7 @@ namespace NewMod.Utilities
 
                         foreach (var other in PlayerControl.AllPlayerControls)
                         {
-                            if (other == target || other.Data.IsDead && other.Data.Disconnected) continue;
+                            if (other == target || other.Data.IsDead || other.Data.Disconnected) continue;
 
                             float dist = Vector2.Distance(other.GetTruePosition(), target.GetTruePosition());
 
@@ -943,6 +1032,45 @@ namespace NewMod.Utilities
                     break;
             }
             RegisterPlayerInjection(target);
+
+            if (source.AmOwner)
+            {
+                Helpers.CreateAndShowNotification($"Injected {target.Data.PlayerName} with {serumType}", new(0.9f, 0.3f, 0.1f), spr: NewModAsset.InjectIcon.LoadAsset());
+            }
+        }
+
+        /// <summary>
+        /// Tracks the camera on its current target for a given duration, 
+        /// then restores its position to the original state.  
+        /// Optionally applies a shake effect during the final moments.
+        /// </summary>
+        /// <param name="cam">The <see cref="FollowerCamera"/> instance to adjust.</param>
+        /// <param name="duration">The total duration, in seconds, to keep tracking before resetting.</param>
+        /// <returns>
+        /// An <see cref="IEnumerator"/> coroutine that handles timing and the optional shake effect.
+        /// </returns>
+        public static IEnumerator CoShakeCamera(FollowerCamera cam, float duration)
+        {
+            float timeElapsed = 0f;
+            Vector3 originalPos = cam.transform.position;
+            float shakeThreshold = 1.5f;
+
+            while (timeElapsed < duration)
+            {
+                timeElapsed += Time.deltaTime;
+                if ((duration - timeElapsed) <= shakeThreshold)
+                {
+                    float shakeMagnitude = 0.3f;
+                    Vector3 shakeOffset = Random.insideUnitSphere * shakeMagnitude;
+                    cam.transform.localPosition = originalPos + shakeOffset;
+                }
+                else
+                {
+                    cam.transform.localPosition = originalPos;
+                }
+                yield return null;
+            }
+            cam.transform.localPosition = originalPos;
         }
     }
 }
