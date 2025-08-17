@@ -1,7 +1,8 @@
 bin/
 obj/
 References/
-NewMod/Components
+NewMod/Components/Minigames
+NewMod/Components/Hidden.cs
 /packages/
 riderModule.iml
 .idea

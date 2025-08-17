@@ -7,6 +7,7 @@ using System.Linq;
 using TMPro;
 using MiraAPI.Networking;
 using NewMod.Roles.NeutralRoles;
+using Reactor.Utilities.Extensions;
 
 namespace NewMod.Utilities
 {
@@ -185,6 +186,7 @@ namespace NewMod.Utilities
                         yield break;
                     }
                 }
+                yield return null;
             }
         }
         /// <summary>
@@ -218,7 +220,7 @@ namespace NewMod.Utilities
                         ignoreColliders: true,
                         ignoreSource: true
                     )
-                    .Where(p => !p.Data.IsDead && !p.Data.Disconnected && p != PlayerControl.LocalPlayer)
+                    .Where(p => !p.Data.IsDead && !p.Data.Disconnected)
                     .ToList();
 
                     if (playersInRange.Count > 0)
@@ -253,6 +255,7 @@ namespace NewMod.Utilities
                         }
                     }
                 }
+                yield return null;
             }
         }
 
@@ -385,6 +388,7 @@ namespace NewMod.Utilities
             if (target != null && !target.Data.IsDead)
             {
                 target.moveable = true;
+                target.MyPhysics.inputHandler.enabled = true;
             }
         }
         /// <summary>
@@ -416,6 +420,11 @@ namespace NewMod.Utilities
             {
                 target.MyPhysics.body.velocity = Vector2.zero;
             }
+        }
+        public static IEnumerator DespawnCircle(GameObject go, float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            go.Destroy();
         }
     }
 }

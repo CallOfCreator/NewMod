@@ -7,6 +7,7 @@ using SA = NewMod.Roles.NeutralRoles.SpecialAgent;
 using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
+using Rewired;
 
 namespace NewMod.Buttons.SpecialAgent
 {
@@ -34,6 +35,11 @@ namespace NewMod.Buttons.SpecialAgent
         /// The on-screen location of this button.
         /// </summary>
         public override ButtonLocation Location => ButtonLocation.BottomLeft;
+
+        /// <summary>
+        /// Default keybind for Special Agent's Assign ability.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.H;
 
         /// <summary>
         /// The duration of any effect triggered by this button; here, it's zero.
@@ -69,18 +75,20 @@ namespace NewMod.Buttons.SpecialAgent
         /// </summary>
         protected override void OnClick()
         {
+            NewMod.Instance.Log.LogError("Special Agent assign menu open...");
             CustomPlayerMenu menu = CustomPlayerMenu.Create();
 
             SetTimerPaused(true);
 
             menu.Begin(
-                player => !player.Data.IsDead && 
-                          !player.Data.Disconnected && 
+                player => !player.Data.IsDead &&
+                          !player.Data.Disconnected &&
                           player.PlayerId != PlayerControl.LocalPlayer.PlayerId,
                 player =>
                 {
                     SA.AssignedPlayer = player;
                     Utils.RpcAssignMission(PlayerControl.LocalPlayer, SA.AssignedPlayer);
+                    NewMod.Instance.Log.LogError($"Assigning target: {SA.AssignedPlayer.Data.PlayerName}");
 
                     if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
                     {

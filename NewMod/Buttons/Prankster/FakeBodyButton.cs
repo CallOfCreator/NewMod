@@ -6,6 +6,7 @@ using NewMod.Options.Roles.PranksterOptions;
 using PRK = NewMod.Roles.NeutralRoles.Prankster;
 using UnityEngine;
 using NewMod.Utilities;
+using Rewired;
 
 namespace NewMod.Buttons.Prankster
 {
@@ -33,6 +34,11 @@ namespace NewMod.Buttons.Prankster
         /// Determines where on the screen this button will appear.
         /// </summary>
         public override ButtonLocation Location => ButtonLocation.BottomRight;
+
+        /// <summary>
+        /// Default keybind for Prankster's Fake Body ability.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.Z;
 
         /// <summary>
         /// The duration of any effect caused by this button press; in this case, no effect duration is used.

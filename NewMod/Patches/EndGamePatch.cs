@@ -12,6 +12,12 @@ using NewMod.Options.Roles.SpecialAgentOptions;
 using MiraAPI.GameOptions;
 using MiraAPI.Events;
 using NewMod.Options.Roles.InjectorOptions;
+using NewMod.Roles;
+using System;
+using NewMod.Roles.ImpostorRoles;
+using NewMod.Options.Roles.PulseBladeOptions;
+using MiraAPI.Utilities;
+using NewMod.Options.Roles.EnergyThiefOptions;
 
 namespace NewMod.Patches
 {
@@ -104,6 +110,21 @@ namespace NewMod.Patches
                     customWinColor = GetRoleColor(GetRoleType<SpecialAgent>());
                     endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
                     break;
+                case (GameOverReason)NewModEndReasons.InjectorWin:
+                    customWinText = "Injector Victory";
+                    customWinColor = GetRoleColor(GetRoleType<InjectorRole>());
+                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
+                    break;
+                case (GameOverReason)NewModEndReasons.PulseBladeWin:
+                    customWinText = "PulseBlade Victory";
+                    customWinColor = GetRoleColor(GetRoleType<PulseBlade>());
+                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
+                    break;
+                case (GameOverReason)NewModEndReasons.TyrantWin:
+                    customWinText = "Tyrant Victory";
+                    customWinColor = GetRoleColor(GetRoleType<Tyrant>());
+                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
+                    break;
                 default:
                     customWinText = string.Empty;
                     customWinColor = Color.white;
@@ -125,7 +146,7 @@ namespace NewMod.Patches
             }
         }
 
-        private static string GetRoleName(CachedPlayerData playerData, out Color roleColor)
+        public static string GetRoleName(CachedPlayerData playerData, out Color roleColor)
         {
             RoleTypes roleType = playerData.RoleWhenAlive;
             RoleBehaviour roleBehaviour = RoleManager.Instance.GetRole(roleType);
@@ -135,6 +156,11 @@ namespace NewMod.Patches
                 if (CustomRoleManager.GetCustomRoleBehaviour(roleType, out var customRole))
                 {
                     roleColor = customRole.RoleColor;
+
+                    if (customRole is INewModRole newmodRole)
+                    {
+                        return $"{newmodRole.RoleName}\n<size=65%>{Utils.GetFactionDisplay()}</size>";
+                    }
                     return customRole.RoleName;
                 }
                 else
@@ -184,11 +210,67 @@ namespace NewMod.Patches
         public static bool Prefix(ShipStatus __instance)
         {
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
+            if (CheckForEndGameFaction<PulseBlade>(__instance, (GameOverReason)NewModEndReasons.PulseBladeWin)) return false;
+            if (CheckForEndGameFaction<Tyrant>(__instance, (GameOverReason)NewModEndReasons.TyrantWin)) return false;
             if (CheckEndGameForRole<DoubleAgent>(__instance, (GameOverReason)NewModEndReasons.DoubleAgentWin)) return false;
             if (CheckEndGameForRole<SpecialAgent>(__instance, (GameOverReason)NewModEndReasons.SpecialAgentWin)) return false;
             if (CheckEndGameForRole<Prankster>(__instance, (GameOverReason)NewModEndReasons.PranksterWin, 3)) return false;
             if (CheckEndGameForRole<EnergyThief>(__instance, (GameOverReason)NewModEndReasons.EnergyThiefWin)) return false;
             return true;
+        }
+        public static bool CheckForEndGameFaction<TFaction>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where TFaction : INewModRole
+        {
+            var players = PlayerControl.AllPlayerControls.ToArray()
+            .Where(p => p.Data.Role is TFaction)
+            .Take(maxCount)
+            .ToList();
+
+            foreach (var player in players)
+            {
+                bool shouldEndGame = false;
+
+                if (typeof(TFaction) == typeof(PulseBlade))
+                {
+                    var opts = OptionGroupSingleton<PulseBladeOptions>.Instance;
+                    float requiredStrikes = opts.RequiredStrikes;
+                    float playersThreshold = opts.PlayersThreshold;
+
+                    var alives = Helpers.GetAlivePlayers();
+
+                    if (alives.Count > playersThreshold) continue;
+
+                    int strikes = Utils.GetStrikes(player.PlayerId);
+                    if (strikes >= requiredStrikes)
+                    {
+                        shouldEndGame = true;
+                    }
+                }
+                if (typeof(TFaction) == typeof(Tyrant))
+                {
+                    if (Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet)
+                    {
+                        shouldEndGame = true;
+
+                        var tyrantRole = player.Data.Role as Tyrant;
+                        byte champId = tyrantRole.GetChampion();
+                        var champion = Utils.PlayerById(champId);
+
+                        bool championWin = Tyrant.Outcome == Tyrant.ThroneOutcome.ChampionSideWin;
+
+                        if (champion && championWin)
+                        {
+                            EndGameResult.CachedWinners.Add(new(champion.Data));
+                        }
+                    }
+                }
+                if (shouldEndGame)
+                {
+                    GameManager.Instance.RpcEndGame(winReason, false);
+                    CustomStatsManager.IncrementRoleWin((INewModRole)player.Data.Role);
+                    return true;
+                }
+            }
+            return false;
         }
         public static bool CheckEndGameForRole<T>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where T : RoleBehaviour
         {
@@ -208,6 +290,13 @@ namespace NewMod.Patches
                     shouldEndGame = tasksCompleted && isSabotageActive;
                 }
                 if (typeof(T) == typeof(EnergyThief))
+                {
+                    int drainCount = Utils.GetDrainCount(player.PlayerId);
+                    int requiredDrainCount = (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.RequiredDrainCount;
+
+                    shouldEndGame = drainCount >= requiredDrainCount;
+                }
+                if (typeof(T) == typeof(Prankster))
                 {
                     int WinReportCount = 2;
                     int currentReportCount = PranksterUtilities.GetReportCount(player.PlayerId);

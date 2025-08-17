@@ -9,6 +9,7 @@ using UnityEngine.Events;
 using NewMod.Utilities;
 
 namespace NewMod.Roles.NeutralRoles;
+
 public class OverloadRole : ImpostorRole, ICustomRole
 {
     public string RoleName => "Overload";
@@ -36,7 +37,7 @@ public class OverloadRole : ImpostorRole, ICustomRole
     public static void OnRoundStart(RoundStartEvent evt)
     {
         if (PlayerControl.LocalPlayer.Data.Role is not OverloadRole) return;
-        
+
         if (evt.TriggeredByIntro)
         {
             AbsorbedAbilityCount = 0;
@@ -68,13 +69,10 @@ public class OverloadRole : ImpostorRole, ICustomRole
     {
         var btn = Instantiate(HudManager.Instance.AbilityButton, HudManager.Instance.AbilityButton.transform.parent);
         btn.name = "FinalButton";
-
-        var rect = btn.GetComponent<RectTransform>();
-        rect.anchorMin = new(0.5f, 0.5f);
-        rect.anchorMax = new(0.5f, 0.5f);
-        rect.pivot = new(0.5f, 0.5f);
-        rect.anchoredPosition = Vector2.zero;
-
+        btn.transform.SetParent(HudManager.Instance.transform.Find("Buttons"), false);
+        btn.GetComponent<RectTransform>().anchorMin = btn.GetComponent<RectTransform>().anchorMax = btn.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
+        btn.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        btn.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
         btn.OverrideText("OVERLOAD");
         btn.transform.SetAsLastSibling();
         var passive = btn.GetComponent<PassiveButton>();

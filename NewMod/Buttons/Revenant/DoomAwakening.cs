@@ -9,6 +9,8 @@ using RV = NewMod.Roles.ImpostorRoles.Revenant;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
+using TMPro;
+using Rewired;
 
 namespace NewMod.Buttons.Revenant
 {
@@ -37,6 +39,12 @@ namespace NewMod.Buttons.Revenant
         /// </summary>
         public override ButtonLocation Location => ButtonLocation.BottomLeft;
 
+        /// <summary>
+        /// Default keybind for Doom's Awakening ability.  
+        /// Requires Alt as a modifier to prevent accidental use.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.B;
+        public override ModifierKey Modifier1 => ModifierKey.Alt;
         /// <summary>
         /// Determines how long the effect lasts. Configured in <see cref="RevenantOptions"/>.
         /// </summary>
@@ -191,7 +199,9 @@ namespace NewMod.Buttons.Revenant
             SoundManager.Instance.StopSound(clip);
             RV.StalkingStates.Remove(player.PlayerId);
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>Doom Awakening ended.</color>"));
-            Helpers.CreateAndShowNotification($"Doom Awakening killed {killCount} players", Color.red, null, null);
+
+            var doomNotif = Helpers.CreateAndShowNotification($"<font=\"LiberationSans SDF\" material=\"LiberationSans SDF - Masked>Doom Awakening killed {killCount} players", Color.red, null, null);
+            doomNotif.Text.SetOutlineThickness(0.36f);
             killedPlayers.Clear();
         }
     }

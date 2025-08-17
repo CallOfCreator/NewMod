@@ -5,6 +5,7 @@ using NewMod.Options.Roles.NecromancerOptions;
 using NewMod.Roles.ImpostorRoles;
 using UnityEngine;
 using NewMod.Utilities;
+using Rewired;
 
 namespace NewMod.Buttons.Necromancer
 {
@@ -32,6 +33,11 @@ namespace NewMod.Buttons.Necromancer
         /// Determines how long the effect from clicking the button lasts. In this case, no duration is set.
         /// </summary>
         public override float EffectDuration => 0f;
+
+        /// <summary>
+        /// Default keybind for Necromancer's Revive ability.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.V;
 
         /// <summary>
         /// Defines where on the screen this button should appear.

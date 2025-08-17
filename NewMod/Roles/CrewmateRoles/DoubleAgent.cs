@@ -7,8 +7,8 @@ namespace NewMod.Roles.CrewmateRoles;
 public class DoubleAgent : CrewmateRole, ICustomRole
 {
     public string RoleName => "Double Agent";
-    public string RoleDescription => $"A Crewmate posing as an Impostor: You can't kill or vent, but you can sabotage and confuse the real Impostors. Complete all tasks and sabotage to win\n\nTeam: {Team}.";
-    public string RoleLongDescription => RoleDescription;
+    public string RoleDescription => "Mimic. Mislead. Win";
+    public string RoleLongDescription => $"A Crewmate posing as an Impostor: You can't kill or vent, but you can sabotage and confuse the real Impostors. Complete all tasks and sabotage to win\n\nTeam: {Team}.";
     public Color RoleColor => Palette.ImpostorRed;
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Crewmate;

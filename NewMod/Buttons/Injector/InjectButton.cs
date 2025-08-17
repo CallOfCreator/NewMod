@@ -7,6 +7,7 @@ using NewMod.Options.Roles.InjectorOptions;
 using MiraAPI.Utilities;
 using System;
 using static NewMod.Utilities.Utils;
+using Rewired;
 
 namespace NewMod.Buttons.Injector
 {
@@ -42,9 +43,14 @@ namespace NewMod.Buttons.Injector
         public override ButtonLocation Location => ButtonLocation.BottomLeft;
 
         /// <summary>
+        /// Default keybind for Injector's Inject ability.
+        /// </summary>
+        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.C;
+
+        /// <summary>
         /// Sprite/icon displayed on the button.
         /// </summary>
-        public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+        public override LoadableAsset<Sprite> Sprite => NewModAsset.InjectButton;
 
         /// <summary>
         /// Returns the closest valid player target within range,
@@ -81,10 +87,10 @@ namespace NewMod.Buttons.Injector
         /// </summary>
         protected override void OnClick()
         {
-            var serumValues = Enum.GetValues(typeof(SerumType));
-            SerumType randomSerum = (SerumType)serumValues.GetValue(UnityEngine.Random.Range(0, serumValues.Length));
-            
-            RpcApplySerum(PlayerControl.LocalPlayer, Target, randomSerum);
+            var values = (SerumType[])Enum.GetValues(typeof(SerumType));
+            var serum = values[UnityEngine.Random.Range(0, values.Length)];
+
+            RpcApplySerum(PlayerControl.LocalPlayer, Target, serum);
         }
     }
 }

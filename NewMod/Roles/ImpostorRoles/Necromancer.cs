@@ -7,7 +7,6 @@ using UnityEngine;
 
 namespace NewMod.Roles.ImpostorRoles;
 
-
 public class NecromancerRole : ImpostorRole, ICustomRole
 {
     public string RoleName => "Necromancer";

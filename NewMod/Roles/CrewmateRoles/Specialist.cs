@@ -7,6 +7,7 @@ using UnityEngine;
 using MiraAPI.Utilities.Assets;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Events;
+using MiraAPI.Utilities;
 
 namespace NewMod.Roles.CrewmateRoles;
 
@@ -37,7 +38,7 @@ public class Specialist : CrewmateRole, ICustomRole
     public static void OnTaskComplete(CompleteTaskEvent evt)
     {
         PlayerControl player = evt.Player;
-        if (!(player.Data.Role is Specialist)) return;
+        if (player.Data.Role is not Specialist) return;
 
         List<Action> abilityAction = new List<Action>
         {
@@ -47,8 +48,7 @@ public class Specialist : CrewmateRole, ICustomRole
                 if (target != null)
                 {
                    Utils.RpcRandomDrainActions(player, target);
-                   Coroutines.Start(CoroutinesHelper.CoNotify(
-                    $"<color=green>Energy Drain activated on {target.Data.PlayerName}!</color>"));
+                   Helpers.CreateAndShowNotification($"Energy Drain activated on {target.Data.PlayerName}!",Color.green);
                 }
             },
             () =>
@@ -58,15 +58,13 @@ public class Specialist : CrewmateRole, ICustomRole
                 if (closestBody != null)
                 {
                    Utils.RpcRevive(closestBody);
-                   Coroutines.Start(CoroutinesHelper.CoNotify(
-                    $"<color=green>Player {player.Data.PlayerName} has been revived.</color>"));
+                   Helpers.CreateAndShowNotification($"Player {player.Data.PlayerName} has been revived.", Color.green);
                 }
             },
             () =>
             {
                 PranksterUtilities.CreatePranksterDeadBody(player, player.PlayerId);
-                Coroutines.Start(CoroutinesHelper.CoNotify(
-                   "<color=green>Fake Body created!</color>"));
+                Helpers.CreateAndShowNotification("Fake Body created!", Color.green);
             },
             () =>
             {
@@ -80,8 +78,7 @@ public class Specialist : CrewmateRole, ICustomRole
             () =>
             {
                 Utils.RpcAssignMission(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer);
-                Coroutines.Start(CoroutinesHelper.CoNotify(
-                      "<color=red>You have been assigned a mission. Complete it or die.</color>"));
+                Helpers.CreateAndShowNotification("You have been assigned a mission. Complete it or die.", Color.red);
             }
         };
 
