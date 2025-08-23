@@ -14,10 +14,6 @@ public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
 {
     public SpriteRenderer toastRend;
     public TextMeshPro TimerText;
-    public float expandDuration = 0.20f;
-    public float collapseDuration = 0.18f;
-    public float overshoot = 1.06f;
-    private float collapsedX = 0.15f;
     public bool isExpanded = false;
 
     public void Awake()
