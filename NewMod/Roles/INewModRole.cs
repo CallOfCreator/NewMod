@@ -5,6 +5,7 @@ using NewMod.Utilities;
 
 namespace NewMod.Roles
 {
+    #pragma warning disable CS0108
     public interface INewModRole : ICustomRole
     {
         public static StringBuilder GetRoleTabText(ICustomRole role)

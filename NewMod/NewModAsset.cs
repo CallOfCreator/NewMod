@@ -1,14 +1,22 @@
+using Reactor.Utilities;
 using MiraAPI.Utilities.Assets;
+using UnityEngine;
 
 namespace NewMod;
 
 public static class NewModAsset
 {
+    public static AssetBundle Bundle = AssetBundleManager.Load("newmod");
     // Miscellaneous
     public static LoadableResourceAsset Banner { get; } = new("NewMod.Resources.optionImage.png");
     public static LoadableResourceAsset Arrow { get; } = new("NewMod.Resources.Arrow.png");
     public static LoadableResourceAsset ModLogo { get; } = new("NewMod.Resources.Logo.png");
+    public static LoadableResourceAsset CustomCursor { get; } = new("NewMod.Resources.cursor.png");
 
+    // NewMod's First Birthday Assets
+    public static LoadableResourceAsset MainMenuBG { get; } = new("NewMod.Resources.Birthday.newmod-birthday-v1.png");
+    public static LoadableAsset<GameObject> CustomLobby { get; } = new LoadableBundleAsset<GameObject>("CustomLobby", Bundle);
+    public static LoadableAsset<GameObject> Toast { get; } = new LoadableBundleAsset<GameObject>("Toast", Bundle);
     // Button icons
     public static LoadableResourceAsset SpecialAgentButton { get; } = new("NewMod.Resources.givemission.png");
     public static LoadableResourceAsset ShowScreenshotButton { get; } = new("NewMod.Resources.showscreenshot.png");

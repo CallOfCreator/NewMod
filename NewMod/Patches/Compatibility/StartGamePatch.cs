@@ -30,14 +30,6 @@ namespace NewMod.Patches.Compatibility
                     }
                 }
             }
-            if (settings.Compatibility == CompatibilityOptions.ModPriority.PreferNewMod)
-            {
-                ModCompatibility.DisableRole("Medic", ModCompatibility.LaunchpadReloaded_GUID);
-            }
-            else
-            {
-                ModCompatibility.DisableRole("Necromancer", NewMod.Id);
-            }
             return true;
         }
     }

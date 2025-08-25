@@ -1,14 +1,26 @@
 using System;
 
-namespace NewMod;
-public static class NewModDateTime
+namespace NewMod
 {
-    public static DateTime NewModBirthday
+    public static class NewModDateTime
     {
-        get
+        public static DateTime NewModBirthday
         {
-            var thisYear = new DateTime(DateTime.Now.Year, 8, 28);
-            return DateTime.Now <= thisYear ? thisYear : new DateTime(DateTime.Now.Year + 1, 8, 28);
+            get
+            {
+                var thisYear = new DateTime(DateTime.Now.Year, 8, 28, 16, 0, 0);
+                return DateTime.Now <= thisYear ? thisYear : new DateTime(DateTime.Now.Year + 1, 8, 28);
+            }
         }
+        public static DateTime NewModBirthdayWeekEnd
+        {
+            get
+            {
+                return NewModBirthday.AddDays(7);
+            }
+        }
+
+        public static bool IsNewModBirthdayWeek =>
+            DateTime.Now >= NewModBirthday && DateTime.Now <= NewModBirthdayWeekEnd;
     }
 }

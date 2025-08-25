@@ -9,11 +9,6 @@ using NewMod.Modifiers;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
-using NewMod.Buttons.EnergyThief;
-using NewMod.Buttons.SpecialAgent;
-using NewMod.Buttons.Visionary;
-using NewMod.Buttons.Prankster;
-using NewMod.Buttons.Necromancer;
 using Reactor.Utilities.Attributes;
 using Reactor.Utilities.ImGui;
 using UnityEngine;
@@ -42,16 +37,6 @@ namespace NewMod
             if (!isFreeplay) return;
             PlayerControl.LocalPlayer.RpcRemoveModifier<ExplosiveModifier>();
          }
-         if (GUILayout.Button("Disable Collider"))
-         {
-            if (!isFreeplay) return;
-            PlayerControl.LocalPlayer.Collider.enabled = false;
-         }
-         if (GUILayout.Button("Enable Collider"))
-         {
-            if (!isFreeplay) return;
-            PlayerControl.LocalPlayer.Collider.enabled = true;
-         }
          if (GUILayout.Button("Become Necromancer"))
          {
             if (!isFreeplay) return;
@@ -79,27 +64,9 @@ namespace NewMod
          }
          if (GUILayout.Button("Increases Uses by 3"))
          {
-            var player = PlayerControl.LocalPlayer;
-            if (player.Data.Role is NecromancerRole)
+            foreach (var button in CustomButtonManager.Buttons)
             {
-               CustomButtonSingleton<ReviveButton>.Instance.IncreaseUses(3);
-            }
-            else if (player.Data.Role is EnergyThief)
-            {
-               CustomButtonSingleton<DrainButton>.Instance.IncreaseUses(3);
-            }
-            else if (player.Data.Role is SpecialAgent)
-            {
-               CustomButtonSingleton<AssignButton>.Instance.IncreaseUses(3);
-            }
-            else if (player.Data.Role is Prankster)
-            {
-               CustomButtonSingleton<FakeBodyButton>.Instance.IncreaseUses(3);
-            }
-            else
-            {
-               CustomButtonSingleton<CaptureButton>.Instance.IncreaseUses(3);
-               CustomButtonSingleton<ShowScreenshotButton>.Instance.IncreaseUses(3);
+               button.SetUses(3);
             }
          }
          if (GUILayout.Button("Randomly Cast a Vote"))

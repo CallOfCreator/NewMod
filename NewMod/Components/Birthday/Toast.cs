@@ -1,0 +1,67 @@
+using System;
+using System.Collections;
+using Reactor.Utilities;
+using TMPro;
+using UnityEngine;
+using NewMod;
+using NewMod.Utilities;
+using Reactor.Utilities.Attributes;
+using Il2CppInterop.Runtime.Attributes;
+
+[RegisterInIl2Cpp]
+public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
+{
+    public SpriteRenderer toastRend;
+    public TextMeshPro TimerText;
+    public bool isExpanded = false;
+    public void Awake()
+    {
+        toastRend = transform.Find("Background").GetComponent<SpriteRenderer>();
+        TimerText = transform.Find("Timer").GetComponent<TextMeshPro>();
+    }
+    public static Toast CreateToast()
+    {
+        var gameObject = Instantiate(NewModAsset.Toast.LoadAsset(), HudManager.Instance.transform);
+        var toast = gameObject.AddComponent<Toast>();
+        return toast;
+    }
+    [HideFromIl2Cpp]
+    public void SetText(string msg)
+    {
+        if (TimerText) TimerText.text = msg;
+    }
+
+    [HideFromIl2Cpp]
+    public void StartCountdown(TimeSpan duration)
+    {
+        Coroutines.Start(CoCountdown(duration));
+    }
+    [HideFromIl2Cpp]
+    public IEnumerator CoCountdown(TimeSpan span)
+    {
+        var end = DateTime.UtcNow + span;
+        while (true)
+        {
+            var left = end - DateTime.UtcNow;
+            if (left.TotalSeconds <= 0) break;
+
+            if (TimerText)
+                TimerText.text = Utils.FormatSpan(left);
+
+            yield return new WaitForSecondsRealtime(0.2f);
+        }
+        if (TimerText) TimerText.text = "00:00:00:00";
+
+        DisconnectAllPlayers();
+    }
+    [HideFromIl2Cpp]
+    public static void DisconnectAllPlayers()
+    {
+        var client = AmongUsClient.Instance;
+        if (client.GameState == InnerNet.InnerNetClient.GameStates.Started) return;
+
+        client.LastCustomDisconnect =
+            "The Birthday Update is now live! Please restart to see the new lobby and menu style.";
+        client.HandleDisconnect(DisconnectReasons.Custom);
+    }
+}

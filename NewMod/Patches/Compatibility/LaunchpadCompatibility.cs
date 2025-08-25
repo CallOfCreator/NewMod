@@ -1,4 +1,3 @@
-using HarmonyLib;
 using NewMod.Roles.ImpostorRoles;
 using System.Reflection;
 using TMPro;
@@ -33,6 +32,7 @@ namespace NewMod.Patches.Compatibility
             return true;
         }
     }
+
     public static class LaunchpadHackTextPatch
     {
         static MethodBase TargetMethod()
@@ -54,6 +54,30 @@ namespace NewMod.Patches.Compatibility
             {
                 hackedText.SetText("");
                 Debug.Log($"hackedText: {hackedText.text}");
+            }
+        }
+    }
+
+    public static class LaunchpadTagSpacingPatch
+    {
+        static MethodBase TargetMethod()
+        {
+            if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
+                return null;
+
+            var type = asm.GetType("LaunchpadReloaded.Components.PlayerTagManager");
+            var method = type?.GetMethod("UpdatePosition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            return method;
+        }
+
+        static void Postfix(object __instance)
+        {
+            var type = __instance.GetType();
+            var tagHolderObj = type.GetField("tagHolder", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(__instance);
+            if (tagHolderObj is Transform holder)
+            {
+                holder.localPosition = new Vector3(0f, 0.5491f, -0.35f);
+                holder.localScale = new Vector3(0.7455f, 1f, 1f);
             }
         }
     }

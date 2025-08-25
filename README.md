@@ -9,11 +9,17 @@
     <a href="https://github.com/CallOfCreator/NewMod/stargazers">
         <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod?style=social" alt="GitHub stars">
     </a>
+    <a href="https://github.com/CallOfCreator/NewMod/releases">
+        <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
+    </a>
     <a href="https://github.com/CallOfCreator/NewMod/network/members">
         <img src="https://img.shields.io/github/forks/CallOfCreator/NewMod?style=social" alt="GitHub forks">
     </a>
     <a href="https://github.com/CallOfCreator/NewMod/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/CallOfCreator/NewMod" alt="License">
+    </a>
+     <a href="https://discord.gg/7UKG528WxZ">
+        <img src="https://img.shields.io/discord/1345441098851422259?label=Discord&logo=discord&color=5865F2&style=flat)" alt="Join">
     </a>
 </p>
 
@@ -39,12 +45,13 @@
 | v1.0.0      | 2024.8.13 & 2024.10.29 | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.0.0/NewMod.dll) |
 | v1.1.0      | 2024.11.26             | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.1.0/NewMod.dll) |
 | v1.2.0      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.0/NewMod.zip)
+| v1.2.1      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.1/NewMod.zip) |
 
 ---
 
 # 📥 Installation
 
-### For installation instructions, please visit: https://newmod.up.railway.app
+### For installation instructions, please visit: https://newmodau.vercel.app
 
 ---
 
@@ -54,7 +61,7 @@
    - **🖥️ Description:** Allows crewmates to access security cameras from anywhere.
    - **👀 Strategic Use:** Monitor other players without needing to go to the security room.
 
-### For role information, please visit: https://newmod.up.railway.app/roles
+### For role information, please visit: https://newmodau.vercel.app/roles
 ---
 
 # 🔗 Compatibility
