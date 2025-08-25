@@ -18,7 +18,6 @@ using NewMod.Roles.ImpostorRoles;
 using MiraAPI.Events.Vanilla.Gameplay;
 using NewMod.Roles.NeutralRoles;
 using MiraAPI.Roles;
-using System;
 using MiraAPI.Hud;
 using UnityEngine.Events;
 using NewMod.Options.Roles.OverloadOptions;

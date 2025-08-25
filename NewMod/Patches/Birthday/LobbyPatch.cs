@@ -48,10 +48,6 @@ namespace NewMod.Patches.Birthday
                 TimeSpan countdown = NewModDateTime.NewModBirthday - DateTime.Now;
                 toast.StartCountdown(countdown);
             }
-            else
-            {
-                toast.gameObject.SetActive(false);
-            }
 
             if (!NewModDateTime.IsNewModBirthdayWeek) return;
 
@@ -71,9 +67,8 @@ namespace NewMod.Patches.Birthday
                 wardrobe.transform.localPosition = new Vector3(4.6701f, -0.0529f, 0f);
                 wardrobe.transform.localScale = new Vector3(0.7301f, 0.7f, 1f);
             }
-            Debug.Log(__instance.SpawnPositions.Length);
-
             __instance.SpawnPositions = new Vector2[BirthdaySpawns.Length];
+            
             for (int i = 0; i < BirthdaySpawns.Length; i++)
             {
                 __instance.SpawnPositions[i] = BirthdaySpawns[i];

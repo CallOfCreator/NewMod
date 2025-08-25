@@ -7,7 +7,6 @@ using NewMod;
 using NewMod.Utilities;
 using Reactor.Utilities.Attributes;
 using Il2CppInterop.Runtime.Attributes;
-using UnityEngine.Events;
 
 [RegisterInIl2Cpp]
 public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
@@ -15,13 +14,11 @@ public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
     public SpriteRenderer toastRend;
     public TextMeshPro TimerText;
     public bool isExpanded = false;
-
     public void Awake()
     {
         toastRend = transform.Find("Background").GetComponent<SpriteRenderer>();
         TimerText = transform.Find("Timer").GetComponent<TextMeshPro>();
     }
-
     public static Toast CreateToast()
     {
         var gameObject = Instantiate(NewModAsset.Toast.LoadAsset(), HudManager.Instance.transform);
@@ -55,11 +52,16 @@ public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
         }
         if (TimerText) TimerText.text = "00:00:00:00";
 
-        ShowPopup();
+        DisconnectAllPlayers();
     }
     [HideFromIl2Cpp]
-    public static void ShowPopup()
+    public static void DisconnectAllPlayers()
     {
-        DisconnectPopup.Instance.ShowCustom("The Birthday Update is now live! Please restart to see the new lobby and menu style.");
+        var client = AmongUsClient.Instance;
+        if (client.GameState == InnerNet.InnerNetClient.GameStates.Started) return;
+
+        client.LastCustomDisconnect =
+            "The Birthday Update is now live! Please restart to see the new lobby and menu style.";
+        client.HandleDisconnect(DisconnectReasons.Custom);
     }
 }

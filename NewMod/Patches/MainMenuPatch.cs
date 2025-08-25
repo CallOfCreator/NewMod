@@ -52,7 +52,7 @@ namespace NewMod.Patches
             {
                 // Preserve the old layout when it's not the birthday update
                 var Logo = new GameObject("NewModLogo");
-                Logo.transform.SetParent(RightPanel, false);
+                Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
                 Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
                 LogoSprite = Logo.AddComponent<SpriteRenderer>();
                 LogoSprite.sprite = NewModAsset.ModLogo.LoadAsset();
@@ -78,7 +78,7 @@ namespace NewMod.Patches
         {
             if (!NewModDateTime.IsNewModBirthdayWeek) return;
 
-            __instance.transform.Find("MainUI/AspectScaler/RightPanel").gameObject.SetActive(false);
+           RightPanel.gameObject.SetActive(false);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace NewMod
         {
             get
             {
-                var thisYear = new DateTime(DateTime.Now.Year, 8, 28);
+                var thisYear = new DateTime(DateTime.Now.Year, 8, 28, 16, 0, 0);
                 return DateTime.Now <= thisYear ? thisYear : new DateTime(DateTime.Now.Year + 1, 8, 28);
             }
         }
