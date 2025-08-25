@@ -97,7 +97,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
          var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
          if (deadBodies != null && deadBodies.Count > 0)
          {
-            var randomIndex = UnityEngine.Random.Range(0, deadBodies.Count);
+            var randomIndex = Random.Range(0, deadBodies.Count);
             var randomBodyPosition = deadBodies[randomIndex].transform.position;
             PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(randomBodyPosition);
          }

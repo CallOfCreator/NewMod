@@ -46,12 +46,22 @@
 | v1.1.0      | 2024.11.26             | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.1.0/NewMod.dll) |
 | v1.2.0      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.0/NewMod.zip)
 | v1.2.1      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.1/NewMod.zip) |
+| v1.2.4      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.4/NewMod.zip) |
 
 ---
 
 # 📥 Installation
 
 ### For installation instructions, please visit: https://newmodau.vercel.app
+
+---
+
+
+# 🎉🎂 Birthday Update Incoming – Ready?  
+
+<p align="center">
+  <img src=".github/assets/customLobby.png" alt="Birthday Custom Lobby Preview" width="600">
+</p>
 
 ---
 
@@ -69,11 +79,11 @@
 NewMod is compatible with the following mods, enabling an enhanced experience with combined custom roles. Below are the supported versions of each mod:
 
 
-| Mod Name     | Mod Version | GitHub Link                                          |
-|--------------|-------------|------------------------------------------------------|
-| yanplaRoles  | v0.1.6+     | [Download](https://github.com/yanpla/yanplaRoles)    |
-| LaunchpadReloaded | v0.3.4+ | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) |
-| LevelImposter | v0.20.3+ | [Download](https://github.com/DigiWorm0/LevelImposter) |
+| Mod ame          | Mod Version | GitHub Link                                          | Status      |
+|-------------------|-------------|------------------------------------------------------|-------------|
+| yanplaRoles       | v0.1.6+     | [Download](https://github.com/yanpla/yanplaRoles)    | ❌ Deprecated |
+| LaunchpadReloaded | v0.3.4+     | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) | ✅ Supported     |
+| LevelImposter     | v0.20.3+    | [Download](https://github.com/DigiWorm0/LevelImposter) | ✅ Supported     |
 
 
 ---
