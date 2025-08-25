@@ -110,6 +110,19 @@ public partial class NewMod : BasePlugin, IMiraPlugin
    }
 
    [RegisterEvent]
+   public static void OnBeforeMurder(BeforeMurderEvent evt)
+   {
+      if (evt.Target != OverloadRole.chosenPrey) return;
+
+      //TODO: Use the newest MiraAPI roles for button mapping
+      if (evt.Target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
+      {
+         OverloadRole.CachedButtons = CustomButtonManager.Buttons
+               .Where(b => buttonsType.Contains(b.GetType()))
+               .ToList();
+      }
+   }
+   [RegisterEvent]
    public static void OnAfterMurder(AfterMurderEvent evt)
    {
       var source = evt.Source;
@@ -122,14 +135,10 @@ public partial class NewMod : BasePlugin, IMiraPlugin
       {
          if (target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
          {
-            foreach (var buttonType in buttonsType)
+            foreach (var button in OverloadRole.CachedButtons)
             {
-               var button = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == buttonType);
-
-               if (button != null)
-               {
-                  CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
-               }
+               CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
+               Debug.Log($"[Overload] Successfully absorbed ability: {button.Name}");
             }
          }
          else if (target.Data.Role is not ICustomRole)
@@ -143,13 +152,14 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             pb.OnClick.AddListener((UnityAction)target.Data.Role.UseAbility);
          }
       }
+      OverloadRole.CachedButtons.Clear();
       OverloadRole.AbsorbedAbilityCount++;
-      Coroutines.Start(CoroutinesHelper.CoNotify($"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
       OverloadRole.chosenPrey = null;
+      Coroutines.Start(CoroutinesHelper.CoNotify($"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
 
       if (OverloadRole.AbsorbedAbilityCount >= OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge)
       {
-         OverloadRole.UnlockFinalAbility();
+         Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FF7F>Objective completed: Final Ability unlocked!</color>"));
       }
       else
       {

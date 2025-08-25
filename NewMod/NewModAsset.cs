@@ -18,6 +18,7 @@ public static class NewModAsset
     public static LoadableResourceAsset DeadBodySprite { get; } = new("NewMod.Resources.deadbody.png");
     public static LoadableResourceAsset Camera { get; } = new("NewMod.Resources.cam.png");
     public static LoadableResourceAsset StrikeButton { get; } = new("NewMod.Resources.Strike.png");
+    public static LoadableResourceAsset FinalButton { get; } = new("NewMod.Resources.final.png");
 
     // SFX
     public static LoadableAudioResourceAsset ReviveSound { get; } = new("NewMod.Resources.Sounds.revive.wav");

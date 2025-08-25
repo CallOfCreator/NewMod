@@ -12,6 +12,7 @@ namespace NewMod.Buttons.Overload
     /// </summary>
     public class OverloadButton : CustomActionButton
     {
+        public CustomActionButton absorbed;
         /// <summary>
         /// The display text shown on the button UI.
         /// Set by the absorbed ability.
@@ -89,6 +90,8 @@ namespace NewMod.Buttons.Overload
         /// <param name="target">The button to absorb.</param>
         public void Absorb(CustomActionButton target)
         {
+            absorbed = target;
+
             absorbedText = target.Name;
             absorbedCooldown = target.Cooldown;
             absorbedMaxUses = target.MaxUses;
@@ -99,8 +102,20 @@ namespace NewMod.Buttons.Overload
 
             OverrideName(absorbedText);
             OverrideSprite(absorbedSprite.LoadAsset());
-            SetUses(absorbedMaxUses);
+
+            if (absorbedMaxUses <= 0f)
+            {
+                Button.SetInfiniteUses();
+            }
+            else
+            {
+                SetUses(absorbedMaxUses);
+            }
+
             SetTimer(0f);
+
+            HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
+            HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
         }
 
         /// <summary>
@@ -108,8 +123,8 @@ namespace NewMod.Buttons.Overload
         /// </summary>
         protected override void OnClick()
         {
+            NewMod.Instance.Log.LogError("Overload invoking absorbed action...");
             absorbedOnClick?.Invoke();
-
         }
 
         /// <summary>
@@ -120,7 +135,7 @@ namespace NewMod.Buttons.Overload
         /// <returns>True if Overload with a valid absorbed ability.</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is OverloadRole && absorbedOnClick != null;
+            return role is OverloadRole && absorbed != null;
         }
 
         /// <summary>
@@ -129,7 +144,8 @@ namespace NewMod.Buttons.Overload
         /// <returns>True if usable.</returns>
         public override bool CanUse()
         {
-            return base.CanUse() && absorbedOnClick != null;
+            absorbed?.FixedUpdateHandler(PlayerControl.LocalPlayer);
+            return base.CanUse() && absorbed != null;
         }
     }
 }

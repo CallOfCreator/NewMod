@@ -112,10 +112,6 @@ namespace NewMod
 
          GUILayout.Label("Overload button tests", GUI.skin.box);
 
-         if (GUILayout.Button("Test Overload Finale"))
-         {
-            OverloadRole.UnlockFinalAbility();
-         }
          if (GUILayout.Button("Test Absorb"))
          {
             var prey = Utils.GetRandomPlayer(p =>
@@ -136,7 +132,7 @@ namespace NewMod
                      {
                         CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
                      }
-                     Debug.Log($"[Overload] Successfully absorbed ability: {button.Name}");
+                     Debug.Log($"[Overload] Successfully absorbed ability: {button.Name}, CanUse:{button.CanUse()}");
                   }
                }
                else if (prey.Data.Role.Ability != null)
