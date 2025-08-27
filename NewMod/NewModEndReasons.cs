@@ -11,6 +11,7 @@ namespace NewMod
         EgoistWin = 116,
         InjectorWin = 117,
         PulseBladeWin = 118,
-        TyrantWin = 119
+        TyrantWin = 119,
+        WraithCallerWin = 120
     }
 }

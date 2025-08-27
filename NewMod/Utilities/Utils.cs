@@ -22,6 +22,7 @@ using MiraAPI.GameOptions;
 using NewMod.Options.Roles.InjectorOptions;
 using MiraAPI.Hud;
 using NewMod.Buttons.Pulseblade;
+using NewMod.Roles;
 
 namespace NewMod.Utilities
 {
@@ -75,10 +76,6 @@ namespace NewMod.Utilities
         /// </summary>
         public static readonly Dictionary<byte, int> StrikeKills = new();
 
-        /// <summary>
-        /// The faction associated with the current role.
-        /// </summary>
-        public static NewModFaction Faction { get; }
         /// <summary>
         /// Retrieves a PlayerControl instance by its player ID.
         /// </summary>
@@ -735,9 +732,9 @@ namespace NewMod.Utilities
             }
 
         }
-        public static string GetFactionDisplay()
+        public static string GetFactionDisplay(INewModRole role)
         {
-            return Faction switch
+            return role.Faction switch
             {
                 NewModFaction.Apex => $"<b><color=#FF5A5A>Apex</color></b>",
                 NewModFaction.Entropy => $"<b><color=#EAAA3E>Entropy</color></b>",
@@ -1072,6 +1069,19 @@ namespace NewMod.Utilities
             }
             cam.transform.localPosition = originalPos;
         }
+
+        /// <summary>
+        /// Formats a <see cref="TimeSpan"/> into a string with the format:
+        /// <c>dd:hh:mm:ss</c>.
+        /// </summary>
+        /// <param name="t">The <see cref="TimeSpan"/> to format.</param>
+        public static string FormatSpan(System.TimeSpan t)
+        {
+            int dd = Mathf.Max(0, t.Days);
+            int hh = Mathf.Clamp(t.Hours, 0, 99);
+            int mm = Mathf.Clamp(t.Minutes, 0, 59);
+            int ss = Mathf.Clamp(t.Seconds, 0, 59);
+            return $"{dd:D1}:{hh:D2}:{mm:D2}:{ss:D2}";
+        }
     }
 }
-

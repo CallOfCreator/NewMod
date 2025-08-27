@@ -7,6 +7,8 @@ using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Hud;
 using UnityEngine.Events;
 using NewMod.Utilities;
+using NewMod.Buttons.Overload;
+using System.Collections.Generic;
 
 namespace NewMod.Roles.NeutralRoles;
 
@@ -20,6 +22,7 @@ public class OverloadRole : ImpostorRole, ICustomRole
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
     public static int AbsorbedAbilityCount = 0;
     public static PlayerControl chosenPrey;
+    public static List<CustomActionButton> CachedButtons = new();
     public CustomRoleConfiguration Configuration => new(this)
     {
         AffectedByLightOnAirship = false,
@@ -40,6 +43,7 @@ public class OverloadRole : ImpostorRole, ICustomRole
 
         if (evt.TriggeredByIntro)
         {
+            CustomButtonSingleton<OverloadButton>.Instance.absorbed = null;
             AbsorbedAbilityCount = 0;
             chosenPrey = null;
 
@@ -64,19 +68,5 @@ public class OverloadRole : ImpostorRole, ICustomRole
                 });
         }
         yield return null;
-    }
-    public static void UnlockFinalAbility()
-    {
-        var btn = Instantiate(HudManager.Instance.AbilityButton, HudManager.Instance.AbilityButton.transform.parent);
-        btn.name = "FinalButton";
-        btn.transform.SetParent(HudManager.Instance.transform.Find("Buttons"), false);
-        btn.GetComponent<RectTransform>().anchorMin = btn.GetComponent<RectTransform>().anchorMax = btn.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
-        btn.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        btn.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-        btn.OverrideText("OVERLOAD");
-        btn.transform.SetAsLastSibling();
-        var passive = btn.GetComponent<PassiveButton>();
-        passive.OnClick.RemoveAllListeners();
-        passive.OnClick.AddListener((UnityAction)(() => GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.OverloadWin, false)));
     }
 }

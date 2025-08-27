@@ -1,5 +1,4 @@
 using HarmonyLib;
-using MiraAPI.Hud;
 using NewMod.Utilities;
 using NewMod.Roles.ImpostorRoles;
 
@@ -17,6 +16,7 @@ public static class OnGameEndPatch
         Utils.ResetStrikeCount();
         PranksterUtilities.ResetReportCount();
         VisionaryUtilities.DeleteAllScreenshots();
+        WraithCallerUtilities.ClearAll();
         Revenant.HasUsedFeignDeath = false;
         Revenant.FeignDeathStates.Remove(PlayerControl.LocalPlayer.PlayerId);
         Revenant.StalkingStates[PlayerControl.LocalPlayer.PlayerId] = false;

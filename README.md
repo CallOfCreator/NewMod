@@ -30,6 +30,7 @@
 - [🚀 Releases](#-releases)
 - [📥 Installation](#-installation)
 - [✨ Features](#-features)
+- [🎂 Birthday Special](#-birthday-special)
 - [🔗 Compatibility](#-compatibility)
 - [🤝 Contributing](#-contributing)
 - [📱  Android](#-android)
@@ -46,12 +47,33 @@
 | v1.1.0      | 2024.11.26             | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.1.0/NewMod.dll) |
 | v1.2.0      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.0/NewMod.zip)
 | v1.2.1      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.1/NewMod.zip) |
+| v1.2.4      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.4/NewMod.zip) |
 
 ---
 
 # 📥 Installation
 
 ### For installation instructions, please visit: https://newmodau.vercel.app
+
+---
+
+
+## 🎂 Birthday Special
+
+This year on **August 28th**, NewMod turns **1 year old**!  
+A huge thanks to everyone who has supported the mod so far. 💖  
+
+Here’s what you can expect for the birthday update:  
+
+- **Custom Player Tags**: Show off tags under your name like *Player*, *Dev*, etc.  
+- **Custom Lobby**: Check it out:  
+  <p align="center">
+    <img src=".github/assets/customLobby.png" alt="Birthday Custom Lobby Preview" width="600">
+  </p>
+- **Custom Cursor (Permanent)**: A brand-new cursor style for NewMod, here to stay.  
+- **Special Role: The Wraith Caller**: One of our best roles yet! Summon NPCs through walls to take down your opponents.  
+
+You can enjoy all these birthday features from **August 28th, 16:00** until **September 4th** even on **Android via Starlight**!
 
 ---
 
@@ -69,11 +91,11 @@
 NewMod is compatible with the following mods, enabling an enhanced experience with combined custom roles. Below are the supported versions of each mod:
 
 
-| Mod Name     | Mod Version | GitHub Link                                          |
-|--------------|-------------|------------------------------------------------------|
-| yanplaRoles  | v0.1.6+     | [Download](https://github.com/yanpla/yanplaRoles)    |
-| LaunchpadReloaded | v0.3.4+ | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) |
-| LevelImposter | v0.20.3+ | [Download](https://github.com/DigiWorm0/LevelImposter) |
+| Mod ame          | Mod Version | GitHub Link                                          | Status      |
+|-------------------|-------------|------------------------------------------------------|-------------|
+| yanplaRoles       | v0.1.6+     | [Download](https://github.com/yanpla/yanplaRoles)    | ❌ Deprecated |
+| LaunchpadReloaded | v0.3.4+     | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) | ✅ Supported     |
+| LevelImposter     | v0.20.3+    | [Download](https://github.com/DigiWorm0/LevelImposter) | ✅ Supported     |
 
 
 ---
@@ -101,6 +123,7 @@ For more information about Starlight, please visit: [https://discord.gg/FYYqJU2b
 - **yanplaRoles**: [yanplaRoles](https://github.com/yanpla/yanplaRoles) - Portions of code (SavePlayerRole, GetPlayerRolesHistory).
 - **EloySus**: [EloySus](https://github.com/EloySus) – for all button sprites used in NewMod
 - **Pixabay**: [Pixabay](https://pixabay.com) - For sound effects used in NewMod
+- **angxlwtf**: [angxlwtf](https://github.com/angxlwtf) - Idea for **Wraith Caller** (originally for Hitman LP)
 
 ---
 

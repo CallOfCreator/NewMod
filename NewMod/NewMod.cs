@@ -18,7 +18,6 @@ using NewMod.Roles.ImpostorRoles;
 using MiraAPI.Events.Vanilla.Gameplay;
 using NewMod.Roles.NeutralRoles;
 using MiraAPI.Roles;
-using System;
 using MiraAPI.Hud;
 using UnityEngine.Events;
 using NewMod.Options.Roles.OverloadOptions;
@@ -37,7 +36,7 @@ namespace NewMod;
 public partial class NewMod : BasePlugin, IMiraPlugin
 {
    public const string Id = "com.callofcreator.newmod";
-   public const string ModVersion = "1.2.4";
+   public const string ModVersion = "1.2.5";
    public Harmony Harmony { get; } = new Harmony(Id);
    public static BasePlugin Instance;
    public static Minigame minigame;
@@ -98,7 +97,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
          var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
          if (deadBodies != null && deadBodies.Count > 0)
          {
-            var randomIndex = UnityEngine.Random.Range(0, deadBodies.Count);
+            var randomIndex = Random.Range(0, deadBodies.Count);
             var randomBodyPosition = deadBodies[randomIndex].transform.position;
             PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(randomBodyPosition);
          }
@@ -110,6 +109,18 @@ public partial class NewMod : BasePlugin, IMiraPlugin
    }
 
    [RegisterEvent]
+   public static void OnBeforeMurder(BeforeMurderEvent evt)
+   {
+      if (evt.Target != OverloadRole.chosenPrey) return;
+
+      //TODO: Use the newest MiraAPI roles for button mapping
+      if (evt.Target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
+      {
+         OverloadRole.CachedButtons = [.. CustomButtonManager.Buttons.Where(b => buttonsType.Contains(b.GetType()))];
+         Instance.Log.LogMessage($"CachedButton: {buttonsType.GetType().Name}");
+      }
+   }
+   [RegisterEvent]
    public static void OnAfterMurder(AfterMurderEvent evt)
    {
       var source = evt.Source;
@@ -120,16 +131,12 @@ public partial class NewMod : BasePlugin, IMiraPlugin
 
       foreach (var pc in PlayerControl.AllPlayerControls.ToArray().Where(p => p.AmOwner && p.Data.Role is OverloadRole))
       {
-         if (target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
+         if (target.Data.Role is ICustomRole customRole)
          {
-            foreach (var buttonType in buttonsType)
+            foreach (var button in OverloadRole.CachedButtons)
             {
-               var button = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == buttonType);
-
-               if (button != null)
-               {
-                  CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
-               }
+               CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
+               Debug.Log($"[Overload] Successfully absorbed ability: {button.Name}");
             }
          }
          else if (target.Data.Role is not ICustomRole)
@@ -143,13 +150,14 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             pb.OnClick.AddListener((UnityAction)target.Data.Role.UseAbility);
          }
       }
+      OverloadRole.CachedButtons.Clear();
       OverloadRole.AbsorbedAbilityCount++;
-      Coroutines.Start(CoroutinesHelper.CoNotify($"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
       OverloadRole.chosenPrey = null;
+      Coroutines.Start(CoroutinesHelper.CoNotify($"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
 
       if (OverloadRole.AbsorbedAbilityCount >= OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge)
       {
-         OverloadRole.UnlockFinalAbility();
+         Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FF7F>Objective completed: Final Ability unlocked!</color>"));
       }
       else
       {

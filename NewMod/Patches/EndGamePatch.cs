@@ -18,6 +18,7 @@ using NewMod.Roles.ImpostorRoles;
 using NewMod.Options.Roles.PulseBladeOptions;
 using MiraAPI.Utilities;
 using NewMod.Options.Roles.EnergyThiefOptions;
+using NewMod.Options.Roles.WraithCallerOptions;
 
 namespace NewMod.Patches
 {
@@ -125,6 +126,11 @@ namespace NewMod.Patches
                     customWinColor = GetRoleColor(GetRoleType<Tyrant>());
                     endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
                     break;
+                case (GameOverReason)NewModEndReasons.WraithCallerWin:
+                    customWinText = "NPC Invasion Completed\nWraith Caller Win!";
+                    customWinColor = GetRoleColor(GetRoleType<WraithCaller>());
+                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
+                    break;
                 default:
                     customWinText = string.Empty;
                     customWinColor = Color.white;
@@ -159,7 +165,7 @@ namespace NewMod.Patches
 
                     if (customRole is INewModRole newmodRole)
                     {
-                        return $"{newmodRole.RoleName}\n<size=65%>{Utils.GetFactionDisplay()}</size>";
+                        return $"{newmodRole.RoleName}\n<size=65%>{Utils.GetFactionDisplay((INewModRole)customRole)}</size>";
                     }
                     return customRole.RoleName;
                 }
@@ -210,6 +216,7 @@ namespace NewMod.Patches
         public static bool Prefix(ShipStatus __instance)
         {
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
+            if (CheckForEndGameFaction<WraithCaller>(__instance, (GameOverReason)NewModEndReasons.WraithCallerWin)) return false;
             if (CheckForEndGameFaction<PulseBlade>(__instance, (GameOverReason)NewModEndReasons.PulseBladeWin)) return false;
             if (CheckForEndGameFaction<Tyrant>(__instance, (GameOverReason)NewModEndReasons.TyrantWin)) return false;
             if (CheckEndGameForRole<DoubleAgent>(__instance, (GameOverReason)NewModEndReasons.DoubleAgentWin)) return false;
@@ -262,6 +269,12 @@ namespace NewMod.Patches
                             EndGameResult.CachedWinners.Add(new(champion.Data));
                         }
                     }
+                }
+                if (typeof(TFaction) == typeof(WraithCaller))
+                {
+                    int required = (int)OptionGroupSingleton<WraithCallerOptions>.Instance.RequiredNPCsToSend;
+                    int current = WraithCallerUtilities.GetKillsNPC(player.PlayerId);
+                    shouldEndGame = current >= required;
                 }
                 if (shouldEndGame)
                 {

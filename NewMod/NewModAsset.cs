@@ -1,13 +1,24 @@
+using Reactor.Utilities;
 using MiraAPI.Utilities.Assets;
+using UnityEngine;
 
 namespace NewMod;
 
 public static class NewModAsset
 {
+    public static AssetBundle Bundle = AssetBundleManager.Load("newmod");
+
     // Miscellaneous
     public static LoadableResourceAsset Banner { get; } = new("NewMod.Resources.optionImage.png");
     public static LoadableResourceAsset Arrow { get; } = new("NewMod.Resources.Arrow.png");
     public static LoadableResourceAsset ModLogo { get; } = new("NewMod.Resources.Logo.png");
+    public static LoadableResourceAsset CustomCursor { get; } = new("NewMod.Resources.cursor.png");
+
+    // NewMod's First Birthday Assets
+    public static LoadableResourceAsset MainMenuBG { get; } = new("NewMod.Resources.Birthday.newmod-birthday-v1.png");
+    public static LoadableAsset<GameObject> CustomLobby { get; } = new LoadableBundleAsset<GameObject>("CustomLobby", Bundle);
+    public static LoadableAsset<GameObject> Toast { get; } = new LoadableBundleAsset<GameObject>("Toast", Bundle);
+    public static LoadableAsset<GameObject> WraithCallerMinigame { get; } = new LoadableBundleAsset<GameObject>("WraithCallerMinigame", Bundle);
 
     // Button icons
     public static LoadableResourceAsset SpecialAgentButton { get; } = new("NewMod.Resources.givemission.png");
@@ -18,6 +29,8 @@ public static class NewModAsset
     public static LoadableResourceAsset DeadBodySprite { get; } = new("NewMod.Resources.deadbody.png");
     public static LoadableResourceAsset Camera { get; } = new("NewMod.Resources.cam.png");
     public static LoadableResourceAsset StrikeButton { get; } = new("NewMod.Resources.Strike.png");
+    public static LoadableResourceAsset FinalButton { get; } = new("NewMod.Resources.final.png");
+    public static LoadableResourceAsset CallWraith { get; } = new("NewMod.Resources.callwraith.png");
 
     // SFX
     public static LoadableAudioResourceAsset ReviveSound { get; } = new("NewMod.Resources.Sounds.revive.wav");
@@ -34,6 +47,7 @@ public static class NewModAsset
     public static LoadableResourceAsset StrikeIcon { get; } = new("NewMod.Resources.RoleIcons.StrikeIcon.png");
     public static LoadableResourceAsset InjectIcon { get; } = new("NewMod.Resources.RoleIcons.InjectIcon.png");
     public static LoadableResourceAsset CrownIcon { get; } = new("NewMod.Resources.RoleIcons.crown.png");
+    public static LoadableResourceAsset WraithIcon { get; } = new("NewMod.Resources.RoleIcons.wraith.png");
 
     // Notif Icons
     public static LoadableResourceAsset VisionDebuff { get; } = new("NewMod.Resources.NotifIcons.vision_debuff.png");
