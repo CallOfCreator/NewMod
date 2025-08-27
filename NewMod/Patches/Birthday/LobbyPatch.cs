@@ -11,6 +11,7 @@ namespace NewMod.Patches.Birthday
     public static class LobbyPatch
     {
         public static GameObject CustomLobby;
+        public static Toast ToastObj;
         public static readonly Vector2[] BirthdaySpawns =
         [
            new Vector2(-0.6738f, -2.5016f),
@@ -40,13 +41,13 @@ namespace NewMod.Patches.Birthday
         [HarmonyPostfix]
         public static void Postfix(LobbyBehaviour __instance)
         {
-            var toast = Toast.CreateToast();
-            toast.transform.localPosition = new Vector3(-4.4217f, 2.2098f, 0f);
+            ToastObj = Toast.CreateToast();
+            ToastObj.transform.localPosition = new Vector3(-4.4217f, 2.2098f, 0f);
 
             if (DateTime.Now < NewModDateTime.NewModBirthday)
             {
                 TimeSpan countdown = NewModDateTime.NewModBirthday - DateTime.Now;
-                toast.StartCountdown(countdown);
+                ToastObj.StartCountdown(countdown);
             }
 
             if (!NewModDateTime.IsNewModBirthdayWeek) return;
@@ -78,6 +79,7 @@ namespace NewMod.Patches.Birthday
         public static void Prefix(ShipStatus __instance)
         {
             CustomLobby.DestroyImmediate();
+            ToastObj.gameObject.SetActive(false);
         }
     }
 }

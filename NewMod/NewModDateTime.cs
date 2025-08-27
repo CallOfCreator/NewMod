@@ -22,5 +22,6 @@ namespace NewMod
 
         public static bool IsNewModBirthdayWeek =>
             DateTime.Now >= NewModBirthday && DateTime.Now <= NewModBirthdayWeekEnd;
+        public static bool IsWraithCallerUnlocked => DateTime.Now >= NewModBirthday;
     }
 }

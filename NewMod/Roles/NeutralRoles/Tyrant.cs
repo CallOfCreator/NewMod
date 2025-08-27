@@ -31,7 +31,7 @@ namespace NewMod.Roles.ImpostorRoles
         public Color RoleColor => new(0.78f, 0.10f, 0.16f, 1f);
         public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
         public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
-        public NewModFaction Faction = NewModFaction.Apex;
+        public NewModFaction Faction => NewModFaction.Apex;
         public CustomRoleConfiguration Configuration => new(this)
         {
             MaxRoleCount = 1,

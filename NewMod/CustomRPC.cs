@@ -13,5 +13,6 @@ public enum CustomRPC
     FearPulse,
     SuppressionDome,
     WitnessTrap,
-    NotifyChampion
+    NotifyChampion,
+    SummonNPC
 }

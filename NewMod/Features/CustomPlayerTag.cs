@@ -13,6 +13,7 @@ namespace NewMod.Features
         public enum TagType : byte
         {
             Player,
+            NPC,
             Dev,
             Creator,
             Tester,
@@ -25,6 +26,7 @@ namespace NewMod.Features
         public static readonly Dictionary<TagType, string> DefaultHex = new()
         {
             { TagType.Player,      "c0c0c0" },
+            { TagType.NPC,          "7D3C98"},
             { TagType.Dev,         "ff4d4d" },
             { TagType.Creator,     "ffb000" },
             { TagType.Tester,      "00e0ff" },
@@ -37,6 +39,7 @@ namespace NewMod.Features
         public static string DisplayName(TagType t) => t switch
         {
             TagType.Player => "Player",
+            TagType.NPC => "NPC",
             TagType.Dev => "Developer",
             TagType.Creator => "Creator",
             TagType.Tester => "Tester",
@@ -63,6 +66,11 @@ namespace NewMod.Features
             if (string.Equals(friendCode, "dimpledue#6629", StringComparison.OrdinalIgnoreCase)) return TagType.AOUDev;
             return TagType.Player;
         }
+        public static TagType GetTagFor(PlayerControl pc)
+        {
+            if (pc.isDummy || pc.notRealPlayer) return TagType.NPC; // Will affect dummies in Freeplay mode
+            return GetTag(pc.FriendCode);
+        }
 
         [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSetName))]
         public static class RpcSetNamePatch
@@ -70,7 +78,8 @@ namespace NewMod.Features
             public static bool Prefix(PlayerControl __instance, ref string name)
             {
                 var friendCode = __instance.FriendCode;
-                TagType tag = GetTag(friendCode);
+
+                TagType tag = GetTagFor(__instance);
 
                 var host = GameData.Instance.GetHost();
                 bool isHost = host.PlayerId == __instance.PlayerId;
@@ -85,7 +94,7 @@ namespace NewMod.Features
                 else
                     newName += Format(TagType.Player, DefaultHex[TagType.Player]);
 
-                Logger<NewMod>.Instance.LogInfo($"Player {__instance.PlayerId} '{baseName}' " + $"FriendCode={friendCode}, Host={isHost}, Tag={DisplayName(tag)} " + $"FinalName='{newName}'");
+                Logger<NewMod>.Instance.LogInfo($"Player {__instance.PlayerId} '{baseName}' " + $"FriendCode={friendCode}, Host={isHost}, Tag={DisplayName(tag)}");
 
                 __instance.SetName(newName);
 

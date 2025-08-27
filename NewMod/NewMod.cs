@@ -36,7 +36,7 @@ namespace NewMod;
 public partial class NewMod : BasePlugin, IMiraPlugin
 {
    public const string Id = "com.callofcreator.newmod";
-   public const string ModVersion = "1.2.4";
+   public const string ModVersion = "1.2.5";
    public Harmony Harmony { get; } = new Harmony(Id);
    public static BasePlugin Instance;
    public static Minigame minigame;
@@ -116,9 +116,8 @@ public partial class NewMod : BasePlugin, IMiraPlugin
       //TODO: Use the newest MiraAPI roles for button mapping
       if (evt.Target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
       {
-         OverloadRole.CachedButtons = CustomButtonManager.Buttons
-               .Where(b => buttonsType.Contains(b.GetType()))
-               .ToList();
+         OverloadRole.CachedButtons = [.. CustomButtonManager.Buttons.Where(b => buttonsType.Contains(b.GetType()))];
+         Instance.Log.LogMessage($"CachedButton: {buttonsType.GetType().Name}");
       }
    }
    [RegisterEvent]
@@ -132,7 +131,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
 
       foreach (var pc in PlayerControl.AllPlayerControls.ToArray().Where(p => p.AmOwner && p.Data.Role is OverloadRole))
       {
-         if (target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
+         if (target.Data.Role is ICustomRole customRole)
          {
             foreach (var button in OverloadRole.CachedButtons)
             {

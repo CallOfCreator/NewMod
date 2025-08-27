@@ -1,5 +1,12 @@
 using UnityEngine;
 using HarmonyLib;
+using NewMod.Roles.NeutralRoles;
+using MiraAPI;
+using MiraAPI.PluginLoading;
+using MiraAPI.Roles;
+using System.Collections.Generic;
+using System.Reflection;
+using System;
 
 namespace NewMod.Patches
 {
@@ -10,6 +17,7 @@ namespace NewMod.Patches
         public static SpriteRenderer LogoSprite;
         public static Texture2D _cachedCursor;
         public static Transform RightPanel;
+        public static bool _wraithRegistered = false;
 
         [HarmonyPatch(nameof(MainMenuManager.Start))]
         [HarmonyPostfix]
@@ -24,6 +32,12 @@ namespace NewMod.Patches
                 Cursor.SetCursor(_cachedCursor, CursorMode.Auto);
             }
             RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
+
+            if ((NewModDateTime.IsNewModBirthdayWeek || NewModDateTime.IsWraithCallerUnlocked) && !_wraithRegistered)
+            {
+                RegisterWraithCaller();
+                _wraithRegistered = true;
+            }
 
             if (NewModDateTime.IsNewModBirthdayWeek)
             {
@@ -59,6 +73,16 @@ namespace NewMod.Patches
             }
             ModCompatibility.Initialize();
         }
+        public static void RegisterWraithCaller()
+        {
+            var roleType = typeof(WraithCaller);
+            var customRoleManager = typeof(CustomRoleManager);
+            var registerTypes = customRoleManager.GetMethod("RegisterRoleTypes", BindingFlags.NonPublic | BindingFlags.Static);
+            var registerInManager = customRoleManager.GetMethod("RegisterInRoleManager", BindingFlags.NonPublic | BindingFlags.Static);
+            var plugin = MiraPluginManager.GetPluginByGuid(NewMod.Id);
+            registerTypes.Invoke(null, [new List<Type> { roleType }, plugin]);
+            registerInManager.Invoke(null, null);
+        }
         [HarmonyPatch(nameof(MainMenuManager.OpenGameModeMenu))]
         [HarmonyPatch(nameof(MainMenuManager.OpenCredits))]
         [HarmonyPatch(nameof(MainMenuManager.OpenAccountMenu))]
@@ -78,7 +102,7 @@ namespace NewMod.Patches
         {
             if (!NewModDateTime.IsNewModBirthdayWeek) return;
 
-           RightPanel.gameObject.SetActive(false);
+            RightPanel.gameObject.SetActive(false);
         }
     }
 }
