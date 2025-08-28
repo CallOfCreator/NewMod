@@ -50,8 +50,6 @@ namespace NewMod.Patches.Birthday
                 ToastObj.StartCountdown(countdown);
             }
 
-            if (!NewModDateTime.IsNewModBirthdayWeek) return;
-
             var originalLobby = "Lobby(Clone)";
             GameObject.Find(originalLobby).GetComponent<EdgeCollider2D>().Destroy();
             GameObject.Find(originalLobby + "/Background").SetActive(false);
