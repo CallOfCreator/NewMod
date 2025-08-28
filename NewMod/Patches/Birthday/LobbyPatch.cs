@@ -29,8 +29,6 @@ namespace NewMod.Patches.Birthday
         [HarmonyPrefix]
         public static bool StartPrefix(LobbyBehaviour __instance)
         {
-            if (!NewModDateTime.IsNewModBirthdayWeek) return true;
-
             CustomLobby = Object.Instantiate(NewModAsset.CustomLobby.LoadAsset());
             CustomLobby.transform.SetParent(__instance.transform, false);
             CustomLobby.transform.localPosition = Vector3.zero;
