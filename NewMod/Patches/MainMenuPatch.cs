@@ -13,7 +13,8 @@ using System;
 namespace NewMod.Patches
 {
     [HarmonyPatch(typeof(MainMenuManager))]
-    [HarmonyPriority(HarmonyPriority.VeryHigh)]
+    [HarmonyPriority(Priority.VeryHigh)]
+
     public static class MainMenuPatch
     {
         public static SpriteRenderer LogoSprite;
