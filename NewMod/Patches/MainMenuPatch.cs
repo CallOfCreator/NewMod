@@ -33,14 +33,9 @@ namespace NewMod.Patches
             }
             RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
 
-            if ((NewModDateTime.IsNewModBirthdayWeek || NewModDateTime.IsWraithCallerUnlocked) && !_wraithRegistered)
-            {
-                RegisterWraithCaller();
+               RegisterWraithCaller();
                 _wraithRegistered = true;
-            }
 
-            if (NewModDateTime.IsNewModBirthdayWeek)
-            {
                 RightPanel.gameObject.SetActive(false);
                 __instance.screenTint.enabled = false;
 
@@ -61,15 +56,6 @@ namespace NewMod.Patches
                 {
                     auBG.sprite = NewModAsset.MainMenuBG.LoadAsset();
                 }
-            }
-            else
-            {
-                // Preserve the old layout when it's not the birthday update
-                var Logo = new GameObject("NewModLogo");
-                Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
-                Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
-                LogoSprite = Logo.AddComponent<SpriteRenderer>();
-                LogoSprite.sprite = NewModAsset.ModLogo.LoadAsset();
             }
             ModCompatibility.Initialize();
         }
