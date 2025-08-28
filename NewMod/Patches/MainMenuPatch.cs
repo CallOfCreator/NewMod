@@ -103,7 +103,6 @@ namespace NewMod.Patches
         [HarmonyPatch(nameof(MainMenuManager.OpenFindGame))]
         public static void Postfix(MainMenuManager __instance)
         {
-            if (!NewModDateTime.IsNewModBirthdayWeek) return;
             if (RightPanel != null) RightPanel.gameObject.SetActive(true);
         }
 
@@ -111,7 +110,6 @@ namespace NewMod.Patches
         [HarmonyPostfix]
         public static void ResetScreenPostfix(MainMenuManager __instance)
         {
-            if (!NewModDateTime.IsNewModBirthdayWeek) return;
             if (RightPanel != null) RightPanel.gameObject.SetActive(false);
         }
     }
