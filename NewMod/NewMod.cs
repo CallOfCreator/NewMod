@@ -92,7 +92,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             minigame.Begin(null);
          }
       }
-      if (Input.GetKeyDown(KeyCode.F3) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole && OptionGroupSingleton<GeneralOption>.Instance.EnableTeleportation)
+      if (Input.GetKeyDown(KeyCode.F3) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole)
       {
          var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
          if (deadBodies != null && deadBodies.Count > 0)

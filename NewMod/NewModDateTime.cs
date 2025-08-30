@@ -4,24 +4,41 @@ namespace NewMod
 {
     public static class NewModDateTime
     {
-        public static DateTime NewModBirthday
-        {
-            get
-            {
-                var thisYear = new DateTime(DateTime.Now.Year, 8, 28, 16, 0, 0);
-                return DateTime.Now <= thisYear ? thisYear : new DateTime(DateTime.Now.Year + 1, 8, 28);
-            }
-        }
-        public static DateTime NewModBirthdayWeekEnd
-        {
-            get
-            {
-                return NewModBirthday.AddDays(7);
-            }
-        }
+        private const int Month = 8;
+        private const int Day = 28;
+        private const int Hour = 16;
+        public static readonly TimeSpan Window = TimeSpan.FromDays(8);
 
-        public static bool IsNewModBirthdayWeek =>
-            DateTime.Now >= NewModBirthday && DateTime.Now <= NewModBirthdayWeekEnd;
-        public static bool IsWraithCallerUnlocked => DateTime.Now >= NewModBirthday;
+        public static DateTime BirthdayStartThisYear =>
+            new(DateTime.Now.Year, Month, Day, Hour, 0, 0, DateTimeKind.Local);
+
+        public static DateTime BirthdayStartNextYear =>
+            new(DateTime.Now.Year + 1, Month, Day, Hour, 0, 0, DateTimeKind.Local);
+        public static DateTime UpcomingBirthdayStart
+        {
+            get
+            {
+                var now = DateTime.Now;
+                var startThis = BirthdayStartThisYear;
+                var endThis = startThis + Window;
+
+                if (now < startThis) return startThis;
+                if (now < endThis) return startThis;
+
+                return BirthdayStartNextYear;
+            }
+        }
+        public static DateTime BirthdayWindowEndThisYear => BirthdayStartThisYear + Window;
+        public static bool IsNewModBirthdayWeek
+        {
+            get
+            {
+                var now = DateTime.Now;
+                var start = BirthdayStartThisYear;
+                var end = start + Window;
+                return now >= start && now < end;
+            }
+        }
+        public static bool IsWraithCallerUnlocked => DateTime.Now >= BirthdayStartThisYear;
     }
 }

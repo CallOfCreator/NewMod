@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using HarmonyLib;
-using Hazel;
-using MiraAPI.Events;
-using MiraAPI.Events.Vanilla.Meeting;
-using Reactor.Utilities;
 
 namespace NewMod.Features
 {
@@ -12,21 +8,13 @@ namespace NewMod.Features
     {
         public enum TagType : byte
         {
-            Player,
-            NPC,
-            Dev,
-            Creator,
-            Tester,
-            Staff,
-            Contributor,
-            Host,
-            AOUDev
+            Player, NPC, Dev, Creator, Tester, Staff, Contributor, Host, AOUDev
         }
 
         public static readonly Dictionary<TagType, string> DefaultHex = new()
         {
             { TagType.Player,      "c0c0c0" },
-            { TagType.NPC,          "7D3C98"},
+            { TagType.NPC,         "7D3C98" },
             { TagType.Dev,         "ff4d4d" },
             { TagType.Creator,     "ffb000" },
             { TagType.Tester,      "00e0ff" },
@@ -55,80 +43,29 @@ namespace NewMod.Features
             string color = string.IsNullOrWhiteSpace(hex)
                 ? (DefaultHex.TryGetValue(t, out var h) ? h : "ffffff")
                 : hex;
-            string label = DisplayName(t);
-            return $"\n<size=1.7><color=#{color}>{label}</color></size>";
+            return $"\n<size=1.7><color=#{color}>{DisplayName(t)}</color></size>";
         }
-        public static TagType GetTag(string friendCode)
+
+        private static bool IsNpc(PlayerControl pc)
         {
-            if (string.Equals(friendCode, "puncool#9009", StringComparison.OrdinalIgnoreCase)) return TagType.Creator;
-            if (string.Equals(friendCode, "peaktipple#8186", StringComparison.OrdinalIgnoreCase)) return TagType.Dev;
-            if (string.Equals(friendCode, "shinyrake#9382", StringComparison.OrdinalIgnoreCase)) return TagType.Dev;
-            if (string.Equals(friendCode, "dimpledue#6629", StringComparison.OrdinalIgnoreCase)) return TagType.AOUDev;
-            return TagType.Player;
-        }
-        public static TagType GetTagFor(PlayerControl pc)
-        {
-            if (pc.isDummy || pc.notRealPlayer) return TagType.NPC; // Will affect dummies in Freeplay mode
-            return GetTag(pc.FriendCode);
+            return pc != null && (pc.notRealPlayer || pc.isDummy);
         }
 
         [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSetName))]
         public static class RpcSetNamePatch
         {
-            public static bool Prefix(PlayerControl __instance, ref string name)
+            public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] ref string name)
             {
-                var friendCode = __instance.FriendCode;
-
-                TagType tag = GetTagFor(__instance);
-
-                var host = GameData.Instance.GetHost();
-                bool isHost = host.PlayerId == __instance.PlayerId;
+                if (!AmongUsClient.Instance.AmHost) return true;
+                if (!IsNpc(__instance)) return true;
+                if (string.IsNullOrEmpty(name)) name = string.Empty;
+                if (name.Contains("\n<size=", StringComparison.Ordinal)) return true;
 
                 string baseName = name.Split('\n')[0];
+                string decorated = baseName + Format(TagType.NPC, DefaultHex[TagType.NPC]);
 
-                string newName = baseName;
-                if (isHost)
-                    newName += Format(TagType.Host, DefaultHex[TagType.Host]);
-                if (tag != TagType.Player)
-                    newName += Format(tag, DefaultHex[tag]);
-                else
-                    newName += Format(TagType.Player, DefaultHex[TagType.Player]);
-
-                Logger<NewMod>.Instance.LogInfo($"Player {__instance.PlayerId} '{baseName}' " + $"FriendCode={friendCode}, Host={isHost}, Tag={DisplayName(tag)}");
-
-                __instance.SetName(newName);
-
-                var writer = AmongUsClient.Instance.StartRpcImmediately(__instance.NetId, (byte)RpcCalls.SetName, SendOption.Reliable, -1);
-                writer.Write(__instance.Data.NetId);
-                writer.Write(newName);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-
+                name = decorated;
                 return false;
-            }
-        }
-
-        [RegisterEvent]
-        public static void OnMeetingStart(StartMeetingEvent evt)
-        {
-            var host = GameData.Instance.GetHost();
-
-            foreach (var ps in evt.MeetingHud.playerStates)
-            {
-                string baseName = ps.NameText.text.Split('\n')[0];
-                bool isHost = ps.TargetPlayerId == host.PlayerId;
-
-                TagType tag = GetTag(GameData.Instance.GetPlayerById(ps.TargetPlayerId).FriendCode);
-                string newName = baseName;
-
-                if (isHost)
-                    newName += Format(TagType.Host, DefaultHex[TagType.Host]);
-
-                if (tag != TagType.Player)
-                    newName += Format(tag, DefaultHex[tag]);
-                else
-                    newName += Format(TagType.Player, DefaultHex[TagType.Player]);
-
-                ps.NameText.text = newName;
             }
         }
     }

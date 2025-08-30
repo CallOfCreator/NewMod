@@ -1,9 +1,7 @@
 using UnityEngine;
 using HarmonyLib;
-using System;
 using Object = UnityEngine.Object;
 using Reactor.Utilities.Extensions;
-using System.IO;
 
 namespace NewMod.Patches.Birthday
 {
@@ -31,7 +29,14 @@ namespace NewMod.Patches.Birthday
         {
             if (!NewModDateTime.IsNewModBirthdayWeek) return true;
 
+            __instance.SpawnPositions = new Vector2[BirthdaySpawns.Length];
+
+            for (int i = 0; i < BirthdaySpawns.Length; i++)
+            {
+                __instance.SpawnPositions[i] = BirthdaySpawns[i % BirthdaySpawns.Length];
+            }
             CustomLobby = Object.Instantiate(NewModAsset.CustomLobby.LoadAsset());
+            CustomLobby.layer = LayerMask.NameToLayer("Ship");
             CustomLobby.transform.SetParent(__instance.transform, false);
             CustomLobby.transform.localPosition = Vector3.zero;
             return true;
@@ -41,17 +46,8 @@ namespace NewMod.Patches.Birthday
         [HarmonyPostfix]
         public static void Postfix(LobbyBehaviour __instance)
         {
-            ToastObj = Toast.CreateToast();
-            ToastObj.transform.localPosition = new Vector3(-4.4217f, 2.2098f, 0f);
-
-            if (DateTime.Now < NewModDateTime.NewModBirthday)
-            {
-                TimeSpan countdown = NewModDateTime.NewModBirthday - DateTime.Now;
-                ToastObj.StartCountdown(countdown);
-            }
-
             if (!NewModDateTime.IsNewModBirthdayWeek) return;
-
+            
             var originalLobby = "Lobby(Clone)";
             GameObject.Find(originalLobby).GetComponent<EdgeCollider2D>().Destroy();
             GameObject.Find(originalLobby + "/Background").SetActive(false);
@@ -68,18 +64,17 @@ namespace NewMod.Patches.Birthday
                 wardrobe.transform.localPosition = new Vector3(4.6701f, -0.0529f, 0f);
                 wardrobe.transform.localScale = new Vector3(0.7301f, 0.7f, 1f);
             }
-            __instance.SpawnPositions = new Vector2[BirthdaySpawns.Length];
-            
-            for (int i = 0; i < BirthdaySpawns.Length; i++)
-            {
-                __instance.SpawnPositions[i] = BirthdaySpawns[i];
-            }
         }
         [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.Start))]
         public static void Prefix(ShipStatus __instance)
         {
             CustomLobby.DestroyImmediate();
             ToastObj.gameObject.SetActive(false);
+
+            if (HudManager.Instance.Chat.IsOpenOrOpening)
+            {
+                HudManager.Instance.Chat.gameObject.SetActive(false);
+            }
         }
     }
 }
