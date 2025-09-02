@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -94,7 +95,6 @@ namespace NewMod.Roles.ImpostorRoles
             return tabText;
         }
         public int _kills;
-        public static Material _circleMat;
         public static byte _championId;
         public static bool ApexThroneReady;
         public static bool ApexThroneOutcomeSet;
@@ -105,54 +105,6 @@ namespace NewMod.Roles.ImpostorRoles
         public byte GetChampion() => _championId;
         public void SetChampion(byte playerId) => _championId = playerId;
         public static void ClearChampion() => _championId = byte.MaxValue;
-        public static Material GetCircleMat()
-        {
-            if (_circleMat) return _circleMat;
-            _circleMat = new(Shader.Find("Sprites/Default"))
-            {
-                renderQueue = 3000
-            };
-            return _circleMat;
-        }
-        public static GameObject CreateCircle(Vector3 pos, float radius, Color color, float duration, int segments = 64)
-        {
-            var go = new GameObject("Tyrant_Circle");
-            go.transform.position = pos;
-
-            HudManager.Instance.StartCoroutine(Effects.ScaleIn(go.transform, 0f, 1f, 0.5f));
-
-            var mf = go.AddComponent<MeshFilter>();
-            var mr = go.AddComponent<MeshRenderer>();
-
-            var mat = new Material(GetCircleMat()) { color = color };
-            mr.sharedMaterial = mat;
-
-            float visualRadius = radius;
-
-            segments = Mathf.Max(12, segments);
-            var verts = new Vector3[segments + 1];
-            var tris = new int[segments * 3];
-
-            verts[0] = Vector3.zero;
-            for (int i = 0; i < segments; i++)
-            {
-                float a = i / (float)segments * Mathf.PI * 2f;
-                verts[i + 1] = new Vector3(Mathf.Cos(a) * visualRadius, Mathf.Sin(a) * visualRadius, 0f);
-                tris[i * 3 + 0] = 0;
-                tris[i * 3 + 1] = i + 1;
-                tris[i * 3 + 2] = (i == segments - 1) ? 1 : (i + 2);
-            }
-
-            var mesh = new Mesh { name = "FearPulseFill" };
-            mesh.SetVertices(verts);
-            mesh.SetTriangles(tris, 0, true);
-            mesh.RecalculateBounds();
-            mesh.RecalculateNormals();
-            mf.sharedMesh = mesh;
-
-            Coroutines.Start(CoroutinesHelper.DespawnCircle(go, duration));
-            return go;
-        }
 
         [RegisterEvent]
         public static void OnAfterMurderEvent(AfterMurderEvent evt)
@@ -199,36 +151,65 @@ namespace NewMod.Roles.ImpostorRoles
         [RegisterEvent]
         public static void OnMeetingStart(StartMeetingEvent evt)
         {
-            if (_championId == byte.MaxValue) return;
-            if (PlayerControl.LocalPlayer.PlayerId != _championId) return;
+            Coroutines.Start(CoShowTyrantForChampion(evt.MeetingHud));
+        }
+        public static IEnumerator CoShowTyrantForChampion(MeetingHud hud)
+        {
+            yield return null;
 
-            var tyrantPlayer = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p.Data.Role is Tyrant);
-            if (!tyrantPlayer) return;
-
-            foreach (var ps in evt.MeetingHud.playerStates)
+            if (PlayerControl.LocalPlayer.PlayerId == _championId)
             {
-                if (ps.TargetPlayerId == tyrantPlayer.PlayerId)
+                var tyrantPlayer = PlayerControl.AllPlayerControls
+                    .ToArray()
+                    .FirstOrDefault(p => p && p.Data != null && p.Data.Role is Tyrant);
+
+                if (tyrantPlayer)
                 {
-                    ps.NameText.text += "\n<color=#C62828><size=60%>Tyrant</size></color>";
-                    break;
+                    foreach (var ps in hud.playerStates)
+                    {
+                        if (ps.TargetPlayerId == tyrantPlayer.PlayerId)
+                        {
+                            ps.NameText.text += "\n<color=#C62828><size=60%>Tyrant</size></color>";
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    NewMod.Instance.Log.LogMessage("No Tyrant in this match skipping...");
                 }
             }
+            NewMod.Instance.Log.LogMessage("NO CRASH");
         }
+
         [RegisterEvent]
         public static void OnHandleVote(HandleVoteEvent evt)
         {
             var voter = evt.VoteData.Owner;
-            foreach (var player in PlayerControl.AllPlayerControls)
-            {
-                if (player.Data.Role is not Tyrant tyrant) continue;
-                if (voter.PlayerId != _championId) continue;
 
-                bool betrays = evt.TargetId == tyrant.Player.PlayerId;
+            var allPlayers = PlayerControl.AllPlayerControls.ToArray();
+
+            foreach (var player in allPlayers)
+            {
+                var role = player.Data?.Role;
+                if (role is not Tyrant tyrant)
+                {
+                    continue;
+                }
+
+                if (voter.PlayerId != _championId)
+                {
+                    continue;
+                }
+
+                bool betrays = evt.TargetId == player.PlayerId;
 
                 if (betrays)
                 {
                     if (evt.VoteData.VotedFor(evt.TargetId))
+                    {
                         evt.VoteData.RemovePlayerVote(evt.TargetId);
+                    }
 
                     evt.VoteData.VoteForPlayer(evt.VoteData.Owner.PlayerId);
                     evt.VoteData.SetRemainingVotes(0);
@@ -242,6 +223,7 @@ namespace NewMod.Roles.ImpostorRoles
                     ApexThroneOutcomeSet = true;
                     Outcome = ThroneOutcome.ChampionSideWin;
                 }
+
                 if (voter.AmOwner)
                 {
                     var msg = (Outcome == ThroneOutcome.ChampionSideWin)
@@ -252,6 +234,7 @@ namespace NewMod.Roles.ImpostorRoles
                 break;
             }
         }
+
         [RegisterEvent]
         public static void OnProcessVotes(ProcessVotesEvent evt)
         {
@@ -285,7 +268,7 @@ namespace NewMod.Roles.ImpostorRoles
             area.Init(Player.PlayerId, radius: OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius, OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
 
             if (Player.AmOwner)
-                CreateCircle(Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius, Palette.AcceptedGreen, OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
+                Utils.CreateCircle("SupressionDome", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius, Palette.AcceptedGreen, OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
         }
         public void ArmWitnessTrap(Vector3 pos)
         {
@@ -301,7 +284,7 @@ namespace NewMod.Roles.ImpostorRoles
             );
 
             if (Player.AmOwner)
-                CreateCircle(Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.WitnessRange, Color.cyan, OptionGroupSingleton<TyrantOptions>.Instance.WitnessArmWindow);
+                Utils.CreateCircle("ArmWitnessTrap", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.WitnessRange, Color.cyan, OptionGroupSingleton<TyrantOptions>.Instance.WitnessArmWindow);
         }
         public void SpawnFearPulse(Vector3 pos)
         {
@@ -317,7 +300,7 @@ namespace NewMod.Roles.ImpostorRoles
             );
 
             if (Player.AmOwner)
-                CreateCircle(Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.FearPulseRadius, new Color(1f, 0.35f, 0.2f, 0.6f), OptionGroupSingleton<TyrantOptions>.Instance.FearPulseDuration);
+                Utils.CreateCircle("FearPulse", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.FearPulseRadius, new Color(1f, 0.35f, 0.2f, 0.6f), OptionGroupSingleton<TyrantOptions>.Instance.FearPulseDuration);
         }
         [MethodRpc((uint)CustomRPC.NotifyChampion)]
         public static void RpcNotifyChampion(PlayerControl source, PlayerControl target)

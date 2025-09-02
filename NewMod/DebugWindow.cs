@@ -1,4 +1,4 @@
-using AmongUs.GameOptions;
+using UnityEngine;
 using System.Linq;
 using System;
 using MiraAPI.Hud;
@@ -11,119 +11,106 @@ using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
 using Reactor.Utilities.Attributes;
 using Reactor.Utilities.ImGui;
-using UnityEngine;
-using UnityEngine.Events;
 using Il2CppInterop.Runtime.Attributes;
-using NewMod.Buttons.Overload;
+using AmongUs.GameOptions;
+using NewMod.Components;
 
 namespace NewMod
 {
    [RegisterInIl2Cpp]
    public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
    {
-      [HideFromIl2Cpp]
-      public bool EnableDebugger { get; set; } = false;
+      [HideFromIl2Cpp] public bool EnableDebugger { get; set; } = false;
+      public float Zoom = 3f;
+      public const float ZoomMin = 3f;
+      public const float ZoomMax = 15f;
+      public bool ScrollZoomWhileOpen = true;
+      public static DebugWindow Instance;
+
+      public void ApplyZoom(float size)
+      {
+         size = Mathf.Clamp(size, ZoomMin, ZoomMax);
+         if (Camera.main) Camera.main.orthographicSize = size;
+         foreach (var cam in Camera.allCameras) if (cam) cam.orthographicSize = size;
+         ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen);
+         if (HudManager.Instance && HudManager.Instance.ShadowQuad)
+         {
+            bool zoomingOut = size > 3f;
+            HudManager.Instance.ShadowQuad.gameObject.SetActive(!zoomingOut);
+         }
+      }
+
+      private static bool AllowDebug()
+      {
+         return AmongUsClient.Instance && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay;
+      }
+
       public readonly DragWindow DebuggingWindow = new(new Rect(10, 10, 0, 0), "NewMod Debug Window", () =>
       {
-         bool isFreeplay = AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay;
+         bool allow = AllowDebug();
 
-         if (GUILayout.Button("Become Explosive Modifier"))
+         GUILayout.BeginVertical(GUI.skin.box);
+         GUILayout.Label("Camera Zoom");
+         var newZoom = GUILayout.HorizontalSlider(Instance.Zoom, ZoomMin, ZoomMax, GUILayout.Width(220f));
+         GUILayout.BeginHorizontal();
+         if (GUILayout.Button("-", GUILayout.Width(28f)) && allow) newZoom = Mathf.Clamp(Instance.Zoom / 1.25f, ZoomMin, ZoomMax);
+         if (GUILayout.Button("+", GUILayout.Width(28f)) && allow) newZoom = Mathf.Clamp(Instance.Zoom * 1.25f, ZoomMin, ZoomMax);
+         if (GUILayout.Button("Reset", GUILayout.Width(64f)) && allow) newZoom = 3f;
+         Instance.ScrollZoomWhileOpen = GUILayout.Toggle(Instance.ScrollZoomWhileOpen, "Scroll-wheel zoom");
+         GUILayout.EndHorizontal();
+         if (!Mathf.Approximately(newZoom, Instance.Zoom) && allow)
          {
-            if (!isFreeplay) return;
-            PlayerControl.LocalPlayer.RpcAddModifier<ExplosiveModifier>();
+            Instance.Zoom = newZoom;
+            Instance.ApplyZoom(Instance.Zoom);
          }
-         if (GUILayout.Button("Remove Explosive Modifier"))
+         GUILayout.Label($"Size: {Instance.Zoom:0.00}");
+         GUILayout.EndVertical();
+
+         GUILayout.Space(6);
+
+         if (GUILayout.Button("Become Explosive Modifier") && allow) PlayerControl.LocalPlayer.RpcAddModifier<ExplosiveModifier>();
+         if (GUILayout.Button("Remove Explosive Modifier") && allow) PlayerControl.LocalPlayer.RpcRemoveModifier<ExplosiveModifier>();
+         if (GUILayout.Button("Become Necromancer") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<NecromancerRole>(), false);
+         if (GUILayout.Button("Become DoubleAgent") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<DoubleAgent>(), false);
+         if (GUILayout.Button("Become EnergyThief") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<EnergyThief>(), false);
+         if (GUILayout.Button("Become SpecialAgent") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<SpecialAgent>(), false);
+         if (GUILayout.Button("Force Start Game") && allow) if (GameOptionsManager.Instance.CurrentGameOptions.NumImpostors is not 1) AmongUsClient.Instance.StartGame();
+         if (GUILayout.Button("Increases Uses by 3") && allow) foreach (var button in CustomButtonManager.Buttons) button.SetUses(3);
+         if (GUILayout.Button("Randomly Cast a Vote") && allow && MeetingHud.Instance)
          {
-            if (!isFreeplay) return;
-            PlayerControl.LocalPlayer.RpcRemoveModifier<ExplosiveModifier>();
-         }
-         if (GUILayout.Button("Become Necromancer"))
-         {
-            if (!isFreeplay) return;
-            PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<NecromancerRole>(), false);
-         }
-         if (GUILayout.Button("Become DoubleAgent"))
-         {
-            if (!isFreeplay) return;
-            PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<DoubleAgent>(), false);
-         }
-         if (GUILayout.Button("Become EnergyThief"))
-         {
-            if (!isFreeplay) return;
-            PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<EnergyThief>(), false);
-         }
-         if (GUILayout.Button("Become SpecialAgent"))
-         {
-            if (!isFreeplay) return;
-            PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<SpecialAgent>(), false);
-         }
-         if (GUILayout.Button("Force Start Game"))
-         {
-            if (GameOptionsManager.Instance.CurrentGameOptions.NumImpostors is 1) return;
-            AmongUsClient.Instance.StartGame();
-         }
-         if (GUILayout.Button("Increases Uses by 3"))
-         {
-            foreach (var button in CustomButtonManager.Buttons)
-            {
-               button.SetUses(3);
-            }
-         }
-         if (GUILayout.Button("Randomly Cast a Vote"))
-         {
-            if (!MeetingHud.Instance) return;
             var randPlayer = Utils.GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
             MeetingHud.Instance.CmdCastVote(PlayerControl.LocalPlayer.PlayerId, randPlayer.PlayerId);
          }
-         GUILayout.Space(4);
-
-         GUILayout.Label("Overload button tests", GUI.skin.box);
-
-         if (GUILayout.Button("Test Absorb"))
+         /*if (GUILayout.Button("Spawn General NPC") && allow)
          {
-            var prey = Utils.GetRandomPlayer(p =>
-                  !p.Data.IsDead &&
-                  !p.Data.Disconnected &&
-                  p.PlayerId != PlayerControl.LocalPlayer.PlayerId);
-            if (prey != null)
-            {
-               if (prey.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
-               {
-                  Debug.Log("Starting to absorb ability...");
-
-                  foreach (var buttonType in buttonsType)
-                  {
-                     var button = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == buttonType);
-
-                     if (button != null)
-                     {
-                        CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
-                     }
-                     Debug.Log($"[Overload] Successfully absorbed ability: {button.Name}, CanUse:{button.CanUse()}");
-                  }
-               }
-               else if (prey.Data.Role.Ability != null)
-               {
-                  var btn = Instantiate(
-                        HudManager.Instance.AbilityButton,
-                        HudManager.Instance.AbilityButton.transform.parent);
-                  btn.SetFromSettings(prey.Data.Role.Ability);
-                  var pb = btn.GetComponent<PassiveButton>();
-                  pb.OnClick.RemoveAllListeners();
-                  pb.OnClick.AddListener((UnityAction)prey.Data.Role.UseAbility);
-               }
-            }
-         }
+            var npc = new GameObject("GeneralNPC").AddComponent<GeneralNPC>();
+            npc.Initialize(PlayerControl.LocalPlayer);
+         }*/
       });
+
       public void OnGUI()
       {
          if (EnableDebugger) DebuggingWindow.OnGUI();
       }
+
+      public void Start()
+      {
+         Instance = this;
+         if (Camera.main) Zoom = Mathf.Clamp(Camera.main.orthographicSize, ZoomMin, ZoomMax);
+      }
+
       public void Update()
       {
-         if (Input.GetKey(KeyCode.F3))
+         if (Input.GetKeyDown(KeyCode.F3)) EnableDebugger = !EnableDebugger;
+         if (EnableDebugger && ScrollZoomWhileOpen && AllowDebug())
          {
-            EnableDebugger = !EnableDebugger;
+            float wheel = Input.GetAxis("Mouse ScrollWheel");
+            if (Mathf.Abs(wheel) > 0.0001f)
+            {
+               var factor = wheel > 0 ? 1f / 1.25f : 1.25f;
+               Zoom = Mathf.Clamp(Zoom * factor, ZoomMin, ZoomMax);
+               ApplyZoom(Zoom);
+            }
          }
       }
    }

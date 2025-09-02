@@ -1,7 +1,10 @@
 using System;
 using System.Linq;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using MiraAPI.Networking;
+using NewMod.Options.Roles.WraithCallerOptions;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using Reactor.Utilities.Attributes;
@@ -38,6 +41,7 @@ namespace NewMod.Components
             npc.notRealPlayer = true;
             KillAnimation.SetMovement(npc, true);
             npc.NetTransform.RpcSnapTo(Owner.transform.position);
+            npc.MyPhysics.Speed = OptionGroupSingleton<WraithCallerOptions>.Instance.NPCSpeed;
 
             var color = (byte)(npc.PlayerId % Palette.PlayerColors.Length);
             npc.RpcSetName("Wraith NPC");
@@ -56,10 +60,18 @@ namespace NewMod.Components
                 noShadow.hitOverride = npc.Collider;
             }
 
-            ownerLight = Owner.lightSource;
-            ownerLight.transform.SetParent(npc.transform, false);
-            ownerLight.transform.localPosition = npc.Collider.offset;
-            Camera.main.GetComponent<FollowerCamera>().SetTarget(npc);
+            if (!npc.TryGetComponent<ModifierComponent>(out var mc))
+            {
+                mc = npc.gameObject.AddComponent<ModifierComponent>();
+            }
+        
+            if (OptionGroupSingleton<WraithCallerOptions>.Instance.ShouldSwitchCamToNPC)
+            {
+                Camera.main.GetComponent<FollowerCamera>().SetTarget(npc);
+                ownerLight = Owner.lightSource;
+                ownerLight.transform.SetParent(npc.transform, false);
+                ownerLight.transform.localPosition = npc.Collider.offset;
+            }
 
             npc.cosmetics.enabled = false;
             npc.enabled = false;
@@ -72,11 +84,6 @@ namespace NewMod.Components
             {
                 SoundManager.Instance.PlaySound(NewModAsset.HeartbeatSound.LoadAsset(), false, 1f);
             }
-        }
-        public void Update()
-        {
-            if (MeetingHud.Instance)
-                Dispose();
         }
         [HideFromIl2Cpp]
         public System.Collections.IEnumerator WalkToTarget()
@@ -120,18 +127,20 @@ namespace NewMod.Components
         public void Dispose()
         {
             if (!isActive) return;
+
             isActive = false;
 
             if (npc != null)
             {
-                var cam = Camera.main.GetComponent<FollowerCamera>();
-                cam.SetTarget(Owner);
-
-                ownerLight.transform.SetParent(Owner.transform, false);
-                ownerLight.transform.localPosition = Owner.Collider.offset;
-
+                if (OptionGroupSingleton<WraithCallerOptions>.Instance.ShouldSwitchCamToNPC)
+                {
+                    var cam = Camera.main.GetComponent<FollowerCamera>();
+                    cam.SetTarget(Owner);
+                    ownerLight.transform.SetParent(Owner.transform, false);
+                    ownerLight.transform.localPosition = Owner.Collider.offset;
+                }
                 var info = GameData.Instance.AllPlayers.ToArray().FirstOrDefault(d => d.PlayerId == npc.PlayerId);
-                if (info != null) GameData.Instance.RemovePlayer(info.PlayerId);
+                GameData.Instance.RemovePlayer(info.PlayerId);
 
                 Destroy(npc.gameObject);
                 npc = null;

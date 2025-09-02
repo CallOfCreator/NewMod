@@ -69,12 +69,6 @@ namespace NewMod.Patches.Birthday
         public static void Prefix(ShipStatus __instance)
         {
             CustomLobby.DestroyImmediate();
-            ToastObj.gameObject.SetActive(false);
-
-            if (HudManager.Instance.Chat.IsOpenOrOpening)
-            {
-                HudManager.Instance.Chat.gameObject.SetActive(false);
-            }
         }
     }
 }

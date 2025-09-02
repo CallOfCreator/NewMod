@@ -46,15 +46,14 @@ namespace NewMod.Patches
         {
             if (activity == null) return;
 
-            var isBeta = true;
+            var isBeta = false;
             string details = $"NewMod v{NewMod.ModVersion}" + (isBeta ? " (Beta)" : " (Dev)");
 
             activity.Details = details;
             activity.State = $"Playing Among Us | NewMod v{NewMod.ModVersion}";
             activity.Assets = new ActivityAssets()
             {
-                LargeImage = "newmodlogov1_2_0",
-                SmallImage = "nm",
+                LargeImage = "nm",
                 SmallText = "Made with MiraAPI"
             };
 

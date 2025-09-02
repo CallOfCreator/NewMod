@@ -8,10 +8,10 @@ public class GeneralOption : AbstractOptionGroup
 {
     public override string GroupName => "NewMod Group";
 
-    [ModdedToggleOption("Can Open Cams")]
-    public bool CanOpenCams { get; set; } = true;
+    [ModdedToggleOption("Allows dead players to open cams anywhere")]
+    public bool AllowCams { get; set; } = false;
 
-    [ModdedNumberOption("Total Neutrals", min:0f, max:10, 1f)]
+    [ModdedNumberOption("Total Neutrals", min: 0f, max: 10, 1f)]
     public float TotalNeutrals { get; set; } = 3f;
 
     [ModdedToggleOption("Keep Crew Majority")]
@@ -19,4 +19,13 @@ public class GeneralOption : AbstractOptionGroup
 
     [ModdedToggleOption("Prefer Variety")]
     public bool PreferVariety { get; set; } = true;
+
+    [ModdedToggleOption("Dead players can see roles in meetings")]
+    public bool ShouldDeadPlayersSeeRoles { get; set; } = true;
+
+    [ModdedToggleOption("Anonymous Names in Meetings")]
+    public bool EnableAnonymousNamesInMeetings { get; set; } = false;
+
+    /*[ModdedToggleOption("Should spawn NPC after round start")]
+    public bool SpawnNpcAfterRoundStart { get; set; } = false;*/
 }

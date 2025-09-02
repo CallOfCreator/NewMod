@@ -31,6 +31,7 @@ public static class NewModAsset
     public static LoadableResourceAsset StrikeButton { get; } = new("NewMod.Resources.Strike.png");
     public static LoadableResourceAsset FinalButton { get; } = new("NewMod.Resources.final.png");
     public static LoadableResourceAsset CallWraith { get; } = new("NewMod.Resources.callwraith.png");
+    public static LoadableResourceAsset Shield { get; } = new("NewMod.Resources.Shield.png");
 
     // SFX
     public static LoadableAudioResourceAsset ReviveSound { get; } = new("NewMod.Resources.Sounds.revive.wav");
@@ -46,8 +47,10 @@ public static class NewModAsset
     // Role Icons
     public static LoadableResourceAsset StrikeIcon { get; } = new("NewMod.Resources.RoleIcons.StrikeIcon.png");
     public static LoadableResourceAsset InjectIcon { get; } = new("NewMod.Resources.RoleIcons.InjectIcon.png");
-    public static LoadableResourceAsset CrownIcon { get; } = new("NewMod.Resources.RoleIcons.crown.png");
-    public static LoadableResourceAsset WraithIcon { get; } = new("NewMod.Resources.RoleIcons.wraith.png");
+    public static LoadableResourceAsset CrownIcon { get; } = new("NewMod.Resources.RoleIcons.CrownIcon.png");
+    public static LoadableResourceAsset WraithIcon { get; } = new("NewMod.Resources.RoleIcons.WraithIcon.png");
+    public static LoadableResourceAsset ShieldIcon { get; } = new("NewMod.Resources.RoleIcons.ShieldIcon.png");
+     public static LoadableResourceAsset RadarIcon { get; } = new("NewMod.Resources.RoleIcons.RadarIcon.png");
 
     // Notif Icons
     public static LoadableResourceAsset VisionDebuff { get; } = new("NewMod.Resources.NotifIcons.vision_debuff.png");
