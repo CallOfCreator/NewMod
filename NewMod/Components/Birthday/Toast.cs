@@ -9,7 +9,7 @@ using Reactor.Utilities.Attributes;
 using Il2CppInterop.Runtime.Attributes;
 
 [RegisterInIl2Cpp]
-public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
+public class BirthdayToast(IntPtr ptr) : MonoBehaviour(ptr)
 {
     public SpriteRenderer toastRend;
     public TextMeshPro TimerText;
@@ -19,10 +19,10 @@ public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
         toastRend = transform.Find("Background").GetComponent<SpriteRenderer>();
         TimerText = transform.Find("Timer").GetComponent<TextMeshPro>();
     }
-    public static Toast CreateToast()
+    public static BirthdayToast CreateBirthdayToast()
     {
         var gameObject = Instantiate(NewModAsset.Toast.LoadAsset(), HudManager.Instance.transform);
-        var toast = gameObject.AddComponent<Toast>();
+        var toast = gameObject.AddComponent<BirthdayToast>();
         return toast;
     }
     [HideFromIl2Cpp]

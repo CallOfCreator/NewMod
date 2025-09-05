@@ -141,6 +141,7 @@ namespace NewMod.Components
                 }
                 var info = GameData.Instance.AllPlayers.ToArray().FirstOrDefault(d => d.PlayerId == npc.PlayerId);
                 GameData.Instance.RemovePlayer(info.PlayerId);
+                PlayerControl.AllPlayerControls.Remove(npc);
 
                 Destroy(npc.gameObject);
                 npc = null;
