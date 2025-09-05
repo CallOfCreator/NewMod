@@ -9,7 +9,7 @@ namespace NewMod.Patches.Birthday
     public static class LobbyPatch
     {
         public static GameObject CustomLobby;
-        public static Toast ToastObj;
+        public static BirthdayToast ToastObj;
         public static readonly Vector2[] BirthdaySpawns =
         [
            new Vector2(-0.6738f, -2.5016f),
