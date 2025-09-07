@@ -25,6 +25,11 @@ public class GeneralOption : AbstractOptionGroup
 
     [ModdedToggleOption("Anonymous Names in Meetings")]
     public bool EnableAnonymousNamesInMeetings { get; set; } = false;
+    public ModdedNumberOption SpawnChanceOfGlitchEffect { get; } = new("Spawn Chance of Glitch Effect", 0f, 0f, 100f, 10f, MiraAPI.Utilities.MiraNumberSuffixes.Percent);
+    public ModdedPlayerOption ChosenPlayer { get; } = new("Player who will receive the effect", true)
+    {
+        Visible = () => OptionGroupSingleton<GeneralOption>.Instance.SpawnChanceOfGlitchEffect.Value > 0f
+    };
 
     /*[ModdedToggleOption("Should spawn NPC after round start")]
     public bool SpawnNpcAfterRoundStart { get; set; } = false;*/

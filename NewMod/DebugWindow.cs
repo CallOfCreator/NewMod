@@ -13,7 +13,8 @@ using Reactor.Utilities.Attributes;
 using Reactor.Utilities.ImGui;
 using Il2CppInterop.Runtime.Attributes;
 using AmongUs.GameOptions;
-using NewMod.Components;
+using NewMod.Components.ScreenEffects;
+using Reactor.Utilities;
 
 namespace NewMod
 {
@@ -80,6 +81,30 @@ namespace NewMod
          {
             var randPlayer = Utils.GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
             MeetingHud.Instance.CmdCastVote(PlayerControl.LocalPlayer.PlayerId, randPlayer.PlayerId);
+         }
+         if (GUILayout.Button("End Meeting") && allow && MeetingHud.Instance)
+         {
+            MeetingHud.Instance.Close();
+         }
+         if (GUILayout.Button("Apply Glitch Effect to Main Camera") && allow)
+         {
+            Camera.main.gameObject.AddComponent<GlitchEffect>();
+         }
+         if (GUILayout.Button("Apply Earthquake Effect to Main Camera") && allow)
+         {
+            Camera.main.gameObject.AddComponent<EarthquakeEffect>();
+         }
+         if (GUILayout.Button("Apply Slow Hue Pulse Effect to Main Camera") && allow)
+         {
+            Camera.main.gameObject.AddComponent<SlowPulseHueEffect>();
+         }
+         if (GUILayout.Button("Reset Camera Effects") && allow)
+         {
+            Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 1f));
+         }
+         if (GUILayout.Button("Show Toast") && LobbyBehaviour.Instance)
+         {
+            Toast.CreateToast().ShowToast(string.Empty, "NewMod v1.2.6", Color.red, 5f);
          }
          /*if (GUILayout.Button("Spawn General NPC") && allow)
          {

@@ -2,7 +2,6 @@ using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.Utilities;
 using NewMod.Roles.CrewmateRoles;
-using UnityEngine;
 
 namespace NewMod.Options.Roles.BeaconOptions
 {
