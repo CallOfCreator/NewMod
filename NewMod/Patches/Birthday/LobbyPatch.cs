@@ -105,6 +105,7 @@ namespace NewMod.Patches.Birthday
                 wardrobe.transform.localScale = new Vector3(0.6475f, 0.7f, 1f);
             }
         }
+
         [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.Start))]
         public static void Prefix(ShipStatus __instance)
         {
