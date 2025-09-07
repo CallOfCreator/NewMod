@@ -49,6 +49,7 @@
 | v1.2.1      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.1/NewMod.zip) |
 | v1.2.4      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.4/NewMod.zip) |
 | v1.2.5      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.5/NewMod.zip) |
+| v1.2.6      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.6/NewMod.zip) |
 
 ---
 
