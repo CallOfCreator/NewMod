@@ -39,7 +39,7 @@ namespace NewMod.Components
 
             if (lp.PlayerId == ownerId)
             {
-                shouldSee = OptionGroupSingleton<AegisOptions>.Instance.Visibility != WardVisibilityMode.AllPlayers // owner sees in all modes below anyway
+                shouldSee = OptionGroupSingleton<AegisOptions>.Instance.Visibility != WardVisibilityMode.AllPlayers
                                 || true;
             }
             if (!shouldSee)

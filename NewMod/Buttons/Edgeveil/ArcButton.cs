@@ -8,6 +8,7 @@ using UnityEngine;
 using NewMod.Components.ScreenEffects;
 using NewMod.Utilities;
 using Reactor.Utilities;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Edgeveil
 {
@@ -39,7 +40,7 @@ namespace NewMod.Buttons.Edgeveil
         /// <summary>
         /// Default keybind for Edgeveil's Arc ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.Q;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// Defines where on the screen this button should appear.

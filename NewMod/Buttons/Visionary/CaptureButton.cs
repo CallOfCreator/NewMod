@@ -7,7 +7,7 @@ using NewMod.Roles.CrewmateRoles;
 using UnityEngine;
 using Reactor.Utilities;
 using NewMod.Utilities;
-using Rewired;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Visionary
 {
@@ -48,7 +48,7 @@ namespace NewMod.Buttons.Visionary
         /// <summary>
         /// Default keybind for Visionary's Capture ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.N;
+       public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// Handles the button click, capturing a screenshot and saving it to a unique path.

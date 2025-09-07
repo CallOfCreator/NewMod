@@ -4,8 +4,8 @@ using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.AegisOptions;
 using UnityEngine;
 using AG = NewMod.Roles.CrewmateRoles.Aegis;
-using Rewired;
 using NewMod.Utilities;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Aegis
 {
@@ -37,7 +37,7 @@ namespace NewMod.Buttons.Aegis
         /// <summary>
         /// Default keybind for Aegis.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.G;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// No “hold” effect, instant cast.

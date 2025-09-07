@@ -7,7 +7,7 @@ using NewMod.Options.Roles.InjectorOptions;
 using MiraAPI.Utilities;
 using System;
 using static NewMod.Utilities.Utils;
-using Rewired;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Injector
 {
@@ -45,7 +45,7 @@ namespace NewMod.Buttons.Injector
         /// <summary>
         /// Default keybind for Injector's Inject ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.C;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// Sprite/icon displayed on the button.

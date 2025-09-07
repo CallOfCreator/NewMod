@@ -7,8 +7,8 @@ using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using System.Linq;
-using Rewired;
 using System.IO;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Visionary
 {
@@ -50,7 +50,7 @@ namespace NewMod.Buttons.Visionary
         /// <summary>
         /// Default keybind for Visionary's Show ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.M;
+       public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
 
         /// <summary>
         /// Checks if the button can be used, ensuring there's at least one captured screenshot.
