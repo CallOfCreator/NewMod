@@ -7,6 +7,7 @@ using PRK = NewMod.Roles.NeutralRoles.Prankster;
 using UnityEngine;
 using NewMod.Utilities;
 using Rewired;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Prankster
 {
@@ -38,7 +39,7 @@ namespace NewMod.Buttons.Prankster
         /// <summary>
         /// Default keybind for Prankster's Fake Body ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.Z;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// The duration of any effect caused by this button press; in this case, no effect duration is used.

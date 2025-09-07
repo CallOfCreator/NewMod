@@ -1,7 +1,6 @@
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
-using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using NewMod.Options.Roles.WraithCallerOptions;
 using NewMod.Utilities;
@@ -9,7 +8,6 @@ using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles
 {
-    [MiraIgnore]
     public class WraithCaller : ImpostorRole, INewModRole
     {
         public string RoleName => "Wraith Caller";

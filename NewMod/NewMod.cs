@@ -36,7 +36,7 @@ namespace NewMod;
 public partial class NewMod : BasePlugin, IMiraPlugin
 {
    public const string Id = "com.callofcreator.newmod";
-   public const string ModVersion = "1.2.5";
+   public const string ModVersion = "1.2.6";
    public Harmony Harmony { get; } = new Harmony(Id);
    public static BasePlugin Instance;
    public static Minigame minigame;
@@ -80,19 +80,17 @@ public partial class NewMod : BasePlugin, IMiraPlugin
    }
    public static void InitializeKeyBinds()
    {
-      if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started) return;
-
-      if (Input.GetKeyDown(KeyCode.F2) && PlayerControl.LocalPlayer.Data.Role.Role is AmongUs.GameOptions.RoleTypes.Crewmate && OptionGroupSingleton<GeneralOption>.Instance.CanOpenCams)
+      if (Input.GetKeyDown(KeyCode.F2) && PlayerControl.LocalPlayer.Data.IsDead && OptionGroupSingleton<GeneralOption>.Instance.AllowCams)
       {
-         var cam = Object.FindObjectsOfType<SystemConsole>().FirstOrDefault(x => x.name.Contains("Surv"));
-         if (Camera.main is not null || cam != null)
-         {
-            minigame = Object.Instantiate(cam.MinigamePrefab, Camera.main.transform, false);
-            minigame.transform.localPosition = new Vector3(0f, 0f, -50f);
-            minigame.Begin(null);
-         }
+         var sys = Utils.FindSurveillanceConsole();
+         var mainCam = Camera.main;
+         if (mainCam == null) return;
+
+         var minigame = Object.Instantiate(sys.MinigamePrefab, mainCam.transform, false);
+         minigame.transform.localPosition = new Vector3(0f, 0f, -50f);
+         minigame.Begin(null);
       }
-      if (Input.GetKeyDown(KeyCode.F3) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole && OptionGroupSingleton<GeneralOption>.Instance.EnableTeleportation)
+      if (Input.GetKeyDown(KeyCode.F3) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole)
       {
          var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
          if (deadBodies != null && deadBodies.Count > 0)
@@ -170,9 +168,9 @@ public partial class NewMod : BasePlugin, IMiraPlugin
    {
       public static void Postfix(TaskPanelBehaviour __instance, [HarmonyArgument(0)] string str)
       {
-         if (AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Started && PlayerControl.LocalPlayer.Data.Role.Role is AmongUs.GameOptions.RoleTypes.Crewmate)
+         if (PlayerControl.LocalPlayer.Data.IsDead)
          {
-            __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.CanOpenCams ? "<color=blue>Press F2 For Open Cams</color>" : "<color=red>You cannot open cams because the host has disabled this setting</color>");
+            __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams ? "<color=blue>Press F2 For Open Cams</color>" : "<color=red>You cannot open cams because the host has disabled this setting</color>");
          }
       }
    }

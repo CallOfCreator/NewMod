@@ -5,7 +5,7 @@ using NewMod.Options.Roles.NecromancerOptions;
 using NewMod.Roles.ImpostorRoles;
 using UnityEngine;
 using NewMod.Utilities;
-using Rewired;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Necromancer
 {
@@ -37,7 +37,7 @@ namespace NewMod.Buttons.Necromancer
         /// <summary>
         /// Default keybind for Necromancer's Revive ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.V;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// Defines where on the screen this button should appear.

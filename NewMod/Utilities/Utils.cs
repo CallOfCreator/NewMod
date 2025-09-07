@@ -23,6 +23,8 @@ using NewMod.Options.Roles.InjectorOptions;
 using MiraAPI.Hud;
 using NewMod.Buttons.Pulseblade;
 using NewMod.Roles;
+using NewMod.Components;
+using NewMod.Buttons.WraithCaller;
 
 namespace NewMod.Utilities
 {
@@ -75,6 +77,8 @@ namespace NewMod.Utilities
         /// A dictionary holding the strike kill counts for each player, indexed by their player ID.
         /// </summary>
         public static readonly Dictionary<byte, int> StrikeKills = new();
+
+        public static Material _circleMat;
 
         /// <summary>
         /// Retrieves a PlayerControl instance by its player ID.
@@ -730,7 +734,6 @@ namespace NewMod.Utilities
                     }
                 }
             }
-
         }
         public static string GetFactionDisplay(INewModRole role)
         {
@@ -738,6 +741,7 @@ namespace NewMod.Utilities
             {
                 NewModFaction.Apex => $"<b><color=#FF5A5A>Apex</color></b>",
                 NewModFaction.Entropy => $"<b><color=#EAAA3E>Entropy</color></b>",
+                NewModFaction.Sentinel => $"<b><color=#3AA6FF>Sentinel</color></b>",
                 _ => $"Unknown"
             };
         }
@@ -920,6 +924,7 @@ namespace NewMod.Utilities
             { typeof(SpecialAgent),    new() { typeof(AssignButton) } },
             { typeof(TheVisionary),    new() { typeof(CaptureButton), typeof(ShowScreenshotButton) } },
             { typeof(PulseBlade),      new() { typeof(StrikeButton)}},
+            { typeof(WraithCaller),    new() {typeof(CallWraithButton) } }
             // TODO: Add Launchpad roles and their associated buttons here
         };
 
@@ -1071,10 +1076,10 @@ namespace NewMod.Utilities
         }
 
         /// <summary>
-        /// Formats a <see cref="TimeSpan"/> into a string with the format:
+        /// Formats a <see cref="System.TimeSpan"/> into a string with the format:
         /// <c>dd:hh:mm:ss</c>.
         /// </summary>
-        /// <param name="t">The <see cref="TimeSpan"/> to format.</param>
+        /// <param name="t">The <see cref="System.TimeSpan"/> to format.</param>
         public static string FormatSpan(System.TimeSpan t)
         {
             int dd = Mathf.Max(0, t.Days);
@@ -1082,6 +1087,92 @@ namespace NewMod.Utilities
             int mm = Mathf.Clamp(t.Minutes, 0, 59);
             int ss = Mathf.Clamp(t.Seconds, 0, 59);
             return $"{dd:D1}:{hh:D2}:{mm:D2}:{ss:D2}";
+        }
+        /// <summary>
+        /// Finds the surveillance console on the current ship.
+        /// </summary>
+        /// <returns>
+        /// The first <see cref="SystemConsole"/> instance representing the surveillance console,
+        /// </returns>
+        public static SystemConsole FindSurveillanceConsole()
+        {
+            var all = ShipStatus.Instance?.AllConsoles;
+            var sys = all.OfType<SystemConsole>().FirstOrDefault(c => c && c.MinigamePrefab && c.MinigamePrefab is SurveillanceMinigame);
+
+            return all.OfType<SystemConsole>().FirstOrDefault(c =>
+            {
+                var n = c.name;
+                return n.Contains("Surv", System.StringComparison.OrdinalIgnoreCase)
+                    || n.Contains("Lookout", System.StringComparison.OrdinalIgnoreCase);
+            });
+        }
+
+        /// <summary>
+        /// Retrieves or creates a material used for drawing circles.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Material"/> instance with the "Sprites/Default" shader
+        /// </returns>
+        public static Material GetCircleMat()
+        {
+            if (_circleMat) return _circleMat;
+            _circleMat = new(Shader.Find("Sprites/Default"))
+            {
+                renderQueue = 3000
+            };
+            return _circleMat;
+        }
+
+        /// <summary>
+        /// Creates a filled circle mesh in the scene at a given position.
+        /// </summary>
+        /// <param name="name">The name of the created GameObject.</param>
+        /// <param name="pos">The position where the circle will be created.</param>
+        /// <param name="radius">The radius of the circle.</param>
+        /// <param name="color">The color to apply to the circle material.</param>
+        /// <param name="duration">How long the circle should remain before being despawned.</param>
+        /// <param name="segments">Number of segments for the circle geometry. Minimum of 12.</param>
+        /// <returns>
+        /// The created <see cref="GameObject"/> representing the circle.
+        /// </returns>
+        public static GameObject CreateCircle(string name, Vector3 pos, float radius, Color color, float duration, int segments = 64)
+        {
+            var go = new GameObject(name);
+            go.transform.position = pos;
+
+            HudManager.Instance.StartCoroutine(Effects.ScaleIn(go.transform, 0f, 1f, 0.5f));
+
+            var mf = go.AddComponent<MeshFilter>();
+            var mr = go.AddComponent<MeshRenderer>();
+
+            var mat = new Material(GetCircleMat()) { color = color };
+            mr.sharedMaterial = mat;
+
+            float visualRadius = radius;
+
+            segments = Mathf.Max(12, segments);
+            var verts = new Vector3[segments + 1];
+            var tris = new int[segments * 3];
+
+            verts[0] = Vector3.zero;
+            for (int i = 0; i < segments; i++)
+            {
+                float a = i / (float)segments * Mathf.PI * 2f;
+                verts[i + 1] = new Vector3(Mathf.Cos(a) * visualRadius, Mathf.Sin(a) * visualRadius, 0f);
+                tris[i * 3 + 0] = 0;
+                tris[i * 3 + 1] = i + 1;
+                tris[i * 3 + 2] = (i == segments - 1) ? 1 : (i + 2);
+            }
+
+            var mesh = new Mesh { name = $"{name}_Fill" };
+            mesh.SetVertices(verts);
+            mesh.SetTriangles(tris, 0, true);
+            mesh.RecalculateBounds();
+            mesh.RecalculateNormals();
+            mf.sharedMesh = mesh;
+
+            Coroutines.Start(CoroutinesHelper.DespawnCircle(go, duration));
+            return go;
         }
     }
 }

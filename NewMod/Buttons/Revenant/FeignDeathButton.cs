@@ -6,7 +6,7 @@ using Rev = NewMod.Roles.ImpostorRoles.Revenant;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
-using Rewired;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Revenant
 {
@@ -37,10 +37,8 @@ namespace NewMod.Buttons.Revenant
 
         /// <summary>
         /// Default keybind for Revenant's Feign Death ability.  
-        /// Requires Ctrl as a modifier to prevent accidental use.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.T;
-        public override ModifierKey Modifier1 => ModifierKey.Control;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// The duration of any effect from this button. In this case, zero.

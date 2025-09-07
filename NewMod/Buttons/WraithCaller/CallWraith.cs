@@ -5,9 +5,9 @@ using NewMod.Options.Roles.WraithCallerOptions;
 using Wraith = NewMod.Roles.NeutralRoles.WraithCaller;
 using UnityEngine;
 using NewMod.Utilities;
-using Rewired;
 using System.Collections.Generic;
 using System.Linq;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.WraithCaller
 {
@@ -39,7 +39,7 @@ namespace NewMod.Buttons.WraithCaller
         /// <summary>
         /// Default keybind for the Call Wraith ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.M;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// The duration of any effect triggered by this ability.

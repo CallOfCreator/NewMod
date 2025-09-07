@@ -216,6 +216,7 @@ namespace NewMod.Patches
         public static bool Prefix(ShipStatus __instance)
         {
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
+            if (Time.timeSinceLevelLoad < 2f) return true;
             if (CheckForEndGameFaction<WraithCaller>(__instance, (GameOverReason)NewModEndReasons.WraithCallerWin)) return false;
             if (CheckForEndGameFaction<PulseBlade>(__instance, (GameOverReason)NewModEndReasons.PulseBladeWin)) return false;
             if (CheckForEndGameFaction<Tyrant>(__instance, (GameOverReason)NewModEndReasons.TyrantWin)) return false;
@@ -244,7 +245,7 @@ namespace NewMod.Patches
 
                     var alives = Helpers.GetAlivePlayers();
 
-                    if (alives.Count > playersThreshold) continue;
+                    if (alives.Count >= playersThreshold) continue;
 
                     int strikes = Utils.GetStrikes(player.PlayerId);
                     if (strikes >= requiredStrikes)

@@ -12,6 +12,7 @@ using MiraAPI.Utilities;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
 using Rewired;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Pulseblade
 {
@@ -48,10 +49,8 @@ namespace NewMod.Buttons.Pulseblade
 
         /// <summary>
         /// Default keybind for Pulseblade's Strike ability.  
-        /// Requires Shift as a modifier to prevent accidental use.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.G;
-        public override ModifierKey Modifier1 => ModifierKey.Shift;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
         /// <summary>
         /// Sprite used for the button — set to empty;
         /// </summary>

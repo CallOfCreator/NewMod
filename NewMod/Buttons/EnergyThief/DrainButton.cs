@@ -6,7 +6,7 @@ using NewMod.Options.Roles.EnergyThiefOptions;
 using ET = NewMod.Roles.NeutralRoles.EnergyThief;
 using UnityEngine;
 using NewMod.Utilities;
-using Rewired;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.EnergyThief
 {
@@ -34,11 +34,11 @@ namespace NewMod.Buttons.EnergyThief
         /// The on-screen position of this button.
         /// </summary>
         public override ButtonLocation Location => ButtonLocation.BottomRight;
-        
+
         /// <summary>
         /// Default keybind for EnergyThief's Drain ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.F;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// The duration of the effect applied by this button; in this case, zero.

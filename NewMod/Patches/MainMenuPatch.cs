@@ -38,13 +38,23 @@ namespace NewMod.Patches
 
             RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
 
-            if (!_wraithRegistered)
+            if (NewModDateTime.IsWraithCallerUnlocked && !_wraithRegistered)
             {
-                RegisterWraithCaller();
                 _wraithRegistered = true;
             }
 
-            Coroutines.Start(ApplyBirthdayUI(__instance));
+            if (NewModDateTime.IsNewModBirthdayWeek)
+            {
+                Coroutines.Start(ApplyBirthdayUI(__instance));
+            }
+            else
+            {
+                var Logo = new GameObject("NewModLogo");
+                Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
+                Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
+                LogoSprite = Logo.AddComponent<SpriteRenderer>();
+                LogoSprite.sprite = NewModAsset.ModLogo.LoadAsset();
+            }
             ModCompatibility.Initialize();
         }
 
@@ -82,19 +92,7 @@ namespace NewMod.Patches
                 if (auBG != null && bg != null) auBG.sprite = bg;
             }
         }
-
-        public static void RegisterWraithCaller()
-        {
-            var roleType = typeof(WraithCaller);
-            var customRoleManager = typeof(CustomRoleManager);
-            var registerTypes = customRoleManager.GetMethod("RegisterRoleTypes", BindingFlags.NonPublic | BindingFlags.Static);
-            var registerInManager = customRoleManager.GetMethod("RegisterInRoleManager", BindingFlags.NonPublic | BindingFlags.Static);
-            var plugin = MiraPluginManager.GetPluginByGuid(NewMod.Id);
-            registerTypes.Invoke(null, new object[] { new List<Type> { roleType }, plugin });
-            registerInManager.Invoke(null, null);
-        }
-
-        [HarmonyPatch(nameof(MainMenuManager.OpenGameModeMenu))]
+        /*[HarmonyPatch(nameof(MainMenuManager.OpenGameModeMenu))]
         [HarmonyPatch(nameof(MainMenuManager.OpenCredits))]
         [HarmonyPatch(nameof(MainMenuManager.OpenAccountMenu))]
         [HarmonyPatch(nameof(MainMenuManager.OpenCreateGame))]
@@ -103,14 +101,17 @@ namespace NewMod.Patches
         [HarmonyPatch(nameof(MainMenuManager.OpenFindGame))]
         public static void Postfix(MainMenuManager __instance)
         {
-            if (RightPanel != null) RightPanel.gameObject.SetActive(true);
+            if (!NewModDateTime.IsNewModBirthdayWeek) return;
+            RightPanel.gameObject.SetActive(true);
         }
 
         [HarmonyPatch(nameof(MainMenuManager.ResetScreen))]
         [HarmonyPostfix]
         public static void ResetScreenPostfix(MainMenuManager __instance)
         {
-            if (RightPanel != null) RightPanel.gameObject.SetActive(false);
+            if (!NewModDateTime.IsNewModBirthdayWeek) return;
+            RightPanel.gameObject.SetActive(false);
         }
+    }*/
     }
 }

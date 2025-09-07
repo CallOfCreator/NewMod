@@ -1,7 +1,7 @@
 using MiraAPI.Hud;
+using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Roles.NeutralRoles;
-using Rewired;
 using UnityEngine;
 
 namespace NewMod.Buttons.Overload
@@ -47,7 +47,7 @@ namespace NewMod.Buttons.Overload
         /// Stores the default key assigned to the absorbed button's action.
         /// Mirrors the keybind of the original absorbed button.
         /// </summary>
-        public KeyboardKeyCode absorbedKeybind;
+        public MiraKeybind absorbedKeybind;
 
         /// <summary>
         /// The name displayed on the button.
@@ -67,7 +67,7 @@ namespace NewMod.Buttons.Overload
         /// <summary>
         /// Default keybind for Overload's Overload ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => absorbedKeybind;
+        public override MiraKeybind Keybind => absorbedKeybind;
 
         /// <summary>
         /// Determines how long the effect from clicking the button lasts. In this case, no duration is set.
@@ -96,7 +96,7 @@ namespace NewMod.Buttons.Overload
             absorbedCooldown = target.Cooldown;
             absorbedMaxUses = target.MaxUses;
             absorbedSprite = target.Sprite;
-            absorbedKeybind = target.Defaultkeybind;
+            absorbedKeybind = target.Keybind;
             absorbedOnClick = () => target.GetType().GetMethod("OnClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                               ?.Invoke(target, null);
 

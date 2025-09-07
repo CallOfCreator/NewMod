@@ -1,9 +1,11 @@
 using UnityEngine;
 using HarmonyLib;
-using System;
 using Object = UnityEngine.Object;
 using Reactor.Utilities.Extensions;
-using System.IO;
+using MiraAPI.Utilities;
+using NewMod.Components.ScreenEffects;
+using Reactor.Utilities;
+using NewMod.Utilities;
 
 namespace NewMod.Patches.Birthday
 {
@@ -11,7 +13,7 @@ namespace NewMod.Patches.Birthday
     public static class LobbyPatch
     {
         public static GameObject CustomLobby;
-        public static Toast ToastObj;
+        public static BirthdayToast ToastObj;
         public static readonly Vector2[] BirthdaySpawns =
         [
            new Vector2(-0.6738f, -2.5016f),
@@ -29,24 +31,62 @@ namespace NewMod.Patches.Birthday
         [HarmonyPrefix]
         public static bool StartPrefix(LobbyBehaviour __instance)
         {
-            CustomLobby = Object.Instantiate(NewModAsset.CustomLobby.LoadAsset());
-            CustomLobby.transform.SetParent(__instance.transform, false);
-            CustomLobby.transform.localPosition = Vector3.zero;
-            return true;
+            if (NewModDateTime.IsNewModBirthdayWeek)
+            {
+                __instance.SpawnPositions = new Vector2[BirthdaySpawns.Length];
+
+                for (int i = 0; i < BirthdaySpawns.Length; i++)
+                {
+                    __instance.SpawnPositions[i] = BirthdaySpawns[i % BirthdaySpawns.Length];
+                }
+                CustomLobby = Object.Instantiate(NewModAsset.HalloweenLobby.LoadAsset());
+                CustomLobby.layer = LayerMask.NameToLayer("Ship");
+                CustomLobby.transform.SetParent(__instance.transform, false);
+                CustomLobby.transform.localPosition = Vector3.zero;
+                return false;
+            }
+            else if (NewModDateTime.IsHalloweenSeason)
+            {
+                __instance.SpawnPositions = new Vector2[BirthdaySpawns.Length];
+
+                for (int i = 0; i < BirthdaySpawns.Length; i++)
+                {
+                    __instance.SpawnPositions[i] = BirthdaySpawns[i % BirthdaySpawns.Length];
+                }
+                CustomLobby = Object.Instantiate(NewModAsset.HalloweenLobby.LoadAsset());
+                CustomLobby.layer = LayerMask.NameToLayer("Ship");
+                CustomLobby.transform.SetParent(__instance.transform, false);
+                CustomLobby.transform.localPosition = Vector3.zero;
+
+                if (Helpers.CheckChance(30))
+                {
+                    int effectIndex = Random.Range(0, 3);
+                    switch (effectIndex)
+                    {
+                        case 0:
+                            Camera.main.gameObject.AddComponent<GlitchEffect>();
+                            break;
+                        case 1:
+                            Camera.main.gameObject.AddComponent<EarthquakeEffect>();
+                            break;
+                        case 2:
+                            Camera.main.gameObject.AddComponent<SlowPulseHueEffect>();
+                            break;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         [HarmonyPatch(nameof(LobbyBehaviour.Start))]
         [HarmonyPostfix]
         public static void Postfix(LobbyBehaviour __instance)
         {
-            ToastObj = Toast.CreateToast();
-            ToastObj.transform.localPosition = new Vector3(-4.4217f, 2.2098f, 0f);
-
-            if (DateTime.Now < NewModDateTime.NewModBirthday)
-            {
-                TimeSpan countdown = NewModDateTime.NewModBirthday - DateTime.Now;
-                ToastObj.StartCountdown(countdown);
-            }
+            if (!NewModDateTime.IsNewModBirthdayWeek || !NewModDateTime.IsHalloweenSeason) return;
 
             var originalLobby = "Lobby(Clone)";
             GameObject.Find(originalLobby).GetComponent<EdgeCollider2D>().Destroy();
@@ -61,21 +101,16 @@ namespace NewMod.Patches.Birthday
             var wardrobe = GameObject.Find(originalLobby + "/panel_Wardrobe");
             if (wardrobe != null)
             {
-                wardrobe.transform.localPosition = new Vector3(4.6701f, -0.0529f, 0f);
-                wardrobe.transform.localScale = new Vector3(0.7301f, 0.7f, 1f);
-            }
-            __instance.SpawnPositions = new Vector2[BirthdaySpawns.Length];
-            
-            for (int i = 0; i < BirthdaySpawns.Length; i++)
-            {
-                __instance.SpawnPositions[i] = BirthdaySpawns[i];
+                wardrobe.transform.localPosition = new Vector3(-4.368f, -0.0027f, 0f);
+                wardrobe.transform.localScale = new Vector3(0.6475f, 0.7f, 1f);
             }
         }
+
         [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.Start))]
         public static void Prefix(ShipStatus __instance)
         {
             CustomLobby.DestroyImmediate();
-            ToastObj.gameObject.SetActive(false);
+            Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 0f));
         }
     }
 }

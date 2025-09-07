@@ -1,5 +1,6 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
+using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.OverloadOptions;
 using NewMod.Roles.NeutralRoles;
@@ -32,7 +33,7 @@ namespace NewMod.Buttons.Overload
         /// <summary>
         /// Default keybind for the Final Ability button.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.B;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
 
         /// <summary>
         /// No duration effect.

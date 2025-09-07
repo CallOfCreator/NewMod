@@ -7,7 +7,7 @@ using SA = NewMod.Roles.NeutralRoles.SpecialAgent;
 using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
-using Rewired;
+using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.SpecialAgent
 {
@@ -39,7 +39,7 @@ namespace NewMod.Buttons.SpecialAgent
         /// <summary>
         /// Default keybind for Special Agent's Assign ability.
         /// </summary>
-        public override KeyboardKeyCode Defaultkeybind => KeyboardKeyCode.H;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
         /// <summary>
         /// The duration of any effect triggered by this button; here, it's zero.
