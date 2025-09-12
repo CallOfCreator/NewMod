@@ -1,8 +1,6 @@
-using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using Reactor.Networking.Attributes;
-using MiraAPI.Utilities;
 
 namespace NewMod.Utilities
 {
@@ -25,7 +23,7 @@ namespace NewMod.Utilities
             {
                 NewMod.Instance.Log.LogError("[PranksterUtilities] CreatePranksterDeadBody: Failed to create dead body, random player is null.");
             }
-            var deadBody = Object.Instantiate(GameManager.Instance.DeadBodyPrefab);
+            var deadBody = Object.Instantiate(GameManager.Instance.deadBodyPrefab[0]);
             deadBody.name = PranksterBodyName;
             deadBody.ParentId = parentId;
 

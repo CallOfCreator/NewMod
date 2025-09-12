@@ -2,21 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers.Types;
+using NewMod.Options;
 using NewMod.Options.Modifiers;
 using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Modifiers
 {
-    public class StickyModifier : TimedModifier
+    public class StickyModifier : GameModifier
     {
         public override string ModifierName => "Sticky";
-        public override bool AutoStart => OptionGroupSingleton<StickyModifierOptions>.Instance.EnableModifier;
-        public override float Duration => (int)OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDuration;
         public override bool HideOnUi => false;
         public override bool ShowInFreeplay => true;
-        public override bool RemoveOnComplete => true;
-        public static List<PlayerControl> linkedPlayers = new();
+        public static List<PlayerControl> linkedPlayers = [];
+        public override int GetAmountPerGame()
+        {
+            return (int)OptionGroupSingleton<ModifiersOptions>.Instance.StickyAmount;
+        }
+        public override int GetAssignmentChance()
+        {
+            return OptionGroupSingleton<ModifiersOptions>.Instance.StickyChance;
+        }
         public override bool? CanVent()
         {
             return Player.Data.Role.CanVent;
@@ -49,8 +55,6 @@ namespace NewMod.Modifiers
         }
         public IEnumerator CoFollowStickyPlayer(PlayerControl player)
         {
-            float duration = Duration;
-
             var info = new StickyState
             {
                 StickyOwner = Player,
@@ -59,7 +63,7 @@ namespace NewMod.Modifiers
             };
 
             yield return HudManager.Instance.StartCoroutine(
-                Effects.Overlerp(duration, new System.Action<float>((t) =>
+                Effects.Overlerp(0.5f, new System.Action<float>((t) =>
                 {
                     Vector3 targetPos = info.LinkedPlayer.transform.position;
                     Vector3 currentPos = info.StickyOwner.transform.position;
