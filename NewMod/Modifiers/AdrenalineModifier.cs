@@ -8,6 +8,7 @@ namespace NewMod.Modifiers
     public class AdrenalineModifier : GameModifier
     {
         public override string ModifierName => "Adrenaline";
+        public override bool HideOnUi => false;
         public override int GetAssignmentChance() => (int)OptionGroupSingleton<ModifiersOptions>.Instance.AdrenalineChance.Value;
         public override int GetAmountPerGame() => (int)OptionGroupSingleton<ModifiersOptions>.Instance.AdrenalineAmount;
 

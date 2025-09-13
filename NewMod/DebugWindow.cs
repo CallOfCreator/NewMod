@@ -104,7 +104,8 @@ namespace NewMod
          }
          if (GUILayout.Button("Show Toast") && LobbyBehaviour.Instance)
          {
-            Toast.CreateToast().ShowToast(string.Empty, "NewMod v1.2.6", Color.red, 5f);
+            var toast = Toast.CreateToast();
+            toast.ShowToast(string.Empty, "NewMod v1.2.6", Color.red, 5f);
          }
          /*if (GUILayout.Button("Spawn General NPC") && allow)
          {
