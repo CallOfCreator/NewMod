@@ -8,7 +8,6 @@ namespace NewMod.Options.Modifiers
     public class FalseFormModifierOptions : AbstractOptionGroup<FalseFormModifier>
     {
         public override string GroupName => "FalseForm Settings";
-        public ModdedToggleOption EnableModifier { get; } = new("Enable FalseForm", true);
         public ModdedNumberOption FalseFormDuration { get; } =
             new(
                 "Duration of the FalseForm effect",

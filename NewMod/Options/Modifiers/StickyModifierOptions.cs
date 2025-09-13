@@ -8,7 +8,6 @@ namespace NewMod.Options.Modifiers
     public class StickyModifierOptions : AbstractOptionGroup<StickyModifier>
     {
         public override string GroupName => "Sticky Settings";
-        public ModdedToggleOption EnableModifier { get; } = new("Enable StickyModifier", true);
         public ModdedNumberOption StickyDuration { get; } =
             new(
                 "Duration of Sticky Effect",
