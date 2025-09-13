@@ -24,6 +24,7 @@ using NewMod.Options.Roles.OverloadOptions;
 using MiraAPI.Events;
 using NewMod.Patches.Compatibility;
 using NewMod.Buttons.Overload;
+using MiraAPI.LocalSettings;
 
 namespace NewMod;
 
@@ -40,7 +41,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
    public Harmony Harmony { get; } = new Harmony(Id);
    public static BasePlugin Instance;
    public static Minigame minigame;
-   public const string SupportedAmongUsVersion = "2025.6.10";
+   public const string SupportedAmongUsVersion = "2025.9.9";
    public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
    public ConfigFile GetConfigFile() => Config;
    public string OptionsTitleText => "NewMod";
@@ -58,9 +59,10 @@ public partial class NewMod : BasePlugin, IMiraPlugin
          Harmony.PatchAll(typeof(LaunchpadCompatibility));
          Harmony.PatchAll(typeof(LaunchpadHackTextPatch));
       }
-      ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", false, "Whether to enable BepInEx Console for debugging");
+      ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");
       if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
-      Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version} with ID : {MiraApiPlugin.Id}");
+
+      Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version}");
    }
    public static void CheckVersionCompatibility()
    {
