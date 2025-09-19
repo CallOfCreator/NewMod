@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using Reactor.Utilities.Attributes;
 using NewMod;
+using Il2CppInterop.Runtime.Attributes;
 
 [RegisterInIl2Cpp]
 public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
@@ -39,6 +40,8 @@ public class Toast(IntPtr ptr) : MonoBehaviour(ptr)
 
         Coroutines.Start(CoAnimateToast(displayDuration));
     }
+
+    [HideFromIl2Cpp]
     public IEnumerator CoAnimateToast(float duration)
     {
         Vector3 visiblePos = new Vector3(-0.0527f, 2.7741f, 0f);

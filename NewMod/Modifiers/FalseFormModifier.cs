@@ -1,21 +1,27 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.Utilities;
+using NewMod.Options;
 using NewMod.Options.Modifiers;
 using UnityEngine;
 
 namespace NewMod.Modifiers
 {
-    public class FalseFormModifier : TimedModifier
+    public class FalseFormModifier : GameModifier
     {
         public override string ModifierName => "FalseForm";
-        public override bool AutoStart => OptionGroupSingleton<FalseFormModifierOptions>.Instance.EnableModifier;
-        public override float Duration => (int)OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormDuration;
         public override bool ShowInFreeplay => true;
         public override bool HideOnUi => false;
-        public override bool RemoveOnComplete => true;
         private float timer;
         private AppearanceBackup oldAppearance;
+        public override int GetAssignmentChance()
+        {
+            return OptionGroupSingleton<ModifiersOptions>.Instance.FalseFormChance;
+        }
+        public override int GetAmountPerGame()
+        {
+            return (int)OptionGroupSingleton<ModifiersOptions>.Instance.FalseFormAmount;
+        }
         public override void OnActivate()
         {
             oldAppearance = new AppearanceBackup

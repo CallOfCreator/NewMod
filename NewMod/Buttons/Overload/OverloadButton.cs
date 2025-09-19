@@ -96,7 +96,7 @@ namespace NewMod.Buttons.Overload
             absorbedCooldown = target.Cooldown;
             absorbedMaxUses = target.MaxUses;
             absorbedSprite = target.Sprite;
-            absorbedKeybind = target.Keybind;
+            absorbedKeybind = (MiraKeybind)target.Keybind;
             absorbedOnClick = () => target.GetType().GetMethod("OnClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                               ?.Invoke(target, null);
 
