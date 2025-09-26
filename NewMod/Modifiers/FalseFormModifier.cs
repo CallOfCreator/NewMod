@@ -7,21 +7,14 @@ using UnityEngine;
 
 namespace NewMod.Modifiers
 {
-    public class FalseFormModifier : GameModifier
+    public class FalseFormModifier : TimedModifier
     {
         public override string ModifierName => "FalseForm";
         public override bool ShowInFreeplay => true;
         public override bool HideOnUi => false;
+        public override float Duration => (int)OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormDuration;
         private float timer;
         private AppearanceBackup oldAppearance;
-        public override int GetAssignmentChance()
-        {
-            return OptionGroupSingleton<ModifiersOptions>.Instance.FalseFormChance;
-        }
-        public override int GetAmountPerGame()
-        {
-            return (int)OptionGroupSingleton<ModifiersOptions>.Instance.FalseFormAmount;
-        }
         public override void OnActivate()
         {
             oldAppearance = new AppearanceBackup
