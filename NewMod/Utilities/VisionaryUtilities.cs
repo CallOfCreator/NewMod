@@ -33,7 +33,7 @@ namespace NewMod.Utilities
         {
             get
             {
-                string directory = Path.Combine(BepInEx.Paths.GameRootPath, "NewMod", "Screenshots");
+                string directory = Path.Combine(Application.persistentDataPath, "NewMod", "Screenshots");
                 if (!Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
