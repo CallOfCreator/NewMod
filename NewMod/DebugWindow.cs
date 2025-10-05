@@ -98,6 +98,14 @@ namespace NewMod
          {
             Camera.main.gameObject.AddComponent<SlowPulseHueEffect>();
          }
+         if (GUILayout.Button("Apply DistorationWave Effect to Main Camera") && allow)
+         {
+            Camera.main.gameObject.AddComponent<DistorationWaveEffect>();
+         }
+         if (GUILayout.Button("Apply ShadowCrawlHorror Effect to Main Camera") && allow)
+         {
+            Camera.main.gameObject.AddComponent<ShadowCrawlEffect>();
+         }
          if (GUILayout.Button("Reset Camera Effects") && allow)
          {
             Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 1f));

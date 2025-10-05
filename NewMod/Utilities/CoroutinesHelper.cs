@@ -451,6 +451,10 @@ namespace NewMod.Utilities
                 Object.Destroy(ge);
             if (cam.TryGetComponent<SlowPulseHueEffect>(out var hue))
                 Object.Destroy(hue);
+            if (cam.TryGetComponent<DistorationWaveEffect>(out var dw))
+                Object.Destroy(dw);
+            if (cam.TryGetComponent<ShadowCrawlEffect>(out var sc))
+                Object.Destroy(sc);
         }
     }
 }

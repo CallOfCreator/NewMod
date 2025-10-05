@@ -71,4 +71,6 @@ public static class NewModAsset
     public static LoadableAsset<Shader> GlitchShader { get; } = new LoadableBundleAsset<Shader>("GlitchFullScreen.shader", Bundle);
     public static LoadableAsset<Shader> EarthquakeShader { get; } = new LoadableBundleAsset<Shader>("EarthquakeFullScreen.shader", Bundle);
     public static LoadableAsset<Shader> SlowPulseHueShader { get; } = new LoadableBundleAsset<Shader>("SlowPulseHue.shader", Bundle);
+    public static LoadableAsset<Shader> DistorationWaveShader { get; } = new LoadableBundleAsset<Shader>("DistorationWave.shader", Bundle);
+    public static LoadableAsset<Shader> ShadowCrawlHorrorShader { get; } = new LoadableBundleAsset<Shader>("ShadowCrawlHorror.shader", Bundle);
 }
