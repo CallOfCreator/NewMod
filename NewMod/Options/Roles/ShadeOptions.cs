@@ -5,9 +5,6 @@ using NewMod.Roles.NeutralRoles;
 
 namespace NewMod.Options.Roles.ShadeOptions
 {
-    /// <summary>
-    /// Configurable gameplay options for the Shade role.
-    /// </summary>
     public class ShadeOptions : AbstractOptionGroup<Shade>
     {
         public override string GroupName => "Shade Options";
@@ -23,6 +20,9 @@ namespace NewMod.Options.Roles.ShadeOptions
 
         [ModdedNumberOption("Shadow Radius", min: 1f, max: 6f, suffixType: MiraNumberSuffixes.None)]
         public float Radius { get; set; } = 3f;
+
+        [ModdedNumberOption("Required Kills To Win", min: 1f, max: 5f, suffixType: MiraNumberSuffixes.None)]
+        public float RequiredKills { get; set; } = 3f;
 
         [ModdedEnumOption("Shadow Behavior", typeof(ShadowMode))]
         public ShadowMode Behavior { get; set; } = ShadowMode.Invisible;

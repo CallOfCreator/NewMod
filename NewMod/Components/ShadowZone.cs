@@ -13,8 +13,8 @@ namespace NewMod.Components
     public class ShadowZone(IntPtr ptr) : MonoBehaviour(ptr)
     {
         public byte shadeId;
-        public float radius = 2.5f;
-        public float duration = 20f;
+        public float radius;
+        public float duration;
         public float _t;
         public bool _on;
         public static List<ShadowZone> zones = new();
