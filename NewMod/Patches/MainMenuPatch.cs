@@ -9,6 +9,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System;
+using NewMod.LocalSettings;
+using MiraAPI.LocalSettings;
 
 namespace NewMod.Patches
 {
@@ -31,7 +33,7 @@ namespace NewMod.Patches
                 var cur = NewModAsset.CustomCursor.LoadAsset();
                 _cachedCursor = cur != null ? cur.texture : null;
             }
-            if (_cachedCursor != null)
+            if (_cachedCursor != null && LocalSettingsTabSingleton<NewModLocalSettings>.Instance.EnableCustomCursor.Value)
             {
                 Cursor.SetCursor(_cachedCursor, Vector2.zero, CursorMode.Auto);
             }

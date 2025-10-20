@@ -1,4 +1,5 @@
 using BepInEx.Configuration;
+using MiraAPI.Hud;
 using MiraAPI.LocalSettings;
 using MiraAPI.LocalSettings.Attributes;
 using UnityEngine;
@@ -23,6 +24,22 @@ namespace NewMod.LocalSettings
             "Frames per second limit"
         );
 
+        [LocalToggleSetting("Enable Custom Cursor", "Enable the custom cursor from the birthday update")]
+        public ConfigEntry<bool> EnableCustomCursor { get; } = config.Bind(
+            "Features",
+            "Cursor",
+            true,
+            "Enable the custom cursor from the birthday update"
+        );
+
+        [LocalToggleSetting("Always Buttons on Left (Only for Android)", "Places all custom buttons on the left side (recommended for Android devices)")]
+        public ConfigEntry<bool> AlwaysButtonsLeft { get; } = config.Bind(
+             "Features",
+             "AlwaysButtonsLeft",
+              true,
+             "Place all custom buttons on the left side"
+        );
+
         public override void OnOptionChanged(ConfigEntryBase configEntry)
         {
             base.OnOptionChanged(configEntry);
@@ -30,6 +47,14 @@ namespace NewMod.LocalSettings
             if (configEntry == FrameRateLimit)
             {
                 Application.targetFrameRate = (int)FrameRateLimit.Value;
+            }
+
+            if (configEntry == AlwaysButtonsLeft && Application.platform == RuntimePlatform.Android)
+            {
+                foreach (var btn in CustomButtonManager.Buttons)
+                {
+                    btn.SetButtonLocation(ButtonLocation.BottomLeft);
+                }
             }
         }
     }
