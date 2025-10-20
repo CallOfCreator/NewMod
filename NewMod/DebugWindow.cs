@@ -102,9 +102,9 @@ namespace NewMod
          {
             Camera.main.gameObject.AddComponent<DistorationWaveEffect>();
          }
-         if (GUILayout.Button("Apply ShadowCrawlHorror Effect to Main Camera") && allow)
+         if (GUILayout.Button("Apply ShadowFlux Effect to Main Camera") && allow)
          {
-            Camera.main.gameObject.AddComponent<ShadowCrawlEffect>();
+            Camera.main.gameObject.AddComponent<ShadowFluxEffect>();
          }
          if (GUILayout.Button("Reset Camera Effects") && allow)
          {

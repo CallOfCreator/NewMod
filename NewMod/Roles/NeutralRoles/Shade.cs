@@ -29,8 +29,9 @@ namespace NewMod.Roles.NeutralRoles
             AffectedByLightOnAirship = true,
             CanUseSabotage = false,
             CanUseVent = false,
-            UseVanillaKillButton = false,
+            UseVanillaKillButton = true,
             TasksCountForProgress = false,
+            Icon = NewModAsset.DeployZoneIcon
         };
 
         [HideFromIl2Cpp]
@@ -88,6 +89,17 @@ namespace NewMod.Roles.NeutralRoles
                 Coroutines.Start(CoroutinesHelper.CoNotify(
                     $"<color=#8E44AD>Shadow Harvest</color>\nKills: {ShadeKills[id]}/{required}"
                 ));
+            }
+        }
+        [RegisterEvent]
+        public static void OnShadeRoleAssigned(SetRoleEvent evt)
+        {
+            if (evt.Player.AmOwner && evt.Player.Data.Role is Shade)
+            {
+                var hud = HudManager.Instance;
+
+                hud.KillButton.currentTarget = null;
+                hud.KillButton.gameObject.SetActive(false);
             }
         }
     }

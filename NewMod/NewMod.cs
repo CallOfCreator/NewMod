@@ -41,7 +41,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
    public Harmony Harmony { get; } = new Harmony(Id);
    public static BasePlugin Instance;
    public static Minigame minigame;
-   public const string SupportedAmongUsVersion = "2025.9.9";
+   public const string SupportedAmongUsVersion = "2025.10.14";
    public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
    public ConfigFile GetConfigFile() => Config;
    public string OptionsTitleText => "NewMod";
@@ -61,6 +61,16 @@ public partial class NewMod : BasePlugin, IMiraPlugin
       }
       ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");
       if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
+
+      var bundle = NewModAsset.Bundle;
+      var assetNames = bundle.GetAllAssetNames();
+
+      Instance.Log.LogMessage($"AssetBundle '{bundle.name}' contains {assetNames.Length} assets");
+
+      foreach (var name in assetNames)
+      {
+         Instance.Log.LogMessage($"{name}");
+      }
 
       Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version}");
    }

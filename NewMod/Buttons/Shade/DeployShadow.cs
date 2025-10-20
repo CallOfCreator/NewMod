@@ -2,8 +2,6 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
-using NewMod.Roles.NeutralRoles;
-using NewMod.Utilities;
 using UnityEngine;
 using NewMod.Components;
 using SH = NewMod.Roles.NeutralRoles.Shade;
@@ -45,7 +43,7 @@ namespace NewMod.Buttons.Shade
         /// <summary>
         /// Button icon.
         /// </summary>
-        public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+        public override LoadableAsset<Sprite> Sprite => NewModAsset.DeployZone;
 
         /// <summary>
         /// Button enabled only for the Shade role.
@@ -64,7 +62,7 @@ namespace NewMod.Buttons.Shade
             float radius = OptionGroupSingleton<ShadeOptions>.Instance.Radius;
             float dur = OptionGroupSingleton<ShadeOptions>.Instance.Duration;
 
-            ShadowZone.Create(player.PlayerId, pos, radius, dur);
+            ShadowZone.RpcDeployZone(player, pos, radius, dur);
         }
     }
 }

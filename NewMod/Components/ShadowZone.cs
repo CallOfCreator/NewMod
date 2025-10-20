@@ -4,6 +4,10 @@ using System.Linq;
 using MiraAPI.GameOptions;
 using NewMod.Components.ScreenEffects;
 using NewMod.Options.Roles.ShadeOptions;
+using NewMod.Roles.NeutralRoles;
+using NewMod.Utilities;
+using Reactor.Networking.Attributes;
+using Reactor.Utilities;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
 
@@ -15,13 +19,14 @@ namespace NewMod.Components
         public byte shadeId;
         public float radius;
         public float duration;
-        public float _t;
-        public bool _on;
-        public static List<ShadowZone> zones = new();
+        private float timer;
+        private bool active;
+        public static readonly List<ShadowZone> zones = new();
 
         public void Awake()
         {
-            if (!zones.Contains(this)) zones.Add(this);
+            if (!zones.Contains(this))
+                zones.Add(this);
         }
 
         public void OnDestroy()
@@ -29,53 +34,80 @@ namespace NewMod.Components
             zones.Remove(this);
         }
 
-        public bool Contains(Vector2 pos)
+        private bool Contains(Vector2 pos)
         {
             return Vector2.Distance(pos, (Vector2)transform.position) <= radius;
         }
 
         public void Update()
         {
-            _t += Time.deltaTime;
-            if (_t >= duration)
+            timer += Time.deltaTime;
+            if (timer >= duration)
             {
+                Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 0f));
+                active = false;
                 Destroy(gameObject);
                 return;
             }
 
             var lp = PlayerControl.LocalPlayer;
-            if (!lp || lp.PlayerId == shadeId) return;
+            var hud = HudManager.Instance;
+            var killButton = hud.KillButton;
 
             bool inside = Contains(lp.GetTruePosition());
-            var cam = Camera.main;
-            var fx = cam.GetComponent<ShadowCrawlEffect>();
-
             var mode = OptionGroupSingleton<ShadeOptions>.Instance.Behavior;
+            var cam = Camera.main;
 
-            if (inside && !_on)
+            if (inside && !active)
             {
-                if (cam && fx == null) cam.gameObject.AddComponent<ShadowCrawlEffect>();
-
-                if (mode is ShadeOptions.ShadowMode.Invisible or ShadeOptions.ShadowMode.Both)
+                cam.gameObject.AddComponent<ShadowFluxEffect>();
+                if (lp.PlayerId == shadeId && lp.Data.Role is Shade)
                 {
-                    lp.SetInvisibility(true);
-                }
+                    if (mode is ShadeOptions.ShadowMode.Invisible or ShadeOptions.ShadowMode.Both)
+                    {
+                        lp.cosmetics.SetPhantomRoleAlpha(0);
+                        lp.cosmetics.nameText.gameObject.SetActive(false);
+                    }
 
+                    killButton.gameObject.SetActive(true);
+                    killButton.currentTarget = null;
+                }
+                active = true;
+            }
+
+            if (inside && active && lp.PlayerId == shadeId && lp.Data.Role is Shade)
+            {
                 if (mode is ShadeOptions.ShadowMode.KillEnabled or ShadeOptions.ShadowMode.Both)
                 {
-                    lp.Data.Role.CanUseKillButton = true;
+                    var list = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
+                    lp.Data.Role.GetPlayersInAbilityRangeSorted(list);
+                    var players = list.ToArray().Where(p => p.PlayerId != lp.PlayerId && !p.Data.IsDead).ToList();
+                    var closest = players.Count > 0 ? players[0] : null;
+
+                    if (killButton.currentTarget && killButton.currentTarget != closest)
+                        killButton.currentTarget.ToggleHighlight(false, RoleTeamTypes.Impostor);
+
+                    killButton.currentTarget = closest;
+                    if (closest != null)
+                        closest.ToggleHighlight(true, RoleTeamTypes.Impostor);
                 }
-
-                _on = true;
             }
-            else if (!inside && _on)
+            else if (!inside && active)
             {
-                if (fx) Destroy(fx);
+                Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(cam, 0f));
+                if (lp.PlayerId == shadeId)
+                {
+                    lp.cosmetics.SetPhantomRoleAlpha(1);
+                    lp.cosmetics.nameText.gameObject.SetActive(true);
 
-                lp.SetInvisibility(false);
-                lp.Data.Role.CanUseKillButton = false;
-
-                _on = false;
+                    if (killButton.currentTarget)
+                    {
+                        killButton.currentTarget.ToggleHighlight(false, RoleTeamTypes.Impostor);
+                        killButton.currentTarget = null;
+                    }
+                    killButton.gameObject.SetActive(false);
+                }
+                active = false;
             }
         }
 
@@ -89,9 +121,16 @@ namespace NewMod.Components
             go.transform.position = pos;
             return z;
         }
+
+        [MethodRpc((uint)CustomRPC.DeployZone)]
+        public static void RpcDeployZone(PlayerControl source, Vector2 pos, float radius, float duration)
+        {
+            Create(source.PlayerId, pos, radius, duration);
+        }
+
         public static bool IsInsideAny(Vector2 pos)
         {
-            return zones.Any(a => a && a.Contains(pos));
+            return zones.Any(z => z && z.Contains(pos));
         }
     }
 }
