@@ -8,7 +8,7 @@ namespace NewMod.Patches
     {
         public static void Postfix(HudManager __instance)
         {
-            // for some reasons the effect si getting destroyed so the best way to make it alive is to reassign it here
+           // For some reason the effect gets destroyed, so the best way to keep it persistent is to reassign it here
             ShadowFluxEffect._shader = NewModAsset.ShadowFluxShader.LoadAsset();
         }
     }
