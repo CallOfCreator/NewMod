@@ -16,7 +16,7 @@ namespace NewMod.Components.ScreenEffects
         public float darkness = 0.8f;
         public Color tint = Color.white;
         public static Shader _shader = NewModAsset.ShadowFluxShader.LoadAsset();
-        private Material _mat;
+        public Material _mat;
 
         public void OnEnable()
         {

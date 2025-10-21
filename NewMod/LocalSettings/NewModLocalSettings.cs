@@ -2,6 +2,7 @@ using BepInEx.Configuration;
 using MiraAPI.Hud;
 using MiraAPI.LocalSettings;
 using MiraAPI.LocalSettings.Attributes;
+using NewMod.Patches;
 using UnityEngine;
 
 namespace NewMod.LocalSettings
@@ -54,6 +55,28 @@ namespace NewMod.LocalSettings
                 foreach (var btn in CustomButtonManager.Buttons)
                 {
                     btn.SetButtonLocation(ButtonLocation.BottomLeft);
+                }
+            }
+            if (configEntry == EnableCustomCursor)
+            {
+                if (EnableCustomCursor.Value)
+                {
+                    var cur = NewModAsset.CustomCursor.LoadAsset();
+                    var tex = cur?.texture;
+
+                    if (tex != null)
+                    {
+                        Cursor.SetCursor(tex, Vector2.zero, CursorMode.Auto);
+                        Cursor.visible = true;
+                        Cursor.lockState = CursorLockMode.None;
+                        MainMenuPatch._cachedCursor = tex;
+                    }
+                }
+                else
+                {
+                    Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
                 }
             }
         }
