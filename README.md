@@ -100,6 +100,7 @@ NewMod is compatible with the following mods, enabling an enhanced experience wi
 | yanplaRoles       | v0.2.1+     | [Download](https://github.com/yanpla/yanplaRoles)    | ✅ Supported |
 | LaunchpadReloaded | v0.3.4+     | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) | ✅ Supported     |
 | LevelImposter     | v0.20.3+    | [Download](https://github.com/DigiWorm0/LevelImposter) | ✅ Supported     |
+| Submerged     | v2025.10.22    | [Download](https://github.com/SubmergedAmongUs/Submerged) | ✅ Supported     |
 
 
 ---
