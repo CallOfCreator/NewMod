@@ -11,7 +11,7 @@ namespace NewMod.Modifiers
         public override bool HideOnUi => false;
         public override int GetAssignmentChance() => (int)OptionGroupSingleton<ModifiersOptions>.Instance.AdrenalineChance.Value;
         public override int GetAmountPerGame() => (int)OptionGroupSingleton<ModifiersOptions>.Instance.AdrenalineAmount;
-
+        public override string GetDescription() => $"Move faster (x{OptionGroupSingleton<AdrenalineModifierOptions>.Instance.SpeedMultiplier:0.##}).";
         public override void OnActivate()
         {
             Player.MyPhysics.Speed *= OptionGroupSingleton<AdrenalineModifierOptions>.Instance.SpeedMultiplier;

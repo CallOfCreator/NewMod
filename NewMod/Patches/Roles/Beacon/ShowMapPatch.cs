@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
+using NewMod.Components.ScreenEffects;
 using NewMod.Options.Roles.BeaconOptions;
+using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
 using BC = NewMod.Roles.CrewmateRoles.Beacon;
@@ -73,7 +75,11 @@ namespace NewMod.Patches.Roles.Beacon
             static void Postfix(MapCountOverlay __instance)
             {
                 if (PlayerControl.LocalPlayer.Data.Role is not BC) return;
-                if (Time.time >= BC.pulseUntil) return;
+                if (Time.time >= BC.pulseUntil)
+                {
+                    var effect = Camera.main.GetComponent<DistorationWaveEffect>();
+                    Object.Destroy(effect); ;
+                }
 
                 var map = MapBehaviour.Instance;
                 if (!map || !map.IsOpen) return;

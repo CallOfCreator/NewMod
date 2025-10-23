@@ -1,6 +1,7 @@
 using HarmonyLib;
 using NewMod.Utilities;
 using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
 
 namespace NewMod.Patches.Roles.EnergyThief;
 
@@ -17,6 +18,7 @@ public static class OnGameEndPatch
         PranksterUtilities.ResetReportCount();
         VisionaryUtilities.DeleteAllScreenshots();
         WraithCallerUtilities.ClearAll();
+        Shade.ShadeKills.Clear();
         Revenant.HasUsedFeignDeath = false;
         Revenant.FeignDeathStates.Remove(PlayerControl.LocalPlayer.PlayerId);
         Revenant.StalkingStates[PlayerControl.LocalPlayer.PlayerId] = false;

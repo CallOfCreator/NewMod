@@ -6,7 +6,7 @@ using MiraAPI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace NewMod.Patches
+namespace NewMod
 {
     [HarmonyPatch]
     public static class NewModDiscordPatch
@@ -18,9 +18,8 @@ namespace NewMod.Patches
         [HarmonyPatch(typeof(DiscordManager), nameof(DiscordManager.Start))]
         public static bool StartPrefix(DiscordManager __instance)
         {
-#if ANDROID
-            return true;
-#else
+            if (Application.platform == RuntimePlatform.Android) return true;
+
             const long clientId = 1405946628115791933;
 
             discord = new Discord.Discord(clientId, (ulong)CreateFlags.Default);
@@ -37,13 +36,13 @@ namespace NewMod.Patches
             __instance.SetInMenus();
 
             return false;
-#endif
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ActivityManager), nameof(ActivityManager.UpdateActivity))]
         public static void UpdateActivityPrefix([HarmonyArgument(0)] ref Activity activity)
         {
+            if (Application.platform == RuntimePlatform.Android) return;
             if (activity == null) return;
 
             var isBeta = false;

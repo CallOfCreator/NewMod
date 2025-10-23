@@ -436,7 +436,7 @@ namespace NewMod.Utilities
 
         /// <summary>
         /// Coroutine that waits for a given duration and then removes
-        /// specific visual effects (Earthquake, Glitch, SlowPulseHue) from a Camera.
+        /// specific visual effects from a Camera.
         /// </summary>
         /// <param name="cam">The Camera to check for and remove effects from.</param>
         /// <param name="duration">The time in seconds to wait before removing the effects.</param>
@@ -451,6 +451,10 @@ namespace NewMod.Utilities
                 Object.Destroy(ge);
             if (cam.TryGetComponent<SlowPulseHueEffect>(out var hue))
                 Object.Destroy(hue);
+            if (cam.TryGetComponent<DistorationWaveEffect>(out var dw))
+                Object.Destroy(dw);
+            if (cam.TryGetComponent<ShadowFluxEffect>(out var sf))
+                Object.Destroy(sf);
         }
     }
 }

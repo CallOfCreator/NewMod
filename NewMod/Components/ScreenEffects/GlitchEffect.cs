@@ -14,6 +14,7 @@ namespace NewMod.Components.ScreenEffects
         public float speed = 4f;
         private readonly Shader _shader = NewModAsset.GlitchShader.LoadAsset();
         public Material _mat;
+
         public void OnEnable()
         {
             _mat = new Material(_shader) { hideFlags = HideFlags.DontSave };

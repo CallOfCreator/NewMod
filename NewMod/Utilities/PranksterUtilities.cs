@@ -23,7 +23,7 @@ namespace NewMod.Utilities
             {
                 NewMod.Instance.Log.LogError("[PranksterUtilities] CreatePranksterDeadBody: Failed to create dead body, random player is null.");
             }
-            var deadBody = Object.Instantiate(GameManager.Instance.deadBodyPrefab[0]);
+            var deadBody = Object.Instantiate(GameManager.Instance.GetDeadBody(player.Data.Role));
             deadBody.name = PranksterBodyName;
             deadBody.ParentId = parentId;
 

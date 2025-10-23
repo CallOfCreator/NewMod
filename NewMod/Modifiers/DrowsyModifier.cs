@@ -14,7 +14,7 @@ namespace NewMod.Modifiers
         public override bool ShowInFreeplay => true;
         public override Color FreeplayFileColor => new(0.6f, 0.7f, 1f);
         public override string GetDescription() =>
-            $"Move slower (x{OptionGroupSingleton<ModifiersOptions>.Instance.DrowsyAmount:0.##}).";
+            $"Move slower (x{OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier:0.##}).";
 
         public override int GetAssignmentChance() => (int)OptionGroupSingleton<ModifiersOptions>.Instance.DrowsyChance.Value;
 

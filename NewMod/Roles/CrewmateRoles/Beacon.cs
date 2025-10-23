@@ -6,7 +6,12 @@ using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
+using NewMod.Components.ScreenEffects;
+using NewMod.Networking;
 using NewMod.Options.Roles.BeaconOptions;
+using NewMod.Utilities;
+using Reactor.Networking.Rpc;
+using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles
@@ -90,7 +95,9 @@ namespace NewMod.Roles.CrewmateRoles
                 grantedFromTasks = earned;
                 Helpers.CreateAndShowNotification(
                     $"+{delta} Beacon {(delta > 1 ? "charges" : "charge")} (tasks)",
-                    new Color(0.75f, 0.65f, 1f), spr:NewModAsset.RadarIcon.LoadAsset());
+                    new Color(0.75f, 0.65f, 1f), spr: NewModAsset.RadarIcon.LoadAsset());
+
+                Rpc<BeaconPulseRpc>.Instance.Send(new BeaconPulseRpc.Data(settings.PulseDuration));
             }
         }
         public static int GetCompletedTasks()

@@ -19,6 +19,7 @@ using NewMod.Options.Roles.PulseBladeOptions;
 using MiraAPI.Utilities;
 using NewMod.Options.Roles.EnergyThiefOptions;
 using NewMod.Options.Roles.WraithCallerOptions;
+using NewMod.Options.Roles.ShadeOptions;
 
 namespace NewMod.Patches
 {
@@ -131,6 +132,11 @@ namespace NewMod.Patches
                     customWinColor = GetRoleColor(GetRoleType<WraithCaller>());
                     endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
                     break;
+                case (GameOverReason)NewModEndReasons.ShadeWin:
+                    customWinText = "Darkness Consumes All";
+                    customWinColor = GetRoleColor(GetRoleType<Shade>());
+                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
+                    break;
                 default:
                     customWinText = string.Empty;
                     customWinColor = Color.white;
@@ -218,6 +224,7 @@ namespace NewMod.Patches
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
             if (Time.timeSinceLevelLoad < 2f) return true;
             if (CheckForEndGameFaction<WraithCaller>(__instance, (GameOverReason)NewModEndReasons.WraithCallerWin)) return false;
+            if (CheckForEndGameFaction<Shade>(__instance, (GameOverReason)NewModEndReasons.ShadeWin)) return false;
             if (CheckForEndGameFaction<PulseBlade>(__instance, (GameOverReason)NewModEndReasons.PulseBladeWin)) return false;
             if (CheckForEndGameFaction<Tyrant>(__instance, (GameOverReason)NewModEndReasons.TyrantWin)) return false;
             if (CheckEndGameForRole<DoubleAgent>(__instance, (GameOverReason)NewModEndReasons.DoubleAgentWin)) return false;
@@ -276,6 +283,12 @@ namespace NewMod.Patches
                     int required = (int)OptionGroupSingleton<WraithCallerOptions>.Instance.RequiredNPCsToSend;
                     int current = WraithCallerUtilities.GetKillsNPC(player.PlayerId);
                     shouldEndGame = current >= required;
+                }
+                if (typeof(TFaction) == typeof(Shade))
+                {
+                    Shade.ShadeKills.TryGetValue(player.PlayerId, out var count);
+                    int required = (int)OptionGroupSingleton<ShadeOptions>.Instance.RequiredKills;
+                    shouldEndGame = count >= required;
                 }
                 if (shouldEndGame)
                 {

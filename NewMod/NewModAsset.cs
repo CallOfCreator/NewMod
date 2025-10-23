@@ -41,6 +41,7 @@ public static class NewModAsset
     public static LoadableResourceAsset CallWraith { get; } = new("NewMod.Resources.callwraith.png");
     public static LoadableResourceAsset Shield { get; } = new("NewMod.Resources.Shield.png");
     public static LoadableResourceAsset Slash { get; } = new("NewMod.Resources.Slash.png");
+    public static LoadableResourceAsset DeployZone { get; } = new("NewMod.Resources.deployzone.png");
 
     // SFX
     public static LoadableAudioResourceAsset ReviveSound { get; } = new("NewMod.Resources.Sounds.revive.wav");
@@ -61,6 +62,7 @@ public static class NewModAsset
     public static LoadableResourceAsset ShieldIcon { get; } = new("NewMod.Resources.RoleIcons.ShieldIcon.png");
     public static LoadableResourceAsset RadarIcon { get; } = new("NewMod.Resources.RoleIcons.RadarIcon.png");
     public static LoadableResourceAsset SlashIcon { get; } = new("NewMod.Resources.RoleIcons.SlashIcon.png");
+    public static LoadableResourceAsset DeployZoneIcon { get; } = new("NewMod.Resources.RoleIcons.DeployzoneIcon.png");
 
     // Notif Icons
     public static LoadableResourceAsset VisionDebuff { get; } = new("NewMod.Resources.NotifIcons.vision_debuff.png");
@@ -71,4 +73,9 @@ public static class NewModAsset
     public static LoadableAsset<Shader> GlitchShader { get; } = new LoadableBundleAsset<Shader>("GlitchFullScreen.shader", Bundle);
     public static LoadableAsset<Shader> EarthquakeShader { get; } = new LoadableBundleAsset<Shader>("EarthquakeFullScreen.shader", Bundle);
     public static LoadableAsset<Shader> SlowPulseHueShader { get; } = new LoadableBundleAsset<Shader>("SlowPulseHue.shader", Bundle);
+    public static LoadableAsset<Shader> DistorationWaveShader { get; } = new LoadableBundleAsset<Shader>("DistorationWave.shader", Bundle);
+    public static LoadableAsset<Shader> ShadowFluxShader { get; } = new LoadableBundleAsset<Shader>("ShadowFlux.shader", Bundle);
+
+    // Textures
+    public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
 }
