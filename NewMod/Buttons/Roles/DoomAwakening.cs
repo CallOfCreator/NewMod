@@ -4,14 +4,14 @@ using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
 using MiraAPI.Networking;
 using MiraAPI.Utilities;
-using NewMod.Options.Roles.RevenantOptions;
-using RV = NewMod.Roles.ImpostorRoles.Revenant;
+using NewMod.Roles.ImpostorRoles;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
 using MiraAPI.Keybinds;
 
-namespace NewMod.Buttons.Revenant
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for the role.
@@ -60,7 +60,7 @@ namespace NewMod.Buttons.Revenant
         /// <returns>True if the role is <see cref="RV"/>, otherwise false.</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is RV;
+            return role is Revenant;
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace NewMod.Buttons.Revenant
         /// <returns>True if base conditions are met and the player has used Feign Death, otherwise false.</returns>
         public override bool CanUse()
         {
-            return base.CanUse() && RV.HasUsedFeignDeath;
+            return base.CanUse() && Revenant.HasUsedFeignDeath;
         }
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace NewMod.Buttons.Revenant
             // Restore original speed and conclude
             player.MyPhysics.Speed = originalSpeed;
             SoundManager.Instance.StopSound(clip);
-            RV.StalkingStates.Remove(player.PlayerId);
+            Revenant.StalkingStates.Remove(player.PlayerId);
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>Doom Awakening ended.</color>"));
 
             var doomNotif = Helpers.CreateAndShowNotification($"<font=\"LiberationSans SDF\" material=\"LiberationSans SDF - Masked>Doom Awakening killed {killCount} players", Color.red, null, null);

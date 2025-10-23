@@ -1,14 +1,7 @@
 using UnityEngine;
 using HarmonyLib;
-using NewMod.Roles.NeutralRoles;
-using MiraAPI;
-using MiraAPI.PluginLoading;
 using Reactor.Utilities;
-using MiraAPI.Roles;
 using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
-using System;
 using NewMod.LocalSettings;
 using MiraAPI.LocalSettings;
 

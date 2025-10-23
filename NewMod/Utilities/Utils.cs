@@ -9,22 +9,14 @@ using MiraAPI.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
 using UnityEngine;
-using NewMod.Buttons.EnergyThief;
-using NewMod.Buttons.Necromancer;
-using NewMod.Buttons.Prankster;
-using NewMod.Buttons.Revenant;
-using NewMod.Buttons.SpecialAgent;
-using NewMod.Buttons.Visionary;
+using NewMod.Buttons.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
-using MiraAPI.GameOptions;
-using NewMod.Options.Roles.InjectorOptions;
-using MiraAPI.Hud;
-using NewMod.Buttons.Pulseblade;
+using NewMod.Options.Roles;
 using NewMod.Roles;
-using NewMod.Components;
-using NewMod.Buttons.WraithCaller;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
 
 namespace NewMod.Utilities
 {

@@ -3,7 +3,7 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Options.Roles.SpecialAgentOptions
+namespace NewMod.Options.Roles
 {
     public class SpecialAgentOptions : AbstractOptionGroup<SpecialAgent>
     {

@@ -20,11 +20,10 @@ using NewMod.Roles.NeutralRoles;
 using MiraAPI.Roles;
 using MiraAPI.Hud;
 using UnityEngine.Events;
-using NewMod.Options.Roles.OverloadOptions;
+using NewMod.Buttons.Roles;
+using NewMod.Options.Roles;
 using MiraAPI.Events;
 using NewMod.Patches.Compatibility;
-using NewMod.Buttons.Overload;
-using MiraAPI.LocalSettings;
 
 namespace NewMod;
 

@@ -1,8 +1,4 @@
-using System.Text;
-using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.GameOptions;
 using MiraAPI.Roles;
-using NewMod.Options.Roles.EdgeveilOptions;
 using UnityEngine;
 
 namespace NewMod.Roles.ImpostorRoles

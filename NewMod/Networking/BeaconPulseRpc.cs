@@ -1,7 +1,6 @@
 using Hazel;
 using NewMod.Components.ScreenEffects;
 using NewMod.Roles.CrewmateRoles;
-using NewMod.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
 using Reactor.Utilities;

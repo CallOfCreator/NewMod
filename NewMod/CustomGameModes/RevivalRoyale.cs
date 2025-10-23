@@ -5,7 +5,7 @@ using MiraAPI.GameModes;
 using MiraAPI.Hud;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using NewMod.Buttons.Necromancer;
+using NewMod.Buttons.Roles;
 using NewMod.Roles.ImpostorRoles;
 using TMPro;
 
@@ -47,7 +47,6 @@ namespace NewMod.CustomGameModes
                     ReviveCounter.text = $"Revive Count: {ReviveCount}";
                     if (ReviveCount >= 6)
                     {
-                        
                         GameManager.Instance.RpcEndGame(GameOverReason.ImpostorsByKill, true);
                         break;
                     }
@@ -66,7 +65,7 @@ namespace NewMod.CustomGameModes
         public override List<NetworkedPlayerInfo> CalculateWinners()
         {
             var winner = playerReviveCounts.OrderByDescending(kvp => kvp.Value).FirstOrDefault();
-            return winner.Key != null ? new List<NetworkedPlayerInfo> { winner.Key.Data } : new List<NetworkedPlayerInfo>();
+            return winner.Key != null ? [winner.Key.Data] : [];
         }
 
         public override void CheckGameEnd(out bool runOriginal, LogicGameFlowNormal instance)

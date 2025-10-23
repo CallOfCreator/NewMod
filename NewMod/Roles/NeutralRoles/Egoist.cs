@@ -5,7 +5,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Networking;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using NewMod.Options.Roles.EgoistOptions;
+using NewMod.Options.Roles;
 using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles

@@ -3,13 +3,13 @@ using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
 using NewMod.Roles.NeutralRoles;
-using NewMod.Options.Roles.InjectorOptions;
+using NewMod.Options.Roles;
 using MiraAPI.Utilities;
 using System;
 using static NewMod.Utilities.Utils;
 using MiraAPI.Keybinds;
 
-namespace NewMod.Buttons.Injector
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Represents the serum injection button for the Injector role.

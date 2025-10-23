@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
-using NewMod.Options.Roles.AegisOptions;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
-using static NewMod.Options.Roles.AegisOptions.AegisOptions;
+using static NewMod.Options.Roles.AegisOptions;
 
 namespace NewMod.Components
 {

@@ -1,13 +1,13 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.NecromancerOptions;
+using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
 using UnityEngine;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
 
-namespace NewMod.Buttons.Necromancer
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for the role.

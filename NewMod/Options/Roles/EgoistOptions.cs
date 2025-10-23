@@ -3,7 +3,7 @@ using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Options.Roles.EgoistOptions
+namespace NewMod.Options.Roles
 {
     public class EgoistRoleOptions : AbstractOptionGroup<EgoistRole>
     {

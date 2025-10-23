@@ -4,7 +4,7 @@ using MiraAPI.Utilities.Assets;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
 
-namespace NewMod.Buttons.Overload
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for the Overload role.

@@ -8,7 +8,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Components;
-using NewMod.Options.Roles.ShadeOptions;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;

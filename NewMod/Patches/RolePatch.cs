@@ -6,7 +6,6 @@ using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using NewMod;
 using NewMod.Options;
 using NewMod.Roles;
 using Reactor.Utilities;

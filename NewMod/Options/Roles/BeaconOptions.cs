@@ -3,7 +3,7 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.Utilities;
 using NewMod.Roles.CrewmateRoles;
 
-namespace NewMod.Options.Roles.BeaconOptions
+namespace NewMod.Options.Roles
 {
     public class BeaconOptions : AbstractOptionGroup<Beacon>
     {

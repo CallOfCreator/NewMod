@@ -1,15 +1,13 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
-using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.PranksterOptions;
-using PRK = NewMod.Roles.NeutralRoles.Prankster;
+using NewMod.Options.Roles;
 using UnityEngine;
 using NewMod.Utilities;
-using Rewired;
 using MiraAPI.Keybinds;
+using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Buttons.Prankster
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for the role.
@@ -72,10 +70,10 @@ namespace NewMod.Buttons.Prankster
         /// Determines whether this button is enabled for the specified role.
         /// </summary>
         /// <param name="role">The player's current role.</param>
-        /// <returns>True if the role is <see cref="PRK"/>, otherwise false.</returns>
+        /// <returns>True if the role is <see cref="Prankster"/>, otherwise false.</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is PRK;
+            return role is Prankster;
         }
     }
 }

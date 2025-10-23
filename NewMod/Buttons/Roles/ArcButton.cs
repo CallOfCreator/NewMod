@@ -1,16 +1,12 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.EdgeveilOptions;
-using EV = NewMod.Roles.ImpostorRoles.Edgeveil;
-using Rewired;
+using NewMod.Options.Roles;
 using UnityEngine;
-using NewMod.Components.ScreenEffects;
-using NewMod.Utilities;
-using Reactor.Utilities;
 using MiraAPI.Keybinds;
+using NewMod.Roles.ImpostorRoles;
 
-namespace NewMod.Buttons.Edgeveil
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for Edgeviel's Arc ability.
@@ -86,7 +82,7 @@ namespace NewMod.Buttons.Edgeveil
         /// <returns>True if the role is Edgeveil; otherwise false.</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is EV;
+            return role is Edgeveil;
         }
     }
 }

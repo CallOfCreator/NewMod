@@ -7,10 +7,9 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Roles;
 using NewMod.Components;
-using NewMod.Options.Roles.AegisOptions;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities;
-using Reactor.Utilities.Extensions;
 using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles

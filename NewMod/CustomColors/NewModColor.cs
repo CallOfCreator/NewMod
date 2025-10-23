@@ -1,7 +1,7 @@
 using MiraAPI.Colors;
 using UnityEngine;
 
-namespace NewMod.Colors
+namespace NewMod.CustomColors
 {
     [RegisterCustomColors]
     public static class NewModColors

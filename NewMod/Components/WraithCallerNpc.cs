@@ -4,7 +4,7 @@ using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Networking;
-using NewMod.Options.Roles.WraithCallerOptions;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using Reactor.Utilities.Attributes;

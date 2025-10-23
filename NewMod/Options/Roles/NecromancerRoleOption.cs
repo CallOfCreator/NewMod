@@ -4,7 +4,7 @@ using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using NewMod.Roles.ImpostorRoles;
 
-namespace NewMod.Options.Roles.NecromancerOptions;
+namespace NewMod.Options.Roles;
 
 public class NecromancerOption : AbstractOptionGroup<NecromancerRole>
 {

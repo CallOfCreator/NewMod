@@ -3,7 +3,7 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Options.Roles.OverloadOptions;
+namespace NewMod.Options.Roles;
 
 public class OverloadOptions : AbstractOptionGroup<OverloadRole>
 {

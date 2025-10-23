@@ -3,9 +3,8 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using NewMod.Roles.NeutralRoles;
-using UnityEngine;
 
-namespace NewMod.Options.Roles.InjectorOptions;
+namespace NewMod.Options.Roles;
 
 public class InjectorOptions : AbstractOptionGroup<InjectorRole>
 {

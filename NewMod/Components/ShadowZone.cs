@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.GameOptions;
 using NewMod.Components.ScreenEffects;
-using NewMod.Options.Roles.ShadeOptions;
+using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;

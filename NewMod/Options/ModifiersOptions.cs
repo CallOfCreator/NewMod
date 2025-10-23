@@ -5,7 +5,6 @@ using MiraAPI.Utilities;
 using UnityEngine;
 
 namespace NewMod.Options;
-
 public class ModifiersOptions : AbstractOptionGroup
 {
     public override string GroupName => "Modifiers Settings";

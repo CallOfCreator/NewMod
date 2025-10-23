@@ -1,13 +1,13 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.AegisOptions;
+using NewMod.Options.Roles;
 using UnityEngine;
-using AG = NewMod.Roles.CrewmateRoles.Aegis;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
+using NewMod.Roles.CrewmateRoles;
 
-namespace NewMod.Buttons.Aegis
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Custom action button for the Aegis role. Places a configurable shield zone.
@@ -52,7 +52,7 @@ namespace NewMod.Buttons.Aegis
         /// <summary>
         /// Enabled only for the Aegis role.
         /// </summary>
-        public override bool Enabled(RoleBehaviour role) => role is AG;
+        public override bool Enabled(RoleBehaviour role) => role is Aegis;
 
         /// <summary>
         /// On click, place the Aegis shield at the player's current position using the configured settings.

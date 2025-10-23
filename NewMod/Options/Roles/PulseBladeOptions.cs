@@ -4,7 +4,7 @@ using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using NewMod.Roles.ImpostorRoles;
 
-namespace NewMod.Options.Roles.PulseBladeOptions;
+namespace NewMod.Options.Roles;
 
 /// <summary>
 /// Configurable options for the PulseBlade role.

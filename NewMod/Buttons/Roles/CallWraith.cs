@@ -1,15 +1,15 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.WraithCallerOptions;
-using Wraith = NewMod.Roles.NeutralRoles.WraithCaller;
+using NewMod.Options.Roles;
 using UnityEngine;
 using NewMod.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.Keybinds;
+using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Buttons.WraithCaller
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines the Call Wraith ability button for the Wraith Caller role.
@@ -58,7 +58,7 @@ namespace NewMod.Buttons.WraithCaller
         /// <returns>True if role is Wraith Caller, otherwise false</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is Wraith;
+            return role is WraithCaller;
         }
 
         /// <summary>

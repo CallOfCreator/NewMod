@@ -4,17 +4,16 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
-using Pb = NewMod.Roles.ImpostorRoles.PulseBlade;
 using MiraAPI.Networking;
-using NewMod.Options.Roles.PulseBladeOptions;
+using NewMod.Options.Roles;
 using Reactor.Utilities;
 using MiraAPI.Utilities;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
-using Rewired;
 using MiraAPI.Keybinds;
+using NewMod.Roles.ImpostorRoles;
 
-namespace NewMod.Buttons.Pulseblade
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Custom button for the Pulseblade role to perform a high-speed strike on the closest player in aim direction.
@@ -61,7 +60,7 @@ namespace NewMod.Buttons.Pulseblade
         /// </summary>
         /// <param name="role">The current player's role.</param>
         /// <returns>True only for Pulseblade role.</returns>
-        public override bool Enabled(RoleBehaviour role) => role is Pb;
+        public override bool Enabled(RoleBehaviour role) => role is PulseBlade;
 
         /// <summary>
         /// Called when the button is pressed by the player.

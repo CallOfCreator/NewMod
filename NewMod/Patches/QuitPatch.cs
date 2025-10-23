@@ -4,9 +4,9 @@ using HarmonyLib;
 using NewMod.Utilities;
 using UnityEngine;
 
-namespace NewMod.Patches.Roles.EnergyThief;
+namespace NewMod.Patches;
 
-[HarmonyPatch(typeof(Application), nameof(Application.Quit), new Type[] { })]
+[HarmonyPatch(typeof(Application), nameof(Application.Quit), [])]
 public static class QuitPatch
 {
     public static bool Prefix(Application __instance)

@@ -1,14 +1,10 @@
 using System;
-using System.Collections;
-using Reactor.Utilities;
-using TMPro;
 using UnityEngine;
 using NewMod;
-using NewMod.Utilities;
 using Reactor.Utilities.Attributes;
 using MiraAPI.Networking;
 using MiraAPI.GameOptions;
-using NewMod.Options.Roles.EdgeveilOptions;
+using NewMod.Options.Roles;
 
 [RegisterInIl2Cpp]
 public class SlashTray(IntPtr ptr) : MonoBehaviour(ptr)

@@ -2,14 +2,14 @@ using System.IO;
 using MiraAPI.Utilities.Assets;
 using MiraAPI.Hud;
 using MiraAPI.GameOptions;
-using NewMod.Options.Roles.VisionaryOptions;
+using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using UnityEngine;
 using Reactor.Utilities;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
 
-namespace NewMod.Buttons.Visionary
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for the role.

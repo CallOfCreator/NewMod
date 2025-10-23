@@ -1,7 +1,6 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.Utilities;
-using NewMod.Options;
 using NewMod.Options.Modifiers;
 using UnityEngine;
 

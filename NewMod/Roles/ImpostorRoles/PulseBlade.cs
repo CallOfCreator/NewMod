@@ -3,7 +3,7 @@ using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using NewMod.Options.Roles.PulseBladeOptions;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using UnityEngine;
 

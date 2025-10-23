@@ -2,12 +2,11 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.OverloadOptions;
+using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
-using Rewired;
 using UnityEngine;
 
-namespace NewMod.Buttons.Overload
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// The Final Ability button for Overload.

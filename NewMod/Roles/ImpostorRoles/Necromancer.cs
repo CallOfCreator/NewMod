@@ -1,8 +1,6 @@
-using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options;
 using UnityEngine;
 
 namespace NewMod.Roles.ImpostorRoles;

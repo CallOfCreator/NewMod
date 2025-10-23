@@ -2,13 +2,13 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.EnergyThiefOptions;
-using ET = NewMod.Roles.NeutralRoles.EnergyThief;
+using NewMod.Options.Roles;
 using UnityEngine;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
+using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Buttons.EnergyThief
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for the role.
@@ -85,7 +85,7 @@ namespace NewMod.Buttons.EnergyThief
         /// <returns>True if the role is EnergyThief, otherwise false.</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is ET;
+            return role is EnergyThief;
         }
 
         /// <summary>

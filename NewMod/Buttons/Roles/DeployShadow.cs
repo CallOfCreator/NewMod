@@ -4,10 +4,10 @@ using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
 using NewMod.Components;
-using SH = NewMod.Roles.NeutralRoles.Shade;
-using NewMod.Options.Roles.ShadeOptions;
+using NewMod.Options.Roles;
+using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Buttons.Shade
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Custom action button for the Shade role.
@@ -48,7 +48,7 @@ namespace NewMod.Buttons.Shade
         /// <summary>
         /// Button enabled only for the Shade role.
         /// </summary>
-        public override bool Enabled(RoleBehaviour role) => role is SH;
+        public override bool Enabled(RoleBehaviour role) => role is Shade;
 
         /// <summary>
         /// Deploys a shadow zone at the Shade's position.

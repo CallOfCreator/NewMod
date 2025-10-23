@@ -3,7 +3,7 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.Utilities;
 using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Options.Roles.ShadeOptions
+namespace NewMod.Options.Roles
 {
     public class ShadeOptions : AbstractOptionGroup<Shade>
     {

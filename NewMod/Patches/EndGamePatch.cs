@@ -8,18 +8,12 @@ using Object = UnityEngine.Object;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
-using NewMod.Options.Roles.SpecialAgentOptions;
+using NewMod.Options.Roles;
 using MiraAPI.GameOptions;
 using MiraAPI.Events;
-using NewMod.Options.Roles.InjectorOptions;
 using NewMod.Roles;
-using System;
 using NewMod.Roles.ImpostorRoles;
-using NewMod.Options.Roles.PulseBladeOptions;
 using MiraAPI.Utilities;
-using NewMod.Options.Roles.EnergyThiefOptions;
-using NewMod.Options.Roles.WraithCallerOptions;
-using NewMod.Options.Roles.ShadeOptions;
 
 namespace NewMod.Patches
 {

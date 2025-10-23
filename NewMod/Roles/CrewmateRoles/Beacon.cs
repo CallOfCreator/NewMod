@@ -6,12 +6,9 @@ using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using NewMod.Components.ScreenEffects;
 using NewMod.Networking;
-using NewMod.Options.Roles.BeaconOptions;
-using NewMod.Utilities;
+using NewMod.Options.Roles;
 using Reactor.Networking.Rpc;
-using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles

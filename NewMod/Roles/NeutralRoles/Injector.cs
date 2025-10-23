@@ -1,5 +1,4 @@
 using MiraAPI.Roles;
-using MiraAPI.Utilities.Assets;
 using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles;

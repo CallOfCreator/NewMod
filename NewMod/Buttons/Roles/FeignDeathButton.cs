@@ -1,14 +1,14 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.RevenantOptions;
-using Rev = NewMod.Roles.ImpostorRoles.Revenant;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
 using MiraAPI.Keybinds;
+using NewMod.Roles.ImpostorRoles;
 
-namespace NewMod.Buttons.Revenant
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for the role.
@@ -57,7 +57,7 @@ namespace NewMod.Buttons.Revenant
         /// <returns>True if the role is <see cref="Rev"/> and Feign Death hasn't been used, otherwise false.</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is Rev && !Rev.HasUsedFeignDeath;
+            return role is Revenant && !Revenant.HasUsedFeignDeath;
         }
         /// <summary>
         /// Checks if this button can be used
@@ -65,7 +65,7 @@ namespace NewMod.Buttons.Revenant
         /// <returns>True if base conditions are met and the player hasn't used Feign Death; otherwise, false.</returns>
         public override bool CanUse()
         {
-            return base.CanUse() && !Rev.HasUsedFeignDeath;
+            return base.CanUse() && !Revenant.HasUsedFeignDeath;
         }
 
         /// <summary>

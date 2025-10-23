@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using NewMod.Components;
-using NewMod.Options.Roles.AegisOptions;
+using NewMod.Options.Roles;
 using MiraAPI.GameOptions;
 using Reactor.Utilities.Extensions;
 using Reactor.Utilities;

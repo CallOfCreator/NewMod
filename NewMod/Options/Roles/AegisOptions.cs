@@ -3,7 +3,7 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.Utilities;
 using NewMod.Roles.CrewmateRoles;
 
-namespace NewMod.Options.Roles.AegisOptions
+namespace NewMod.Options.Roles
 {
     public class AegisOptions : AbstractOptionGroup<Aegis>
     {

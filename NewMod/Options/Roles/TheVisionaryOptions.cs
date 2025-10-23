@@ -3,7 +3,7 @@ using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using NewMod.Roles.CrewmateRoles;
 
-namespace NewMod.Options.Roles.VisionaryOptions
+namespace NewMod.Options.Roles
 {
     public class VisionaryOptions : AbstractOptionGroup<TheVisionary>
     {

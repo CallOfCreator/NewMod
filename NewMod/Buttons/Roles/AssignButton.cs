@@ -2,14 +2,14 @@ using System.Collections;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.SpecialAgentOptions;
-using SA = NewMod.Roles.NeutralRoles.SpecialAgent;
+using NewMod.Options.Roles;
 using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using MiraAPI.Keybinds;
+using NewMod.Roles.NeutralRoles;
 
-namespace NewMod.Buttons.SpecialAgent
+namespace NewMod.Buttons.Roles
 {
     /// <summary>
     /// Defines a custom action button for the role.
@@ -55,10 +55,10 @@ namespace NewMod.Buttons.SpecialAgent
         /// Specifies whether this button is enabled for the specified role.
         /// </summary>
         /// <param name="role">The current role to check.</param>
-        /// <returns>True if the role is <see cref="SA"/>, otherwise false.</returns>
+        /// <returns>True if the role is <see cref="SpecialAgent"/>, otherwise false.</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is SA;
+            return role is SpecialAgent;
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace NewMod.Buttons.SpecialAgent
         /// <returns>True if base conditions are met and no player is assigned, otherwise false.</returns>
         public override bool CanUse()
         {
-            return base.CanUse() && SA.AssignedPlayer == null;
+            return base.CanUse() && SpecialAgent.AssignedPlayer == null;
         }
 
         /// <summary>
@@ -86,9 +86,9 @@ namespace NewMod.Buttons.SpecialAgent
                           player.PlayerId != PlayerControl.LocalPlayer.PlayerId,
                 player =>
                 {
-                    SA.AssignedPlayer = player;
-                    Utils.RpcAssignMission(PlayerControl.LocalPlayer, SA.AssignedPlayer);
-                    NewMod.Instance.Log.LogError($"Assigning target: {SA.AssignedPlayer.Data.PlayerName}");
+                    SpecialAgent.AssignedPlayer = player;
+                    Utils.RpcAssignMission(PlayerControl.LocalPlayer, SpecialAgent.AssignedPlayer);
+                    NewMod.Instance.Log.LogError($"Assigning target: {SpecialAgent.AssignedPlayer.Data.PlayerName}");
 
                     if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
                     {

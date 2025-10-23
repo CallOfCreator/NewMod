@@ -1,17 +1,9 @@
-using System;
-using UnityEngine;
-using Object = UnityEngine.Object;
-using UnityEngine.Events;
 using System.Collections.Generic;
 using HarmonyLib;
 using NewMod.Utilities;
-using MiraAPI.Roles;
-using MiraAPI.Hud;
-using Reactor.Utilities;
 using System.Linq;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using AmongUs.GameOptions;
-using NewMod.Roles.NeutralRoles;
 
 namespace NewMod.Patches.Roles
 {
