@@ -4,6 +4,7 @@ using Reactor.Utilities;
 using System.Collections;
 using NewMod.LocalSettings;
 using MiraAPI.LocalSettings;
+using NewMod.Seasons;
 
 namespace NewMod.Patches
 {
@@ -15,7 +16,6 @@ namespace NewMod.Patches
         public static SpriteRenderer LogoSprite;
         public static Texture2D _cachedCursor;
         public static Transform RightPanel;
-        public static bool _wraithRegistered = false;
 
         [HarmonyPatch(nameof(MainMenuManager.Start))]
         [HarmonyPostfix]
@@ -33,11 +33,6 @@ namespace NewMod.Patches
 
             RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
 
-            if (NewModDateTime.IsWraithCallerUnlocked && !_wraithRegistered)
-            {
-                _wraithRegistered = true;
-            }
-
             if (NewModDateTime.IsNewModBirthdayWeek)
             {
                 Coroutines.Start(ApplyBirthdayUI(__instance));
@@ -50,6 +45,9 @@ namespace NewMod.Patches
                 LogoSprite = Logo.AddComponent<SpriteRenderer>();
                 LogoSprite.sprite = NewModAsset.ModLogo.LoadAsset();
             }
+
+            SeasonManager.InitializeSeasons(__instance);
+
             ModCompatibility.Initialize();
         }
 
@@ -57,8 +55,8 @@ namespace NewMod.Patches
         {
             yield return null;
 
-            if (RightPanel != null) RightPanel.gameObject.SetActive(false);
-            if (__instance.screenTint != null) __instance.screenTint.enabled = false;
+            RightPanel?.gameObject.SetActive(false);
+            __instance.screenTint?.enabled = false;
 
             var auLogo = GameObject.Find("LOGO-AU");
             if (auLogo != null)
