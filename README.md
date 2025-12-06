@@ -7,10 +7,10 @@
 </p>
 <p align="center">
     <a href="https://github.com/CallOfCreator/NewMod/stargazers">
-        <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod?style=social" alt="GitHub stars">
+        <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod" alt="GitHub stars">
     </a>
     <a href="https://github.com/CallOfCreator/NewMod/releases">
-        <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
+        <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total.svg?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
     </a>
     <a href="https://github.com/CallOfCreator/NewMod/network/members">
         <img src="https://img.shields.io/github/forks/CallOfCreator/NewMod?style=social" alt="GitHub forks">
@@ -30,7 +30,6 @@
 - [🚀 Releases](#-releases)
 - [📥 Installation](#-installation)
 - [✨ Features](#-features)
-- [🎂 Birthday Special](#-birthday-special)
 - [🔗 Compatibility](#-compatibility)
 - [🤝 Contributing](#-contributing)
 - [📱  Android](#-android)
@@ -51,33 +50,13 @@
 | v1.2.5      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.5/NewMod.zip) |
 | v1.2.6      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.6/NewMod.zip) |
 | v1.2.7      | v17.0.0 (2025.9.9)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.7/NewMod.zip) |
-| v1.2.8      | v17.0.1 (2025.10.14)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.8/NewMod.zip) |
+| v1.2.8      | v17.0.1 (2025.10.14) & v17.1.0 (2025.11.18)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.8/NewMod.zip) |
 
 ---
 
 # 📥 Installation
 
 ### For installation instructions, please visit: https://newmodau.vercel.app
-
----
-
-
-## 🎂 Birthday Special
-
-This year on **August 28th**, NewMod turns **1 year old**!  
-A huge thanks to everyone who has supported the mod so far. 💖  
-
-Here’s what you can expect for the birthday update:  
-
-- **Custom Player Tags**: Show off tags under your name like *Player*, *Dev*, etc.  
-- **Custom Lobby**: Check it out:  
-  <p align="center">
-    <img src=".github/assets/customLobby.png" alt="Birthday Custom Lobby Preview" width="600">
-  </p>
-- **Custom Cursor (Permanent)**: A brand-new cursor style for NewMod, here to stay.  
-- **Special Role: The Wraith Caller**: One of our best roles yet! Summon NPCs through walls to take down your opponents.  
-
-You can enjoy all these birthday features from **August 28th, 16:00** until **September 4th** even on **Android via Starlight**!
 
 ---
 
@@ -100,6 +79,7 @@ NewMod is compatible with the following mods, enabling an enhanced experience wi
 | yanplaRoles       | v0.2.1+     | [Download](https://github.com/yanpla/yanplaRoles)    | ✅ Supported |
 | LaunchpadReloaded | v0.3.4+     | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) | ✅ Supported     |
 | LevelImposter     | v0.20.3+    | [Download](https://github.com/DigiWorm0/LevelImposter) | ✅ Supported     |
+| Submerged     | v2025.10.22    | [Download](https://github.com/SubmergedAmongUs/Submerged) | ✅ Supported     |
 
 
 ---
