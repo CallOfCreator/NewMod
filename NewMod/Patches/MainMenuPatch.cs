@@ -55,8 +55,8 @@ namespace NewMod.Patches
         {
             yield return null;
 
-            RightPanel?.gameObject.SetActive(false);
-            __instance.screenTint?.enabled = false;
+            RightPanel.gameObject.SetActive(false);
+            __instance.screenTint.enabled = false;
 
             var auLogo = GameObject.Find("LOGO-AU");
             if (auLogo != null)
