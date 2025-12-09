@@ -17,6 +17,7 @@ using NewMod.Options.Roles;
 using NewMod.Roles;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
+using NewMod.Modifiers;
 
 namespace NewMod.Utilities
 {
@@ -734,6 +735,15 @@ namespace NewMod.Utilities
                 NewModFaction.Apex => $"<b><color=#FF5A5A>Apex</color></b>",
                 NewModFaction.Entropy => $"<b><color=#EAAA3E>Entropy</color></b>",
                 NewModFaction.Sentinel => $"<b><color=#3AA6FF>Sentinel</color></b>",
+                _ => $"Unknown"
+            };
+        }
+        public static string GetModifierFactionDisplay(INewModModifier modifier)
+        {
+            return modifier.Faction switch
+            {
+                ModifierFaction.Crew => $"<b><color=#00B7C7>Crew</color></b>",
+                ModifierFaction.Murder => $"<b><color=#FF4C4C>Murder</color></b>",
                 _ => $"Unknown"
             };
         }

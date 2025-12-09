@@ -1,4 +1,4 @@
-using System;
+using Il2CppSystem;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,8 +11,8 @@ namespace NewMod.Seasons
         DateTime SeasonEndDate { get; }
         Color SeasonMainColor { get; }
         void HandleMainMenu(MainMenuManager menuManager);
-        IReadOnlyList<Type> GetSeasonRoleTypes();
-        IReadOnlyList<Type> GetSeasonModifierTypes();
-        IReadOnlyList<Type> GetSeasonGamemodeTypes();
+        IReadOnlyList<System.Type> GetSeasonRoleTypes();
+        IReadOnlyList<System.Type> GetSeasonModifierTypes();
+        IReadOnlyList<System.Type> GetSeasonGamemodeTypes();
     }
 }

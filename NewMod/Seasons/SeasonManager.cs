@@ -1,4 +1,3 @@
-// Inspired by ID-based registration from https://github.com/All-Of-Us-Mods/MiraAPI/blob/master/MiraAPI/Modifiers/ModifierManager.cs#L38
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +11,13 @@ namespace NewMod.Seasons
         private static readonly Dictionary<Type, uint> TypeToIdMap = new();
         private static readonly List<ISeason> ActiveSeasons = new()
         {
-            // TODO: Add all available seasons here
+           new S1()
         };
 
         public static IReadOnlyList<ISeason> CurrentActiveSeasons =>
-            ActiveSeasons.Where(s =>
-                DateTime.UtcNow >= s.SeasonStartDate.ToUniversalTime() &&
-                DateTime.UtcNow <= s.SeasonEndDate.ToUniversalTime())
-                .ToList();
+            [.. ActiveSeasons.Where(s =>
+                AmongUsDateTime.UtcNow >= s.SeasonStartDate.ToUniversalTime() &&
+                AmongUsDateTime.UtcNow <= s.SeasonEndDate.ToUniversalTime())];
 
         private static uint GenerateNextTypeId()
         {
@@ -33,12 +31,14 @@ namespace NewMod.Seasons
             {
                 season.HandleMainMenu(menuManager);
                 RegisterSeasonContent(season);
+                NewMod.Instance.Log.LogMessage($"Registered {season.Name}");
             }
         }
-        private static void RegisterSeasonContent(ISeason season)
+
+        public static void RegisterSeasonContent(ISeason season)
         {
-            RegisterContent(season.GetSeasonRoleTypes());
-            RegisterContent(season.GetSeasonModifierTypes());
+            RegisterContent(season.GetSeasonRoleTypes()); 
+            RegisterContent(season.GetSeasonModifierTypes()); 
             RegisterContent(season.GetSeasonGamemodeTypes());
         }
 

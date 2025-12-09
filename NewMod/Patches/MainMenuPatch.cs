@@ -43,7 +43,7 @@ namespace NewMod.Patches
                 Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
                 Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
                 LogoSprite = Logo.AddComponent<SpriteRenderer>();
-                LogoSprite.sprite = NewModAsset.ModLogo.LoadAsset();
+                LogoSprite.sprite = NewModAsset.NewModLogo.LoadAsset();
             }
 
             SeasonManager.InitializeSeasons(__instance);

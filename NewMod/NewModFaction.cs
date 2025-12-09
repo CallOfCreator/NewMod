@@ -6,4 +6,9 @@ namespace NewMod
         Entropy,
         Sentinel
     }
+    public enum ModifierFaction
+    {
+        Crew,
+        Murder
+    }
 }

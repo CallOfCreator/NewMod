@@ -36,11 +36,12 @@ namespace NewMod;
 public partial class NewMod : BasePlugin, IMiraPlugin
 {
    public const string Id = "com.callofcreator.newmod";
-   public const string ModVersion = "1.2.8";
+   public const string ModVersion = "1.3.0";
+   public const bool IsALPHA = true;
    public Harmony Harmony { get; } = new Harmony(Id);
    public static BasePlugin Instance;
    public static Minigame minigame;
-   public const string SupportedAmongUsVersion = "2025.10.14";
+   public const string SupportedAmongUsVersion = "2025.11.18";
    public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
    public ConfigFile GetConfigFile() => Config;
    public string OptionsTitleText => "NewMod";
@@ -48,7 +49,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
    {
       Instance = this;
       AddComponent<DebugWindow>();
-      ReactorCredits.Register<NewMod>(ReactorCredits.AlwaysShow);
+      ReactorCredits.Register("NewMod", $"{ModVersion}{(IsALPHA ? " ALPHA" : "")}", IsALPHA, ReactorCredits.AlwaysShow);
       Harmony.PatchAll();
       CheckVersionCompatibility();
       NewModEventHandler.RegisterEventsLogs();
