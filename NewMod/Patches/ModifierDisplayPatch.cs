@@ -28,7 +28,7 @@ namespace NewMod.Patches
 
             if (modifier is INewModModifier newModModifier)
             {
-                descText.text += $"\n\n Faction:{Utils.GetModifierFactionDisplay(newModModifier)}";
+                descText.text += $"\n\n Faction: {Utils.GetModifierFactionDisplay(newModModifier)}";
             }
         }
     }
