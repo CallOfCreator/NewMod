@@ -20,6 +20,12 @@ namespace NewMod
         {
             if (Application.platform == RuntimePlatform.Android) return true;
 
+            InitializeDiscord(__instance);
+            return false;
+        }
+        
+        private static void InitializeDiscord(DiscordManager __instance)
+        {
             const long clientId = 1405946628115791933;
 
             discord = new Discord.Discord(clientId, (ulong)CreateFlags.Default);
@@ -34,8 +40,6 @@ namespace NewMod
             }));
             __instance.presence = discord;
             __instance.SetInMenus();
-
-            return false;
         }
 
         [HarmonyPrefix]
