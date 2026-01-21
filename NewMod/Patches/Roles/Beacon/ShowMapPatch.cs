@@ -74,11 +74,7 @@ namespace NewMod.Patches.Roles.Beacon
             static void Postfix(MapCountOverlay __instance)
             {
                 if (PlayerControl.LocalPlayer.Data.Role is not BC) return;
-                if (Time.time >= BC.pulseUntil)
-                {
-                    var effect = Camera.main.GetComponent<DistorationWaveEffect>();
-                    Object.Destroy(effect); ;
-                }
+                Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, BC.pulseUntil));
 
                 var map = MapBehaviour.Instance;
                 if (!map || !map.IsOpen) return;

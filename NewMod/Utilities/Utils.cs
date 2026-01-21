@@ -336,7 +336,12 @@ namespace NewMod.Utilities
         public static void RecordMissionFailure(PlayerControl specialAgent)
         {
             var playerId = specialAgent.PlayerId;
-            MissionFailureCount[playerId] = GetMissionFailureCount(playerId) + 1;
+            int currentFailureCount = GetMissionFailureCount(playerId);
+
+            if (currentFailureCount >= 0)
+            {
+                MissionFailureCount[playerId] = currentFailureCount + 1;
+            }
         }
 
         /// <summary>
