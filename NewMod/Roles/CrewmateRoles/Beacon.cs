@@ -70,7 +70,9 @@ namespace NewMod.Roles.CrewmateRoles
         [RegisterEvent]
         public static void OnRoundStart(RoundStartEvent evt)
         {
-            if (PlayerControl.LocalPlayer.Data.Role is not Beacon) return;
+            pulseUntil = 0f;
+            cooldownUntil = 0f;
+            charges = (int)OptionGroupSingleton<BeaconOptions>.Instance.MaxCharges;
         }
         [RegisterEvent]
         public static void OnTaskComplete(CompleteTaskEvent evt)
