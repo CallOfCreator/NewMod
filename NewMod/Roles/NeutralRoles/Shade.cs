@@ -74,7 +74,7 @@ namespace NewMod.Roles.NeutralRoles
 
             Utils.RecordOnKill(killer, victim);
 
-            if (killer.Data.Role is not Shade shadeRole)
+            if (killer.Data.Role is not Shade)
                 return;
 
             if (!ShadowZone.IsInsideAny(victim.GetTruePosition()))

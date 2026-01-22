@@ -51,6 +51,7 @@
 | v1.2.6      | v16.1.0 (2025.6.10)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.6/NewMod.zip) |
 | v1.2.7      | v17.0.0 (2025.9.9)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.7/NewMod.zip) |
 | v1.2.8      | v17.0.1 (2025.10.14) & v17.1.0 (2025.11.18)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.8/NewMod.zip) |
+| v1.2.9      | v17.1.0 (2025.11.18) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9/NewMod.zip) |
 
 ---
 
@@ -77,9 +78,10 @@ NewMod is compatible with the following mods, enabling an enhanced experience wi
 | Mod ame          | Mod Version | GitHub Link                                          | Status      |
 |-------------------|-------------|------------------------------------------------------|-------------|
 | yanplaRoles       | v0.2.1+     | [Download](https://github.com/yanpla/yanplaRoles)    | ✅ Supported |
-| LaunchpadReloaded | v0.3.4+     | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) | ✅ Supported     |
-| LevelImposter     | v0.20.3+    | [Download](https://github.com/DigiWorm0/LevelImposter) | ✅ Supported     |
-| Submerged     | v2025.10.22    | [Download](https://github.com/SubmergedAmongUs/Submerged) | ✅ Supported     |
+| LaunchpadReloaded | v0.3.7+     | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) | ✅ Supported     |
+| LevelImposter     | v0.21.2-beta+    | [Download](https://github.com/DigiWorm0/LevelImposter) | ✅ Supported     |
+| Submerged     | v2025.11.20+    | [Download](https://github.com/SubmergedAmongUs/Submerged) | ✅ Supported     |
+| Town Of Us Mira | v1.5.2+ | [Download](https://github.com/Au-Avengers/TOU-Mira) | ✅ Supported |
 
 
 ---

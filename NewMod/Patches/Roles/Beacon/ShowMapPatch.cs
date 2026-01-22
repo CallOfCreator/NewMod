@@ -75,11 +75,6 @@ namespace NewMod.Patches.Roles.Beacon
             static void Postfix(MapCountOverlay __instance)
             {
                 if (PlayerControl.LocalPlayer.Data.Role is not BC) return;
-                if (Time.time >= BC.pulseUntil)
-                {
-                    var effect = Camera.main.GetComponent<DistorationWaveEffect>();
-                    Object.Destroy(effect); ;
-                }
 
                 var map = MapBehaviour.Instance;
                 if (!map || !map.IsOpen) return;
@@ -110,6 +105,11 @@ namespace NewMod.Patches.Roles.Beacon
                     mrk.transform.localPosition = v;
                 }
                 yield return null;
+            }
+            if (Time.time >= BC.pulseUntil)
+            {
+                Object.Destroy(Camera.main.GetComponent<DistorationWaveEffect>());
+                NewMod.Instance.Log.LogError("DESTROYED EFFECT");
             }
 
             ClearMarkers();
