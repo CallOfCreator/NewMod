@@ -155,7 +155,7 @@ namespace NewMod.Buttons.Roles
                 // Kill any nearby players
                 foreach (var target in PlayerControl.AllPlayerControls)
                 {
-                    if (target == player || target.Data.IsDead || target.Data.Disconnected || target.inVent || target.Data.Role.IsImpostor || target.name == "Wraith NPC")
+                    if (target == player || target.Data.IsDead || target.Data.Disconnected || target.inVent || target.Data.Role.IsImpostor || target.Data.PlayerName == "Wraith NPC")
                         continue;
 
                     if (Vector2.Distance(player.GetTruePosition(), target.GetTruePosition()) < 1f)

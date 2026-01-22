@@ -26,6 +26,8 @@ namespace NewMod.Patches.Roles.Beacon
 
             var settings = OptionGroupSingleton<BeaconOptions>.Instance;
 
+            NewMod.Instance.Log.LogMessage($"[Beacon] charges={BC.charges} time={Time.time} cooldownUntil={BC.cooldownUntil} canPulse={BC.charges>0 && Time.time>=BC.cooldownUntil}");
+
             if (BC.charges <= 0 || Time.time < BC.cooldownUntil) return;
 
             BC.charges--;
@@ -74,7 +76,6 @@ namespace NewMod.Patches.Roles.Beacon
             static void Postfix(MapCountOverlay __instance)
             {
                 if (PlayerControl.LocalPlayer.Data.Role is not BC) return;
-                Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, BC.pulseUntil));
 
                 var map = MapBehaviour.Instance;
                 if (!map || !map.IsOpen) return;
@@ -105,6 +106,11 @@ namespace NewMod.Patches.Roles.Beacon
                     mrk.transform.localPosition = v;
                 }
                 yield return null;
+            }
+            if (Time.time >= BC.pulseUntil)
+            {
+                Object.Destroy(Camera.main.GetComponent<DistorationWaveEffect>());
+                NewMod.Instance.Log.LogError("DESTROYED EFFECT");
             }
 
             ClearMarkers();
