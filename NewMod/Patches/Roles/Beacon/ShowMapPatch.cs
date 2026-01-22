@@ -27,8 +27,6 @@ namespace NewMod.Patches.Roles.Beacon
 
             var settings = OptionGroupSingleton<BeaconOptions>.Instance;
 
-            NewMod.Instance.Log.LogMessage($"[Beacon] charges={BC.charges} time={Time.time} cooldownUntil={BC.cooldownUntil} canPulse={BC.charges>0 && Time.time>=BC.cooldownUntil}");
-
             if (BC.charges <= 0 || Time.time < BC.cooldownUntil) return;
 
             BC.charges--;
