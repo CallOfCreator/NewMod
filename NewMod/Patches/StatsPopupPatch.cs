@@ -14,7 +14,7 @@ namespace NewMod.Patches
 {
     public static class CustomStatsManager
     {
-        private static readonly string SavePath = Path.Combine(Application.consoleLogPath, "customStats.dat");
+        private static readonly string SavePath = Path.Combine(Application.persistentDataPath, "customStats.dat");
         public static Dictionary<string, int> CustomRoleWins = new();
         public static bool _loaded = false;
         public static void SaveCustomStats()
