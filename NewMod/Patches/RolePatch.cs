@@ -213,7 +213,6 @@ namespace NewMod.Patches
                 crewElig.RemoveAt(idx);
 
                 var rt = (RoleTypes)RoleId.Get(role.GetType());
-                Logger<NewMod>.Instance.LogMessage($"Assigning {role.GetType().Name} → {pc.Data.PlayerName}");
                 pc.RpcSetRole(rt, true);
             }
 
