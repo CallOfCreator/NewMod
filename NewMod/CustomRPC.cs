@@ -15,6 +15,7 @@ public enum CustomRPC
     WitnessTrap,
     NotifyChampion,
     SummonNPC,
+    RequestSummon,
     BeaconPulse,
     DeployZone
 }

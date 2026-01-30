@@ -13,6 +13,8 @@ namespace NewMod.Patches.Roles.Visionary
         [RegisterEvent]
         public static void OnEnterVent(EnterVentEvent evt)
         {
+            if (!Utils.IsRoleActive("The Visionary")) return;
+
             PlayerControl player = evt.Player;
             var chancePercentage = (int)(0.2f * 100);
 
@@ -31,6 +33,8 @@ namespace NewMod.Patches.Roles.Visionary
         [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.RpcExitVent))]
         public static void Postfix(PlayerPhysics __instance, int ventId)
         {
+            if (!Utils.IsRoleActive("The Visionary")) return;
+
             var chancePercentage = (int)(0.2f * 100);
             if (Helpers.CheckChance(chancePercentage))
             {
@@ -53,6 +57,8 @@ namespace NewMod.Patches.Roles.Visionary
         [RegisterEvent]
         public static void OnBeforeMurder(BeforeMurderEvent evt)
         {
+            if (!Utils.IsRoleActive("The Visionary")) return;
+
             PlayerControl source = evt.Source;
             int chancePercentage = (int)(0.2f * 100);
 

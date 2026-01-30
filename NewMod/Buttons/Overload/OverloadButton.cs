@@ -82,7 +82,7 @@ namespace NewMod.Buttons.Overload
         /// <summary>
         /// The icon displayed on the button.
         /// </summary>
-        public override LoadableAsset<Sprite> Sprite => absorbedSprite;
+        public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
 
         /// <summary>
         /// Copies functionality and appearance from another role's button.

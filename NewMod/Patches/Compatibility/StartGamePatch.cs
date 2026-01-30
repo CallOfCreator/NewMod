@@ -1,6 +1,7 @@
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using NewMod.Options;
+using NewMod.Utilities;
 
 namespace NewMod.Patches.Compatibility
 {
@@ -15,8 +16,8 @@ namespace NewMod.Patches.Compatibility
 
             if (!settings.AllowRevenantHitmanCombo)
             {
-                var hitman = ModCompatibility.IsRoleActive("Hitman");
-                var revenant = ModCompatibility.IsRoleActive("Revenant");
+                var hitman = Utils.IsRoleActive("Hitman");
+                var revenant = Utils.IsRoleActive("Revenant");
 
                 if (hitman && revenant)
                 {

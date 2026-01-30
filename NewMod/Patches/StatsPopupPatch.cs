@@ -14,7 +14,7 @@ namespace NewMod.Patches
 {
     public static class CustomStatsManager
     {
-        private static readonly string SavePath = Path.Combine(Application.consoleLogPath, "customStats.dat");
+        private static readonly string SavePath = Path.Combine(Application.persistentDataPath, "customStats.dat");
         public static Dictionary<string, int> CustomRoleWins = new();
         public static bool _loaded = false;
         public static void SaveCustomStats()
@@ -73,6 +73,12 @@ namespace NewMod.Patches
                FileShare.ReadWrite
            );
             using var reader = new BinaryReader(fs);
+
+            if (reader.BaseStream.Length == 0)
+            {
+                NewMod.Instance.Log.LogError("Stats file is empty.");
+                return;
+            }
 
             int count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
