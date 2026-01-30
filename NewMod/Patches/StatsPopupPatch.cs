@@ -74,6 +74,12 @@ namespace NewMod.Patches
            );
             using var reader = new BinaryReader(fs);
 
+            if (reader.BaseStream.Length == 0)
+            {
+                NewMod.Instance.Log.LogError("Stats file is empty.");
+                return;
+            }
+
             int count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
             {

@@ -52,18 +52,5 @@ namespace NewMod
                 }
             }
         }
-        public static bool IsRoleActive(string roleName)
-        {
-            foreach (var roles in RoleManager.Instance.AllRoles)
-            {
-                CustomRoleManager.GetCustomRoleBehaviour(roles.Role, out var customRole);
-
-                if (customRole != null && customRole.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return customRole.GetChance() > 0 && customRole.GetCount() > 0;
-                }
-            }
-            return false;
-        }
     }
 }
