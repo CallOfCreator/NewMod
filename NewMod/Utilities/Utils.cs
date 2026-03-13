@@ -153,57 +153,6 @@ namespace NewMod.Utilities
             return closestBody;
         }
 
-        // Inspired By : https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/CrewmateRoles/AltruistMod/Coroutine.cs#L57
-        public static void Revive(DeadBody body)
-        {
-            if (body == null) return;
-
-            var parentId = body.ParentId;
-            var player = PlayerById(parentId);
-
-            if (player != null)
-            {
-                foreach (var deadBody in GameObject.FindObjectsOfType<DeadBody>())
-                {
-                    if (deadBody.ParentId == body.ParentId)
-                        Object.Destroy(deadBody.gameObject);
-                }
-                player.Revive();
-
-                if (player.Data.Role is NoisemakerRole role)
-                {
-                    Object.Destroy(role.deathArrowPrefab.gameObject);
-                }
-                player.RpcSetRole(RoleTypes.Impostor, true);
-            }
-        }
-
-        // Inspired By : https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/CrewmateRoles/AltruistMod/Coroutine.cs#L57
-        public static void ReviveV2(DeadBody body)
-        {
-            if (body == null) return;
-
-            var parentId = body.ParentId;
-            var player = PlayerById(parentId);
-
-            if (player != null)
-            {
-                foreach (var deadBody in GameObject.FindObjectsOfType<DeadBody>())
-                {
-                    if (deadBody.ParentId == body.ParentId)
-                        Object.Destroy(deadBody.gameObject);
-                }
-                player.Revive();
-
-                if (player.Data.Role is NoisemakerRole role)
-                {
-                    Object.Destroy(role.deathArrowPrefab.gameObject);
-                }
-                player.RpcSetRole((RoleTypes)RoleId.Get<Revenant>(), true);
-                NewMod.Instance.Log.LogError($"---------------^^^^^^SETTING ROLE TO REVENANT-------------^^^^ NEW ROLE: {player.Data.Role.NiceName}");
-            }
-        }
-
         // Thanks to: https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L66
         /// <summary>
         /// Checks if a particular system type is active on the current map.
@@ -423,38 +372,71 @@ namespace NewMod.Utilities
         {
             InjectedPlayerIds.Clear();
         }
-        /// <summary>
-        /// Sends an RPC to revive a player from a dead body.
-        /// </summary>
-        /// <param name="body">The DeadBody instance to revive from.</param>
-        public static void RpcRevive(DeadBody body)
-        {
-            Revive(body);
-            var writer = AmongUsClient.Instance.StartRpcImmediately(
-                PlayerControl.LocalPlayer.NetId,
-                (byte)CustomRPC.Revive,
-                SendOption.Reliable
-            );
-            writer.Write(PlayerControl.LocalPlayer.PlayerId);
-            writer.Write(body.ParentId);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-        }
+        // Inspired By: https://github.com/AU-Avengers/TOU-Mira/blob/dev/TownOfUs/Modules/ReviveUtilities.cs#L40
 
-        /// <summary>
-        /// Sends an RPC to revive a player from a dead body and set their role to Revenant.
-        /// </summary>
-        /// <param name="body">The DeadBody instance to revive from.</param>
-        public static void RpcReviveV2(DeadBody body)
+        [MethodRpc((uint)CustomRPC.HandleRevive)]
+        public static IEnumerator HandleRevive(PlayerControl source, byte revivedId, RoleTypes roleToSet, float reviveX, float reviveY)
         {
-            ReviveV2(body);
-            var writer = AmongUsClient.Instance.StartRpcImmediately(
-                PlayerControl.LocalPlayer.NetId,
-                (byte)CustomRPC.Revive,
-                SendOption.Reliable
-            );
-            writer.Write(PlayerControl.LocalPlayer.PlayerId);
-            writer.Write(body.ParentId);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            var revived = PlayerById(revivedId);
+
+            if (revived.Data.Disconnected)
+                yield break;
+
+            yield return new WaitForSeconds(0.15f);
+
+            if (revived.Data.Disconnected || !revived.Data.IsDead)
+                yield break;
+
+            var revivePos = new Vector2(reviveX, reviveY);
+            var inMeetingOrExile = MeetingHud.Instance || ExileController.Instance;
+
+            if (revived.Data.Role is NoisemakerRole noisemaker && noisemaker.deathArrowPrefab != null)
+            {
+                Object.Destroy(noisemaker.deathArrowPrefab.gameObject);
+            }
+
+            revived.Revive();
+            revived.RemainingEmergencies = 0;
+
+            if (AmongUsClient.Instance.AmHost)
+            {
+                revived.RpcSetRole(roleToSet, true);
+            }
+
+            if (!inMeetingOrExile)
+            {
+                revived.transform.position = revivePos;
+                revived.MyPhysics.body.position = revivePos;
+                Physics2D.SyncTransforms();
+
+                if (revived.AmOwner)
+                {
+                    revived.NetTransform.RpcSnapTo(revivePos);
+                }
+            }
+
+            foreach (var deadBody in Object.FindObjectsOfType<DeadBody>())
+            {
+                if (deadBody.ParentId == revived.PlayerId)
+                {
+                    Object.Destroy(deadBody.gameObject);
+                }
+            }
+
+            float elapsed = 0f;
+            while (elapsed < 1f)
+            {
+                foreach (var deadBody in Object.FindObjectsOfType<DeadBody>())
+                {
+                    if (deadBody.ParentId == revived.PlayerId)
+                    {
+                        Object.Destroy(deadBody.gameObject);
+                    }
+                }
+
+                elapsed += 0.05f;
+                yield return new WaitForSeconds(0.05f);
+            }
         }
 
         // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L55
@@ -878,8 +860,8 @@ namespace NewMod.Utilities
                     yield break;
                 }
             }
-            RpcReviveV2(body);
-            player.transform.position = body.transform.position;
+            HandleRevive(player, player.PlayerId, (RoleTypes)RoleId.Get<Revenant>(), body.transform.position.x, body.transform.position.y);
+            yield return new WaitForSeconds(0.2f);
             player.RpcShapeshift(GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected), false);
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You have been revived in a new body!</color>"));
             Revenant.HasUsedFeignDeath = true;

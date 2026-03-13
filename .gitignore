@@ -3,6 +3,7 @@ obj/
 References/
 NewMod/Components/Minigames
 NewMod/Components/Hidden.cs
+NewMod/Private
 /packages/
 riderModule.iml
 .idea

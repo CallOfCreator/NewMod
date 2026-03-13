@@ -59,10 +59,9 @@ namespace NewMod.Buttons.Necromancer
             var closestBody = Utils.GetClosestBody();
             if (closestBody != null)
             {
-                Utils.RpcRevive(closestBody);
+                Utils.HandleRevive(PlayerControl.LocalPlayer, closestBody.ParentId, AmongUs.GameOptions.RoleTypes.Impostor, closestBody.TruePosition.x, closestBody.TruePosition.y);
             }
         }
-
         /// <summary>
         /// Determines whether this button is enabled for the role, returning true if the role is <see cref="NecromancerRole"/>.
         /// </summary>
