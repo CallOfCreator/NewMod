@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
@@ -15,6 +18,7 @@ namespace NewMod.Modifiers
         public override bool HideOnUi => false;
         public override bool ShowInFreeplay => true;
         public static List<PlayerControl> linkedPlayers = [];
+        public static bool _IsActive = false;
         public override int GetAmountPerGame()
         {
             return (int)OptionGroupSingleton<ModifiersOptions>.Instance.StickyAmount;
@@ -29,8 +33,8 @@ namespace NewMod.Modifiers
         }
         public override string GetDescription()
         {
-            float distance = OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDistance.Value;
-            float duration = OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDuration.Value;
+            float distance = (int)OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDistance;
+            float duration = (int)OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDuration;
 
             return $"{ModifierName}: Pulls nearby players within {distance} units for {duration} seconds.";
         }
@@ -38,53 +42,65 @@ namespace NewMod.Modifiers
         {
             base.FixedUpdate();
 
-            if (!Player.CanMove) return;
+            if (_IsActive) return;
+
+            if (!Player.CanMove || Player.Data.IsDead) return;
 
             foreach (var player in PlayerControl.AllPlayerControls)
             {
-                if (player == Player || linkedPlayers.Contains(player)) continue;
+                if (player == Player) continue;
 
-                float distance = OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDistance.Value;
+                float distance = (int)OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDistance;
 
                 if (Vector2.Distance(player.GetTruePosition(), Player.GetTruePosition()) < distance)
                 {
+                    _IsActive = true;
                     linkedPlayers.Add(player);
                     Coroutines.Start(CoFollowStickyPlayer(player));
+                    break;
                 }
             }
         }
         public IEnumerator CoFollowStickyPlayer(PlayerControl player)
         {
-            var info = new StickyState
+            float duration = (int)OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDuration;
+            float timer = 0f;
+            float pullStrength = (int)OptionGroupSingleton<StickyModifierOptions>.Instance.PullStrength;
+            float stopDistance = 1f;
+
+            while (timer < duration)
             {
-                StickyOwner = Player,
-                LinkedPlayer = player,
-                velocity = Vector3.zero,
-            };
+                if (player.Data.IsDead || player.Data.Disconnected) break;
 
-            yield return HudManager.Instance.StartCoroutine(
-                Effects.Overlerp(0.5f, new System.Action<float>((t) =>
+                timer += Time.deltaTime;
+
+                var ownerPos = Player.transform.position;
+                var targetPos = player.transform.position;
+
+                float distance = Vector3.Distance(ownerPos, targetPos);
+
+                if (distance > stopDistance)
                 {
-                    Vector3 targetPos = info.LinkedPlayer.transform.position;
-                    Vector3 currentPos = info.StickyOwner.transform.position;
+                    Vector3 direction = (ownerPos - targetPos).normalized;
+                    Vector3 leashPoint = ownerPos - (direction * stopDistance);
 
-                    info.LinkedPlayer.transform.position = Vector3.SmoothDamp(
-                        targetPos,
-                        currentPos,
-                        ref info.velocity,
-                        t
-                    );
-                })
-            ));
-
+                    player.transform.position = Vector3.Lerp(targetPos, leashPoint, Time.deltaTime * pullStrength);
+                }
+                yield return null;
+            }
             linkedPlayers.Remove(player);
-        }
-    }
 
-    class StickyState
-    {
-        public PlayerControl StickyOwner;
-        public PlayerControl LinkedPlayer;
-        public Vector3 velocity;
+            _IsActive = true;
+
+            if (Player.AmOwner)
+            {
+                PlayerControl.LocalPlayer.RpcRemoveModifier<StickyModifier>();
+            }
+        }
+        [RegisterEvent]
+        public static void OnRoundStart(RoundStartEvent evt)
+        {
+            linkedPlayers.Clear();
+        }
     }
 }

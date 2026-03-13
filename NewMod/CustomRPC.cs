@@ -11,6 +11,7 @@ public enum CustomRPC
     ApplySerum,
     Dash,
     FearPulse,
+    RequestSummon,
     SuppressionDome,
     WitnessTrap,
     NotifyChampion,

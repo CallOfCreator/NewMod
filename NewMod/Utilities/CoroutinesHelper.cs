@@ -457,17 +457,5 @@ namespace NewMod.Utilities
             if (cam.TryGetComponent<ShadowFluxEffect>(out var sf))
                 Object.Destroy(sf);
         }
-        public static IEnumerator CoRevive(PlayerControl revived, RoleTypes role)
-        {
-            yield return new WaitForSeconds(0.15f);
-
-            var body = GameObject.FindObjectsOfType<DeadBody>().FirstOrDefault(b => b.ParentId == revived.PlayerId);
-
-            if (body != null)
-                Object.Destroy(body.gameObject);
-
-            revived.Revive();
-            revived.RpcSetRole(role);
-        }
     }
 }

@@ -108,6 +108,8 @@ namespace NewMod.Roles.ImpostorRoles
         [RegisterEvent]
         public static void OnAfterMurderEvent(AfterMurderEvent evt)
         {
+            if (!Utils.IsRoleActive("Tyrant")) return;
+
             var tyrant = evt.Source.Data.Role as Tyrant;
 
             tyrant._kills++;
@@ -184,18 +186,14 @@ namespace NewMod.Roles.ImpostorRoles
         [RegisterEvent]
         public static void OnHandleVote(HandleVoteEvent evt)
         {
+            if (!Utils.IsRoleActive("Tyrant")) return;
+
             var voter = evt.VoteData.Owner;
 
             var allPlayers = PlayerControl.AllPlayerControls.ToArray();
 
             foreach (var player in allPlayers)
             {
-                var role = player.Data?.Role;
-                if (role is not Tyrant tyrant)
-                {
-                    continue;
-                }
-
                 if (voter.PlayerId != _championId)
                 {
                     continue;
@@ -237,6 +235,8 @@ namespace NewMod.Roles.ImpostorRoles
         [RegisterEvent]
         public static void OnProcessVotes(ProcessVotesEvent evt)
         {
+            if (!Utils.IsRoleActive("Tyrant")) return;
+
             if (PendingBetrayals.Count == 0) return;
 
             var first = default(byte);

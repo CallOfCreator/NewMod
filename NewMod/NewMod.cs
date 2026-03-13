@@ -24,7 +24,7 @@ using NewMod.Buttons.Roles;
 using NewMod.Options.Roles;
 using MiraAPI.Events;
 using NewMod.Patches.Compatibility;
-using NewMod.Buttons.Overload;
+using NewMod.Buttons;
 
 namespace NewMod;
 
@@ -44,6 +44,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
     public ConfigFile GetConfigFile() => Config;
     public string OptionsTitleText => "NewMod";
+    public const string NewModBackendAPI = "";
     public override void Load()
     {
         Instance = this;

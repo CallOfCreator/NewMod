@@ -26,5 +26,14 @@ namespace NewMod.Options.Modifiers
                 increment: 0.5f,
                 suffixType: MiraNumberSuffixes.None
             );
+         public ModdedNumberOption PullStrength  { get; } =
+            new(
+                "Pull Strength",
+                1f,
+                min: 1f,
+                max: 5f,
+                increment: 1f,
+                suffixType: MiraNumberSuffixes.None
+            );
     }
 }

@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
+using Hazel;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
@@ -10,44 +12,54 @@ using NewMod.Options;
 using NewMod.Roles;
 using Reactor.Utilities;
 using UnityEngine;
-using Hazel;
 
 namespace NewMod.Patches
 {
     [HarmonyPatch(typeof(RoleManager), nameof(RoleManager.SelectRoles))]
     public static class SelectRolePatch
     {
-        public static bool Prefix(RoleManager __instance)
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        public static void Postfix(RoleManager __instance)
         {
-            if (!AmongUsClient.Instance.AmHost)
-                return true;
+            if (!AmongUsClient.Instance.AmHost) return;
+            if (GameManager.Instance.IsHideAndSeek()) return;
 
-            Logger<NewMod>.Instance.LogMessage("-------------- SELECT ROLES: START --------------");
-            Logger<NewMod>.Instance.LogMessage($"Running as host (clientId={AmongUsClient.Instance.ClientId})");
+            Coroutines.Start(CoAdjustNeutrals());
+        }
+
+        private static IEnumerator CoAdjustNeutrals()
+        {
+            yield return null;
+            yield return new WaitForSeconds(0.05f);
 
             var opts = OptionGroupSingleton<GeneralOption>.Instance;
             int target = Mathf.RoundToInt(opts.TotalNeutrals);
-            Logger<NewMod>.Instance.LogMessage($"Settings -> TotalNeutrals={opts.TotalNeutrals} → target={target}, KeepCrewMajority={opts.KeepCrewMajority}, PreferVariety={opts.PreferVariety}");
 
-            var allPlayers = GameData.Instance.AllPlayers.ToArray()
-                .Where(p => p?.Object && !p.IsDead && !p.Disconnected)
+            var allInfos = GameData.Instance.AllPlayers.ToArray()
+                .Where(p => p != null && p.Object != null && !p.Disconnected)
                 .ToList();
 
-            Logger<NewMod>.Instance.LogMessage($"Eligible players: {allPlayers.Count}");
+            var allPlayers = allInfos.Select(p => p.Object).ToList();
+
+            Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: START --------------");
+            Logger<NewMod>.Instance.LogMessage($"Players={allPlayers.Count}, TotalNeutrals={opts.TotalNeutrals} target={target}, KeepCrewMajority={opts.KeepCrewMajority}, PreferVariety={opts.PreferVariety}");
 
             var neutrals = allPlayers
-                .Where(p => p?.Object?.Data?.Role is ICustomRole cr && cr is INewModRole nm &&
-                            (nm.Faction == NewModFaction.Apex || nm.Faction == NewModFaction.Entropy))
-                .Select(p => p.Object)
+                .Where(pc =>
+                {
+                    var rb = pc.Data?.Role;
+                    if (rb is ICustomRole cr && cr is INewModRole nm)
+                        return nm.Faction == NewModFaction.Apex || nm.Faction == NewModFaction.Entropy;
+                    return false;
+                })
                 .ToList();
-
-            Logger<NewMod>.Instance.LogMessage($"Currently neutral (Apex/Entropy): {neutrals.Count}");
 
             if (opts.KeepCrewMajority)
             {
-                int crewCount = allPlayers.Count(p =>
+                int crewCount = allPlayers.Count(pc =>
                 {
-                    var rb = p?.Object?.Data?.Role;
+                    var rb = pc.Data?.Role;
                     if (rb == null) return false;
                     return rb is CrewmateRole || (!rb.IsImpostor && rb.TeamType == RoleTeamTypes.Crewmate);
                 });
@@ -59,41 +71,43 @@ namespace NewMod.Patches
             }
 
             int have = neutrals.Count;
+            Logger<NewMod>.Instance.LogMessage($"Currently neutrals={have}");
+
             if (have == target)
             {
-                Logger<NewMod>.Instance.LogMessage("No change needed; exiting cleanly.");
-                Logger<NewMod>.Instance.LogMessage("-------------- SELECT ROLES: END (no-op) --------------");
-                return false;
+                Logger<NewMod>.Instance.LogMessage("No change needed.");
+                Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END (no-op) --------------");
+                yield break;
             }
 
             if (have > target)
             {
                 int remove = have - target;
-                Logger<NewMod>.Instance.LogMessage($"Too many neutrals; demoting {remove}");
-                neutrals.Shuffle();
+                Logger<NewMod>.Instance.LogMessage($"Too many neutrals, demoting {remove}");
 
+                neutrals.Shuffle();
                 for (int i = 0; i < remove && i < neutrals.Count; i++)
                 {
-                    var ply = neutrals[i];
-                    if (ply == null) continue;
+                    var pc = neutrals[i];
+                    if (pc == null) continue;
 
-                    Logger<NewMod>.Instance.LogMessage($"→ Demoting {ply.Data.PlayerName} to Crewmate");
-                    ply.RpcSetRole(RoleTypes.Crewmate);
+                    Logger<NewMod>.Instance.LogMessage($"→ Demoting {pc.Data.PlayerName} to Crewmate");
+                    pc.RpcSetRole(RoleTypes.Crewmate, true);
                 }
 
-                Logger<NewMod>.Instance.LogMessage("Demotion complete.");
-                Logger<NewMod>.Instance.LogMessage("-------------- SELECT ROLES: END (demotions) --------------");
-                return false;
+                Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END (demotions) --------------");
+                yield break;
             }
 
             int need = target - have;
             Logger<NewMod>.Instance.LogMessage($"Need to assign {need} more neutrals.");
 
             var crewElig = allPlayers
-                .Where(p =>
+                .Where(pc =>
                 {
-                    var rb = p?.Object?.Data?.Role;
+                    var rb = pc.Data?.Role;
                     if (rb == null) return false;
+
                     bool isCrew = rb is CrewmateRole || (!rb.IsImpostor && rb.TeamType == RoleTeamTypes.Crewmate);
                     if (!isCrew) return false;
 
@@ -102,16 +116,14 @@ namespace NewMod.Patches
 
                     return true;
                 })
-                .Select(p => p.Object)
                 .ToList();
 
             Logger<NewMod>.Instance.LogMessage($"Crew eligible for neutral conversion: {crewElig.Count}");
-
             if (crewElig.Count == 0)
             {
-                Logger<NewMod>.Instance.LogMessage("No eligible crew found; aborting neutral assignment.");
-                Logger<NewMod>.Instance.LogMessage("-------------- SELECT ROLES: END (no candidates) --------------");
-                return false;
+                Logger<NewMod>.Instance.LogMessage("No eligible crew found, aborting.");
+                Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END (no candidates) --------------");
+                yield break;
             }
 
             var active = CustomRoleUtils.GetActiveRoles().ToList();
@@ -140,14 +152,15 @@ namespace NewMod.Patches
             }
 
             Logger<NewMod>.Instance.LogMessage($"Built neutral candidate list: {candidates.Count}");
-
             if (candidates.Count == 0)
             {
-                Logger<NewMod>.Instance.LogMessage("No candidates available; exiting.");
-                return false;
+                Logger<NewMod>.Instance.LogMessage("No candidates available, exiting.");
+                Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END --------------");
+                yield break;
             }
 
             var picks = new List<ICustomRole>();
+
             if (opts.PreferVariety)
             {
                 var ordered = candidates.OrderByDescending(x => x.Weight).ToList();
@@ -170,16 +183,12 @@ namespace NewMod.Patches
                 float total = available.Sum(c => c.Weight);
                 float rnum = UnityEngine.Random.Range(0f, total);
                 float acc = 0f;
-                var chosen = available.First();
+                var chosen = available[0];
 
                 foreach (var c in available)
                 {
                     acc += c.Weight;
-                    if (rnum <= acc)
-                    {
-                        chosen = c;
-                        break;
-                    }
+                    if (rnum <= acc) { chosen = c; break; }
                 }
 
                 picks.Add(chosen.Role);
@@ -198,6 +207,7 @@ namespace NewMod.Patches
             foreach (var role in picks)
             {
                 if (crewElig.Count == 0) break;
+
                 int idx = HashRandom.FastNext(crewElig.Count);
                 var pc = crewElig[idx];
                 crewElig.RemoveAt(idx);
@@ -207,9 +217,9 @@ namespace NewMod.Patches
             }
 
             Logger<NewMod>.Instance.LogMessage("Neutral assignment complete.");
-            Logger<NewMod>.Instance.LogMessage("-------------- SELECT ROLES: END --------------");
-            return false;
+            Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END --------------");
         }
+
         public struct Candidate
         {
             public ICustomRole Role;
@@ -218,23 +228,17 @@ namespace NewMod.Patches
             public RoleTypes RoleType;
         }
     }
-
-    // Inspired by https://github.com/AU-Avengers/TOU-Mira/blob/main/TownOfUs/Patches/RoleManagerPatches.cs#L747C3-L768C1
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSetRole))]
-    public static class RpcSetRolePatch
+    // Thanks to:https://github.com/AU-Avengers/TOU-Mira/blob/main/TownOfUs/Patches/RoleManagerPatches.cs#L1070
+    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CoSetRole))]
+    public static class CoSetRoleOverridePatch
     {
-        public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] RoleTypes roleType, [HarmonyArgument(1)] bool canOverrideRole = false)
+        [HarmonyPrefix]
+        public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)] RoleTypes role, [HarmonyArgument(1)] bool canOverrideRole)
         {
-            if (AmongUsClient.Instance.AmClient)
-                __instance.StartCoroutine(__instance.CoSetRole(roleType, canOverrideRole));
-
-            var writer = AmongUsClient.Instance.StartRpcImmediately(__instance.NetId, (byte)RpcCalls.SetRole, SendOption.Reliable);
-            writer.Write((ushort)roleType);
-            writer.Write(canOverrideRole);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-            Logger<NewMod>.Instance.LogMessage($"RpcSetRole: {__instance.Data.PlayerName} ({roleType})");
-            return false;
+            if (canOverrideRole)
+            {
+                __instance.roleAssigned = false;
+            }
         }
     }
 }
