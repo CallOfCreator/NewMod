@@ -19,9 +19,7 @@ public static class OnGameEndPatch
         VisionaryUtilities.DeleteAllScreenshots();
         WraithCallerUtilities.ClearAll();
         Shade.ShadeKills.Clear();
-        Revenant.HasUsedFeignDeath = false;
-        Revenant.FeignDeathStates.Remove(PlayerControl.LocalPlayer.PlayerId);
-        Revenant.StalkingStates[PlayerControl.LocalPlayer.PlayerId] = false;
+        Revenant.ResetAllStates();
         NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");

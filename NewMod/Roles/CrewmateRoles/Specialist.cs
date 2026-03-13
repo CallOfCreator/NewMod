@@ -36,17 +36,17 @@ public class Specialist : CrewmateRole, ICustomRole
     [RegisterEvent]
     public static void OnTaskComplete(CompleteTaskEvent evt)
     {
-        PlayerControl player = evt.Player;
-        if (player.Data.Role is not Specialist) return;
+        PlayerControl specialist = evt.Player;
+        if (specialist.Data.Role is not Specialist) return;
 
         List<Action> abilityAction = new List<Action>
         {
             () =>
             {
-                var target = Utils.GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected && p != player);
+                var target = Utils.GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected && p != specialist);
                 if (target != null)
                 {
-                   Utils.RpcRandomDrainActions(player, target);
+                   Utils.RpcRandomDrainActions(specialist, target);
                    Helpers.CreateAndShowNotification($"Energy Drain activated on {target.Data.PlayerName}!",Color.green);
                 }
             },
@@ -56,13 +56,13 @@ public class Specialist : CrewmateRole, ICustomRole
                 var player = Utils.PlayerById(closestBody.ParentId);
                 if (closestBody != null)
                 {
-                   Utils.RpcRevive(closestBody);
+                   Utils.HandleRevive(specialist, closestBody.ParentId, AmongUs.GameOptions.RoleTypes.Crewmate, closestBody.transform.position.x, closestBody.transform.position.y);
                    Helpers.CreateAndShowNotification($"Player {player.Data.PlayerName} has been revived.", Color.green);
                 }
             },
             () =>
             {
-                PranksterUtilities.CreatePranksterDeadBody(player, player.PlayerId);
+                PranksterUtilities.CreatePranksterDeadBody(specialist, specialist.PlayerId);
                 Helpers.CreateAndShowNotification("Fake Body created!", Color.green);
             },
             () =>

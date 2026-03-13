@@ -9,6 +9,7 @@ using MiraAPI.Networking;
 using NewMod.Roles.NeutralRoles;
 using Reactor.Utilities.Extensions;
 using NewMod.Components.ScreenEffects;
+using AmongUs.GameOptions;
 
 namespace NewMod.Utilities
 {
@@ -296,7 +297,7 @@ namespace NewMod.Utilities
                         {
                             revivedParentId = deadBody.ParentId;
 
-                            Utils.RpcRevive(deadBody);
+                            Utils.HandleRevive(target, deadBody.ParentId, RoleTypes.Crewmate, deadBody.transform.position.x, deadBody.transform.position.y);
 
                             yield return new WaitForSeconds(0.5f);
 
@@ -455,6 +456,18 @@ namespace NewMod.Utilities
                 Object.Destroy(dw);
             if (cam.TryGetComponent<ShadowFluxEffect>(out var sf))
                 Object.Destroy(sf);
+        }
+        public static IEnumerator CoRevive(PlayerControl revived, RoleTypes role)
+        {
+            yield return new WaitForSeconds(0.15f);
+
+            var body = GameObject.FindObjectsOfType<DeadBody>().FirstOrDefault(b => b.ParentId == revived.PlayerId);
+
+            if (body != null)
+                Object.Destroy(body.gameObject);
+
+            revived.Revive();
+            revived.RpcSetRole(role);
         }
     }
 }

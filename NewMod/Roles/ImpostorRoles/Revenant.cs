@@ -41,17 +41,16 @@ public class Revenant : ImpostorRole, ICustomRole
         public bool Reported;
     }
 
+    public static void ResetAllStates()
+    {
+        FeignDeathStates.Clear();
+        StalkingStates.Clear();
+        HasUsedFeignDeath = false;
+    }
+
     [RegisterEvent]
     public static void OnPlayerExit(PlayerLeaveEvent evt)
     {
-        if (FeignDeathStates.ContainsKey(evt.ClientData.Character.PlayerId))
-        {
-            FeignDeathStates.Remove(evt.ClientData.Character.PlayerId);
-        }
-        if (StalkingStates.ContainsKey(evt.ClientData.Character.PlayerId))
-        {
-            StalkingStates.Remove(evt.ClientData.Character.PlayerId);
-        }
-        HasUsedFeignDeath = false;
+        ResetAllStates();
     }
 }

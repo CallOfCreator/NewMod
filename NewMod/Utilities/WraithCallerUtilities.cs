@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NewMod.Components;
 using Reactor.Networking.Attributes;
 using UnityEngine;
@@ -57,32 +58,49 @@ namespace NewMod.Utilities
             Sent.Clear();
             Kills.Clear();
         }
+        [MethodRpc((uint)CustomRPC.RequestSummon)]
+        public static void RpcRequestSummonNPC(PlayerControl source, PlayerControl target)
+        {
+            if (!AmongUsClient.Instance.AmHost) return;
 
-        /// <summary>
-        /// RPC for <see cref="SummonNPC"/>. Runs on all clients to keep state in sync.
-        /// </summary>
-        /// <param name="source">The Wraith Caller owner who summoned the NPC.</param>
-        /// <param name="target">The intended target player.</param>
+            var npcId = HostNPC(source);
+            RpcSummonNPC(source, target, npcId);
+        }
+        public static byte HostNPC(PlayerControl source)
+        {
+            var prefab = AmongUsClient.Instance.PlayerPrefab;
+            var npc = Object.Instantiate(prefab);
+            npc.PlayerId = (byte)GameData.Instance.GetAvailableId();
 
+            npc.isDummy = false;
+            npc.notRealPlayer = true;
+
+            var host = AmongUsClient.Instance.GetHost();
+            var npcInfo = GameData.Instance.AddPlayer(npc, host);
+
+            AmongUsClient.Instance.Spawn(npcInfo);
+            AmongUsClient.Instance.Spawn(npc);
+
+            npc.NetTransform.RpcSnapTo(source.transform.position);
+
+            return npc.PlayerId;
+        }
         [MethodRpc((uint)CustomRPC.SummonNPC)]
-        public static void RpcSummonNPC(PlayerControl source, PlayerControl target)
+        public static void RpcSummonNPC(PlayerControl source, PlayerControl target, byte npcId)
         {
             AddSentNPC(source.PlayerId);
-            SummonNPC(source, target);
+
+            InitializeNPC(source, target, Utils.PlayerById(npcId));
+            return;
+
         }
-
-        /// <summary>
-        /// Spawns and initializes the wraith NPC that will hunt the target.
-        /// Runs locally on each client after the RPC dispatch.
-        /// </summary>
-        /// <param name="wraith">The Wraith Caller (owner) who summoned the NPC.</param>
-        /// <param name="target">The intended target player.</param>
-        public static void SummonNPC(PlayerControl wraith, PlayerControl target)
+        public static void InitializeNPC(PlayerControl owner, PlayerControl target, PlayerControl npc)
         {
-            var npcObj = new GameObject("WraithNPC_Holder");
-            var wraithNpc = npcObj.AddComponent<WraithCallerNpc>();
-
-            wraithNpc.Initialize(wraith, target);
+            if (!npc.gameObject.TryGetComponent<WraithCallerNpc>(out _))
+            {
+                var comp = npc.gameObject.AddComponent<WraithCallerNpc>();
+                comp.Initialize(owner, target, npc);
+            }
         }
     }
 }
