@@ -102,7 +102,7 @@ namespace NewMod.Utilities
         /// <param name="victim">The player who was killed.</param>
         public static void RecordOnKill(PlayerControl killer, PlayerControl victim)
         {
-            if (PlayerKiller.ContainsKey(killer))
+            if (PlayerKiller.ContainsKey(victim))
             {
                 PlayerKiller[victim] = killer;
             }
