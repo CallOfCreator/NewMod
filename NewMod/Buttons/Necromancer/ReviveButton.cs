@@ -75,10 +75,11 @@ namespace NewMod.Buttons.Necromancer
             Utils.HandleRevive(
                 local,
                 body.ParentId,
-                RoleTypes.Impostor,
+                RoleTypes.Crewmate,
                 body.transform.position.x,
                 body.transform.position.y
             );
+            NecromancerRole.RevivedPlayers[body.ParentId] = local.PlayerId;
         }
         /// <summary>
         /// Determines whether this button is enabled for the role, returning true if the role is <see cref="NecromancerRole"/>.
@@ -114,8 +115,6 @@ namespace NewMod.Buttons.Necromancer
 
                 return true;
             });
-
-            NewMod.Instance.Log.LogMessage($"[ReviveButton] CanUse: {canUse}");
 
             return canUse;
         }

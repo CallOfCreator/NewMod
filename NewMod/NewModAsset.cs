@@ -42,6 +42,7 @@ public static class NewModAsset
     public static LoadableResourceAsset Shield { get; } = new("NewMod.Resources.Shield.png");
     public static LoadableResourceAsset Slash { get; } = new("NewMod.Resources.Slash.png");
     public static LoadableResourceAsset DeployZone { get; } = new("NewMod.Resources.deployzone.png");
+    public static LoadableResourceAsset VanillaKillButton { get; } = new("NewMod.Resources.killbutton.png");
 
     // SFX
     public static LoadableAudioResourceAsset ReviveSound { get; } = new("NewMod.Resources.Sounds.revive.wav");

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
+using NewMod.Roles.ImpostorRoles;
 using NewMod.Utilities;
 
 namespace NewMod
@@ -57,7 +58,6 @@ namespace NewMod
             NewMod.Instance.Log.LogInfo(sb.ToString());
         }
 
-        // General events
         [RegisterEvent]
         public static void OnRoundStart(RoundStartEvent evt)
         {
@@ -66,6 +66,7 @@ namespace NewMod
             HudManager.Instance.Chat.enabled = false;
 
             Utils.ResetKillTracking();
+            NecromancerRole.RevivedPlayers.Clear();
         }
     }
 }

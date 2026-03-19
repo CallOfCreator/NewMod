@@ -21,6 +21,7 @@ public static class OnGameEndPatch
         WraithCallerUtilities.ClearAll();
         Shade.ShadeKills.Clear();
         Revenant.ResetAllStates();
+        NecromancerRole.RevivedPlayers.Clear();
         NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
