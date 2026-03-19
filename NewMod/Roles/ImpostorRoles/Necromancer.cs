@@ -24,6 +24,22 @@ public class NecromancerRole : ImpostorRole, ICustomRole
     public TeamIntroConfiguration TeamConfiguration => new()
     {
         IntroTeamDescription = RoleDescription,
-        IntroTeamColor = RoleColor     
+        IntroTeamColor = RoleColor
     };
+    public override bool DidWin(GameOverReason reason)
+    {
+        if (reason == (GameOverReason)NewModEndReasons.TyrantWin ||
+            reason == (GameOverReason)NewModEndReasons.ShadeWin ||
+            reason == (GameOverReason)NewModEndReasons.WraithCallerWin ||
+            reason == (GameOverReason)NewModEndReasons.SpecialAgentWin ||
+            reason == (GameOverReason)NewModEndReasons.PranksterWin ||
+            reason == (GameOverReason)NewModEndReasons.EnergyThiefWin ||
+            reason == (GameOverReason)NewModEndReasons.InjectorWin ||
+            reason == (GameOverReason)NewModEndReasons.DoubleAgentWin)
+        {
+            return false;
+        }
+
+        return base.DidWin(reason);
+    }
 }

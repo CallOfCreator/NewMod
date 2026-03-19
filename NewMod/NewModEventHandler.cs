@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
+using NewMod.Utilities;
 
 namespace NewMod
 {
@@ -63,6 +64,8 @@ namespace NewMod
             if (!evt.TriggeredByIntro) return;
 
             HudManager.Instance.Chat.enabled = false;
+
+            Utils.ResetKillTracking();
         }
     }
 }

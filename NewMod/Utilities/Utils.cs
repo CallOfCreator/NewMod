@@ -111,6 +111,10 @@ namespace NewMod.Utilities
                 PlayerKiller.Add(victim, killer);
             }
         }
+        public static void ResetKillTracking()
+        {
+            PlayerKiller.Clear();
+        }
 
         /// <summary>
         /// Retrieves the killer of the specified victim.

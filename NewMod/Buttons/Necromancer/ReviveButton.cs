@@ -8,6 +8,8 @@ using NewMod.Utilities;
 using MiraAPI.Keybinds;
 using AmongUs.GameOptions;
 using Reactor.Utilities;
+using MiraAPI.Utilities;
+using System.Linq;
 
 namespace NewMod.Buttons.Necromancer
 {
@@ -56,24 +58,26 @@ namespace NewMod.Buttons.Necromancer
         /// </summary>
         protected override void OnClick()
         {
-            var closestBody = Utils.GetClosestBody();
-            var killedPlayer = GameData.Instance.GetPlayerById(closestBody.ParentId)?.Object;
+            var local = PlayerControl.LocalPlayer;
 
-            var killer = Utils.GetKiller(killedPlayer);
-            if (killer != null && killer.PlayerId == PlayerControl.LocalPlayer.PlayerId)
-            {
-                Coroutines.Start(CoroutinesHelper.CoNotify("Heads up: you tried to revive someone you killed, one use has been consumed"));
-                return;
-            }
+            var body = Helpers.GetNearestDeadBodies(
+                local.GetTruePosition(),
+                ShipStatus.Instance.MaxLightRadius,
+                Helpers.CreateFilter(Constants.NotShipMask))
+                .Where(b => b != null && !PranksterUtilities.IsPranksterBody(b))
+                .OrderBy(b => Vector2.Distance(local.GetTruePosition(), b.TruePosition))
+                .FirstOrDefault();
+
+            if (body == null) return;
 
             SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
 
             Utils.HandleRevive(
-                PlayerControl.LocalPlayer,
-                closestBody.ParentId,
+                local,
+                body.ParentId,
                 RoleTypes.Impostor,
-                closestBody.transform.position.x,
-                closestBody.transform.position.y
+                body.transform.position.x,
+                body.transform.position.y
             );
         }
         /// <summary>
@@ -92,15 +96,28 @@ namespace NewMod.Buttons.Necromancer
         /// <returns>True if all requirements to use this button are met; otherwise false.</returns>
         public override bool CanUse()
         {
-            if (Timer > 0) return false;
-            if (UsesLeft <= 0) return false;
+            var bodiesInRange = Helpers.GetNearestDeadBodies(
+                PlayerControl.LocalPlayer.transform.position,
+                ShipStatus.Instance.MaxLightRadius,
+                Helpers.CreateFilter(Constants.NotShipMask));
 
-            var closestBody = Utils.GetClosestBody();
-            if (closestBody == null) return false;
+            bool canUse = bodiesInRange.Any(body =>
+            {
+                if (PranksterUtilities.IsPranksterBody(body)) return false;
 
-            if (PranksterUtilities.IsPranksterBody(closestBody)) return false;
+                var killedPlayer = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
+                if (killedPlayer == null) return false;
 
-            return true;
+                var killer = Utils.GetKiller(killedPlayer);
+                if (killer.PlayerId == PlayerControl.LocalPlayer.PlayerId)
+                    return false;
+
+                return true;
+            });
+
+            NewMod.Instance.Log.LogMessage($"[ReviveButton] CanUse: {canUse}");
+
+            return canUse;
         }
     }
 }

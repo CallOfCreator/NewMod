@@ -15,6 +15,7 @@ public static class OnGameEndPatch
         Utils.ResetMissionFailureCount();
         Utils.ResetInjections();
         Utils.ResetStrikeCount();
+        Utils.ResetKillTracking();
         PranksterUtilities.ResetReportCount();
         VisionaryUtilities.DeleteAllScreenshots();
         WraithCallerUtilities.ClearAll();
