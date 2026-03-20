@@ -170,7 +170,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     {
         public static void Postfix(TaskPanelBehaviour __instance, [HarmonyArgument(0)] string str)
         {
-            if (PlayerControl.LocalPlayer.Data.IsDead)
+            if (__instance.taskText != null && PlayerControl.LocalPlayer.Data.IsDead)
             {
                 __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams ? "<color=blue>Press F2 For Open Cams</color>" : "<color=red>You cannot open cams because the host has disabled this setting</color>");
             }
