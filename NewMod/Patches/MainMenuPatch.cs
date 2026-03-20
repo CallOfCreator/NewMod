@@ -22,7 +22,6 @@ namespace NewMod.Patches
         public static SpriteRenderer LogoSprite;
         public static Texture2D _cachedCursor;
         public static Transform RightPanel;
-        public static bool _wraithRegistered = false;
 
         [HarmonyPatch(nameof(MainMenuManager.Start))]
         [HarmonyPostfix]
@@ -39,11 +38,6 @@ namespace NewMod.Patches
             }
 
             RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
-
-            if (NewModDateTime.IsWraithCallerUnlocked && !_wraithRegistered)
-            {
-                _wraithRegistered = true;
-            }
 
             if (NewModDateTime.IsNewModBirthdayWeek)
             {

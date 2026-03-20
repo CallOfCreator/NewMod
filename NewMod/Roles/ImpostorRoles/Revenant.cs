@@ -41,17 +41,32 @@ public class Revenant : ImpostorRole, ICustomRole
         public bool Reported;
     }
 
+    public static void ResetAllStates()
+    {
+        FeignDeathStates.Clear();
+        StalkingStates.Clear();
+        HasUsedFeignDeath = false;
+    }
+
     [RegisterEvent]
     public static void OnPlayerExit(PlayerLeaveEvent evt)
     {
-        if (FeignDeathStates.ContainsKey(evt.ClientData.Character.PlayerId))
+        ResetAllStates();
+    }
+    public override bool DidWin(GameOverReason reason)
+    {
+        if (reason == (GameOverReason)NewModEndReasons.TyrantWin ||
+            reason == (GameOverReason)NewModEndReasons.ShadeWin ||
+            reason == (GameOverReason)NewModEndReasons.WraithCallerWin ||
+            reason == (GameOverReason)NewModEndReasons.SpecialAgentWin ||
+            reason == (GameOverReason)NewModEndReasons.PranksterWin ||
+            reason == (GameOverReason)NewModEndReasons.EnergyThiefWin ||
+            reason == (GameOverReason)NewModEndReasons.InjectorWin ||
+            reason == (GameOverReason)NewModEndReasons.DoubleAgentWin)
         {
-            FeignDeathStates.Remove(evt.ClientData.Character.PlayerId);
+            return false;
         }
-        if (StalkingStates.ContainsKey(evt.ClientData.Character.PlayerId))
-        {
-            StalkingStates.Remove(evt.ClientData.Character.PlayerId);
-        }
-        HasUsedFeignDeath = false;
+
+        return base.DidWin(reason);
     }
 }

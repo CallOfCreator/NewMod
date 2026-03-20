@@ -6,6 +6,10 @@ using NewMod.Roles.ImpostorRoles;
 using UnityEngine;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
+using AmongUs.GameOptions;
+using Reactor.Utilities;
+using MiraAPI.Utilities;
+using System.Linq;
 
 namespace NewMod.Buttons.Necromancer
 {
@@ -54,15 +58,29 @@ namespace NewMod.Buttons.Necromancer
         /// </summary>
         protected override void OnClick()
         {
+            var local = PlayerControl.LocalPlayer;
+
+            var body = Helpers.GetNearestDeadBodies(
+                local.GetTruePosition(),
+                ShipStatus.Instance.MaxLightRadius,
+                Helpers.CreateFilter(Constants.NotShipMask))
+                .Where(b => b != null && !PranksterUtilities.IsPranksterBody(b))
+                .OrderBy(b => Vector2.Distance(local.GetTruePosition(), b.TruePosition))
+                .FirstOrDefault();
+
+            if (body == null) return;
+
             SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
 
-            var closestBody = Utils.GetClosestBody();
-            if (closestBody != null)
-            {
-                Utils.RpcRevive(closestBody);
-            }
+            Utils.HandleRevive(
+                local,
+                body.ParentId,
+                RoleTypes.Crewmate,
+                body.transform.position.x,
+                body.transform.position.y
+            );
+            NecromancerRole.RevivedPlayers[body.ParentId] = local.PlayerId;
         }
-
         /// <summary>
         /// Determines whether this button is enabled for the role, returning true if the role is <see cref="NecromancerRole"/>.
         /// </summary>
@@ -79,32 +97,26 @@ namespace NewMod.Buttons.Necromancer
         /// <returns>True if all requirements to use this button are met; otherwise false.</returns>
         public override bool CanUse()
         {
-            bool isTimerDone = Timer <= 0;
-            bool hasUsesLeft = UsesLeft > 0;
-            var closestBody = Utils.GetClosestBody();
-            bool isNearDeadBody = closestBody != null;
-            bool isFakeBody = isNearDeadBody && PranksterUtilities.IsPranksterBody(closestBody);
+            var bodiesInRange = Helpers.GetNearestDeadBodies(
+                PlayerControl.LocalPlayer.transform.position,
+                ShipStatus.Instance.MaxLightRadius,
+                Helpers.CreateFilter(Constants.NotShipMask));
 
-            if (closestBody == null)
+            bool canUse = bodiesInRange.Any(body =>
             {
-                return false;
-            }
+                if (PranksterUtilities.IsPranksterBody(body)) return false;
 
-            bool wasNotKilledByNecromancer = true;
-            var deadBody = closestBody.GetComponent<DeadBody>();
-            if (deadBody != null)
-            {
-                var killedPlayer = GameData.Instance.GetPlayerById(deadBody.ParentId)?.Object;
-                if (killedPlayer != null)
-                {
-                    var killer = Utils.GetKiller(killedPlayer);
-                    if (killer != null && killer.Data.Role is NecromancerRole)
-                    {
-                        wasNotKilledByNecromancer = false;
-                    }
-                }
-            }
-            return isTimerDone && hasUsesLeft && isNearDeadBody && wasNotKilledByNecromancer && !isFakeBody;
+                var killedPlayer = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
+                if (killedPlayer == null) return false;
+
+                var killer = Utils.GetKiller(killedPlayer);
+                if (killer.PlayerId == PlayerControl.LocalPlayer.PlayerId)
+                    return false;
+
+                return true;
+            });
+
+            return canUse;
         }
     }
 }

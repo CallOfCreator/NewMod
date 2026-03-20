@@ -13,15 +13,24 @@ namespace NewMod.Components
     public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
     {
         public byte ownerId;
-        float _radius, _duration, _speedMul, _t;
+
+        float _radius;
+        float _duration;
+        float _speedMul;
+        float _t;
+
         readonly Dictionary<byte, float> _origSpeed = new();
         readonly HashSet<byte> _insideNow = new();
+
         public static readonly HashSet<byte> AffectedPlayers = new();
         public static readonly HashSet<byte> _speedNotifShown = new();
         public static readonly HashSet<byte> _visionNotifShown = new();
+
         public AudioClip _enterClip;
         public AudioClip _heartbeatClip;
         public bool _pulsingHb;
+
+        bool _restored;
 
         public void Init(byte ownerId, float radius, float duration, float speedMul)
         {
@@ -35,6 +44,8 @@ namespace NewMod.Components
 
         public void Update()
         {
+            if (_restored) return;
+
             _t += Time.deltaTime;
             if (_t > _duration)
             {
@@ -89,12 +100,13 @@ namespace NewMod.Components
                     {
                         _visionNotifShown.Add(p.PlayerId);
                         var notif = Helpers.CreateAndShowNotification(
-                             "You have entered the Fear Pulse Area. Your vision is reduced!",
-                             new Color(1f, 0.8f, 0.2f),
-                             spr: NewModAsset.VisionDebuff.LoadAsset()
-                         );
+                            "You have entered the Fear Pulse Area. Your vision is reduced!",
+                            new Color(1f, 0.8f, 0.2f),
+                            spr: NewModAsset.VisionDebuff.LoadAsset()
+                        );
                         notif.Text.SetOutlineThickness(0.36f);
                     }
+
                     Coroutines.Start(Utils.CoShakeCamera(Camera.main.GetComponent<FollowerCamera>(), 0.5f));
                 }
 
@@ -112,40 +124,57 @@ namespace NewMod.Components
                 var toRestore = _origSpeed.Keys.Where(id => !_insideNow.Contains(id)).ToList();
                 foreach (var id in toRestore)
                 {
-                    var p = Utils.PlayerById(id);
-                    if (p) p.MyPhysics.Speed = _origSpeed[id];
-                    _origSpeed.Remove(id);
-
-                    if (p.AmOwner)
-                    {
-                        AffectedPlayers.Remove(p.PlayerId);
-                        p.lightSource.lightChild.SetActive(true);
-                        _speedNotifShown.Remove(p.PlayerId);
-                        _visionNotifShown.Remove(p.PlayerId);
-                        Helpers.CreateAndShowNotification("Your vision is restored.", new Color(0.8f, 1f, 0.8f));
-                    }
+                    RestorePlayer(id);
                 }
             }
         }
+
+        public void RestorePlayer(byte playerId)
+        {
+            if (_origSpeed.TryGetValue(playerId, out var originalSpeed))
+            {
+                var p = Utils.PlayerById(playerId);
+
+                if (!p.Data.IsDead || !p.Data.Disconnected)
+                {
+                    p.MyPhysics.Speed = originalSpeed;
+
+                    if (p.AmOwner)
+                    {
+                        p.lightSource.lightChild.SetActive(true);
+
+                        Helpers.CreateAndShowNotification(
+                            "Your speed and vision are restored.",
+                            new Color(0.8f, 1f, 0.8f)
+                        );
+                    }
+                }
+
+                _origSpeed.Remove(playerId);
+            }
+
+            AffectedPlayers.Remove(playerId);
+            _speedNotifShown.Remove(playerId);
+            _visionNotifShown.Remove(playerId);
+        }
+
         public void RestoreAll()
         {
-            foreach (var kv in _origSpeed)
+            if (_restored) return;
+            _restored = true;
+
+            var ids = _origSpeed.Keys.ToList();
+            foreach (var id in ids)
             {
-                var p = Utils.PlayerById(kv.Key);
-                if (p) p.MyPhysics.Speed = kv.Value;
+                RestorePlayer(id);
             }
-            _origSpeed.Clear();
-            AffectedPlayers.Clear();
 
-            var lp = PlayerControl.LocalPlayer;
+            _insideNow.Clear();
+        }
 
-            if (AffectedPlayers.Contains(lp.PlayerId))
-                AffectedPlayers.Remove(lp.PlayerId);
-
-            lp.lightSource.lightChild.SetActive(true);
-
-            _speedNotifShown.Remove(lp.PlayerId);
-            _visionNotifShown.Remove(lp.PlayerId);
+        public void OnDestroy()
+        {
+            RestoreAll();
         }
     }
 }

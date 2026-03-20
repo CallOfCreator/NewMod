@@ -9,6 +9,7 @@ using MiraAPI.Networking;
 using NewMod.Roles.NeutralRoles;
 using Reactor.Utilities.Extensions;
 using NewMod.Components.ScreenEffects;
+using AmongUs.GameOptions;
 
 namespace NewMod.Utilities
 {
@@ -296,7 +297,7 @@ namespace NewMod.Utilities
                         {
                             revivedParentId = deadBody.ParentId;
 
-                            Utils.RpcRevive(deadBody);
+                            Utils.HandleRevive(target, deadBody.ParentId, RoleTypes.Crewmate, deadBody.transform.position.x, deadBody.transform.position.y);
 
                             yield return new WaitForSeconds(0.5f);
 

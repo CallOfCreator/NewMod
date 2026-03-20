@@ -1,4 +1,4 @@
-using AmongUs.GameOptions;
+/*using AmongUs.GameOptions;
 using UnityEngine;
 using HarmonyLib;
 using MiraAPI.Roles;
@@ -173,4 +173,4 @@ namespace NewMod.Patches
             return false;
         }
     }
-}
+}*/

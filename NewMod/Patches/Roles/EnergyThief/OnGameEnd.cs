@@ -15,13 +15,13 @@ public static class OnGameEndPatch
         Utils.ResetMissionFailureCount();
         Utils.ResetInjections();
         Utils.ResetStrikeCount();
+        Utils.ResetKillTracking();
         PranksterUtilities.ResetReportCount();
         VisionaryUtilities.DeleteAllScreenshots();
         WraithCallerUtilities.ClearAll();
         Shade.ShadeKills.Clear();
-        Revenant.HasUsedFeignDeath = false;
-        Revenant.FeignDeathStates.Remove(PlayerControl.LocalPlayer.PlayerId);
-        Revenant.StalkingStates[PlayerControl.LocalPlayer.PlayerId] = false;
+        Revenant.ResetAllStates();
+        NecromancerRole.RevivedPlayers.Clear();
         NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
         NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");

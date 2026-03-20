@@ -94,6 +94,23 @@ namespace NewMod.Roles.ImpostorRoles
 
             return tabText;
         }
+        public override bool DidWin(GameOverReason reason)
+        {
+            if (reason == (GameOverReason)NewModEndReasons.TyrantWin) return true;
+
+            if (reason == (GameOverReason)NewModEndReasons.ShadeWin ||
+                reason == (GameOverReason)NewModEndReasons.WraithCallerWin ||
+                reason == (GameOverReason)NewModEndReasons.SpecialAgentWin ||
+                reason == (GameOverReason)NewModEndReasons.PranksterWin ||
+                reason == (GameOverReason)NewModEndReasons.EnergyThiefWin ||
+                reason == (GameOverReason)NewModEndReasons.InjectorWin ||
+                reason == (GameOverReason)NewModEndReasons.DoubleAgentWin)
+            {
+                return false;
+            }
+
+            return base.DidWin(reason);
+        }
         public int _kills;
         public static byte _championId;
         public static bool ApexThroneReady;
@@ -111,7 +128,7 @@ namespace NewMod.Roles.ImpostorRoles
         {
             if (!Utils.IsRoleActive("Tyrant")) return;
 
-            var tyrant = evt.Source.Data.Role as Tyrant;
+            if (evt.Source.Data.Role is not Tyrant tyrant) return;
 
             tyrant._kills++;
 

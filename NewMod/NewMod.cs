@@ -47,7 +47,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     {
         Instance = this;
         AddComponent<DebugWindow>();
-        ReactorCredits.Register("NewMod", "v1.2.9 Hotfix 1", true, ReactorCredits.AlwaysShow);
+        ReactorCredits.Register("NewMod", "v1.2.9 Hotfix 2", true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
         NewModEventHandler.RegisterEventsLogs();
 
@@ -170,7 +170,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     {
         public static void Postfix(TaskPanelBehaviour __instance, [HarmonyArgument(0)] string str)
         {
-            if (PlayerControl.LocalPlayer.Data.IsDead)
+            if (__instance.taskText != null && PlayerControl.LocalPlayer.Data.IsDead)
             {
                 __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams ? "<color=blue>Press F2 For Open Cams</color>" : "<color=red>You cannot open cams because the host has disabled this setting</color>");
             }

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using Hazel;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
@@ -31,7 +30,7 @@ namespace NewMod.Patches
         private static IEnumerator CoAdjustNeutrals()
         {
             yield return null;
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.06f);
 
             var opts = OptionGroupSingleton<GeneralOption>.Instance;
             int target = Mathf.RoundToInt(opts.TotalNeutrals);
@@ -220,7 +219,7 @@ namespace NewMod.Patches
             Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END --------------");
         }
 
-        public struct Candidate
+        public class Candidate
         {
             public ICustomRole Role;
             public int Left;

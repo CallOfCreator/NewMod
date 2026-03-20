@@ -85,7 +85,7 @@ namespace NewMod.Buttons.WraithCaller
                        player =>
                        {
                            menu.Close();
-                           WraithCallerUtilities.RpcSummonNPC(PlayerControl.LocalPlayer, player);
+                           WraithCallerUtilities.RpcRequestSummonNPC(PlayerControl.LocalPlayer, player);
                            SetTimerPaused(false);
                        });
 
