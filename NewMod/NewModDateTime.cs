@@ -40,7 +40,6 @@ namespace NewMod
                 return now >= start && now < end;
             }
         }
-        public static bool IsWraithCallerUnlocked => DateTime.Now >= BirthdayStartThisYear;
         private const int HalloweenMonth = 10;
         private const int HalloweenDay = 31;
         public static readonly TimeSpan HalloweenWindow = TimeSpan.FromDays(7);
