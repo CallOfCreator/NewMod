@@ -53,6 +53,7 @@
 | v1.2.8      | v17.0.1 (2025.10.14) & v17.1.0 (2025.11.18)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.8/NewMod.zip) |
 | v1.2.9      | v17.1.0 (2025.11.18) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9/NewMod.zip) |
 | v1.2.9 Hotfix 1     | v17.1.0 (2025.11.18) & v17.2 (2026.2.17) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot1/NewMod.zip) |
+| v1.2.9 Hotfix 2     | v17.1.0 (2025.11.18) & v17.2 (2026.2.17) & v17.3 (2026.3.31) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot2/NewMod.zip) |
 
 ---
 
