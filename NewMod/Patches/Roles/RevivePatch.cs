@@ -14,6 +14,8 @@ namespace NewMod.Patches.Roles
             __instance.MyPhysics.ResetMoveState(true);
             __instance.clickKillCollider.enabled = true;
             __instance.cosmetics.SetNameMask(true);
+            __instance.cosmetics.SetPetSource(__instance);
+            __instance.moveable = true;
 
             if (__instance.AmOwner)
             {
@@ -22,6 +24,15 @@ namespace NewMod.Patches.Roles
                 DestroyableSingleton<HudManager>.Instance.Chat.SetVisible(false);
             }
             return false;
+        }
+    }
+    [HarmonyPatch(typeof(KillOverlay), nameof(KillOverlay.IsOpen), MethodType.Getter)]
+    public static class KillOverlayPatch
+    {
+        public static void Postfix(ref bool __result)
+        {
+            if (__result && PlayerControl.LocalPlayer != null && !PlayerControl.LocalPlayer.Data.IsDead)
+                __result = false;
         }
     }
 }

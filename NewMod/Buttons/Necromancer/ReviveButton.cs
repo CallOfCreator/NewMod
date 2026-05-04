@@ -100,9 +100,6 @@ namespace NewMod.Buttons.Necromancer
             var local = PlayerControl.LocalPlayer;
             var body = GetReviveTarget();
 
-            if (body == null)
-                return;
-
             SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
 
             Utils.HandleRevive(

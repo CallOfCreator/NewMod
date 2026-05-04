@@ -55,7 +55,7 @@ namespace NewMod.Buttons
 
         public override bool CanUse()
         {
-            return CanUseRevivedKillButton();
+            return base.CanUse() && CanUseRevivedKillButton();
         }
 
         protected override void OnClick()

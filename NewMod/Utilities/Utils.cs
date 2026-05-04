@@ -394,6 +394,8 @@ namespace NewMod.Utilities
 
             revived.Revive();
             revived.RemainingEmergencies = 0;
+            RoleManager.Instance.SetRole(revived, roleToSet);
+            revived.Data.Role.SpawnTaskHeader(revived);
 
             if (AmongUsClient.Instance.AmHost)
             {
@@ -829,7 +831,7 @@ namespace NewMod.Utilities
 
             if (player.AmOwner)
             {
-                HudManager.Instance.SetHudActive(false);
+                HudManager.Instance.SetHudActive(player, player.Data.Role, false);
             }
             yield return new WaitForSeconds(0.5f);
 
