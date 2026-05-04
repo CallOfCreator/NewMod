@@ -52,22 +52,56 @@ namespace NewMod.Buttons.Necromancer
         /// </summary>
         public override LoadableAsset<Sprite> Sprite => NewModAsset.NecromancerButton;
 
+        private DeadBody GetReviveTarget()
+        {
+            var local = PlayerControl.LocalPlayer;
+            var localPos = local.GetTruePosition();
+
+            return Helpers.GetNearestDeadBodies(
+                    localPos,
+                    ShipStatus.Instance.MaxLightRadius,
+                    Helpers.CreateFilter(Constants.NotShipMask))
+                .Where(body => body != null && IsValidReviveTarget(local, body))
+                .OrderBy(body => Vector2.Distance(localPos, body.TruePosition))
+                .FirstOrDefault();
+        }
+
+        public static bool IsValidReviveTarget(PlayerControl local, DeadBody body)
+        {
+            if (PranksterUtilities.IsPranksterBody(body))
+                return false;
+
+            var killedPlayer = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
+            if (killedPlayer == null)
+                return false;
+
+            var killer = Utils.GetKiller(killedPlayer);
+
+            if (killer != null && killer.PlayerId == local.PlayerId)
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks whether the player can currently use the revive button, ensuring cooldowns, ability uses, and conditions are met.
+        /// </summary>
+        /// <returns>True if all requirements to use this button are met; otherwise false.</returns
+        public override bool CanUse()
+        {
+            return GetReviveTarget() != null;
+        }
+
         /// <summary>
         /// Invoked when the revive button is clicked. Plays a sound and revives the nearest dead body.
         /// </summary>
         protected override void OnClick()
         {
             var local = PlayerControl.LocalPlayer;
+            var body = GetReviveTarget();
 
-            var body = Helpers.GetNearestDeadBodies(
-                local.GetTruePosition(),
-                ShipStatus.Instance.MaxLightRadius,
-                Helpers.CreateFilter(Constants.NotShipMask))
-                .Where(b => b != null && !PranksterUtilities.IsPranksterBody(b))
-                .OrderBy(b => Vector2.Distance(local.GetTruePosition(), b.TruePosition))
-                .FirstOrDefault();
-
-            if (body == null) return;
+            if (body == null)
+                return;
 
             SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
 
@@ -78,8 +112,10 @@ namespace NewMod.Buttons.Necromancer
                 body.transform.position.x,
                 body.transform.position.y
             );
+
             NecromancerRole.RevivedPlayers[body.ParentId] = local.PlayerId;
         }
+
         /// <summary>
         /// Determines whether this button is enabled for the role, returning true if the role is <see cref="NecromancerRole"/>.
         /// </summary>
@@ -88,34 +124,6 @@ namespace NewMod.Buttons.Necromancer
         public override bool Enabled(RoleBehaviour role)
         {
             return role is NecromancerRole;
-        }
-
-        /// <summary>
-        /// Checks whether the player can currently use the revive button, ensuring cooldowns, ability uses, and conditions are met.
-        /// </summary>
-        /// <returns>True if all requirements to use this button are met; otherwise false.</returns>
-        public override bool CanUse()
-        {
-            var bodiesInRange = Helpers.GetNearestDeadBodies(
-                PlayerControl.LocalPlayer.GetTruePosition(),
-                ShipStatus.Instance.MaxLightRadius,
-                Helpers.CreateFilter(Constants.NotShipMask));
-
-            bool canUse = bodiesInRange.Any(body =>
-            {
-                if (PranksterUtilities.IsPranksterBody(body)) return false;
-
-                var killedPlayer = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
-                if (killedPlayer == null) return false;
-
-                var killer = Utils.GetKiller(killedPlayer);
-                if (killer.PlayerId == PlayerControl.LocalPlayer.PlayerId)
-                    return false;
-
-                return true;
-            });
-
-            return canUse;
         }
     }
 }

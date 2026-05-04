@@ -41,7 +41,7 @@ namespace NewMod.Utilities
         /// <summary>
         /// Maps a victim player to its killer.
         /// </summary>
-        public static Dictionary<PlayerControl, PlayerControl> PlayerKiller = new Dictionary<PlayerControl, PlayerControl>();
+        public static Dictionary<byte, byte> PlayerKiller = new Dictionary<byte, byte>();
 
         /// <summary>
         /// Stores the number of successful missions per player, keyed by their ID.
@@ -102,14 +102,7 @@ namespace NewMod.Utilities
         /// <param name="victim">The player who was killed.</param>
         public static void RecordOnKill(PlayerControl killer, PlayerControl victim)
         {
-            if (PlayerKiller.ContainsKey(victim))
-            {
-                PlayerKiller[victim] = killer;
-            }
-            else
-            {
-                PlayerKiller.Add(victim, killer);
-            }
+            PlayerKiller[victim.PlayerId] = killer.PlayerId;
         }
         public static void ResetKillTracking()
         {
@@ -123,7 +116,7 @@ namespace NewMod.Utilities
         /// <returns>The player who killed the victim, or null if not found.</returns>
         public static PlayerControl GetKiller(PlayerControl victim)
         {
-            return PlayerKiller.TryGetValue(victim, out var killer) ? killer : null;
+            return PlayerKiller.TryGetValue(victim.PlayerId, out var killerId) ? PlayerById(killerId) : null;
         }
 
         /// <summary>
