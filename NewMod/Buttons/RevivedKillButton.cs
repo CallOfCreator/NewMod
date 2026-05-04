@@ -19,14 +19,33 @@ namespace NewMod.Buttons
         public override ButtonLocation Location => ButtonLocation.BottomRight;
         public override LoadableAsset<Sprite> Sprite => NewModAsset.VanillaKillButton;
 
+        private static bool CanUseRevivedKillButton()
+        {
+            var local = PlayerControl.LocalPlayer;
+            return local != null && NecromancerRole.RevivedPlayers.ContainsKey(local.PlayerId);
+        }
+
         public override bool Enabled(RoleBehaviour role)
         {
-           return NecromancerRole.RevivedPlayers.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
+            return CanUseRevivedKillButton();
+        }
+
+        protected override void FixedUpdate(PlayerControl playerControl)
+        {
+            Button?.ToggleVisible(CanUseRevivedKillButton());
         }
 
         public override PlayerControl GetTarget()
         {
             return PlayerControl.LocalPlayer.GetClosestPlayer(true, Distance);
+        }
+
+        public override bool IsTargetValid(PlayerControl target)
+        {
+            return CanUseRevivedKillButton() &&
+                   target != null &&
+                   target.PlayerId != PlayerControl.LocalPlayer.PlayerId &&
+                   !target.Data.IsDead && !target.Data.Disconnected;
         }
 
         public override void SetOutline(bool active)
@@ -36,7 +55,7 @@ namespace NewMod.Buttons
 
         public override bool CanUse()
         {
-            return true;
+            return CanUseRevivedKillButton();
         }
 
         protected override void OnClick()
@@ -54,6 +73,8 @@ namespace NewMod.Buttons
             );
 
             NecromancerRole.RevivedPlayers.Remove(local.PlayerId);
+            ResetTarget();
+            Button?.ToggleVisible(false);
         }
     }
 }
