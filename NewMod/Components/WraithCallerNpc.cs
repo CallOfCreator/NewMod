@@ -52,11 +52,12 @@ namespace NewMod.Components
 
             Visual.cosmetics.SetName("Wraith NPC");
             Visual.cosmetics.ToggleName(true);
+            Visual.cosmetics.SetNamePosition(new(0f, 0.8f, -0.5f));
             Visual.cosmetics.ToggleHat(false);
             Visual.cosmetics.TogglePet(false);
             Visual.cosmetics.ToggleVisor(false);
 
-            var color = Owner.PlayerId % Palette.PlayerColors.Length;
+            var color = UnityEngine.Random.Range(0, Palette.PlayerColors.Length);
             var bodySprite = Visual.cosmetics.currentBodySprite;
 
             bodySprite.Visible = true;
