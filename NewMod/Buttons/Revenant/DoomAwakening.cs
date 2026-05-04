@@ -60,7 +60,7 @@ namespace NewMod.Buttons.Revenant
         /// <returns>True if the role is <see cref="RV"/>, otherwise false.</returns>
         public override bool Enabled(RoleBehaviour role)
         {
-            return role is RV;
+            return role is RV && RV.StalkingStates.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
         }
 
         /// <summary>

@@ -815,6 +815,8 @@ namespace NewMod.Utilities
         {
             var clip = NewModAsset.FeignDeathSound.LoadAsset();
 
+            SavePlayerRole(player.PlayerId, player.Data.Role);
+
             player.RpcCustomMurder(player,
                 didSucceed: true,
                 resetKillTimer: false,
@@ -853,16 +855,21 @@ namespace NewMod.Utilities
                 if (info.Reported)
                 {
                     yield return CoroutinesHelper.CoNotify("<color=red>Your feign death has been reported. You remain dead.</color>");
+                    Revenant.FeignDeathStates.Remove(player.PlayerId);
                     SoundManager.Instance.StopSound(clip);
                     yield break;
                 }
             }
-            HandleRevive(player, player.PlayerId, (RoleTypes)RoleId.Get<Revenant>(), body.transform.position.x, body.transform.position.y);
+            Revenant.HasUsedFeignDeath = true;
+            Revenant.StalkingStates[player.PlayerId] = true;
+
+            var roleHistory = GetPlayerRolesHistory(player.PlayerId);
+            var roleToRestore = roleHistory.Count > 0 ? roleHistory[^1].Role : (RoleTypes)RoleId.Get<Revenant>();
+
+            HandleRevive(player, player.PlayerId, roleToRestore, body.transform.position.x, body.transform.position.y);
             yield return new WaitForSeconds(0.2f);
             player.RpcShapeshift(GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected), false);
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You have been revived in a new body!</color>"));
-            Revenant.HasUsedFeignDeath = true;
-            Revenant.StalkingStates[player.PlayerId] = true;
             Revenant.FeignDeathStates.Remove(player.PlayerId);
 
             if (player.AmOwner)
