@@ -2,7 +2,6 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Roles.ImpostorRoles;
-using Reactor.Utilities;
 using AmongUs.GameOptions;
 using UnityEngine;
 using MiraAPI.Networking;
@@ -22,7 +21,7 @@ namespace NewMod.Buttons
 
         public override bool Enabled(RoleBehaviour role)
         {
-            return NecromancerRole.RevivedPlayers.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
+           return NecromancerRole.RevivedPlayers.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
         }
 
         public override PlayerControl GetTarget()

@@ -78,7 +78,7 @@ namespace NewMod.Roles.ImpostorRoles
                 return false;
             }
 
-            return base.DidWin(reason);
+            return true;
         }
     }
 }

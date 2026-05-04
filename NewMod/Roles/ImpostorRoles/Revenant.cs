@@ -67,6 +67,6 @@ public class Revenant : ImpostorRole, ICustomRole
             return false;
         }
 
-        return base.DidWin(reason);
+        return true;
     }
 }

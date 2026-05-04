@@ -7,7 +7,6 @@ using UnityEngine;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
 using AmongUs.GameOptions;
-using Reactor.Utilities;
 using MiraAPI.Utilities;
 using System.Linq;
 
@@ -98,7 +97,7 @@ namespace NewMod.Buttons.Necromancer
         public override bool CanUse()
         {
             var bodiesInRange = Helpers.GetNearestDeadBodies(
-                PlayerControl.LocalPlayer.transform.position,
+                PlayerControl.LocalPlayer.GetTruePosition(),
                 ShipStatus.Instance.MaxLightRadius,
                 Helpers.CreateFilter(Constants.NotShipMask));
 

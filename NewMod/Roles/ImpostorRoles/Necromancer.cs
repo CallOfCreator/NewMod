@@ -19,7 +19,7 @@ public class NecromancerRole : ImpostorRole, ICustomRole
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Impostor;
     public CustomRoleConfiguration Configuration => new(this)
     {
-        Icon = MiraAssets.Empty,
+        Icon = NewModAsset.ReviveIcon,
         OptionsScreenshot = NewModAsset.Banner,
         MaxRoleCount = 3,
     };
@@ -41,7 +41,6 @@ public class NecromancerRole : ImpostorRole, ICustomRole
         {
             return false;
         }
-
-        return base.DidWin(reason);
+        return true;
     }
 }

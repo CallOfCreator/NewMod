@@ -47,7 +47,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     {
         Instance = this;
         AddComponent<DebugWindow>();
-        ReactorCredits.Register("NewMod", "v1.2.9 Hotfix 2", true, ReactorCredits.AlwaysShow);
+        ReactorCredits.Register("NewMod", "v1.2.9 Hotfix 3", true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
         NewModEventHandler.RegisterEventsLogs();
 
@@ -58,16 +58,6 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         }
         ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
-
-        var bundle = NewModAsset.Bundle;
-        var assetNames = bundle.GetAllAssetNames();
-
-        Instance.Log.LogMessage($"AssetBundle '{bundle.name}' contains {assetNames.Length} assets");
-
-        foreach (var name in assetNames)
-        {
-            Instance.Log.LogMessage($"{name}");
-        }
 
         Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version}");
     }
