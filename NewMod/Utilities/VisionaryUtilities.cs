@@ -33,7 +33,7 @@ namespace NewMod.Utilities
         {
             get
             {
-                string directory = Path.Combine(Application.persistentDataPath, "NewMod", "Screenshots");
+                string directory = OperatingSystem.IsAndroid() ? Environment.GetEnvironmentVariable("STAR_DATA_PATH") : Path.Combine(Application.persistentDataPath, "NewMod", "Screenshots");
                 if (!Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);

@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.Events.Vanilla.Player;
 using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 
 namespace NewMod
@@ -67,6 +69,65 @@ namespace NewMod
 
             Utils.ResetKillTracking();
             NecromancerRole.RevivedPlayers.Clear();
+            Utils.ResetDrainCount();
+            Utils.ResetMissionSuccessCount();
+            Utils.ResetMissionFailureCount();
+            Utils.ResetInjections();
+            Utils.ResetStrikeCount();
+            Utils.ResetKillTracking();
+            PranksterUtilities.ResetReportCount();
+            VisionaryUtilities.DeleteAllScreenshots();
+            WraithCallerUtilities.ClearAll();
+            Shade.ShadeKills.Clear();
+            Revenant.ResetAllStates();
+            NecromancerRole.RevivedPlayers.Clear();
+            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
+            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
+        }
+        [RegisterEvent]
+        public static void OnPlayerLeft(PlayerLeaveEvent evt)
+        {
+            Utils.ResetDrainCount();
+            Utils.ResetMissionSuccessCount();
+            Utils.ResetMissionFailureCount();
+            Utils.ResetInjections();
+            Utils.ResetStrikeCount();
+            Utils.ResetKillTracking();
+            PranksterUtilities.ResetReportCount();
+            VisionaryUtilities.DeleteAllScreenshots();
+            WraithCallerUtilities.ClearAll();
+            Shade.ShadeKills.Clear();
+            Revenant.ResetAllStates();
+            NecromancerRole.RevivedPlayers.Clear();
+            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
+            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
+        }
+        [RegisterEvent]
+        public static void OnGameEnd(GameEndEvent evt)
+        {
+            Utils.ResetDrainCount();
+            Utils.ResetMissionSuccessCount();
+            Utils.ResetMissionFailureCount();
+            Utils.ResetInjections();
+            Utils.ResetStrikeCount();
+            Utils.ResetKillTracking();
+            PranksterUtilities.ResetReportCount();
+            VisionaryUtilities.DeleteAllScreenshots();
+            WraithCallerUtilities.ClearAll();
+            Shade.ShadeKills.Clear();
+            Revenant.ResetAllStates();
+            NecromancerRole.RevivedPlayers.Clear();
+            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
+            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
+            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
         }
     }
 }
