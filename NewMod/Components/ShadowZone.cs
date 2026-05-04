@@ -42,17 +42,33 @@ namespace NewMod.Components
         public void Update()
         {
             timer += Time.deltaTime;
-            if (timer >= duration)
-            {
-                Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 0f));
-                active = false;
-                Destroy(gameObject);
-                return;
-            }
 
             var lp = PlayerControl.LocalPlayer;
             var hud = HudManager.Instance;
             var killButton = hud.KillButton;
+
+            if (timer >= duration)
+            {
+                Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 0f));
+
+                if (active && lp.PlayerId == shadeId)
+                {
+                    lp.cosmetics.SetPhantomRoleAlpha(1);
+                    lp.cosmetics.nameText.gameObject.SetActive(true);
+
+                    if (killButton.currentTarget)
+                    {
+                        killButton.currentTarget.ToggleHighlight(false, RoleTeamTypes.Impostor);
+                        killButton.currentTarget = null;
+                    }
+
+                    killButton.gameObject.SetActive(false);
+                }
+
+                active = false;
+                Destroy(gameObject);
+                return;
+            }
 
             bool inside = Contains(lp.GetTruePosition());
             var mode = OptionGroupSingleton<ShadeOptions>.Instance.Behavior;
@@ -61,6 +77,7 @@ namespace NewMod.Components
             if (inside && !active)
             {
                 cam.gameObject.AddComponent<ShadowFluxEffect>();
+
                 if (lp.PlayerId == shadeId && lp.Data.Role is Shade)
                 {
                     if (mode is ShadeOptions.ShadowMode.Invisible or ShadeOptions.ShadowMode.Both)
@@ -72,6 +89,7 @@ namespace NewMod.Components
                     killButton.gameObject.SetActive(true);
                     killButton.currentTarget = null;
                 }
+
                 active = true;
             }
 
@@ -81,13 +99,18 @@ namespace NewMod.Components
                 {
                     var list = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
                     lp.Data.Role.GetPlayersInAbilityRangeSorted(list);
-                    var players = list.ToArray().Where(p => p.PlayerId != lp.PlayerId && !p.Data.IsDead).ToList();
+
+                    var players = list.ToArray()
+                        .Where(p => p.PlayerId != lp.PlayerId && !p.Data.IsDead)
+                        .ToList();
+
                     var closest = players.Count > 0 ? players[0] : null;
 
                     if (killButton.currentTarget && killButton.currentTarget != closest)
                         killButton.currentTarget.ToggleHighlight(false, RoleTeamTypes.Impostor);
 
                     killButton.currentTarget = closest;
+
                     if (closest != null)
                         closest.ToggleHighlight(true, RoleTeamTypes.Impostor);
                 }
@@ -95,6 +118,7 @@ namespace NewMod.Components
             else if (!inside && active)
             {
                 Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(cam, 0f));
+
                 if (lp.PlayerId == shadeId)
                 {
                     lp.cosmetics.SetPhantomRoleAlpha(1);
@@ -105,8 +129,10 @@ namespace NewMod.Components
                         killButton.currentTarget.ToggleHighlight(false, RoleTeamTypes.Impostor);
                         killButton.currentTarget = null;
                     }
+
                     killButton.gameObject.SetActive(false);
                 }
+
                 active = false;
             }
         }
