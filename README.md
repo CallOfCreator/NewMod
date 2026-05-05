@@ -107,7 +107,8 @@ For more information about Starlight, please visit: [https://discord.gg/FYYqJU2b
 - **TownOfUs-R**: - Portions of code (PlayerById, GetClosestBody) and asset (ReviveSprite) derived from [Town-Of-Us-R](https://github.com/eDonnes124/Town-Of-Us-R).
 - **MoreGamemodes**: [MoreGamemodes](https://github.com/Rabek009/MoreGamemodes) - Derivation of IsActive and IsSabotage code.
 - **yanplaRoles**: [yanplaRoles](https://github.com/yanpla/yanplaRoles) - Portions of code (SavePlayerRole, GetPlayerRolesHistory).
-- **EloySus**: [EloySus](https://github.com/EloySus) – for all button sprites used in NewMod
+- **EloySus**: [EloySus](https://github.com/EloySus) – for old button sprites used in NewMod
+- **Jsenm**: [Jsenm Discord](jsenm) - For the newer sprites/art for NewMod
 - **Pixabay**: [Pixabay](https://pixabay.com) - For sound effects used in NewMod
 - **angxlwtf**: [angxlwtf](https://github.com/angxlwtf) - Idea for **Wraith Caller** (originally for Hitman LP)
 
