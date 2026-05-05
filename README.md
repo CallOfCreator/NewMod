@@ -81,7 +81,7 @@ NewMod is compatible with the following mods, enabling an enhanced experience wi
 | LaunchpadReloaded | v0.3.7+     | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) | ✅ Supported     |
 | LevelImposter     | v0.21.2-beta+    | [Download](https://github.com/DigiWorm0/LevelImposter) | ✅ Supported     |
 | Submerged     | v2025.11.20+    | [Download](https://github.com/SubmergedAmongUs/Submerged) | ✅ Supported     |
-| Town Of Us Mira | v1.5.2+ | [Download](https://github.com/Au-Avengers/TOU-Mira) | ✅ Supported |
+| Town Of Us Mira | v1.6.1+ | [Download](https://github.com/Au-Avengers/TOU-Mira) | ✅ Supported |
 
 
 ---
