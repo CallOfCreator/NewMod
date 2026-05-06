@@ -25,6 +25,7 @@ using NewMod.Buttons.Pulseblade;
 using NewMod.Roles;
 using NewMod.Components;
 using NewMod.Buttons.WraithCaller;
+using System.IO;
 
 namespace NewMod.Utilities
 {
@@ -799,8 +800,11 @@ namespace NewMod.Utilities
 
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
             SoundManager.Instance.PlaySound(clip, false, 1f, null);
-            ScreenCapture.CaptureScreenshot(filePath, 4);
-            NewMod.Instance.Log.LogInfo($"Capturing screenshot at {System.IO.Path.GetFileName(filePath)}.");
+            yield return new WaitForEndOfFrame();
+            var tex = ScreenCapture.CaptureScreenshotAsTexture(4);
+            File.WriteAllBytes(filePath, tex.EncodeToPNG());
+            Object.Destroy(tex);
+            NewMod.Instance.Log.LogInfo($"Capturing screenshot at {Path.GetFileName(filePath)}.");
 
             yield return new WaitForSeconds(0.2f);
 
@@ -829,10 +833,6 @@ namespace NewMod.Utilities
 
             SoundManager.Instance.PlaySound(clip, false, 1f, null);
 
-            if (player.AmOwner)
-            {
-                HudManager.Instance.SetHudActive(player, player.Data.Role, false);
-            }
             yield return new WaitForSeconds(0.5f);
 
             var body = player.GetNearestDeadBody(15f);
@@ -846,6 +846,11 @@ namespace NewMod.Utilities
             Revenant.FeignDeathStates[player.PlayerId] = info;
 
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You are now feigning death.\nYou will be revived in 10 seconds if unreported.</color>"));
+
+            if (player.AmOwner)
+            {
+                HudManager.Instance.SetHudActive(player, player.Data.Role, false);
+            }
 
             float timer = 10f;
             while (timer > 0)

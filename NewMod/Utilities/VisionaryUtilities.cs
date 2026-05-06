@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Collections;
 using UnityEngine;
@@ -33,11 +32,21 @@ namespace NewMod.Utilities
         {
             get
             {
-                string directory = OperatingSystem.IsAndroid() ? Environment.GetEnvironmentVariable("STAR_DATA_PATH") : Path.Combine(Application.persistentDataPath, "NewMod", "Screenshots");
-                if (!Directory.Exists(directory))
+                string basePath;
+
+                if (OperatingSystem.IsAndroid())
                 {
-                    Directory.CreateDirectory(directory);
+                    basePath = Environment.GetEnvironmentVariable("STAR_DATA_PATH")!;
                 }
+                else
+                {
+                    basePath = Application.persistentDataPath;
+                }
+
+                string directory = Path.Combine(basePath, "NewMod", "Screenshots");
+
+                Directory.CreateDirectory(directory);
+
                 return directory;
             }
         }
@@ -149,25 +158,6 @@ namespace NewMod.Utilities
             Object.Destroy(_panel);
             _panel = null;
             _showing = false;
-        }
-
-        // <summary>
-        /// Loads and displays a screenshot from a given file path.  
-        /// If the file does not exist, no action is taken.
-        /// </summary>
-        /// <param name="filePath">The full path of the screenshot file to display.</param>
-        /// <param name="displayDuration">The duration, in seconds, to display the screenshot.</param>
-        /// <returns>An IEnumerator coroutine for handling display.</returns>
-        public static IEnumerator ShowScreenshotByPath(string filePath, float displayDuration)
-        {
-            if (!File.Exists(filePath)) yield break;
-
-            byte[] data = File.ReadAllBytes(filePath);
-            Texture2D tex = new(2, 2);
-            tex.LoadImage(data);
-            Sprite screenshotSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-
-            yield return ShowScreenshot(screenshotSprite, File.GetCreationTime(filePath), displayDuration);
         }
 
         /// <summary>

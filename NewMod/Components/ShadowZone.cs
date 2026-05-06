@@ -54,6 +54,9 @@ namespace NewMod.Components
                 if (active && lp.PlayerId == shadeId)
                 {
                     lp.cosmetics.SetPhantomRoleAlpha(1);
+                    lp.cosmetics.ToggleHat(true); 
+                    lp.cosmetics.ToggleVisor(true); 
+                    lp.cosmetics.TogglePet(true); 
                     lp.cosmetics.nameText.gameObject.SetActive(true);
 
                     if (killButton.currentTarget)
@@ -83,6 +86,9 @@ namespace NewMod.Components
                     if (mode is ShadeOptions.ShadowMode.Invisible or ShadeOptions.ShadowMode.Both)
                     {
                         lp.cosmetics.SetPhantomRoleAlpha(0);
+                        lp.cosmetics.ToggleHat(false); 
+                        lp.cosmetics.ToggleVisor(false);
+                        lp.cosmetics.TogglePet(false); 
                         lp.cosmetics.nameText.gameObject.SetActive(false);
                     }
 
@@ -122,6 +128,9 @@ namespace NewMod.Components
                 if (lp.PlayerId == shadeId)
                 {
                     lp.cosmetics.SetPhantomRoleAlpha(1);
+                    lp.cosmetics.ToggleHat(true); 
+                    lp.cosmetics.TogglePet(false); 
+                    lp.cosmetics.ToggleVisor(false); 
                     lp.cosmetics.nameText.gameObject.SetActive(true);
 
                     if (killButton.currentTarget)
