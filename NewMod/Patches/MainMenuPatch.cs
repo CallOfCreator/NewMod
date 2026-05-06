@@ -1,14 +1,5 @@
 using UnityEngine;
 using HarmonyLib;
-using NewMod.Roles.NeutralRoles;
-using MiraAPI;
-using MiraAPI.PluginLoading;
-using Reactor.Utilities;
-using MiraAPI.Roles;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
-using System;
 using NewMod.LocalSettings;
 using MiraAPI.LocalSettings;
 
@@ -16,7 +7,6 @@ namespace NewMod.Patches
 {
     [HarmonyPatch(typeof(MainMenuManager))]
     [HarmonyPriority(Priority.VeryHigh)]
-
     public static class MainMenuPatch
     {
         public static SpriteRenderer LogoSprite;
@@ -39,22 +29,21 @@ namespace NewMod.Patches
 
             RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
 
-            if (NewModDateTime.IsNewModBirthdayWeek)
+            /*if (NewModDateTime.IsNewModBirthdayWeek)
             {
                 Coroutines.Start(ApplyBirthdayUI(__instance));
-            }
-            else
-            {
-                var Logo = new GameObject("NewModLogo");
-                Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
-                Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
-                LogoSprite = Logo.AddComponent<SpriteRenderer>();
-                LogoSprite.sprite = NewModAsset.ModLogo.LoadAsset();
-            }
+            }*/
+
+            var Logo = new GameObject("NewModLogo");
+            Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
+            Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
+            LogoSprite = Logo.AddComponent<SpriteRenderer>();
+            LogoSprite.sprite = NewModAsset.ModLogo.LoadAsset();
+
             ModCompatibility.Initialize();
         }
 
-        private static IEnumerator ApplyBirthdayUI(MainMenuManager __instance)
+        /*private static IEnumerator ApplyBirthdayUI(MainMenuManager __instance)
         {
             yield return null;
 
@@ -87,7 +76,8 @@ namespace NewMod.Patches
                 var bg = NewModAsset.MainMenuBG.LoadAsset();
                 if (auBG != null && bg != null) auBG.sprite = bg;
             }
-        }
+        }*/
+
         /*[HarmonyPatch(nameof(MainMenuManager.OpenGameModeMenu))]
         [HarmonyPatch(nameof(MainMenuManager.OpenCredits))]
         [HarmonyPatch(nameof(MainMenuManager.OpenAccountMenu))]

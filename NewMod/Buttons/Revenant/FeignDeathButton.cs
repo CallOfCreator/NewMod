@@ -48,7 +48,7 @@ namespace NewMod.Buttons.Revenant
         /// <summary>
         /// The icon or sprite used for this button. Here, set to an empty sprite.
         /// </summary>
-        public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+        public override LoadableAsset<Sprite> Sprite => NewModAsset.FeignDeath;
 
         /// <summary>
         /// Specifies whether the button is enabled for the given role, ensuring Feign Death hasn't been used yet.

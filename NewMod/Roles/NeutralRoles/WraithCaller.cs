@@ -64,5 +64,9 @@ namespace NewMod.Roles.NeutralRoles
             }
             return tab;
         }
+        public override bool DidWin(GameOverReason gameOverReason)
+        {
+            return gameOverReason == (GameOverReason)NewModEndReasons.WraithCallerWin;
+        }
     }
 }

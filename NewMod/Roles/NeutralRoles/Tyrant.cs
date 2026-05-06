@@ -96,7 +96,8 @@ namespace NewMod.Roles.ImpostorRoles
         }
         public override bool DidWin(GameOverReason reason)
         {
-            if (reason == (GameOverReason)NewModEndReasons.TyrantWin) return true;
+            if (reason == (GameOverReason)NewModEndReasons.TyrantWin)
+                return true;
 
             if (reason == (GameOverReason)NewModEndReasons.ShadeWin ||
                 reason == (GameOverReason)NewModEndReasons.WraithCallerWin ||
@@ -108,8 +109,7 @@ namespace NewMod.Roles.ImpostorRoles
             {
                 return false;
             }
-
-            return base.DidWin(reason);
+            return false;
         }
         public int _kills;
         public static byte _championId;

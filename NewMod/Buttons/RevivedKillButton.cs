@@ -2,9 +2,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Roles.ImpostorRoles;
-using Reactor.Utilities;
 using AmongUs.GameOptions;
-using System.Linq;
 using UnityEngine;
 using MiraAPI.Networking;
 using MiraAPI.Utilities;
@@ -20,18 +18,36 @@ namespace NewMod.Buttons
         public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
         public override ButtonLocation Location => ButtonLocation.BottomRight;
         public override LoadableAsset<Sprite> Sprite => NewModAsset.VanillaKillButton;
+
+        private static bool CanUseRevivedKillButton()
+        {
+            var local = PlayerControl.LocalPlayer;
+            return local != null && NecromancerRole.RevivedPlayers.ContainsKey(local.PlayerId);
+        }
+
         public override bool Enabled(RoleBehaviour role)
         {
-            return NecromancerRole.RevivedPlayers.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
+            return CanUseRevivedKillButton();
         }
+
+        protected override void FixedUpdate(PlayerControl playerControl)
+        {
+            Button?.ToggleVisible(CanUseRevivedKillButton());
+        }
+
         public override PlayerControl GetTarget()
         {
             return PlayerControl.LocalPlayer.GetClosestPlayer(true, Distance);
         }
+
         public override bool IsTargetValid(PlayerControl target)
         {
-            return target.PlayerId != PlayerControl.LocalPlayer.PlayerId;
+            return CanUseRevivedKillButton() &&
+                   target != null &&
+                   target.PlayerId != PlayerControl.LocalPlayer.PlayerId &&
+                   !target.Data.IsDead && !target.Data.Disconnected;
         }
+
         public override void SetOutline(bool active)
         {
             Target.cosmetics.SetOutline(active, new Il2CppSystem.Nullable<Color>(Palette.ImpostorRed));
@@ -39,8 +55,7 @@ namespace NewMod.Buttons
 
         public override bool CanUse()
         {
-            if (!NecromancerRole.RevivedPlayers.ContainsKey(PlayerControl.LocalPlayer.PlayerId)) return false;
-            return true;
+            return base.CanUse() && CanUseRevivedKillButton();
         }
 
         protected override void OnClick()
@@ -58,6 +73,8 @@ namespace NewMod.Buttons
             );
 
             NecromancerRole.RevivedPlayers.Remove(local.PlayerId);
+            ResetTarget();
+            Button?.ToggleVisible(false);
         }
     }
 }

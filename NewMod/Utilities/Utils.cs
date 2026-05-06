@@ -25,6 +25,7 @@ using NewMod.Buttons.Pulseblade;
 using NewMod.Roles;
 using NewMod.Components;
 using NewMod.Buttons.WraithCaller;
+using System.IO;
 
 namespace NewMod.Utilities
 {
@@ -41,7 +42,7 @@ namespace NewMod.Utilities
         /// <summary>
         /// Maps a victim player to its killer.
         /// </summary>
-        public static Dictionary<PlayerControl, PlayerControl> PlayerKiller = new Dictionary<PlayerControl, PlayerControl>();
+        public static Dictionary<byte, byte> PlayerKiller = new Dictionary<byte, byte>();
 
         /// <summary>
         /// Stores the number of successful missions per player, keyed by their ID.
@@ -102,14 +103,7 @@ namespace NewMod.Utilities
         /// <param name="victim">The player who was killed.</param>
         public static void RecordOnKill(PlayerControl killer, PlayerControl victim)
         {
-            if (PlayerKiller.ContainsKey(victim))
-            {
-                PlayerKiller[victim] = killer;
-            }
-            else
-            {
-                PlayerKiller.Add(victim, killer);
-            }
+            PlayerKiller[victim.PlayerId] = killer.PlayerId;
         }
         public static void ResetKillTracking()
         {
@@ -123,7 +117,7 @@ namespace NewMod.Utilities
         /// <returns>The player who killed the victim, or null if not found.</returns>
         public static PlayerControl GetKiller(PlayerControl victim)
         {
-            return PlayerKiller.TryGetValue(victim, out var killer) ? killer : null;
+            return PlayerKiller.TryGetValue(victim.PlayerId, out var killerId) ? PlayerById(killerId) : null;
         }
 
         /// <summary>
@@ -401,6 +395,8 @@ namespace NewMod.Utilities
 
             revived.Revive();
             revived.RemainingEmergencies = 0;
+            RoleManager.Instance.SetRole(revived, roleToSet);
+            revived.Data.Role.SpawnTaskHeader(revived);
 
             if (AmongUsClient.Instance.AmHost)
             {
@@ -804,8 +800,11 @@ namespace NewMod.Utilities
 
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
             SoundManager.Instance.PlaySound(clip, false, 1f, null);
-            ScreenCapture.CaptureScreenshot(filePath, 4);
-            NewMod.Instance.Log.LogInfo($"Capturing screenshot at {System.IO.Path.GetFileName(filePath)}.");
+            yield return new WaitForEndOfFrame();
+            var tex = ScreenCapture.CaptureScreenshotAsTexture(4);
+            File.WriteAllBytes(filePath, tex.EncodeToPNG());
+            Object.Destroy(tex);
+            NewMod.Instance.Log.LogInfo($"Capturing screenshot at {Path.GetFileName(filePath)}.");
 
             yield return new WaitForSeconds(0.2f);
 
@@ -822,6 +821,8 @@ namespace NewMod.Utilities
         {
             var clip = NewModAsset.FeignDeathSound.LoadAsset();
 
+            SavePlayerRole(player.PlayerId, player.Data.Role);
+
             player.RpcCustomMurder(player,
                 didSucceed: true,
                 resetKillTimer: false,
@@ -832,10 +833,6 @@ namespace NewMod.Utilities
 
             SoundManager.Instance.PlaySound(clip, false, 1f, null);
 
-            if (player.AmOwner)
-            {
-                HudManager.Instance.SetHudActive(false);
-            }
             yield return new WaitForSeconds(0.5f);
 
             var body = player.GetNearestDeadBody(15f);
@@ -850,6 +847,11 @@ namespace NewMod.Utilities
 
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You are now feigning death.\nYou will be revived in 10 seconds if unreported.</color>"));
 
+            if (player.AmOwner)
+            {
+                HudManager.Instance.SetHudActive(player, player.Data.Role, false);
+            }
+
             float timer = 10f;
             while (timer > 0)
             {
@@ -860,16 +862,21 @@ namespace NewMod.Utilities
                 if (info.Reported)
                 {
                     yield return CoroutinesHelper.CoNotify("<color=red>Your feign death has been reported. You remain dead.</color>");
+                    Revenant.FeignDeathStates.Remove(player.PlayerId);
                     SoundManager.Instance.StopSound(clip);
                     yield break;
                 }
             }
-            HandleRevive(player, player.PlayerId, (RoleTypes)RoleId.Get<Revenant>(), body.transform.position.x, body.transform.position.y);
+            Revenant.HasUsedFeignDeath = true;
+            Revenant.StalkingStates[player.PlayerId] = true;
+
+            var roleHistory = GetPlayerRolesHistory(player.PlayerId);
+            var roleToRestore = roleHistory.Count > 0 ? roleHistory[^1].Role : (RoleTypes)RoleId.Get<Revenant>();
+
+            HandleRevive(player, player.PlayerId, roleToRestore, body.transform.position.x, body.transform.position.y);
             yield return new WaitForSeconds(0.2f);
             player.RpcShapeshift(GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected), false);
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You have been revived in a new body!</color>"));
-            Revenant.HasUsedFeignDeath = true;
-            Revenant.StalkingStates[player.PlayerId] = true;
             Revenant.FeignDeathStates.Remove(player.PlayerId);
 
             if (player.AmOwner)

@@ -28,7 +28,7 @@ public class Revenant : ImpostorRole, ICustomRole
         DefaultChance = 50,
         DefaultRoleCount = 1,
         CanModifyChance = true,
-        GhostRole = AmongUs.GameOptions.RoleTypes.Crewmate, //Indeed
+        GhostRole = (AmongUs.GameOptions.RoleTypes)RoleId.Get<Revenant>(),
         RoleHintType = RoleHintType.RoleTab
     };
     public static Dictionary<byte, FeignDeathInfo> FeignDeathStates = new Dictionary<byte, FeignDeathInfo>();
@@ -67,6 +67,6 @@ public class Revenant : ImpostorRole, ICustomRole
             return false;
         }
 
-        return base.DidWin(reason);
+        return true;
     }
 }

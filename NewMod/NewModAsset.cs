@@ -42,6 +42,7 @@ public static class NewModAsset
     public static LoadableResourceAsset Shield { get; } = new("NewMod.Resources.Shield.png");
     public static LoadableResourceAsset Slash { get; } = new("NewMod.Resources.Slash.png");
     public static LoadableResourceAsset DeployZone { get; } = new("NewMod.Resources.deployzone.png");
+    public static LoadableResourceAsset FeignDeath { get; } = new("NewMod.Resources.feigndeath.png");
     public static LoadableResourceAsset VanillaKillButton { get; } = new("NewMod.Resources.killbutton.png");
 
     // SFX
@@ -64,6 +65,7 @@ public static class NewModAsset
     public static LoadableResourceAsset RadarIcon { get; } = new("NewMod.Resources.RoleIcons.RadarIcon.png");
     public static LoadableResourceAsset SlashIcon { get; } = new("NewMod.Resources.RoleIcons.SlashIcon.png");
     public static LoadableResourceAsset DeployZoneIcon { get; } = new("NewMod.Resources.RoleIcons.DeployzoneIcon.png");
+     public static LoadableResourceAsset ReviveIcon { get; } = new("NewMod.Resources.RoleIcons.ReviveIcon.png");
 
     // Notif Icons
     public static LoadableResourceAsset VisionDebuff { get; } = new("NewMod.Resources.NotifIcons.vision_debuff.png");

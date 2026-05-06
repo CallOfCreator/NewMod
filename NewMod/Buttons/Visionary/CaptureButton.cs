@@ -57,6 +57,7 @@ namespace NewMod.Buttons.Visionary
         {
             var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
             string path = Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
+            NewMod.Instance.Log.LogMessage($"Screenshot will be saved to: {path}");
             Coroutines.Start(Utils.CaptureScreenshot(path));
         }
 

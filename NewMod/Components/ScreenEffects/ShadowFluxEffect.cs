@@ -7,7 +7,6 @@ namespace NewMod.Components.ScreenEffects
     [RegisterInIl2Cpp]
     public class ShadowFluxEffect(IntPtr ptr) : MonoBehaviour(ptr)
     {
-        public Texture2D texture = NewModAsset.NoiseTex.LoadAsset();
         public float noiseScale = 2f;
         public float speed = 0.3f;
         public float edgeWidth = 0.25f;
@@ -15,12 +14,19 @@ namespace NewMod.Components.ScreenEffects
         public float opacity = 0.75f;
         public float darkness = 0.8f;
         public Color tint = Color.white;
-        public static Shader _shader = NewModAsset.ShadowFluxShader.LoadAsset();
         public Material _mat;
 
         public void OnEnable()
         {
-            _mat = new Material(_shader) { hideFlags = HideFlags.DontSave };
+            var shader = NewModAsset.ShadowFluxShader.LoadAsset();
+            var texture = NewModAsset.NoiseTex.LoadAsset();
+
+            if (shader == null)
+            {
+                NewMod.Instance.Log.LogError("ShadowFluxEffect - Shader null");
+            }
+
+            _mat = new Material(shader) { hideFlags = HideFlags.DontSave };
             _mat.SetTexture("_NoiseTex", texture);
         }
         public void OnDisable()
