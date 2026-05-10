@@ -6,6 +6,9 @@ using NewMod.Roles.ImpostorRoles;
 using UnityEngine;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
+using AmongUs.GameOptions;
+using MiraAPI.Utilities;
+using System.Linq;
 
 namespace NewMod.Buttons.Roles
 {
@@ -49,19 +52,67 @@ namespace NewMod.Buttons.Roles
         /// </summary>
         public override LoadableAsset<Sprite> Sprite => NewModAsset.NecromancerButton;
 
+        private DeadBody GetReviveTarget()
+        {
+            var local = PlayerControl.LocalPlayer;
+            var localPos = local.GetTruePosition();
+
+            return Helpers.GetNearestDeadBodies(
+                    localPos,
+                    ShipStatus.Instance.MaxLightRadius,
+                    Helpers.CreateFilter(Constants.NotShipMask))
+                .Where(body => body != null && IsValidReviveTarget(local, body))
+                .OrderBy(body => Vector2.Distance(localPos, body.TruePosition))
+                .FirstOrDefault();
+        }
+
+        public static bool IsValidReviveTarget(PlayerControl local, DeadBody body)
+        {
+            if (PranksterUtilities.IsPranksterBody(body))
+                return false;
+
+            var killedPlayer = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
+            if (killedPlayer == null)
+                return false;
+
+            var killer = Utils.GetKiller(killedPlayer);
+
+            if (killer != null && killer.PlayerId == local.PlayerId)
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks whether the player can currently use the revive button, ensuring cooldowns, ability uses, and conditions are met.
+        /// </summary>
+        /// <returns>True if all requirements to use this button are met; otherwise false.</returns
+        public override bool CanUse()
+        {
+            return GetReviveTarget() != null;
+        }
+
         /// <summary>
         /// Invoked when the revive button is clicked. Plays a sound and revives the nearest dead body.
         /// </summary>
         protected override void OnClick()
         {
+            var local = PlayerControl.LocalPlayer;
+            var body = GetReviveTarget();
+
             SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
 
-            var closestBody = Utils.GetClosestBody();
-            if (closestBody != null)
-            {
-                Utils.HandleRevive(PlayerControl.LocalPlayer, closestBody.ParentId, AmongUs.GameOptions.RoleTypes.Impostor, closestBody.TruePosition.x, closestBody.TruePosition.y);
-            }
+            Utils.HandleRevive(
+                local,
+                body.ParentId,
+                RoleTypes.Crewmate,
+                body.transform.position.x,
+                body.transform.position.y
+            );
+
+            NecromancerRole.RevivedPlayers[body.ParentId] = local.PlayerId;
         }
+
         /// <summary>
         /// Determines whether this button is enabled for the role, returning true if the role is <see cref="NecromancerRole"/>.
         /// </summary>
@@ -70,40 +121,6 @@ namespace NewMod.Buttons.Roles
         public override bool Enabled(RoleBehaviour role)
         {
             return role is NecromancerRole;
-        }
-
-        /// <summary>
-        /// Checks whether the player can currently use the revive button, ensuring cooldowns, ability uses, and conditions are met.
-        /// </summary>
-        /// <returns>True if all requirements to use this button are met; otherwise false.</returns>
-        public override bool CanUse()
-        {
-            bool isTimerDone = Timer <= 0;
-            bool hasUsesLeft = UsesLeft > 0;
-            var closestBody = Utils.GetClosestBody();
-            bool isNearDeadBody = closestBody != null;
-            bool isFakeBody = isNearDeadBody && PranksterUtilities.IsPranksterBody(closestBody);
-
-            if (closestBody == null)
-            {
-                return false;
-            }
-
-            bool wasNotKilledByNecromancer = true;
-            var deadBody = closestBody.GetComponent<DeadBody>();
-            if (deadBody != null)
-            {
-                var killedPlayer = GameData.Instance.GetPlayerById(deadBody.ParentId)?.Object;
-                if (killedPlayer != null)
-                {
-                    var killer = Utils.GetKiller(killedPlayer);
-                    if (killer != null && killer.Data.Role is NecromancerRole)
-                    {
-                        wasNotKilledByNecromancer = false;
-                    }
-                }
-            }
-            return isTimerDone && hasUsesLeft && isNearDeadBody && wasNotKilledByNecromancer && !isFakeBody;
         }
     }
 }

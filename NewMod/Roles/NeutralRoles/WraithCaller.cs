@@ -2,7 +2,7 @@ using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
- using NewMod.Options.Roles;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using UnityEngine;
 
@@ -63,6 +63,10 @@ namespace NewMod.Roles.NeutralRoles
                 tab.AppendLine($"<size=60%><color=#{yellow}>Tip:</color> Time your summons. Meetings cancel hunts.</size>");
             }
             return tab;
+        }
+        public override bool DidWin(GameOverReason gameOverReason)
+        {
+            return gameOverReason == (GameOverReason)NewModEndReasons.WraithCallerWin;
         }
     }
 }

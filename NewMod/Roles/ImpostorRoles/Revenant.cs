@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AmongUs.GameOptions;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Roles;
@@ -28,7 +29,7 @@ public class Revenant : ImpostorRole, ICustomRole
         DefaultChance = 50,
         DefaultRoleCount = 1,
         CanModifyChance = true,
-        GhostRole = AmongUs.GameOptions.RoleTypes.Crewmate, //Indeed
+        GhostRole = (RoleTypes)RoleId.Get<Revenant>(),
         RoleHintType = RoleHintType.RoleTab
     };
     public static Dictionary<byte, FeignDeathInfo> FeignDeathStates = new Dictionary<byte, FeignDeathInfo>();
@@ -52,5 +53,20 @@ public class Revenant : ImpostorRole, ICustomRole
     public static void OnPlayerExit(PlayerLeaveEvent evt)
     {
         ResetAllStates();
+    }
+    public override bool DidWin(GameOverReason reason)
+    {
+        if (reason == (GameOverReason)NewModEndReasons.TyrantWin ||
+            reason == (GameOverReason)NewModEndReasons.ShadeWin ||
+            reason == (GameOverReason)NewModEndReasons.WraithCallerWin ||
+            reason == (GameOverReason)NewModEndReasons.SpecialAgentWin ||
+            reason == (GameOverReason)NewModEndReasons.PranksterWin ||
+            reason == (GameOverReason)NewModEndReasons.EnergyThiefWin ||
+            reason == (GameOverReason)NewModEndReasons.InjectorWin ||
+            reason == (GameOverReason)NewModEndReasons.DoubleAgentWin)
+        {
+            return false;
+        }
+        return true;
     }
 }
