@@ -43,6 +43,37 @@ namespace NewMod
         public float radius = 0.25f;
         public float falloff = 1f;
 
+        //CrismonVortex
+        public float CrismonOpacity = 0.78f;
+        public float tiling = 1.15f;
+        public float detailTiling = 2.35f;
+        public float detailStrength = 0.45f;
+        public float brightness = 1.2f;
+        public float contrast = 1.65f;
+        public Vector2 scrollDir = new Vector2(1f, 0f);
+        public float scrollSpeed = 0.12f;
+        public float distortStrength = 0.055f;
+        public float distortSpeed = 0.35f;
+        public float distortScale = 1.85f;
+        public float swirlStrength = 0.95f;
+        public float swirlSpeed = 0.55f;
+        public float detailSwirlStrength = 1.35f;
+        public float detailSwirlSpeed = -0.75f;
+        public Vector2 center = new Vector2(0.5f, 0.5f);
+        public float crismonRadius = 0.95f;
+        public float edgeSoftness = 0.26f;
+        public float coreRadius = 0.28f;
+        public float coreSoftness = 0.16f;
+        public float coreIntensity = 1.25f;
+        public float pulseStrength = 0.16f;
+        public float pulseSpeed = 0.9f;
+        public float frontWidth = 0.72f;
+        public float frontSoftness = 0.2f;
+        public float frontTravel = 0.48f;
+        public float leadingEdgeWidth = 0.055f;
+        public float leadingEdgeStrength = 1.15f;
+        public bool useCircular = false;
+
         public void ApplyZoom(float size)
         {
             size = Mathf.Clamp(size, ZoomMin, ZoomMax);
@@ -94,6 +125,7 @@ namespace NewMod
                 if (GUILayout.Button("Apply PulseHue Effect") && allow) Camera.main.gameObject.AddComponent<SlowPulseHueEffect>();
                 if (GUILayout.Button("Apply DistortionWave Effect") && allow) Camera.main.gameObject.AddComponent<DistorationWaveEffect>();
                 if (GUILayout.Button("Apply ShadowFlux Effect") && allow) Camera.main.gameObject.AddComponent<ShadowFluxEffect>();
+                if (GUILayout.Button("Apply CrismonVortex Effect") && allow) Camera.main.gameObject.AddComponent<CrismonVortexEffect>();
                 if (GUILayout.Button("Reset Effects") && allow) Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 1f));
             }
 
@@ -137,6 +169,69 @@ namespace NewMod
                     m.SetFloat("_Speed", Instance.distoSpeed);
                     m.SetFloat("_Radius", Instance.radius);
                     m.SetFloat("_Falloff", Instance.falloff);
+                }
+                if (cam.gameObject.TryGetComponent(out CrismonVortexEffect vortex) && vortex._mat)
+                {
+                    GUILayout.Label("CrismonVortex");
+                    Instance.CrismonOpacity = Slider("Opacity", Instance.CrismonOpacity, 0f, 1f);
+                    Instance.tiling = Slider("Tiling", Instance.tiling, 0.1f, 4f);
+                    Instance.detailTiling = Slider("DetailTiling", Instance.detailTiling, 0.1f, 6f);
+                    Instance.detailStrength = Slider("DetailStrength", Instance.detailStrength, 0f, 1f);
+                    Instance.brightness = Slider("Brightness", Instance.brightness, 0f, 3f);
+                    Instance.contrast = Slider("Contrast", Instance.contrast, 0.1f, 5f);
+                    Instance.scrollSpeed = Slider("ScrollSpeed", Instance.scrollSpeed, 0f, 1f);
+                    Instance.distortStrength = Slider("DistortStrength", Instance.distortStrength, 0f, 0.2f);
+                    Instance.distortSpeed = Slider("DistortSpeed", Instance.distortSpeed, 0f, 2f);
+                    Instance.distortScale = Slider("DistortScale", Instance.distortScale, 0.1f, 5f);
+                    Instance.swirlStrength = Slider("SwirlStrength", Instance.swirlStrength, 0f, 3f);
+                    Instance.swirlSpeed = Slider("SwirlSpeed", Instance.swirlSpeed, -2f, 2f);
+                    Instance.detailSwirlStrength = Slider("DetailSwirlStrength", Instance.detailSwirlStrength, 0f, 3f);
+                    Instance.detailSwirlSpeed = Slider("DetailSwirlSpeed", Instance.detailSwirlSpeed, -2f, 2f);
+                    Instance.crismonRadius = Slider("Radius", Instance.crismonRadius, 0f, 2f);
+                    Instance.edgeSoftness = Slider("EdgeSoftness", Instance.edgeSoftness, 0f, 1f);
+                    Instance.coreRadius = Slider("CoreRadius", Instance.coreRadius, 0f, 1f);
+                    Instance.coreSoftness = Slider("CoreSoftness", Instance.coreSoftness, 0.001f, 1f);
+                    Instance.coreIntensity = Slider("CoreIntensity", Instance.coreIntensity, 0f, 3f);
+                    Instance.pulseStrength = Slider("PulseStrength", Instance.pulseStrength, 0f, 0.5f);
+                    Instance.pulseSpeed = Slider("PulseSpeed", Instance.pulseSpeed, 0f, 5f);
+                    Instance.frontWidth = Slider("FrontWidth", Instance.frontWidth, 0.05f, 2f);
+                    Instance.frontSoftness = Slider("FrontSoftness", Instance.frontSoftness, 0.001f, 1f);
+                    Instance.frontTravel = Slider("FrontTravel", Instance.frontTravel, 0f, 2f);
+                    Instance.leadingEdgeWidth = Slider("LeadEdgeWidth", Instance.leadingEdgeWidth, 0.001f, 0.5f);
+                    Instance.leadingEdgeStrength = Slider("LeadEdgeStrength", Instance.leadingEdgeStrength, 0f, 3f);
+
+                    Instance.useCircular = GUILayout.Toggle(Instance.useCircular, "Use Circular");
+
+                    var m = vortex._mat;
+                    m.SetFloat("_Opacity", Instance.CrismonOpacity);
+                    m.SetFloat("_Tiling", Instance.tiling);
+                    m.SetFloat("_DetailTiling", Instance.detailTiling);
+                    m.SetFloat("_DetailStrength", Instance.detailStrength);
+                    m.SetFloat("_Brightness", Instance.brightness);
+                    m.SetFloat("_Contrast", Instance.contrast);
+                    m.SetVector("_ScrollDir", new Vector4(Instance.scrollDir.x, Instance.scrollDir.y, 0f, 0f));
+                    m.SetFloat("_ScrollSpeed", Instance.scrollSpeed);
+                    m.SetFloat("_DistortStrength", Instance.distortStrength);
+                    m.SetFloat("_DistortSpeed", Instance.distortSpeed);
+                    m.SetFloat("_DistortScale", Instance.distortScale);
+                    m.SetFloat("_SwirlStrength", Instance.swirlStrength);
+                    m.SetFloat("_SwirlSpeed", Instance.swirlSpeed);
+                    m.SetFloat("_DetailSwirlStrength", Instance.detailSwirlStrength);
+                    m.SetFloat("_DetailSwirlSpeed", Instance.detailSwirlSpeed);
+                    m.SetVector("_Center", new Vector4(Instance.center.x, Instance.center.y, 0f, 0f));
+                    m.SetFloat("_Radius", Instance.crismonRadius);
+                    m.SetFloat("_EdgeSoftness", Instance.edgeSoftness);
+                    m.SetFloat("_CoreRadius", Instance.coreRadius);
+                    m.SetFloat("_CoreSoftness", Instance.coreSoftness);
+                    m.SetFloat("_CoreIntensity", Instance.coreIntensity);
+                    m.SetFloat("_PulseStrength", Instance.pulseStrength);
+                    m.SetFloat("_PulseSpeed", Instance.pulseSpeed);
+                    m.SetFloat("_FrontWidth", Instance.frontWidth);
+                    m.SetFloat("_FrontSoftness", Instance.frontSoftness);
+                    m.SetFloat("_FrontTravel", Instance.frontTravel);
+                    m.SetFloat("_LeadingEdgeWidth", Instance.leadingEdgeWidth);
+                    m.SetFloat("_LeadingEdgeStrength", Instance.leadingEdgeStrength);
+                    m.SetFloat("_UseCircular", Instance.useCircular ? 1f : 0f);
                 }
             }
         });

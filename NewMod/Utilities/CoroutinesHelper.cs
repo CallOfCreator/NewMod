@@ -456,7 +456,7 @@ namespace NewMod.Utilities
                 Object.Destroy(dw);
             if (cam.TryGetComponent<ShadowFluxEffect>(out var sf))
                 Object.Destroy(sf);
-            if (cam.TryGetComponent<CrismonVortex>(out var cv))
+            if (cam.TryGetComponent<CrismonVortexEffect>(out var cv))
                 Object.Destroy(cv);
         }
     }

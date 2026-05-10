@@ -78,9 +78,9 @@ public static class NewModAsset
     public static LoadableAsset<Shader> SlowPulseHueShader { get; } = new LoadableBundleAsset<Shader>("SlowPulseHue.shader", Bundle);
     public static LoadableAsset<Shader> DistorationWaveShader { get; } = new LoadableBundleAsset<Shader>("DistorationWave.shader", Bundle);
     public static LoadableAsset<Shader> ShadowFluxShader { get; } = new LoadableBundleAsset<Shader>("ShadowFlux.shader", Bundle);
-    public static LoadableAsset<Shader> CrismonVortex { get; } = new LoadableBundleAsset<Shader>("CrismonVortex.shader", Bundle);
+    public static LoadableAsset<Shader> CrismonVortex { get; } = new LoadableBundleAsset<Shader>("CrismonVortexV2.shader", Bundle);
 
     // Textures
     public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
-    public static LoadableResourceAsset CrismonTexture { get; } = new LoadableResourceAsset("NewMod.Resources.redcloudtexture.png");
+    public static LoadableAsset<Texture2D> CrismonTexture { get; } = new LoadableBundleAsset<Texture2D>("inkcloud1.png", Bundle);
 }
