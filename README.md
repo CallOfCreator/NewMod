@@ -12,6 +12,9 @@
     <a href="https://github.com/CallOfCreator/NewMod/releases">
         <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total.svg?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
     </a>
+    <a href="https://starlight.allofus.dev/mods/com.callofcreator.newmod">
+    <img alt="Starlight Downloads" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fstarlight.allofus.dev%2Fapi%2Fv3%2Fmods%2Fcom.callofcreator.newmod&query=%24.downloads&suffix=%20downloads&label=%E2%AD%90%20Starlight&labelColor=%23B8860B&color=%23FFD700">
+</a>
     <a href="https://github.com/CallOfCreator/NewMod/network/members">
         <img src="https://img.shields.io/github/forks/CallOfCreator/NewMod?style=social" alt="GitHub forks">
     </a>
