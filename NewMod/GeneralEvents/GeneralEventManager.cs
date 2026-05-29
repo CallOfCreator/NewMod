@@ -146,6 +146,8 @@ namespace NewMod.GeneralEvents
             _hud = GeneralEventHud.Create();
             _hud.Show(ge);
 
+            SoundManager.Instance.PlaySound(NewModAsset.GEEnterSound.LoadAsset(), false, 1f, null);
+
             Coroutines.Start(CoEventTimer(ge));
         }
 
@@ -161,6 +163,8 @@ namespace NewMod.GeneralEvents
 
             if (_hud)
                 _hud.Hide();
+            
+            SoundManager.Instance.PlaySound(NewModAsset.GEExitSound.LoadAsset(), false, 1f, null);
 
             _hud = null;
         }

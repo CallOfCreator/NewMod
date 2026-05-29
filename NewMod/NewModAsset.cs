@@ -56,6 +56,8 @@ public static class NewModAsset
     public static LoadableAudioResourceAsset StrikeSound { get; } = new("NewMod.Resources.Sounds.strike_sound.wav");
     public static LoadableAudioResourceAsset FearSound { get; } = new("NewMod.Resources.Sounds.fear_sound.wav");
     public static LoadableAudioResourceAsset HeartbeatSound { get; } = new("NewMod.Resources.Sounds.heartbeat_sound.wav");
+    public static LoadableAudioResourceAsset GEEnterSound { get; } = new("NewMod.Resources.Sounds.ge_enter.wav");
+    public static LoadableAudioResourceAsset GEExitSound { get; } = new("NewMod.Resources.Sounds.ge_exit.wav");
 
     // Role Icons
     public static LoadableResourceAsset StrikeIcon { get; } = new("NewMod.Resources.RoleIcons.StrikeIcon.png");
