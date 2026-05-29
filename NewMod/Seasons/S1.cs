@@ -3,14 +3,15 @@ using NewMod.Modifiers;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using NewMod.GeneralEvents.Season1;
 
 namespace NewMod.Seasons
 {
     public class S1 : ISeason
     {
         public string Name => "Season 1";
-        public Il2CppSystem.DateTime SeasonStartDate => new(2025, 12, 6, 0, 0, 0, 0, Il2CppSystem.DateTimeKind.Utc);
-        public Il2CppSystem.DateTime SeasonEndDate => new(2026, 2, 4, 0, 0, 0, 0, Il2CppSystem.DateTimeKind.Utc);
+        public Il2CppSystem.DateTime SeasonStartDate => new(2026, 05, 10, 0, 0, 0, 0, Il2CppSystem.DateTimeKind.Utc);
+        public Il2CppSystem.DateTime SeasonEndDate => new(2026, 8, 10, 0, 0, 0, 0, Il2CppSystem.DateTimeKind.Utc);
         public Color SeasonMainColor => Color.yellow;
         public void HandleMainMenu(MainMenuManager mainMenuManager)
         {
@@ -49,5 +50,10 @@ namespace NewMod.Seasons
         {
             return [];
         }
+        public IReadOnlyList<Type> GetSeasonGETypes() =>
+        [
+            typeof(NegativeRealityGE),
+            typeof(CrismonVortexGE)
+        ];
     }
 }

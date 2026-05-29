@@ -17,5 +17,7 @@ public enum CustomRPC
     NotifyChampion,
     SummonNPC,
     BeaconPulse,
-    DeployZone
+    DeployZone,
+    StartGeneralEvent,
+    EndGeneralEvent
 }

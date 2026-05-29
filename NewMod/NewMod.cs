@@ -37,7 +37,7 @@ namespace NewMod;
 public partial class NewMod : BasePlugin, IMiraPlugin
 {
     public const string Id = "com.callofcreator.newmod";
-    public const string ModVersion = "1.2.9";
+    public const string ModVersion = "1.3.0";
     public Harmony Harmony { get; } = new Harmony(Id);
     public static BasePlugin Instance;
     public static Minigame minigame;
@@ -49,7 +49,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     {
         Instance = this;
         AddComponent<DebugWindow>();
-        ReactorCredits.Register<NewMod>(ReactorCredits.AlwaysShow);
+        ReactorCredits.Register("NewMod", ModVersion, true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
         NewModEventHandler.RegisterEventsLogs();
 
@@ -71,7 +71,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             Instance.Log.LogMessage($"{name}");
         }
 
-        Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version}");
+        Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} ALPHA With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 
     [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]

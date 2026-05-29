@@ -5,11 +5,8 @@ using UnityEngine;
 namespace NewMod.Components.ScreenEffects
 {
     [RegisterInIl2Cpp]
-    public class CrismonVortexEffect(IntPtr ptr) : MonoBehaviour(ptr)
+    public class CrimsonVortexEffect(IntPtr ptr) : MonoBehaviour(ptr)
     {
-        public Color tint = new Color(1f, 0.05f, 0.03f, 1f);
-        public Color highlightTint = new Color(1f, 0.28f, 0.12f, 1f);
-        public Color coreTint = new Color(0.75f, 0f, 0f, 1f);
         public float opacity = 0.78f;
         public float tiling = 1.15f;
         public float detailTiling = 2.35f;
@@ -53,7 +50,7 @@ namespace NewMod.Components.ScreenEffects
             }
 
             _mat = new Material(shader) { hideFlags = HideFlags.DontSave };
-            _mat.SetTexture("_CrimsonTex", crimTex);
+            _mat.SetTexture("_CrimsonTex", crimTex.texture);
         }
 
         public void OnDisable()
@@ -67,10 +64,6 @@ namespace NewMod.Components.ScreenEffects
 
         public void OnRenderImage(RenderTexture src, RenderTexture dst)
         {
-            _mat.SetColor("_Tint", tint);
-            _mat.SetColor("_HighlightTint", highlightTint);
-            _mat.SetColor("_CoreTint", coreTint);
-
             _mat.SetFloat("_Opacity", opacity);
             _mat.SetFloat("_Tiling", tiling);
             _mat.SetFloat("_DetailTiling", detailTiling);

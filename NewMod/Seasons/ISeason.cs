@@ -14,5 +14,6 @@ namespace NewMod.Seasons
         IReadOnlyList<System.Type> GetSeasonRoleTypes();
         IReadOnlyList<System.Type> GetSeasonModifierTypes();
         IReadOnlyList<System.Type> GetSeasonGamemodeTypes();
+        IReadOnlyList<System.Type> GetSeasonGETypes();
     }
 }

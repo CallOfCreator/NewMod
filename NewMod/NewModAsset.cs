@@ -79,8 +79,14 @@ public static class NewModAsset
     public static LoadableAsset<Shader> DistorationWaveShader { get; } = new LoadableBundleAsset<Shader>("DistorationWave.shader", Bundle);
     public static LoadableAsset<Shader> ShadowFluxShader { get; } = new LoadableBundleAsset<Shader>("ShadowFlux.shader", Bundle);
     public static LoadableAsset<Shader> CrismonVortex { get; } = new LoadableBundleAsset<Shader>("CrismonVortexV2.shader", Bundle);
+    public static LoadableAsset<Shader> NegativeReality { get; } = new LoadableBundleAsset<Shader>("NegativeReality.shader", Bundle);
 
     // Textures
     public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
-    public static LoadableAsset<Texture2D> CrismonTexture { get; } = new LoadableBundleAsset<Texture2D>("inkcloud1.png", Bundle);
+    public static LoadableResourceAsset CrismonTexture { get; } = new ("NewMod.Resources.inkcloud1.png");
+
+    //General Events
+    public static LoadableAsset<GameObject> GeneralEventHud { get; } = new LoadableBundleAsset<GameObject>("GeneralEvent", Bundle);
+    public static LoadableResourceAsset CrismonIcon { get; } = new ("NewMod.Resources.crismon_ge_icon.png");
+    public static LoadableResourceAsset NegativeRealityIcon { get; } = new LoadableResourceAsset("NewMod.Resources.NegativeIcon.png");
 }

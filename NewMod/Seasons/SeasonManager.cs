@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NewMod.GeneralEvents;
 
 namespace NewMod.Seasons
 {
     public static class SeasonManager
     {
-        private static uint _nextTypeId = 0;
-        private static readonly Dictionary<uint, Type> TypeIdMap = new();
-        private static readonly Dictionary<Type, uint> TypeToIdMap = new();
-        private static readonly List<ISeason> ActiveSeasons = new()
+        public static uint _nextTypeId = 0;
+        public static readonly Dictionary<uint, Type> TypeIdMap = new();
+        public static readonly Dictionary<Type, uint> TypeToIdMap = new();
+        public static readonly List<ISeason> ActiveSeasons = new()
         {
-           new S1()
+            new S1()
         };
 
         public static IReadOnlyList<ISeason> CurrentActiveSeasons =>
@@ -19,7 +20,11 @@ namespace NewMod.Seasons
                 AmongUsDateTime.UtcNow >= s.SeasonStartDate.ToUniversalTime() &&
                 AmongUsDateTime.UtcNow <= s.SeasonEndDate.ToUniversalTime())];
 
-        private static uint GenerateNextTypeId()
+        public static IReadOnlyList<ISeason> StartedSeasons =>
+            [.. ActiveSeasons.Where(s =>
+                AmongUsDateTime.UtcNow >= s.SeasonStartDate.ToUniversalTime())];
+
+        static uint GenerateNextTypeId()
         {
             _nextTypeId++;
             return _nextTypeId;
@@ -27,18 +32,27 @@ namespace NewMod.Seasons
 
         public static void InitializeSeasons(MainMenuManager menuManager)
         {
-            foreach (var season in CurrentActiveSeasons)
+            foreach (var season in StartedSeasons)
             {
-                season.HandleMainMenu(menuManager);
                 RegisterSeasonContent(season);
+                RegisterSeasonGeneralEvents(season);
                 NewMod.Instance.Log.LogMessage($"Registered {season.Name}");
             }
+
+            foreach (var season in CurrentActiveSeasons)
+                season.HandleMainMenu(menuManager);
+        }
+
+        static void RegisterSeasonGeneralEvents(ISeason season)
+        {
+            foreach (var type in season.GetSeasonGETypes())
+                GeneralEventManager.RegisterEvent(type);
         }
 
         public static void RegisterSeasonContent(ISeason season)
         {
-            RegisterContent(season.GetSeasonRoleTypes()); 
-            RegisterContent(season.GetSeasonModifierTypes()); 
+            RegisterContent(season.GetSeasonRoleTypes());
+            RegisterContent(season.GetSeasonModifierTypes());
             RegisterContent(season.GetSeasonGamemodeTypes());
         }
 

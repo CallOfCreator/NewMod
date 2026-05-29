@@ -14,6 +14,7 @@ using Il2CppInterop.Runtime.Attributes;
 using AmongUs.GameOptions;
 using NewMod.Components.ScreenEffects;
 using Reactor.Utilities;
+using NewMod.GeneralEvents;
 
 namespace NewMod
 {
@@ -113,6 +114,8 @@ namespace NewMod
                 if (GUILayout.Button("Become DoubleAgent") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<DoubleAgent>(), false);
                 if (GUILayout.Button("Become EnergyThief") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<EnergyThief>(), false);
                 if (GUILayout.Button("Become SpecialAgent") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<SpecialAgent>(), false);
+                if (GUILayout.Button("Start GE Cycle") && allow) GeneralEventManager.StartCycle();
+                if (GUILayout.Button("Stop GE Cycle") && allow) GeneralEventManager.StopCycle();
                 if (GUILayout.Button("Increase Uses by 3") && allow) foreach (var b in CustomButtonManager.Buttons) b.SetUses(3);
                 if (GUILayout.Button("Random Vote") && allow && MeetingHud.Instance)
                 {
@@ -125,7 +128,8 @@ namespace NewMod
                 if (GUILayout.Button("Apply PulseHue Effect") && allow) Camera.main.gameObject.AddComponent<SlowPulseHueEffect>();
                 if (GUILayout.Button("Apply DistortionWave Effect") && allow) Camera.main.gameObject.AddComponent<DistorationWaveEffect>();
                 if (GUILayout.Button("Apply ShadowFlux Effect") && allow) Camera.main.gameObject.AddComponent<ShadowFluxEffect>();
-                if (GUILayout.Button("Apply CrismonVortex Effect") && allow) Camera.main.gameObject.AddComponent<CrismonVortexEffect>();
+                if (GUILayout.Button("Apply CrismonVortex Effect") && allow) Camera.main.gameObject.AddComponent<CrimsonVortexEffect>();
+                if (GUILayout.Button("Apply Negative Reality Effect") && allow) Camera.main.gameObject.AddComponent<NegativeRealityEffect>();
                 if (GUILayout.Button("Reset Effects") && allow) Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 1f));
             }
 
@@ -170,7 +174,7 @@ namespace NewMod
                     m.SetFloat("_Radius", Instance.radius);
                     m.SetFloat("_Falloff", Instance.falloff);
                 }
-                if (cam.gameObject.TryGetComponent(out CrismonVortexEffect vortex) && vortex._mat)
+                if (cam.gameObject.TryGetComponent(out CrimsonVortexEffect vortex) && vortex._mat)
                 {
                     GUILayout.Label("CrismonVortex");
                     Instance.CrismonOpacity = Slider("Opacity", Instance.CrismonOpacity, 0f, 1f);

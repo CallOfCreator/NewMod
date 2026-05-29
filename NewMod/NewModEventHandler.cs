@@ -5,6 +5,7 @@ using System.Reflection;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Player;
+using NewMod.GeneralEvents;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
@@ -123,6 +124,7 @@ namespace NewMod
             Shade.ShadeKills.Clear();
             Revenant.ResetAllStates();
             NecromancerRole.RevivedPlayers.Clear();
+            GeneralEventManager.Reset();
             NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
             NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
             NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
