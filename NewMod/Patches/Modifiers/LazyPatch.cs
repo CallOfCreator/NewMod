@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using MiraAPI.Modifiers;
-using NewMod.Modifiers;
+using NewMod.Modifiers.S1;
 
 namespace NewMod.Patches.Modifiers
 {

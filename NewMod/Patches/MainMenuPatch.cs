@@ -1,7 +1,5 @@
 using UnityEngine;
 using HarmonyLib;
-using Reactor.Utilities;
-using System.Collections;
 using NewMod.LocalSettings;
 using MiraAPI.LocalSettings;
 using NewMod.Seasons;
@@ -10,12 +8,24 @@ namespace NewMod.Patches
 {
     [HarmonyPatch(typeof(MainMenuManager))]
     [HarmonyPriority(Priority.VeryHigh)]
-
     public static class MainMenuPatch
     {
         public static SpriteRenderer LogoSprite;
         public static Texture2D _cachedCursor;
         public static Transform RightPanel;
+        public static bool _injected;
+
+        [HarmonyPatch(nameof(MainMenuManager.Start))]
+        [HarmonyPrefix]
+        [HarmonyPriority(Priority.First)]
+        public static void StartPrefix(MainMenuManager __instance)
+        {
+            if (_injected)
+                return;
+
+            _injected = true;
+            SeasonManager.InjectSeasonContent();
+        }
 
         [HarmonyPatch(nameof(MainMenuManager.Start))]
         [HarmonyPostfix]
@@ -26,26 +36,20 @@ namespace NewMod.Patches
                 var cur = NewModAsset.CustomCursor.LoadAsset();
                 _cachedCursor = cur != null ? cur.texture : null;
             }
+
             if (_cachedCursor != null && LocalSettingsTabSingleton<NewModLocalSettings>.Instance.EnableCustomCursor.Value)
-            {
                 Cursor.SetCursor(_cachedCursor, Vector2.zero, CursorMode.Auto);
-            }
 
             RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
-
-            /*if (NewModDateTime.IsNewModBirthdayWeek)
-            {
-                Coroutines.Start(ApplyBirthdayUI(__instance));
-            }*/
 
             var Logo = new GameObject("NewModLogo");
             Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
             Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
+
             LogoSprite = Logo.AddComponent<SpriteRenderer>();
             LogoSprite.sprite = NewModAsset.NewModLogo.LoadAsset();
 
             SeasonManager.InitializeSeasons(__instance);
-
             ModCompatibility.Initialize();
         }
 

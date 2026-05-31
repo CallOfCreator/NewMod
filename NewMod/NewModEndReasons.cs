@@ -13,6 +13,7 @@ namespace NewMod
         PulseBladeWin = 118,
         TyrantWin = 119,
         WraithCallerWin = 120,
-        ShadeWin = 121
+        ShadeWin = 121,
+        TerminatorWin = 122
     }
 }

@@ -12,6 +12,7 @@ using NewMod.Options.Roles;
 using MiraAPI.GameOptions;
 using MiraAPI.Events;
 using NewMod.Roles;
+using System;
 using NewMod.Roles.ImpostorRoles;
 using MiraAPI.Utilities;
 
@@ -19,6 +20,15 @@ namespace NewMod.Patches
 {
     public static class EndGamePatch
     {
+        public static bool EndGameTriggered = false;
+
+        [RegisterEvent]
+        public static void OnGameStart(RoundStartEvent evt)
+        {
+            EndGameTriggered = false;
+            EndGameResult.CachedWinners.Clear();
+        }
+
         [RegisterEvent]
         public static void OnGameEnd(GameEndEvent evt)
         {
@@ -62,6 +72,7 @@ namespace NewMod.Patches
                 {
                     poolablePlayer.SetFlipX(i % 2 == 0);
                 }
+
                 poolablePlayer.UpdateFromPlayerOutfit(
                     playerData.Outfit,
                     PlayerMaterial.MaskType.None,
@@ -145,6 +156,7 @@ namespace NewMod.Patches
                     endGameManager.WinText.transform.position.y - 0.5f,
                     endGameManager.WinText.transform.position.z);
                 customWinTextObject.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
+
                 var customWinTextComponent = customWinTextObject.GetComponent<TMPro.TMP_Text>();
                 customWinTextComponent.text = customWinText;
                 customWinTextComponent.color = customWinColor;
@@ -167,6 +179,7 @@ namespace NewMod.Patches
                     {
                         return $"{newmodRole.RoleName}\n<size=65%>{Utils.GetFactionDisplay((INewModRole)customRole)}</size>";
                     }
+
                     return customRole.RoleName;
                 }
                 else
@@ -208,6 +221,20 @@ namespace NewMod.Patches
                 return Color.white;
             }
         }
+
+        public static bool EndCustomGame(GameOverReason reason, Action winners = null)
+        {
+            if (EndGameTriggered) return true;
+            if (EndGameResult.CachedWinners.Count > 0) return true;
+
+            EndGameTriggered = true;
+
+            EndGameResult.CachedWinners.Clear();
+            winners?.Invoke();
+
+            GameManager.Instance.RpcEndGame(reason, false);
+            return true;
+        }
     }
 
     [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
@@ -216,7 +243,10 @@ namespace NewMod.Patches
         public static bool Prefix(ShipStatus __instance)
         {
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
+            if (!AmongUsClient.Instance.AmHost) return true;
             if (Time.timeSinceLevelLoad < 2f) return true;
+            if (EndGamePatch.EndGameTriggered) return false;
+
             if (CheckForEndGameFaction<WraithCaller>(__instance, (GameOverReason)NewModEndReasons.WraithCallerWin)) return false;
             if (CheckForEndGameFaction<Shade>(__instance, (GameOverReason)NewModEndReasons.ShadeWin)) return false;
             if (CheckForEndGameFaction<PulseBlade>(__instance, (GameOverReason)NewModEndReasons.PulseBladeWin)) return false;
@@ -225,18 +255,22 @@ namespace NewMod.Patches
             if (CheckEndGameForRole<SpecialAgent>(__instance, (GameOverReason)NewModEndReasons.SpecialAgentWin)) return false;
             if (CheckEndGameForRole<Prankster>(__instance, (GameOverReason)NewModEndReasons.PranksterWin, 3)) return false;
             if (CheckEndGameForRole<EnergyThief>(__instance, (GameOverReason)NewModEndReasons.EnergyThiefWin)) return false;
+            if (CheckEndGameForRole<InjectorRole>(__instance, (GameOverReason)NewModEndReasons.InjectorWin)) return false;
+
             return true;
         }
+
         public static bool CheckForEndGameFaction<TFaction>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where TFaction : INewModRole
         {
             var players = PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p.Data.Role is TFaction)
-            .Take(maxCount)
-            .ToList();
+                .Where(p => p.Data.Role is TFaction)
+                .Take(maxCount)
+                .ToList();
 
             foreach (var player in players)
             {
                 bool shouldEndGame = false;
+                Action extraWinners = null;
 
                 if (typeof(TFaction) == typeof(PulseBlade))
                 {
@@ -254,51 +288,58 @@ namespace NewMod.Patches
                         shouldEndGame = true;
                     }
                 }
+
                 if (typeof(TFaction) == typeof(Tyrant))
                 {
                     if (Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet)
                     {
                         shouldEndGame = true;
 
-                        var tyrantRole = player.Data.Role as Tyrant;
-                        byte champId = tyrantRole.GetChampion();
-                        var champion = Utils.PlayerById(champId);
-
-                        bool championWin = Tyrant.Outcome == Tyrant.ThroneOutcome.ChampionSideWin;
-
-                        if (champion && championWin)
+                        extraWinners = () =>
                         {
-                            EndGameResult.CachedWinners.Add(new(champion.Data));
-                        }
+                            var tyrantRole = player.Data.Role as Tyrant;
+                            byte champId = tyrantRole.GetChampion();
+                            var champion = Utils.PlayerById(champId);
+
+                            bool championWin = Tyrant.Outcome == Tyrant.ThroneOutcome.ChampionSideWin;
+
+                            if (champion && championWin)
+                            {
+                                EndGameResult.CachedWinners.Add(new(champion.Data));
+                            }
+                        };
                     }
                 }
+
                 if (typeof(TFaction) == typeof(WraithCaller))
                 {
                     int required = (int)OptionGroupSingleton<WraithCallerOptions>.Instance.RequiredNPCsToSend;
                     int current = WraithCallerUtilities.GetKillsNPC(player.PlayerId);
                     shouldEndGame = current >= required;
                 }
+
                 if (typeof(TFaction) == typeof(Shade))
                 {
                     Shade.ShadeKills.TryGetValue(player.PlayerId, out var count);
                     int required = (int)OptionGroupSingleton<ShadeOptions>.Instance.RequiredKills;
                     shouldEndGame = count >= required;
                 }
+
                 if (shouldEndGame)
                 {
-                    GameManager.Instance.RpcEndGame(winReason, false);
-                    CustomStatsManager.IncrementRoleWin((INewModRole)player.Data.Role);
-                    return true;
+                    return EndGamePatch.EndCustomGame(winReason, extraWinners);
                 }
             }
+
             return false;
         }
+
         public static bool CheckEndGameForRole<T>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where T : RoleBehaviour
         {
             var rolePlayers = PlayerControl.AllPlayerControls.ToArray()
-            .Where(p => p.Data.Role is T)
-            .Take(maxCount)
-            .ToList();
+                .Where(p => p.Data.Role is T)
+                .Take(maxCount)
+                .ToList();
 
             foreach (var player in rolePlayers)
             {
@@ -310,19 +351,21 @@ namespace NewMod.Patches
                     bool isSabotageActive = Utils.IsSabotage();
                     shouldEndGame = tasksCompleted && isSabotageActive;
                 }
+
                 if (typeof(T) == typeof(EnergyThief))
                 {
                     int drainCount = Utils.GetDrainCount(player.PlayerId);
                     int requiredDrainCount = (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.RequiredDrainCount;
-
                     shouldEndGame = drainCount >= requiredDrainCount;
                 }
+
                 if (typeof(T) == typeof(Prankster))
                 {
                     int WinReportCount = 2;
                     int currentReportCount = PranksterUtilities.GetReportCount(player.PlayerId);
                     shouldEndGame = currentReportCount >= WinReportCount;
                 }
+
                 if (typeof(T) == typeof(SpecialAgent))
                 {
                     int missionSuccessCount = Utils.GetMissionSuccessCount(player.PlayerId);
@@ -330,17 +373,17 @@ namespace NewMod.Patches
                     int netScore = missionSuccessCount - missionFailureCount;
                     shouldEndGame = netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
                 }
+
                 if (typeof(T) == typeof(InjectorRole))
                 {
                     int injectedCount = Utils.GetInjectedCount();
                     int required = (int)OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
                     shouldEndGame = injectedCount >= required;
                 }
+
                 if (shouldEndGame)
                 {
-                    GameManager.Instance.RpcEndGame(winReason, false);
-                    CustomStatsManager.IncrementRoleWin((ICustomRole)player.Data.Role);
-                    return true;
+                    return EndGamePatch.EndCustomGame(winReason);
                 }
             }
             return false;

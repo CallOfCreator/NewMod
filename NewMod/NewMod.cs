@@ -25,6 +25,7 @@ using NewMod.Options.Roles;
 using MiraAPI.Events;
 using NewMod.Patches.Compatibility;
 using NewMod.Buttons;
+using NewMod.Seasons;
 
 namespace NewMod;
 
@@ -42,6 +43,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     public static BasePlugin Instance;
     public static Minigame minigame;
     public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
+    public static ConfigEntry<bool> ForceEnableAllSeasons  { get; set; }
     public ConfigFile GetConfigFile() => Config;
     public string OptionsTitleText => "NewMod";
     public const string NewModBackendAPI = "";
@@ -61,6 +63,8 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
 
+        ForceEnableAllSeasons = Config.Bind("NewMod", "ForceEnableAllSeasons", false, "Force all seasons as started");
+
         var bundle = NewModAsset.Bundle;
         var assetNames = bundle.GetAllAssetNames();
 
@@ -70,7 +74,6 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         {
             Instance.Log.LogMessage($"{name}");
         }
-
         Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} ALPHA With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 

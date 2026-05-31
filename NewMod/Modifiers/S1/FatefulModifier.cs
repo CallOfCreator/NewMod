@@ -6,9 +6,11 @@ using MiraAPI.GameOptions;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
 using UnityEngine;
+using MiraAPI.PluginLoading;
 
-namespace NewMod.Modifiers
+namespace NewMod.Modifiers.S1
 {
+    [MiraIgnore]
     public class FatefulModifier : GameModifier, INewModModifier
     {
         public override string ModifierName => "Fateful";

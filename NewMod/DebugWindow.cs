@@ -85,7 +85,7 @@ namespace NewMod
                 HudManager.Instance.ShadowQuad.gameObject.SetActive(size <= 3f);
         }
 
-        public static bool AllowDebug() => AmongUsClient.Instance && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay;
+        public static bool AllowDebug() => AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay;
         public readonly DragWindow DebuggingWindow = new(new Rect(10, 10, 0, 0), "NewMod Debug Window", () =>
         {
             bool allow = AllowDebug();
@@ -110,6 +110,9 @@ namespace NewMod
 
                 GUILayout.Space(6);
 
+                bool force = GUILayout.Toggle(NewMod.ForceEnableAllSeasons.Value, "Force All Seasons");
+                if (force != NewMod.ForceEnableAllSeasons.Value) NewMod.ForceEnableAllSeasons.Value = force;
+        
                 if (GUILayout.Button("Become Necromancer") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<NecromancerRole>(), false);
                 if (GUILayout.Button("Become DoubleAgent") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<DoubleAgent>(), false);
                 if (GUILayout.Button("Become EnergyThief") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<EnergyThief>(), false);

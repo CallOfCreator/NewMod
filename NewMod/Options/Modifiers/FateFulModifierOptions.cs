@@ -2,7 +2,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
-using NewMod.Modifiers;
+using NewMod.Modifiers.S1;
 
 namespace NewMod.Options.Modifiers
 {

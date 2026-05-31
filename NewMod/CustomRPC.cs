@@ -19,5 +19,8 @@ public enum CustomRPC
     BeaconPulse,
     DeployZone,
     StartGeneralEvent,
-    EndGeneralEvent
+    EndGeneralEvent,
+    TerminatorObjective,
+    MirrorBladeArm,
+    VerifierRegisterFact
 }

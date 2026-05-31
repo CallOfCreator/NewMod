@@ -1,9 +1,11 @@
 using MiraAPI.Modifiers.Types;
 using MiraAPI.GameOptions;
 using NewMod.Options;
+using MiraAPI.PluginLoading;
 
-namespace NewMod.Modifiers
+namespace NewMod.Modifiers.S1
 {
+    [MiraIgnore]
     public class LazyModifier : GameModifier, INewModModifier
     {
         public override string ModifierName => "Lazy";
