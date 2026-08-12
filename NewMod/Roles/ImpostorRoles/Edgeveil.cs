@@ -11,10 +11,14 @@ namespace NewMod.Roles.ImpostorRoles
     {
         public string RoleName => "Edgeveil";
         public string RoleDescription => "Draw. Cleave. Sheathe.";
-        public string RoleLongDescription => "Perform a fast iaijutsu slash in a short cone. Anyone caught in the arc is killed.";
+
+        public string RoleLongDescription =>
+            "Perform a fast iaijutsu slash in a short cone. Anyone caught in the arc is killed.";
+
         public Color RoleColor => new(0.90f, 0.20f, 0.35f);
         public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
         public NewModFaction Faction => NewModFaction.Apex;
+
         public CustomRoleConfiguration Configuration => new(this)
         {
             AffectedByLightOnAirship = false,
@@ -24,9 +28,5 @@ namespace NewMod.Roles.ImpostorRoles
             TasksCountForProgress = false,
             Icon = NewModAsset.SlashIcon
         };
-        public override bool DidWin(GameOverReason gameOverReason)
-        {
-            return gameOverReason is GameOverReason.ImpostorsByKill or GameOverReason.ImpostorsBySabotage;
-        }
     }
 }

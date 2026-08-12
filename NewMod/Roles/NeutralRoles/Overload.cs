@@ -16,13 +16,17 @@ public class OverloadRole : ImpostorRole, ICustomRole
 {
     public string RoleName => "Overload";
     public string RoleDescription => "Absorb, Consume, Devour, Overload.";
-    public string RoleLongDescription => "You are the Overload, an impostor who thrives on the abilities of the fallen. Each ejected player fuels your chaos, granting you their power";
+
+    public string RoleLongDescription =>
+        "You are the Overload, an impostor who thrives on the abilities of the fallen. Each ejected player fuels your chaos, granting you their power";
+
     public Color RoleColor => new Color(0.6f, 0.1f, 0.3f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
     public static int AbsorbedAbilityCount = 0;
     public static PlayerControl chosenPrey;
     public static List<CustomActionButton> CachedButtons = new();
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         AffectedByLightOnAirship = false,
@@ -36,6 +40,20 @@ public class OverloadRole : ImpostorRole, ICustomRole
         OptionsScreenshot = null,
         Icon = null,
     };
+
+    public override bool DidWin(GameOverReason gameOverReason)
+    {
+        return gameOverReason == CustomGameOver.GameOverReason<OverloadGameOver>();
+    }
+
+    public static void ResetState()
+    {
+        AbsorbedAbilityCount = 0;
+        chosenPrey = null;
+        CachedButtons.Clear();
+        CustomButtonSingleton<OverloadButton>.Instance.absorbed = null;
+    }
+
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
@@ -50,23 +68,28 @@ public class OverloadRole : ImpostorRole, ICustomRole
             Coroutines.Start(CoShowMenu(1f));
         }
     }
+
     public static IEnumerator CoShowMenu(float delay)
     {
         yield return new WaitForSeconds(delay);
 
-        if (PlayerControl.LocalPlayer.AmOwner && PlayerControl.LocalPlayer.Data.Role is OverloadRole && chosenPrey == null)
+        if (PlayerControl.LocalPlayer.AmOwner && PlayerControl.LocalPlayer.Data.Role is OverloadRole &&
+            chosenPrey == null)
         {
             CustomPlayerMenu menu = CustomPlayerMenu.Create();
 
             menu.Begin(
-                player => !player.Data.IsDead && !player.Data.Disconnected && player.PlayerId != PlayerControl.LocalPlayer.PlayerId,
+                player => !player.Data.IsDead && !player.Data.Disconnected &&
+                          player.PlayerId != PlayerControl.LocalPlayer.PlayerId,
                 prey =>
                 {
                     chosenPrey = prey;
                     menu.Close();
-                    Coroutines.Start(CoroutinesHelper.CoNotify($"<color=yellow>Chosen prey: {prey?.Data.PlayerName}</color>"));
+                    Coroutines.Start(
+                        CoroutinesHelper.CoNotify($"<color=yellow>Chosen prey: {prey?.Data.PlayerName}</color>"));
                 });
         }
+
         yield return null;
     }
 }

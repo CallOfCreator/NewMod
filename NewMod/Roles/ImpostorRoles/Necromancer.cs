@@ -34,9 +34,4 @@ public class NecromancerRole : ImpostorRole, ICustomRole
         IntroTeamDescription = RoleDescription,
         IntroTeamColor = RoleColor
     };
-
-    public override bool DidWin(GameOverReason reason)
-    {
-        return GameManager.Instance.DidImpostorsWin(reason);
-    }
 }

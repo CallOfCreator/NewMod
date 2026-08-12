@@ -1,5 +1,6 @@
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
@@ -77,7 +78,7 @@ namespace NewMod.Roles.ImpostorRoles
 
         public override bool DidWin(GameOverReason reason)
         {
-            return reason == (GameOverReason)NewModEndReasons.PulseBladeWin ||
+            return reason == CustomGameOver.GameOverReason<PulseBladeGameOver>() ||
                    GameManager.Instance.DidImpostorsWin(reason);
         }
     }

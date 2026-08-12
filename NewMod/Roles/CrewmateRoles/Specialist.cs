@@ -19,6 +19,7 @@ public class Specialist : CrewmateRole, ICustomRole
     public Color RoleColor => new(0.0f, 0.8f, 1.0f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Crewmate;
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         MaxRoleCount = 1,
@@ -34,6 +35,7 @@ public class Specialist : CrewmateRole, ICustomRole
         CanModifyChance = true,
         RoleHintType = RoleHintType.RoleTab
     };
+
     [RegisterEvent]
     public static void OnTaskComplete(CompleteTaskEvent evt)
     {
@@ -47,8 +49,9 @@ public class Specialist : CrewmateRole, ICustomRole
                 var target = Utils.GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected && p != specialist);
                 if (target != null)
                 {
-                   Utils.RpcRandomDrainActions(specialist, target);
-                   Helpers.CreateAndShowNotification($"Energy Drain activated on {target.Data.PlayerName}!",Color.green);
+                    Utils.RpcRandomDrainActions(specialist, target);
+                    Helpers.CreateAndShowNotification($"Energy Drain activated on {target.Data.PlayerName}!",
+                        Color.green);
                 }
             },
             () =>
@@ -57,8 +60,10 @@ public class Specialist : CrewmateRole, ICustomRole
                 var player = Utils.PlayerById(closestBody.ParentId);
                 if (closestBody != null)
                 {
-                   Utils.HandleRevive(specialist, closestBody.ParentId, AmongUs.GameOptions.RoleTypes.Crewmate, closestBody.transform.position.x, closestBody.transform.position.y);
-                   Helpers.CreateAndShowNotification($"Player {player.Data.PlayerName} has been revived.", Color.green);
+                    Utils.HandleRevive(specialist, closestBody.ParentId, AmongUs.GameOptions.RoleTypes.Crewmate,
+                        closestBody.transform.position.x, closestBody.transform.position.y);
+                    Helpers.CreateAndShowNotification($"Player {player.Data.PlayerName} has been revived.",
+                        Color.green);
                 }
             },
             () =>
@@ -71,8 +76,8 @@ public class Specialist : CrewmateRole, ICustomRole
                 var randPlayer = Utils.GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
                 if (randPlayer != null && randPlayer.Data.Role is not ICustomRole)
                 {
-                   var role = randPlayer.Data.Role;
-                   role.UseAbility();
+                    var role = randPlayer.Data.Role;
+                    role.UseAbility();
                 }
             },
             () =>
@@ -86,11 +91,8 @@ public class Specialist : CrewmateRole, ICustomRole
         {
             return;
         }
+
         int randomIndex = UnityEngine.Random.Range(0, abilityAction.Count);
         abilityAction[randomIndex].Invoke();
-    }
-    public override bool DidWin(GameOverReason gameOverReason)
-    {
-        return gameOverReason == GameOverReason.CrewmatesByTask;
     }
 }

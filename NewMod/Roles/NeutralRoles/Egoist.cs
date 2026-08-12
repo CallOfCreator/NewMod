@@ -1,6 +1,7 @@
 using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Meeting;
+using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Networking;
 using MiraAPI.Roles;
@@ -14,9 +15,11 @@ namespace NewMod.Roles.NeutralRoles
     {
         public string RoleName => "Egoist";
         public string RoleDescription => "Crave attention. Earn revenge.";
+
         public string RoleLongDescription =>
             "You are the Egoist, a chaotic neutral entity.\n\n"
             + "Your goal is to be ejected — if you are, and enough players vote for you, they die and you win.";
+
         public Color RoleColor => new Color(0.8f, 0.3f, 0.6f, 1f);
         public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
         public RoleOptionsGroup RoleOptionsGroup => RoleOptionsGroup.Neutral;
@@ -75,13 +78,14 @@ namespace NewMod.Roles.NeutralRoles
                         playKillSound: true
                     );
                 }
-                GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.EgoistWin, false);
+
+                CustomGameOver.Trigger<EgoistGameOver>([egoist.Data]);
             }
         }
 
         public override bool DidWin(GameOverReason gameOverReason)
         {
-            return gameOverReason == (GameOverReason)NewModEndReasons.EgoistWin;
+            return gameOverReason == CustomGameOver.GameOverReason<EgoistGameOver>();
         }
     }
 }

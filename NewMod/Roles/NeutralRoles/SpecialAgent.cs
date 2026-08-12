@@ -6,13 +6,14 @@ namespace NewMod.Roles.NeutralRoles;
 
 public class SpecialAgent : CrewmateRole, ICustomRole
 {
-    public static PlayerControl AssignedPlayer {get; set;}
+    public static PlayerControl AssignedPlayer { get; set; }
     public string RoleName => "Special Agent";
     public string RoleDescription => "Assigns secret missions to players, who must complete them or face consequences.";
     public string RoleLongDescription => RoleDescription;
     public Color RoleColor => Color.gray;
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         MaxRoleCount = 1,
@@ -28,8 +29,9 @@ public class SpecialAgent : CrewmateRole, ICustomRole
         CanModifyChance = true,
         RoleHintType = RoleHintType.RoleTab
     };
+
     public override bool DidWin(GameOverReason gameOverReason)
     {
-        return gameOverReason == (GameOverReason)NewModEndReasons.SpecialAgentWin;
+        return gameOverReason == CustomGameOver.GameOverReason<SpecialAgentGameOver>();
     }
 }
