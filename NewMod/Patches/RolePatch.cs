@@ -42,7 +42,8 @@ namespace NewMod.Patches
             var allPlayers = allInfos.Select(p => p.Object).ToList();
 
             Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: START --------------");
-            Logger<NewMod>.Instance.LogMessage($"Players={allPlayers.Count}, TotalNeutrals={opts.TotalNeutrals} target={target}, KeepCrewMajority={opts.KeepCrewMajority}, PreferVariety={opts.PreferVariety}");
+            Logger<NewMod>.Instance.LogMessage(
+                $"Players={allPlayers.Count}, TotalNeutrals={opts.TotalNeutrals} target={target}, KeepCrewMajority={opts.KeepCrewMajority}, PreferVariety={opts.PreferVariety}");
 
             var neutrals = allPlayers
                 .Where(pc =>
@@ -66,7 +67,8 @@ namespace NewMod.Patches
                 int maxAllowed = Math.Max(0, (int)Math.Floor((crewCount - 1) / 2.0));
                 int before = target;
                 target = Math.Min(target, maxAllowed);
-                Logger<NewMod>.Instance.LogMessage($"KeepCrewMajority applied -> crewCount={crewCount}, maxNeutrals={maxAllowed}, adjustedTarget={target} (was {before})");
+                Logger<NewMod>.Instance.LogMessage(
+                    $"KeepCrewMajority applied -> crewCount={crewCount}, maxNeutrals={maxAllowed}, adjustedTarget={target} (was {before})");
             }
 
             int have = neutrals.Count;
@@ -171,6 +173,7 @@ namespace NewMod.Patches
                     c.Left--;
                     ordered[i] = c;
                 }
+
                 candidates = ordered;
             }
 
@@ -187,7 +190,11 @@ namespace NewMod.Patches
                 foreach (var c in available)
                 {
                     acc += c.Weight;
-                    if (rnum <= acc) { chosen = c; break; }
+                    if (rnum <= acc)
+                    {
+                        chosen = c;
+                        break;
+                    }
                 }
 
                 picks.Add(chosen.Role);
@@ -228,11 +235,13 @@ namespace NewMod.Patches
         }
     }
     // Thanks to:https://github.com/AU-Avengers/TOU-Mira/blob/main/TownOfUs/Patches/RoleManagerPatches.cs#L1070
+
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CoSetRole))]
     public static class CoSetRoleOverridePatch
     {
         [HarmonyPrefix]
-        public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)] RoleTypes role, [HarmonyArgument(1)] bool canOverrideRole)
+        public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)] RoleTypes role,
+            [HarmonyArgument(1)] bool canOverrideRole)
         {
             if (canOverrideRole)
             {

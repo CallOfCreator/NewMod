@@ -103,7 +103,7 @@ namespace NewMod.Components
 
                 UpdateWalkAnimation(velocity);
 
-                if (AmongUsClient.Instance.AmHost && delta.magnitude <= 0.15f)
+                if (AmongUsClient.Instance.AmHost && delta.magnitude <= 0.01f)
                 {
                     body.velocity = Vector2.zero;
                     UpdateWalkAnimation(Vector2.zero);
@@ -126,6 +126,7 @@ namespace NewMod.Components
             UpdateWalkAnimation(Vector2.zero);
             Dispose();
         }
+
         [HideFromIl2Cpp]
         public void UpdateWalkAnimation(Vector2 velocity)
         {
@@ -142,6 +143,7 @@ namespace NewMod.Components
                 {
                     animations.PlayRunAnimation();
                 }
+
                 if (Visual.cosmetics.HasSkinLoaded() && !Visual.cosmetics.IsSkinPlayingRunAnim())
                 {
                     Visual.cosmetics.AnimateSkinRun();
@@ -159,10 +161,12 @@ namespace NewMod.Components
                     }
                 }
             }
+
             var pos = Visual.transform.position;
             pos.z = pos.y / 1000f;
             Visual.transform.position = pos;
         }
+
         [HideFromIl2Cpp]
         public void Dispose()
         {

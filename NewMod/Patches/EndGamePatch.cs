@@ -13,7 +13,6 @@ using MiraAPI.GameOptions;
 using MiraAPI.Events;
 using NewMod.Options.Roles.InjectorOptions;
 using NewMod.Roles;
-using System;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Options.Roles.PulseBladeOptions;
 using MiraAPI.Utilities;
@@ -25,19 +24,31 @@ namespace NewMod.Patches
 {
     public static class EndGamePatch
     {
-        public static bool EndGameTriggered = false;
+        public static bool EndGameTriggered { get; private set; }
+        public static bool EndChecksReady { get; private set; }
 
-        [RegisterEvent]
-        public static void OnGameStart(RoundStartEvent evt)
+        public static void ResetForNewGame()
         {
             EndGameTriggered = false;
-            EndGameResult.CachedWinners.Clear();
+            EndChecksReady = false;
+            EndGameResult.ResetCachedValues();
+            NewModEventHandler.ResetMatchState();
+        }
+
+        [RegisterEvent]
+        public static void OnRoundStart(RoundStartEvent evt)
+        {
+            if (evt.TriggeredByIntro)
+            {
+                EndChecksReady = true;
+            }
         }
 
         [RegisterEvent]
         public static void OnGameEnd(GameEndEvent evt)
         {
-            EndGameManager endGameManager = evt?.EndGameManager;
+            EndChecksReady = false;
+            EndGameManager endGameManager = evt.EndGameManager;
 
             foreach (var playerObj in endGameManager.GetComponentsInChildren<PoolablePlayer>())
             {
@@ -59,7 +70,8 @@ namespace NewMod.Patches
                 float num5 = Mathf.Lerp(1f, 0.75f, num4);
                 float num6 = (i == 0) ? -8f : -1f;
 
-                PoolablePlayer poolablePlayer = Object.Instantiate(endGameManager.PlayerPrefab, endGameManager.transform);
+                PoolablePlayer poolablePlayer =
+                    Object.Instantiate(endGameManager.PlayerPrefab, endGameManager.transform);
 
                 float xPos = 1f * num2 * num3 * num5 * 0.9f;
                 float yPos = FloatRange.SpreadToEdges(-1.125f, 0f, num3, num) * 0.9f;
@@ -155,7 +167,8 @@ namespace NewMod.Patches
 
             if (!string.IsNullOrEmpty(customWinText))
             {
-                var customWinTextObject = Object.Instantiate(endGameManager.WinText.gameObject, endGameManager.transform);
+                var customWinTextObject =
+                    Object.Instantiate(endGameManager.WinText.gameObject, endGameManager.transform);
                 customWinTextObject.transform.localPosition = new Vector3(
                     endGameManager.WinText.transform.position.x,
                     endGameManager.WinText.transform.position.y - 0.5f,
@@ -182,7 +195,8 @@ namespace NewMod.Patches
 
                     if (customRole is INewModRole newmodRole)
                     {
-                        return $"{newmodRole.RoleName}\n<size=65%>{Utils.GetFactionDisplay((INewModRole)customRole)}</size>";
+                        return
+                            $"{newmodRole.RoleName}\n<size=65%>{Utils.GetFactionDisplay((INewModRole)customRole)}</size>";
                     }
 
                     return customRole.RoleName;
@@ -227,55 +241,65 @@ namespace NewMod.Patches
             }
         }
 
-        public static bool EndCustomGame(GameOverReason reason, Action winners = null)
+        public static bool EndCustomGame(GameOverReason reason)
         {
-            if (EndGameTriggered) return true;
-            if (EndGameResult.CachedWinners.Count > 0) return true;
+            if (EndGameTriggered)
+            {
+                return false;
+            }
 
             EndGameTriggered = true;
-
-            EndGameResult.CachedWinners.Clear();
-            winners?.Invoke();
-
             GameManager.Instance.RpcEndGame(reason, false);
             return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(GameManager), nameof(GameManager.StartGame))]
+    public static class MatchStartPatch
+    {
+        public static void Prefix()
+        {
+            EndGamePatch.ResetForNewGame();
         }
     }
 
     [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
     public static class CheckGameEndPatch
     {
-        public static bool Prefix(ShipStatus __instance)
+        public static bool Prefix()
         {
             if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
             if (!AmongUsClient.Instance.AmHost) return true;
-            if (Time.timeSinceLevelLoad < 2f) return true;
-            if (EndGamePatch.EndGameTriggered) return false;
 
-            if (CheckForEndGameFaction<WraithCaller>(__instance, (GameOverReason)NewModEndReasons.WraithCallerWin)) return false;
-            if (CheckForEndGameFaction<Shade>(__instance, (GameOverReason)NewModEndReasons.ShadeWin)) return false;
-            if (CheckForEndGameFaction<PulseBlade>(__instance, (GameOverReason)NewModEndReasons.PulseBladeWin)) return false;
-            if (CheckForEndGameFaction<Tyrant>(__instance, (GameOverReason)NewModEndReasons.TyrantWin)) return false;
-            if (CheckEndGameForRole<DoubleAgent>(__instance, (GameOverReason)NewModEndReasons.DoubleAgentWin)) return false;
-            if (CheckEndGameForRole<SpecialAgent>(__instance, (GameOverReason)NewModEndReasons.SpecialAgentWin)) return false;
-            if (CheckEndGameForRole<Prankster>(__instance, (GameOverReason)NewModEndReasons.PranksterWin, 3)) return false;
-            if (CheckEndGameForRole<EnergyThief>(__instance, (GameOverReason)NewModEndReasons.EnergyThiefWin)) return false;
-            if (CheckEndGameForRole<InjectorRole>(__instance, (GameOverReason)NewModEndReasons.InjectorWin)) return false;
+            if (!EndGamePatch.EndChecksReady || EndGamePatch.EndGameTriggered)
+            {
+                return false;
+            }
+
+            if (CheckForEndGameFaction<WraithCaller>((GameOverReason)NewModEndReasons.WraithCallerWin)) return false;
+            if (CheckForEndGameFaction<Shade>((GameOverReason)NewModEndReasons.ShadeWin)) return false;
+            if (CheckForEndGameFaction<PulseBlade>((GameOverReason)NewModEndReasons.PulseBladeWin)) return false;
+            if (CheckForEndGameFaction<Tyrant>((GameOverReason)NewModEndReasons.TyrantWin)) return false;
+            if (CheckEndGameForRole<DoubleAgent>((GameOverReason)NewModEndReasons.DoubleAgentWin)) return false;
+            if (CheckEndGameForRole<SpecialAgent>((GameOverReason)NewModEndReasons.SpecialAgentWin)) return false;
+            if (CheckEndGameForRole<Prankster>((GameOverReason)NewModEndReasons.PranksterWin, 3)) return false;
+            if (CheckEndGameForRole<EnergyThief>((GameOverReason)NewModEndReasons.EnergyThiefWin)) return false;
+            if (CheckEndGameForRole<InjectorRole>((GameOverReason)NewModEndReasons.InjectorWin)) return false;
 
             return true;
         }
 
-        public static bool CheckForEndGameFaction<TFaction>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where TFaction : INewModRole
+        public static bool CheckForEndGameFaction<TFaction>(GameOverReason winReason, int maxCount = 1)
+            where TFaction : INewModRole
         {
             var players = PlayerControl.AllPlayerControls.ToArray()
-                .Where(p => p.Data.Role is TFaction)
+                .Where(p => !p.Data.IsDead && !p.Data.Disconnected && p.Data.Role is TFaction)
                 .Take(maxCount)
                 .ToList();
 
             foreach (var player in players)
             {
                 bool shouldEndGame = false;
-                Action extraWinners = null;
 
                 if (typeof(TFaction) == typeof(PulseBlade))
                 {
@@ -285,7 +309,7 @@ namespace NewMod.Patches
 
                     var alives = Helpers.GetAlivePlayers();
 
-                    if (alives.Count >= playersThreshold) continue;
+                    if (alives.Count > playersThreshold) continue;
 
                     int strikes = Utils.GetStrikes(player.PlayerId);
                     if (strikes >= requiredStrikes)
@@ -296,24 +320,7 @@ namespace NewMod.Patches
 
                 if (typeof(TFaction) == typeof(Tyrant))
                 {
-                    if (Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet)
-                    {
-                        shouldEndGame = true;
-
-                        extraWinners = () =>
-                        {
-                            var tyrantRole = player.Data.Role as Tyrant;
-                            byte champId = tyrantRole.GetChampion();
-                            var champion = Utils.PlayerById(champId);
-
-                            bool championWin = Tyrant.Outcome == Tyrant.ThroneOutcome.ChampionSideWin;
-
-                            if (champion && championWin)
-                            {
-                                EndGameResult.CachedWinners.Add(new(champion.Data));
-                            }
-                        };
-                    }
+                    shouldEndGame = Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet;
                 }
 
                 if (typeof(TFaction) == typeof(WraithCaller))
@@ -332,17 +339,17 @@ namespace NewMod.Patches
 
                 if (shouldEndGame)
                 {
-                    return EndGamePatch.EndCustomGame(winReason, extraWinners);
+                    return EndGamePatch.EndCustomGame(winReason);
                 }
             }
 
             return false;
         }
 
-        public static bool CheckEndGameForRole<T>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where T : RoleBehaviour
+        public static bool CheckEndGameForRole<T>(GameOverReason winReason, int maxCount = 1) where T : RoleBehaviour
         {
             var rolePlayers = PlayerControl.AllPlayerControls.ToArray()
-                .Where(p => p.Data.Role is T)
+                .Where(p => !p.Data.IsDead && !p.Data.Disconnected && p.Data.Role is T)
                 .Take(maxCount)
                 .ToList();
 
@@ -376,7 +383,8 @@ namespace NewMod.Patches
                     int missionSuccessCount = Utils.GetMissionSuccessCount(player.PlayerId);
                     int missionFailureCount = Utils.GetMissionFailureCount(player.PlayerId);
                     int netScore = missionSuccessCount - missionFailureCount;
-                    shouldEndGame = netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
+                    shouldEndGame =
+                        netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
                 }
 
                 if (typeof(T) == typeof(InjectorRole))

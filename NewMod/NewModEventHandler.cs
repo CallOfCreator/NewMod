@@ -22,6 +22,7 @@ namespace NewMod
             {
                 return;
             }
+
             var sb = new System.Text.StringBuilder();
             sb.AppendLine("=== Registered NewMod Events ===");
 
@@ -57,7 +58,29 @@ namespace NewMod
                 sb.AppendLine($"{eventType.FullName}  (handlers: {count})");
                 foreach (var l in lines) sb.AppendLine(l);
             }
+
             NewMod.Instance.Log.LogInfo(sb.ToString());
+        }
+
+        public static void ResetMatchState()
+        {
+            Utils.ResetKillTracking();
+            Utils.ResetDrainCount();
+            Utils.ResetMissionSuccessCount();
+            Utils.ResetMissionFailureCount();
+            Utils.ResetInjections();
+            Utils.ResetStrikeCount();
+            PranksterUtilities.ResetReportCount();
+            WraithCallerUtilities.ClearAll();
+            Shade.ShadeKills.Clear();
+            Revenant.ResetAllStates();
+            NecromancerRole.RevivedPlayers.Clear();
+
+            Tyrant.ApexThroneReady = false;
+            Tyrant.ApexThroneOutcomeSet = false;
+            Tyrant.Outcome = Tyrant.ThroneOutcome.None;
+            Tyrant.PendingBetrayals.Clear();
+            Tyrant.ClearChampion();
         }
 
         [RegisterEvent]
@@ -66,68 +89,14 @@ namespace NewMod
             if (!evt.TriggeredByIntro) return;
 
             HudManager.Instance.Chat.enabled = false;
+            VisionaryUtilities.DeleteAllScreenshots();
+        }
 
-            Utils.ResetKillTracking();
-            NecromancerRole.RevivedPlayers.Clear();
-            Utils.ResetDrainCount();
-            Utils.ResetMissionSuccessCount();
-            Utils.ResetMissionFailureCount();
-            Utils.ResetInjections();
-            Utils.ResetStrikeCount();
-            Utils.ResetKillTracking();
-            PranksterUtilities.ResetReportCount();
-            VisionaryUtilities.DeleteAllScreenshots();
-            WraithCallerUtilities.ClearAll();
-            Shade.ShadeKills.Clear();
-            Revenant.ResetAllStates();
-            NecromancerRole.RevivedPlayers.Clear();
-            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
-            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
-        }
-        [RegisterEvent]
-        public static void OnPlayerLeft(PlayerLeaveEvent evt)
-        {
-            Utils.ResetDrainCount();
-            Utils.ResetMissionSuccessCount();
-            Utils.ResetMissionFailureCount();
-            Utils.ResetInjections();
-            Utils.ResetStrikeCount();
-            Utils.ResetKillTracking();
-            PranksterUtilities.ResetReportCount();
-            VisionaryUtilities.DeleteAllScreenshots();
-            WraithCallerUtilities.ClearAll();
-            Shade.ShadeKills.Clear();
-            Revenant.ResetAllStates();
-            NecromancerRole.RevivedPlayers.Clear();
-            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
-            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
-        }
         [RegisterEvent]
         public static void OnGameEnd(GameEndEvent evt)
         {
-            Utils.ResetDrainCount();
-            Utils.ResetMissionSuccessCount();
-            Utils.ResetMissionFailureCount();
-            Utils.ResetInjections();
-            Utils.ResetStrikeCount();
-            Utils.ResetKillTracking();
-            PranksterUtilities.ResetReportCount();
+            ResetMatchState();
             VisionaryUtilities.DeleteAllScreenshots();
-            WraithCallerUtilities.ClearAll();
-            Shade.ShadeKills.Clear();
-            Revenant.ResetAllStates();
-            NecromancerRole.RevivedPlayers.Clear();
-            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
-            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
         }
     }
 }

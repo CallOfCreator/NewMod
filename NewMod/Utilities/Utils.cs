@@ -68,12 +68,14 @@ namespace NewMod.Utilities
         /// <summary>
         /// Maintains saved roles for players, keyed by their ID.
         /// </summary>
-        public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles = new Dictionary<byte, List<RoleBehaviour>>();
+        public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles =
+            new Dictionary<byte, List<RoleBehaviour>>();
 
         /// <summary>
         /// Maps a player ID to a TextMeshPro timer display for missions.
         /// </summary>
         public static Dictionary<byte, TMPro.TextMeshPro> MissionTimer = new Dictionary<byte, TMPro.TextMeshPro>();
+
         /// <summary>
         /// A dictionary holding the strike kill counts for each player, indexed by their player ID.
         /// </summary>
@@ -105,6 +107,7 @@ namespace NewMod.Utilities
         {
             PlayerKiller[victim.PlayerId] = killer.PlayerId;
         }
+
         public static void ResetKillTracking()
         {
             PlayerKiller.Clear();
@@ -142,12 +145,14 @@ namespace NewMod.Utilities
                 var component = collider2D.GetComponent<DeadBody>();
                 var distance = Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), component.TruePosition);
 
-                if (distance <= GameOptionsManager.Instance.currentNormalGameOptions.KillDistance && distance < closestDistance)
+                if (distance <= GameOptionsManager.Instance.currentNormalGameOptions.KillDistance &&
+                    distance < closestDistance)
                 {
                     closestBody = component;
                     closestDistance = distance;
                 }
             }
+
             return closestBody;
         }
 
@@ -165,6 +170,7 @@ namespace NewMod.Utilities
             {
                 return false;
             }
+
             switch (type)
             {
                 case SystemTypes.Electrical:
@@ -203,7 +209,8 @@ namespace NewMod.Utilities
                     }
                 case SystemTypes.MushroomMixupSabotage:
                     if (mapId != 5) return false;
-                    var MushroomMixupSabotageSystem = ShipStatus.Instance.Systems[type].TryCast<MushroomMixupSabotageSystem>();
+                    var MushroomMixupSabotageSystem =
+                        ShipStatus.Instance.Systems[type].TryCast<MushroomMixupSabotageSystem>();
                     return MushroomMixupSabotageSystem != null && MushroomMixupSabotageSystem.IsActive;
                 default:
                     return false;
@@ -336,6 +343,7 @@ namespace NewMod.Utilities
             var playerId = killer.PlayerId;
             StrikeKills[playerId] = StrikeKills.GetValueOrDefault(playerId) + 1;
         }
+
         /// <summary>
         /// Retrieves the total number of strike kills for a specific player.
         /// </summary>
@@ -373,7 +381,8 @@ namespace NewMod.Utilities
         // Inspired By: https://github.com/AU-Avengers/TOU-Mira/blob/dev/TownOfUs/Modules/ReviveUtilities.cs#L40
 
         [MethodRpc((uint)CustomRPC.HandleRevive)]
-        public static IEnumerator HandleRevive(PlayerControl source, byte revivedId, RoleTypes roleToSet, float reviveX, float reviveY)
+        public static IEnumerator HandleRevive(PlayerControl source, byte revivedId, RoleTypes roleToSet, float reviveX,
+            float reviveY)
         {
             var revived = PlayerById(revivedId);
 
@@ -451,6 +460,7 @@ namespace NewMod.Utilities
             {
                 savedPlayerRoles[playerId] = new List<RoleBehaviour>();
             }
+
             savedPlayerRoles[playerId].Add(role);
         }
 
@@ -466,6 +476,7 @@ namespace NewMod.Utilities
             {
                 return savedPlayerRoles[playerId];
             }
+
             return new List<RoleBehaviour>();
         }
 
@@ -482,6 +493,7 @@ namespace NewMod.Utilities
             {
                 return players[Random.RandomRange(0, players.Count)];
             }
+
             return null;
         }
 
@@ -498,6 +510,7 @@ namespace NewMod.Utilities
                     return player;
                 }
             }
+
             return null;
         }
 
@@ -516,19 +529,23 @@ namespace NewMod.Utilities
                     target.MyPhysics.Speed *= 0.5f;
                     if (source.AmOwner)
                     {
-                        HudManager.Instance.ShowPopUp($"<color=purple>{target.Data.PlayerName} speed was reduced by 50%!</color>");
+                        HudManager.Instance.ShowPopUp(
+                            $"<color=purple>{target.Data.PlayerName} speed was reduced by 50%!</color>");
                     }
                 },
                 () =>
                 {
                     if (target.AmOwner)
                     {
-                        HudManager.Instance.StartCoroutine(HudManager.Instance.CoFadeFullScreen(Color.black, Color.black, 0.5f, false));
+                        HudManager.Instance.StartCoroutine(
+                            HudManager.Instance.CoFadeFullScreen(Color.black, Color.black, 0.5f, false));
                         target.NetTransform.Halt();
                     }
+
                     if (source.AmOwner)
                     {
-                        HudManager.Instance.ShowPopUp($"<color=blue>Movement is disabled for {target.Data.PlayerName}, and their screen is black!</color>");
+                        HudManager.Instance.ShowPopUp(
+                            $"<color=blue>Movement is disabled for {target.Data.PlayerName}, and their screen is black!</color>");
                     }
                 },
                 () =>
@@ -536,7 +553,8 @@ namespace NewMod.Utilities
                     target.myTasks.Clear();
                     if (source.AmOwner)
                     {
-                        HudManager.Instance.ShowPopUp($"<color=green>{target.Data.PlayerName} had all of their tasks cleared!</color>");
+                        HudManager.Instance.ShowPopUp(
+                            $"<color=green>{target.Data.PlayerName} had all of their tasks cleared!</color>");
                     }
                 },
                 () =>
@@ -544,7 +562,8 @@ namespace NewMod.Utilities
                     target.RemainingEmergencies = 0;
                     if (source.AmOwner)
                     {
-                        HudManager.Instance.ShowPopUp($"<color=orange>{target.Data.PlayerName} can no longer call emergency meetings!</color>");
+                        HudManager.Instance.ShowPopUp(
+                            $"<color=orange>{target.Data.PlayerName} can no longer call emergency meetings!</color>");
                     }
                 },
                 () =>
@@ -555,7 +574,8 @@ namespace NewMod.Utilities
                         target.NetTransform.RpcSnapTo(randomPlayer.GetTruePosition());
                         if (source.AmOwner)
                         {
-                            HudManager.Instance.ShowPopUp($"<color=red>{target.Data.PlayerName} has been teleported!</color>");
+                            HudManager.Instance.ShowPopUp(
+                                $"<color=red>{target.Data.PlayerName} has been teleported!</color>");
                         }
                     }
                 }
@@ -578,7 +598,8 @@ namespace NewMod.Utilities
             {
                 MissionType.KillMostWanted => $"Kill the Most Wanted Target: {mostwantedTarget.Data.PlayerName}",
                 MissionType.DrainEnergy => "Drain one player using Energy Thief abilities",
-                MissionType.CreateFakeBodies => "Disguise yourself as a random player and create fake dead bodies around the map using Prankster abilities!",
+                MissionType.CreateFakeBodies =>
+                    "Disguise yourself as a random player and create fake dead bodies around the map using Prankster abilities!",
                 MissionType.ReviveAndKill => "Revive a dead player using Necromancer powers and kill them again",
                 _ => "Unknown mission."
             };
@@ -611,14 +632,17 @@ namespace NewMod.Utilities
                             rolesHistory.RemoveAt(lastIndex);
                             target.RpcSetRole(originalRole.Role, true);
                         }
+
                         break;
 
                     case MissionType.CreateFakeBodies:
                         NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: CreateFakeBodies");
                         if (target.AmOwner)
                         {
-                            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
+                            Coroutines.Start(CoroutinesHelper.CoNotify(
+                                "<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
                         }
+
                         Coroutines.Start(CoroutinesHelper.UsePranksterAbilities(target));
                         break;
 
@@ -626,8 +650,10 @@ namespace NewMod.Utilities
                         NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: DrainEnergy");
                         if (target.AmOwner)
                         {
-                            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain nearby players'energy</b></i></color>"));
+                            Coroutines.Start(CoroutinesHelper.CoNotify(
+                                "<color=#00FA9A><i><b>Press F5 to drain nearby players'energy</b></i></color>"));
                         }
+
                         Coroutines.Start(CoroutinesHelper.UseEnergyThiefAbilities(target));
                         break;
 
@@ -639,8 +665,10 @@ namespace NewMod.Utilities
             }
             catch (System.Exception ex)
             {
-                NewMod.Instance.Log.LogError($"Failed to assign mission to {target.Data.PlayerName}. Reason: {ex.Message} | StackTrace: {ex.StackTrace}");
+                NewMod.Instance.Log.LogError(
+                    $"Failed to assign mission to {target.Data.PlayerName}. Reason: {ex.Message} | StackTrace: {ex.StackTrace}");
             }
+
             return selectedMission;
         }
 
@@ -653,21 +681,26 @@ namespace NewMod.Utilities
             {
                 int currentSuccessCount = GetMissionSuccessCount(source.PlayerId);
                 int netScore = currentSuccessCount - GetMissionFailureCount(source.PlayerId);
-                Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD700>Target {target.Data.PlayerName} has completed their mission!\nCurrent net score: {netScore}/3</color>"));
+                Coroutines.Start(CoroutinesHelper.CoNotify(
+                    $"<color=#FFD700>Target {target.Data.PlayerName} has completed their mission!\nCurrent net score: {netScore}/3</color>"));
             }
             else
             {
-                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32>Mission Completed! You are free to go!</color>"));
+                Coroutines.Start(
+                    CoroutinesHelper.CoNotify("<color=#32CD32>Mission Completed! You are free to go!</color>"));
             }
+
             if (savedTasks.ContainsKey(target))
             {
                 target.myTasks = savedTasks[target];
                 savedTasks.Remove(target);
             }
+
             if (SpecialAgent.AssignedPlayer == target)
             {
                 SpecialAgent.AssignedPlayer = null;
             }
+
             if (target.Data.Role is ICustomRole role)
             {
                 if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
@@ -691,23 +724,30 @@ namespace NewMod.Utilities
             {
                 int currentFailureCount = GetMissionFailureCount(source.PlayerId);
                 int netScore = GetMissionSuccessCount(source.PlayerId) - currentFailureCount;
-                Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF0000>Target {target.Data.PlayerName} has failed their mission! <b>Current net score: {netScore}/3</b></color>"));
+                Coroutines.Start(CoroutinesHelper.CoNotify(
+                    $"<color=#FF0000>Target {target.Data.PlayerName} has failed their mission! <b>Current net score: {netScore}/3</b></color>"));
             }
             else
             {
-                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
+                Coroutines.Start(
+                    CoroutinesHelper.CoNotify(
+                        "<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
             }
-            source.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
+
+            source.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false,
+                playKillSound: true, teleportMurderer: false);
 
             if (savedTasks.ContainsKey(target))
             {
                 target.myTasks = savedTasks[target];
                 savedTasks.Remove(target);
             }
+
             if (SpecialAgent.AssignedPlayer == target)
             {
                 SpecialAgent.AssignedPlayer = null;
             }
+
             if (target.Data.Role is ICustomRole role)
             {
                 if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
@@ -721,6 +761,7 @@ namespace NewMod.Utilities
                 }
             }
         }
+
         public static string GetFactionDisplay(INewModRole role)
         {
             return role.Faction switch
@@ -735,7 +776,10 @@ namespace NewMod.Utilities
         /// <summary>
         /// Stores tasks that have been saved for a given player, allowing restoration after missions.
         /// </summary>
-        public static Il2CppSystem.Collections.Generic.Dictionary<PlayerControl, Il2CppSystem.Collections.Generic.List<PlayerTask>> savedTasks = new();
+        public static
+            Il2CppSystem.Collections.Generic.Dictionary<PlayerControl,
+                Il2CppSystem.Collections.Generic.List<PlayerTask>>
+            savedTasks = new();
 
         /// <summary>
         /// Assigns a random mission to the target player as a custom RPC.
@@ -754,6 +798,7 @@ namespace NewMod.Utilities
                 {
                     newTaskList.Add(task);
                 }
+
                 savedTasks[target] = newTaskList;
             }
 
@@ -769,8 +814,8 @@ namespace NewMod.Utilities
             ImportantTextTask Missionmessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
             Missionmessage.transform.SetParent(AmongUsClient.Instance.transform, false);
             Missionmessage.Text = $"<color=red>Special Agent</color> has given you a mission!\n" +
-                       $"<b><color=blue>Mission:</color></b> {GetMission(target, randomMission)}\n" +
-                       $"<i><color=green>Complete it or face the consequences!</color></i>";
+                                  $"<b><color=blue>Mission:</color></b> {GetMission(target, randomMission)}\n" +
+                                  $"<i><color=green>Complete it or face the consequences!</color></i>";
 
             target.myTasks.Insert(0, Missionmessage);
             // Disable the Role Player's Ability
@@ -786,6 +831,7 @@ namespace NewMod.Utilities
                     }
                 }
             }
+
             Coroutines.Start(CoroutinesHelper.CoMissionTimer(target, 60f));
         }
 
@@ -845,7 +891,8 @@ namespace NewMod.Utilities
             };
             Revenant.FeignDeathStates[player.PlayerId] = info;
 
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You are now feigning death.\nYou will be revived in 10 seconds if unreported.</color>"));
+            Coroutines.Start(CoroutinesHelper.CoNotify(
+                "<color=green>You are now feigning death.\nYou will be revived in 10 seconds if unreported.</color>"));
 
             if (player.AmOwner)
             {
@@ -861,12 +908,14 @@ namespace NewMod.Utilities
 
                 if (info.Reported)
                 {
-                    yield return CoroutinesHelper.CoNotify("<color=red>Your feign death has been reported. You remain dead.</color>");
+                    yield return CoroutinesHelper.CoNotify(
+                        "<color=red>Your feign death has been reported. You remain dead.</color>");
                     Revenant.FeignDeathStates.Remove(player.PlayerId);
                     SoundManager.Instance.StopSound(clip);
                     yield break;
                 }
             }
+
             Revenant.HasUsedFeignDeath = true;
             Revenant.StalkingStates[player.PlayerId] = true;
 
@@ -883,6 +932,7 @@ namespace NewMod.Utilities
             {
                 HudManager.Instance.SetHudActive(player, player.Data.Role, true);
             }
+
             SoundManager.Instance.StopSound(clip);
         }
 
@@ -903,8 +953,10 @@ namespace NewMod.Utilities
                 {
                     ghostRenderer.color = new Color(1f, 0f, 0f, alpha);
                 }
+
                 yield return null;
             }
+
             Object.Destroy(ghost);
         }
 
@@ -914,14 +966,14 @@ namespace NewMod.Utilities
         /// </summary>
         public static readonly Dictionary<System.Type, List<System.Type>> RoleToButtonsMap = new()
         {
-            { typeof(EnergyThief),     new() { typeof(DrainButton) } },
+            { typeof(EnergyThief), new() { typeof(DrainButton) } },
             { typeof(NecromancerRole), new() { typeof(ReviveButton) } },
-            { typeof(Prankster),       new() { typeof(FakeBodyButton) } },
-            { typeof(Revenant),        new() { typeof(FeignDeathButton), typeof(DoomAwakening) } },
-            { typeof(SpecialAgent),    new() { typeof(AssignButton) } },
-            { typeof(TheVisionary),    new() { typeof(CaptureButton), typeof(ShowScreenshotButton) } },
-            { typeof(PulseBlade),      new() { typeof(StrikeButton)}},
-            { typeof(WraithCaller),    new() {typeof(CallWraithButton) } }
+            { typeof(Prankster), new() { typeof(FakeBodyButton) } },
+            { typeof(Revenant), new() { typeof(FeignDeathButton), typeof(DoomAwakening) } },
+            { typeof(SpecialAgent), new() { typeof(AssignButton) } },
+            { typeof(TheVisionary), new() { typeof(CaptureButton), typeof(ShowScreenshotButton) } },
+            { typeof(PulseBlade), new() { typeof(StrikeButton) } },
+            { typeof(WraithCaller), new() { typeof(CallWraithButton) } }
             // TODO: Add Launchpad roles and their associated buttons here
         };
 
@@ -964,77 +1016,84 @@ namespace NewMod.Utilities
             switch (serumType)
             {
                 case SerumType.Adrenaline:
-                    {
-                        float boostPercent = OptionGroupSingleton<InjectorOptions>.Instance.AdrenalineSpeedBoost;
-                        float multiplier = 1f + (boostPercent / 100f);
-                        float originalSpeed = target.MyPhysics.Speed;
+                {
+                    float boostPercent = OptionGroupSingleton<InjectorOptions>.Instance.AdrenalineSpeedBoost;
+                    float multiplier = 1f + (boostPercent / 100f);
+                    float originalSpeed = target.MyPhysics.Speed;
 
-                        target.MyPhysics.Speed *= multiplier;
+                    target.MyPhysics.Speed *= multiplier;
 
-                        Coroutines.Start(CoroutinesHelper.ResetSpeedAfterDelay(target, originalSpeed, 10f));
-                        break;
-                    }
+                    Coroutines.Start(CoroutinesHelper.ResetSpeedAfterDelay(target, originalSpeed, 10f));
+                    break;
+                }
 
                 case SerumType.Paralysis:
+                {
+                    float duration = OptionGroupSingleton<InjectorOptions>.Instance.ParalysisDuration;
+
+                    target.moveable = false;
+                    if (target.AmOwner)
                     {
-                        float duration = OptionGroupSingleton<InjectorOptions>.Instance.ParalysisDuration;
-
-                        target.moveable = false;
-                        target.MyPhysics.inputHandler.enabled = false;
-
-                        Coroutines.Start(CoroutinesHelper.EnableMovementAfterDelay(target, duration));
-                        break;
+                        target.MyPhysics.SetNormalizedVelocity(Vector2.zero);
                     }
+
+                    Coroutines.Start(CoroutinesHelper.EnableMovementAfterDelay(target, duration));
+                    break;
+                }
                 case SerumType.BounceSerum:
+                {
+                    float bounceDuration = OptionGroupSingleton<InjectorOptions>.Instance.BounceDuration;
+                    float h = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceHorizontal;
+                    //float v = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceVertical;
+                    float maxRotate = OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect.Value;
+
+                    //Vector2 force = new(Random.Range(-h, h), Random.Range(-v, v));
+
+                    //target.MyPhysics.body.AddForce(force);
+
+                    Effects.Bounce(target.transform, bounceDuration, h);
+
+                    if (OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants)
                     {
-                        float bounceDuration = OptionGroupSingleton<InjectorOptions>.Instance.BounceDuration;
-                        float h = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceHorizontal;
-                        //float v = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceVertical;
-                        float maxRotate = OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect.Value;
-
-                        //Vector2 force = new(Random.Range(-h, h), Random.Range(-v, v));
-
-                        //target.MyPhysics.body.AddForce(force);
-
-                        Effects.Bounce(target.transform, bounceDuration, h);
-
-                        if (OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants)
+                        if (Helpers.CheckChance(OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect))
                         {
-                            if (Helpers.CheckChance(OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect))
-                            {
-                                target.transform.Rotate(0, 0, Random.Range(-maxRotate, maxRotate));
-                            }
-                            Coroutines.Start(CoroutinesHelper.ResetRotationAfterDelay(target, bounceDuration));
+                            target.transform.Rotate(0, 0, Random.Range(-maxRotate, maxRotate));
                         }
+
+                        Coroutines.Start(CoroutinesHelper.ResetRotationAfterDelay(target, bounceDuration));
                     }
+                }
                     break;
                 case SerumType.RepelSerum:
+                {
+                    float RepelDuration = OptionGroupSingleton<InjectorOptions>.Instance.RepelDuration;
+                    float RepelRange = OptionGroupSingleton<InjectorOptions>.Instance.RepelRange;
+                    float RepelForce = OptionGroupSingleton<InjectorOptions>.Instance.RepelForce;
+
+                    foreach (var other in PlayerControl.AllPlayerControls)
                     {
-                        float RepelDuration = OptionGroupSingleton<InjectorOptions>.Instance.RepelDuration;
-                        float RepelRange = OptionGroupSingleton<InjectorOptions>.Instance.RepelRange;
-                        float RepelForce = OptionGroupSingleton<InjectorOptions>.Instance.RepelForce;
+                        if (other == target || other.Data.IsDead || other.Data.Disconnected) continue;
 
-                        foreach (var other in PlayerControl.AllPlayerControls)
+                        float dist = Vector2.Distance(other.GetTruePosition(), target.GetTruePosition());
+
+                        if (dist < RepelRange)
                         {
-                            if (other == target || other.Data.IsDead || other.Data.Disconnected) continue;
-
-                            float dist = Vector2.Distance(other.GetTruePosition(), target.GetTruePosition());
-
-                            if (dist < RepelRange)
-                            {
-                                Vector2 dir = (other.GetTruePosition() - target.GetTruePosition()).normalized;
-                                other.MyPhysics.body.velocity += dir * RepelForce;
-                            }
+                            Vector2 dir = (other.GetTruePosition() - target.GetTruePosition()).normalized;
+                            other.MyPhysics.body.velocity += dir * RepelForce;
                         }
-                        Coroutines.Start(CoroutinesHelper.ResetRepelEffect(target, RepelDuration));
                     }
+
+                    Coroutines.Start(CoroutinesHelper.ResetRepelEffect(target, RepelDuration));
+                }
                     break;
             }
+
             RegisterPlayerInjection(target);
 
             if (source.AmOwner)
             {
-                Helpers.CreateAndShowNotification($"Injected {target.Data.PlayerName} with {serumType}", new(0.9f, 0.3f, 0.1f), spr: NewModAsset.InjectIcon.LoadAsset());
+                Helpers.CreateAndShowNotification($"Injected {target.Data.PlayerName} with {serumType}",
+                    new(0.9f, 0.3f, 0.1f), spr: NewModAsset.InjectIcon.LoadAsset());
             }
         }
 
@@ -1067,8 +1126,10 @@ namespace NewMod.Utilities
                 {
                     cam.transform.localPosition = originalPos;
                 }
+
                 yield return null;
             }
+
             cam.transform.localPosition = originalPos;
         }
 
@@ -1085,6 +1146,7 @@ namespace NewMod.Utilities
             int ss = Mathf.Clamp(t.Seconds, 0, 59);
             return $"{dd:D1}:{hh:D2}:{mm:D2}:{ss:D2}";
         }
+
         /// <summary>
         /// Finds the surveillance console on the current ship.
         /// </summary>
@@ -1094,13 +1156,14 @@ namespace NewMod.Utilities
         public static SystemConsole FindSurveillanceConsole()
         {
             var all = ShipStatus.Instance?.AllConsoles;
-            var sys = all.OfType<SystemConsole>().FirstOrDefault(c => c && c.MinigamePrefab && c.MinigamePrefab is SurveillanceMinigame);
+            var sys = all.OfType<SystemConsole>()
+                .FirstOrDefault(c => c && c.MinigamePrefab && c.MinigamePrefab is SurveillanceMinigame);
 
             return all.OfType<SystemConsole>().FirstOrDefault(c =>
             {
                 var n = c.name;
                 return n.Contains("Surv", System.StringComparison.OrdinalIgnoreCase)
-                    || n.Contains("Lookout", System.StringComparison.OrdinalIgnoreCase);
+                       || n.Contains("Lookout", System.StringComparison.OrdinalIgnoreCase);
             });
         }
 
@@ -1132,7 +1195,8 @@ namespace NewMod.Utilities
         /// <returns>
         /// The created <see cref="GameObject"/> representing the circle.
         /// </returns>
-        public static GameObject CreateCircle(string name, Vector3 pos, float radius, Color color, float duration, int segments = 64)
+        public static GameObject CreateCircle(string name, Vector3 pos, float radius, Color color, float duration,
+            int segments = 64)
         {
             var go = new GameObject(name);
             go.transform.position = pos;
@@ -1171,17 +1235,20 @@ namespace NewMod.Utilities
             Coroutines.Start(CoroutinesHelper.DespawnCircle(go, duration));
             return go;
         }
+
         public static bool IsRoleActive(string roleName)
         {
             foreach (var roles in RoleManager.Instance.AllRoles)
             {
                 CustomRoleManager.GetCustomRoleBehaviour(roles.Role, out var customRole);
 
-                if (customRole != null && customRole.RoleName.Equals(roleName, System.StringComparison.OrdinalIgnoreCase))
+                if (customRole != null &&
+                    customRole.RoleName.Equals(roleName, System.StringComparison.OrdinalIgnoreCase))
                 {
                     return customRole.GetChance() > 0 && customRole.GetCount() > 0;
                 }
             }
+
             return false;
         }
     }

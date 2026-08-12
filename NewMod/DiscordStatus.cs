@@ -1,4 +1,5 @@
 // Inspired by: https://github.com/All-Of-Us-Mods/LaunchpadReloaded/blob/master/LaunchpadReloaded/Patches/Generic/DiscordManagerPatch.cs#L12
+
 using System;
 using Discord;
 using HarmonyLib;
@@ -11,37 +12,6 @@ namespace NewMod
     [HarmonyPatch]
     public static class NewModDiscordPatch
     {
-        private static Discord.Discord discord;
-        public static ActivityManager activityManager;
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(DiscordManager), nameof(DiscordManager.Start))]
-        public static bool StartPrefix(DiscordManager __instance)
-        {
-            if (Application.platform == RuntimePlatform.Android) return true;
-
-            InitializeDiscord(__instance);
-            return false;
-        }
-        
-        private static void InitializeDiscord(DiscordManager __instance)
-        {
-            const long clientId = 1405946628115791933;
-
-            discord = new Discord.Discord(clientId, (ulong)CreateFlags.Default);
-            activityManager = discord.GetActivityManager();
-
-            activityManager.RegisterSteam(945360U);
-            activityManager.add_OnActivityJoin((Action<string>)__instance.HandleJoinRequest);
-
-            SceneManager.add_sceneLoaded((Action<Scene, LoadSceneMode>)((scene, _) =>
-            {
-                __instance.OnSceneChange(scene.name);
-            }));
-            __instance.presence = discord;
-            __instance.SetInMenus();
-        }
-
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ActivityManager), nameof(ActivityManager.UpdateActivity))]
         public static void UpdateActivityPrefix([HarmonyArgument(0)] ref Activity activity)
@@ -69,7 +39,8 @@ namespace NewMod
                     var miraVersion = MiraApiPlugin.Version;
                     var platform = Application.platform;
 
-                    activity.Details += $" | Lobby: {lobbyCode} | Max: {maxPlayers} | MiraAPI: {miraVersion} | {platform}";
+                    activity.Details +=
+                        $" | Lobby: {lobbyCode} | Max: {maxPlayers} | MiraAPI: {miraVersion} | {platform}";
                 }
 
                 if (MeetingHud.Instance)
