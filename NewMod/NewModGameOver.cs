@@ -1,13 +1,11 @@
 using System.Linq;
-using MiraAPI.GameEnd;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
-using UnityEngine;
 
-namespace NewMod.GameEnd;
+namespace NewMod;
 
 internal static class NewModGameOver
 {
