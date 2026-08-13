@@ -20,10 +20,14 @@ namespace NewMod.Roles.CrewmateRoles
     {
         public string RoleName => "Beacon";
         public string RoleDescription => "Scan. Locate. Coordinate.";
-        public string RoleLongDescription => "Send out a map-wide pulse that briefly reveals the position of all players.";
+
+        public string RoleLongDescription =>
+            "Send out a map-wide pulse that briefly reveals the position of all players.";
+
         public Color RoleColor => new(0.494f, 0.341f, 0.761f);
         public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
         public NewModFaction Faction => NewModFaction.Sentinel;
+
         public CustomRoleConfiguration Configuration => new(this)
         {
             AffectedByLightOnAirship = true,
@@ -50,17 +54,17 @@ namespace NewMod.Roles.CrewmateRoles
 
             tab.AppendLine($"<size=65%><color=#{ColorUtility.ToHtmlStringRGB(RoleColor)}>Recon Support</color></size>");
             tab.AppendLine();
-            tab.AppendLine($"<size=65%>Charges: <b><color=#{ColorUtility.ToHtmlStringRGB(Color.cyan)}>{chargesFromTasks}</color></b> / {maxCharges}  (+1 per {taskPerCh} tasks)</size>");
-            tab.AppendLine($"<size=65%>Pulse Duration: <color=#{ColorUtility.ToHtmlStringRGB(Color.cyan)}>{pulseDur:F0}s</color> • Cooldown: <color=#{ColorUtility.ToHtmlStringRGB(Color.yellow)}>{cd:F0}s</color></size>");
+            tab.AppendLine(
+                $"<size=65%>Charges: <b><color=#{ColorUtility.ToHtmlStringRGB(Color.cyan)}>{chargesFromTasks}</color></b> / {maxCharges}  (+1 per {taskPerCh} tasks)</size>");
+            tab.AppendLine(
+                $"<size=65%>Pulse Duration: <color=#{ColorUtility.ToHtmlStringRGB(Color.cyan)}>{pulseDur:F0}s</color> • Cooldown: <color=#{ColorUtility.ToHtmlStringRGB(Color.yellow)}>{cd:F0}s</color></size>");
             tab.AppendLine();
-            tab.AppendLine("<size=65%><color=#FFD54F>Tip:</color> Use pulses after lights or suspected kills to catch rotations.</size>");
+            tab.AppendLine(
+                "<size=65%><color=#FFD54F>Tip:</color> Use pulses after lights or suspected kills to catch rotations.</size>");
 
             return tab;
         }
-        public override bool DidWin(GameOverReason gameOverReason)
-        {
-            return gameOverReason is GameOverReason.CrewmatesByVote or GameOverReason.CrewmatesByTask;
-        }
+
         public static int charges;
         public static int grantedFromTasks;
         public static int lastCompletedTasks;
@@ -74,12 +78,14 @@ namespace NewMod.Roles.CrewmateRoles
             cooldownUntil = 0f;
             charges = (int)OptionGroupSingleton<BeaconOptions>.Instance.MaxCharges;
         }
+
         [RegisterEvent]
         public static void OnTaskComplete(CompleteTaskEvent evt)
         {
             if (PlayerControl.LocalPlayer.Data.Role is not Beacon) return;
             UpdateChargesFromTasks();
         }
+
         public static void UpdateChargesFromTasks()
         {
             var settings = OptionGroupSingleton<BeaconOptions>.Instance;
@@ -102,12 +108,14 @@ namespace NewMod.Roles.CrewmateRoles
                 Rpc<BeaconPulseRpc>.Instance.Send(new BeaconPulseRpc.Data(settings.PulseDuration));
             }
         }
+
         public static int GetCompletedTasks()
         {
             var lp = PlayerControl.LocalPlayer;
             int done = 0;
             foreach (var t in lp.myTasks)
-                if (t && t.IsComplete) done++;
+                if (t && t.IsComplete)
+                    done++;
             return done;
         }
     }

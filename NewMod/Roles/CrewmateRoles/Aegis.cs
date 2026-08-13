@@ -23,6 +23,7 @@ namespace NewMod.Roles.CrewmateRoles
         public Color RoleColor => new(0.227f, 0.651f, 1f);
         public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
         public NewModFaction Faction => NewModFaction.Sentinel;
+
         public CustomRoleConfiguration Configuration => new(this)
         {
             AffectedByLightOnAirship = true,
@@ -54,18 +55,16 @@ namespace NewMod.Roles.CrewmateRoles
             tab.AppendLine();
 
             tab.AppendLine($"<size=65%>Mode: <b><color=#{green}>{mode}</color></b></size>");
-            tab.AppendLine($"<size=65%>Radius: <color=#{cyan}>{radius:F1}u</color> • Duration: <color=#{cyan}>{dur:F0}s</color></size>");
-            tab.AppendLine($"<size=65%>Cooldown: <color=#{yellow}>{cd:F0}s</color> • Charges: <color=#{yellow}>{uses}</color></size>");
+            tab.AppendLine(
+                $"<size=65%>Radius: <color=#{cyan}>{radius:F1}u</color> • Duration: <color=#{cyan}>{dur:F0}s</color></size>");
+            tab.AppendLine(
+                $"<size=65%>Cooldown: <color=#{yellow}>{cd:F0}s</color> • Charges: <color=#{yellow}>{uses}</color></size>");
             tab.AppendLine();
 
-            tab.AppendLine("<size=65%><color=#FFD54F>Tip:</color> Place wards on choke points or common kill paths.</size>");
+            tab.AppendLine(
+                "<size=65%><color=#FFD54F>Tip:</color> Place wards on choke points or common kill paths.</size>");
 
             return tab;
-        }
-
-        public override bool DidWin(GameOverReason gameOverReason)
-        {
-            return gameOverReason is GameOverReason.CrewmatesByTask or GameOverReason.CrewmatesByVote;
         }
 
         [RegisterEvent]
@@ -90,8 +89,9 @@ namespace NewMod.Roles.CrewmateRoles
             NewMod.Instance.Log.LogError("Role Ability Canceled");
 
             Coroutines.Start(CoroutinesHelper.CoNotify(
-              "<color=#3A9EFF>Aegis</color> blocks your ability here"));
+                "<color=#3A9EFF>Aegis</color> blocks your ability here"));
         }
+
         [RegisterEvent]
         public static void OnBeforeMurder(BeforeMurderEvent evt)
         {
@@ -107,16 +107,18 @@ namespace NewMod.Roles.CrewmateRoles
                 Coroutines.Start(CoroutinesHelper.CoNotify(
                     "<color=#3A9EFF>Aegis</color> blocks your kill here"));
             }
+
             foreach (var area in ShieldArea.AreasAt(evt.Target.GetTruePosition()))
             {
                 var aegis = Utils.PlayerById(area.ownerId);
                 if (aegis.AmOwner)
                 {
                     Coroutines.Start(CoroutinesHelper.CoNotify(
-                    $"<color=#3A9EFF>Aegis Ward Alert:</color> Kill attempt blocked inside your ward!"));
+                        $"<color=#3A9EFF>Aegis Ward Alert:</color> Kill attempt blocked inside your ward!"));
                 }
             }
         }
+
         [RegisterEvent]
         public static void OnAfterMurder(AfterMurderEvent evt)
         {
@@ -142,6 +144,7 @@ namespace NewMod.Roles.CrewmateRoles
                             Coroutines.Start(CoroutinesHelper.CoNotify(
                                 $"<color=#3A9EFF>Aegis Ward Alert:</color> A player was killed inside your ward by <color=#FF4444><b>{killerName}</b></color>!"));
                         }
+
                         break;
                 }
             }

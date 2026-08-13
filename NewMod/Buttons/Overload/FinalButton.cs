@@ -1,3 +1,4 @@
+using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
@@ -66,10 +67,7 @@ namespace NewMod.Buttons.Overload
         /// </summary>
         protected override void OnClick()
         {
-            GameManager.Instance.RpcEndGame(
-                (GameOverReason)NewModEndReasons.OverloadWin,
-                false
-            );
+            CustomGameOver.Trigger<OverloadGameOver>([PlayerControl.LocalPlayer.Data]);
         }
     }
 }

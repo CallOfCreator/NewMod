@@ -11,10 +11,14 @@ public class Revenant : ImpostorRole, ICustomRole
 {
     public string RoleName => "Revenant";
     public string RoleDescription => "Cheat death—exactly once per match. Time it wisely.";
-    public string RoleLongDescription => "As the Revenant, activate your ghostly form once per game to evade death for 10 seconds.\nIf a meeting is called during this time, your protection is lost permanently—time it wisely!";
+
+    public string RoleLongDescription =>
+        "As the Revenant, activate your ghostly form once per game to evade death for 10 seconds.\nIf a meeting is called during this time, your protection is lost permanently—time it wisely!";
+
     public Color RoleColor => new(0.3f, 0f, 0.5f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Impostor;
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         MaxRoleCount = 2,
@@ -31,9 +35,11 @@ public class Revenant : ImpostorRole, ICustomRole
         GhostRole = (AmongUs.GameOptions.RoleTypes)RoleId.Get<Revenant>(),
         RoleHintType = RoleHintType.RoleTab
     };
+
     public static Dictionary<byte, FeignDeathInfo> FeignDeathStates = new Dictionary<byte, FeignDeathInfo>();
     public static bool HasUsedFeignDeath = false;
     public static Dictionary<byte, bool> StalkingStates = new Dictionary<byte, bool>();
+
     public class FeignDeathInfo
     {
         public float Timer;
@@ -52,21 +58,5 @@ public class Revenant : ImpostorRole, ICustomRole
     public static void OnPlayerExit(PlayerLeaveEvent evt)
     {
         ResetAllStates();
-    }
-    public override bool DidWin(GameOverReason reason)
-    {
-        if (reason == (GameOverReason)NewModEndReasons.TyrantWin ||
-            reason == (GameOverReason)NewModEndReasons.ShadeWin ||
-            reason == (GameOverReason)NewModEndReasons.WraithCallerWin ||
-            reason == (GameOverReason)NewModEndReasons.SpecialAgentWin ||
-            reason == (GameOverReason)NewModEndReasons.PranksterWin ||
-            reason == (GameOverReason)NewModEndReasons.EnergyThiefWin ||
-            reason == (GameOverReason)NewModEndReasons.InjectorWin ||
-            reason == (GameOverReason)NewModEndReasons.DoubleAgentWin)
-        {
-            return false;
-        }
-
-        return true;
     }
 }

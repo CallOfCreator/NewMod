@@ -12,10 +12,14 @@ namespace NewMod.Roles.NeutralRoles
     {
         public string RoleName => "Wraith Caller";
         public string RoleDescription => "Summon. Lurk. Reap.";
-        public string RoleLongDescription => "Summon spectral NPCs that slip through walls and hunt down your marked target.";
+
+        public string RoleLongDescription =>
+            "Summon spectral NPCs that slip through walls and hunt down your marked target.";
+
         public Color RoleColor => new(0.58f, 0.20f, 0.90f);
         public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
         public NewModFaction Faction => NewModFaction.Entropy;
+
         public CustomRoleConfiguration Configuration => new(this)
         {
             AffectedByLightOnAirship = false,
@@ -45,28 +49,34 @@ namespace NewMod.Roles.NeutralRoles
             tab.AppendLine();
 
             tab.AppendLine($"<size=70%>Sent: <b><color=#{cyan}>{sent}</color></b></size>");
-            tab.AppendLine($"<size=70%>Kills: <b><color=#{(kills >= required ? green : cyan)}>{kills}</color></b>/<color=#{yellow}>{required}</color></size>");
+            tab.AppendLine(
+                $"<size=70%>Kills: <b><color=#{(kills >= required ? green : cyan)}>{kills}</color></b>/<color=#{yellow}>{required}</color></size>");
 
             if (kills < required)
             {
                 int left = required - kills;
-                tab.AppendLine($"<size=65%><color=#{yellow}>{left} more successful kill{(left == 1 ? "" : "s")} to win.</color></size>");
+                tab.AppendLine(
+                    $"<size=65%><color=#{yellow}>{left} more successful kill{(left == 1 ? "" : "s")} to win.</color></size>");
             }
             else
             {
-                tab.AppendLine($"<size=65%><b><color=#{green}>Win condition armed. Survive to claim victory.</color></size></b>");
+                tab.AppendLine(
+                    $"<size=65%><b><color=#{green}>Win condition armed. Survive to claim victory.</color></size></b>");
             }
 
             if (showWarn)
             {
                 tab.AppendLine();
-                tab.AppendLine($"<size=60%><color=#{yellow}>Tip:</color> Time your summons. Meetings cancel hunts.</size>");
+                tab.AppendLine(
+                    $"<size=60%><color=#{yellow}>Tip:</color> Time your summons. Meetings cancel hunts.</size>");
             }
+
             return tab;
         }
+
         public override bool DidWin(GameOverReason gameOverReason)
         {
-            return gameOverReason == (GameOverReason)NewModEndReasons.WraithCallerWin;
+            return gameOverReason == CustomGameOver.GameOverReason<WraithCallerGameOver>();
         }
     }
 }

@@ -2,132 +2,137 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.Events.Vanilla.Player;
+using NewMod.Buttons.Revenant;
+using NewMod.Components;
+using NewMod.Modifiers;
+using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
+using UnityEngine;
 
-namespace NewMod
+namespace NewMod;
+
+public static class NewModEventHandler
 {
-    public static class NewModEventHandler
+    public static void RegisterEventsLogs()
     {
-        public static void RegisterEventsLogs()
+        var type = typeof(MiraEventManager);
+        var field = type.GetField("EventWrappers", BindingFlags.NonPublic | BindingFlags.Static);
+        var wrappersObject = field.GetValue(null);
+        if (wrappersObject is not IDictionary wrappersByEvent || wrappersByEvent.Count == 0)
         {
-            var type = typeof(MiraEventManager);
-            var fld = type.GetField("EventWrappers", BindingFlags.NonPublic | BindingFlags.Static);
-            var dictObj = fld.GetValue(null);
-            if (dictObj is not IDictionary dict || dict.Count == 0)
-            {
-                return;
-            }
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine("=== Registered NewMod Events ===");
+            return;
+        }
 
-            foreach (DictionaryEntry entry in dict)
-            {
-                var eventType = entry.Key as Type;
-                var listObj = entry.Value;
-                int count = 0;
-                var lines = new List<string>();
+        var builder = new System.Text.StringBuilder();
+        builder.AppendLine("=== Registered NewMod Events ===");
 
-                if (listObj is IEnumerable wrappers)
+        foreach (DictionaryEntry entry in wrappersByEvent)
+        {
+            var eventType = entry.Key as Type;
+            var lines = new List<string>();
+
+            if (entry.Value is IEnumerable wrappers)
+            {
+                foreach (var wrapper in wrappers)
                 {
-                    foreach (var wrapper in wrappers)
-                    {
-                        if (wrapper == null) continue;
-                        var wType = wrapper.GetType();
+                    if (wrapper == null) continue;
 
-                        var ehProp = wType.GetProperty("EventHandler", BindingFlags.Public | BindingFlags.Instance);
-                        var prProp = wType.GetProperty("Priority", BindingFlags.Public | BindingFlags.Instance);
+                    var wrapperType = wrapper.GetType();
+                    var eventHandlerProperty =
+                        wrapperType.GetProperty("EventHandler", BindingFlags.Public | BindingFlags.Instance);
+                    var priorityProperty =
+                        wrapperType.GetProperty("Priority", BindingFlags.Public | BindingFlags.Instance);
+                    var handler = eventHandlerProperty.GetValue(wrapper) as Delegate;
+                    var priority = priorityProperty.GetValue(wrapper) as int? ?? 0;
+                    var method = handler.Method;
 
-                        var del = ehProp.GetValue(wrapper) as Delegate;
-                        var prio = prProp.GetValue(wrapper) as int? ?? 0;
-
-                        var method = del.Method;
-                        var declType = method.DeclaringType.FullName;
-                        var methodName = method.Name;
-
-                        lines.Add($" [{prio}] {declType}.{methodName}()");
-                        count++;
-                    }
+                    lines.Add($" [{priority}] {method.DeclaringType.FullName}.{method.Name}()");
                 }
-
-                sb.AppendLine($"{eventType.FullName}  (handlers: {count})");
-                foreach (var l in lines) sb.AppendLine(l);
             }
-            NewMod.Instance.Log.LogInfo(sb.ToString());
+
+            builder.AppendLine($"{eventType.FullName}  (handlers: {lines.Count})");
+            foreach (var line in lines)
+            {
+                builder.AppendLine(line);
+            }
         }
 
-        [RegisterEvent]
-        public static void OnRoundStart(RoundStartEvent evt)
-        {
-            if (!evt.TriggeredByIntro) return;
+        NewMod.Instance.Log.LogInfo(builder.ToString());
+    }
 
-            HudManager.Instance.Chat.enabled = false;
+    public static void ResetMatchState()
+    {
+        Utils.ResetKillTracking();
+        Utils.ResetDrainCount();
+        Utils.ResetMissionSuccessCount();
+        Utils.ResetMissionFailureCount();
+        Utils.ResetInjections();
+        Utils.ResetStrikeCount();
+        Utils.waitingPlayers.Clear();
+        Utils.savedPlayerRoles.Clear();
+        Utils.MissionTimer.Clear();
+        Utils.savedTasks.Clear();
 
-            Utils.ResetKillTracking();
-            NecromancerRole.RevivedPlayers.Clear();
-            Utils.ResetDrainCount();
-            Utils.ResetMissionSuccessCount();
-            Utils.ResetMissionFailureCount();
-            Utils.ResetInjections();
-            Utils.ResetStrikeCount();
-            Utils.ResetKillTracking();
-            PranksterUtilities.ResetReportCount();
-            VisionaryUtilities.DeleteAllScreenshots();
-            WraithCallerUtilities.ClearAll();
-            Shade.ShadeKills.Clear();
-            Revenant.ResetAllStates();
-            NecromancerRole.RevivedPlayers.Clear();
-            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
-            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
-        }
-        [RegisterEvent]
-        public static void OnPlayerLeft(PlayerLeaveEvent evt)
+        PranksterUtilities.ResetReportCount();
+        WraithCallerUtilities.ClearAll();
+        Shade.ShadeKills.Clear();
+        Revenant.ResetAllStates();
+        NecromancerRole.RevivedPlayers.Clear();
+
+        CoroutinesHelper.bodiesCreated.Clear();
+        CoroutinesHelper.drainCount.Clear();
+        PendingEffectManager.pendingEffects.Clear();
+        DoomAwakening.killedPlayers.Clear();
+
+        StickyModifier.linkedPlayers.Clear();
+        StickyModifier._IsActive = false;
+        FearPulseArea.AffectedPlayers.Clear();
+        FearPulseArea._speedNotifShown.Clear();
+        FearPulseArea._visionNotifShown.Clear();
+        AegisUtilities.ActiveOwners.Clear();
+
+        foreach (var shield in ShieldArea._active.ToArray())
         {
-            Utils.ResetDrainCount();
-            Utils.ResetMissionSuccessCount();
-            Utils.ResetMissionFailureCount();
-            Utils.ResetInjections();
-            Utils.ResetStrikeCount();
-            Utils.ResetKillTracking();
-            PranksterUtilities.ResetReportCount();
-            VisionaryUtilities.DeleteAllScreenshots();
-            WraithCallerUtilities.ClearAll();
-            Shade.ShadeKills.Clear();
-            Revenant.ResetAllStates();
-            NecromancerRole.RevivedPlayers.Clear();
-            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
-            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
+            if (shield)
+            {
+                UnityEngine.Object.Destroy(shield.gameObject);
+            }
         }
-        [RegisterEvent]
-        public static void OnGameEnd(GameEndEvent evt)
+
+        ShieldArea._active.Clear();
+
+        Tyrant.ResetState();
+        OverloadRole.ResetState();
+        SpecialAgent.AssignedPlayer = null;
+
+        Beacon.charges = 0;
+        Beacon.grantedFromTasks = 0;
+        Beacon.lastCompletedTasks = 0;
+        Beacon.cooldownUntil = 0f;
+        Beacon.pulseUntil = 0f;
+    }
+
+    [RegisterEvent]
+    public static void OnRoundStart(RoundStartEvent evt)
+    {
+        if (!evt.TriggeredByIntro)
         {
-            Utils.ResetDrainCount();
-            Utils.ResetMissionSuccessCount();
-            Utils.ResetMissionFailureCount();
-            Utils.ResetInjections();
-            Utils.ResetStrikeCount();
-            Utils.ResetKillTracking();
-            PranksterUtilities.ResetReportCount();
-            VisionaryUtilities.DeleteAllScreenshots();
-            WraithCallerUtilities.ClearAll();
-            Shade.ShadeKills.Clear();
-            Revenant.ResetAllStates();
-            NecromancerRole.RevivedPlayers.Clear();
-            NewMod.Instance.Log.LogInfo("Reset Drain Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Clone Report Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Success Count Successfully");
-            NewMod.Instance.Log.LogInfo("Reset Mission Failure Count Successfully");
-            NewMod.Instance.Log.LogInfo("Deleted all Visionary's screenshots Successfully");
+            return;
         }
+
+        HudManager.Instance.Chat.enabled = false;
+        VisionaryUtilities.DeleteAllScreenshots();
+    }
+
+    [RegisterEvent(100)]
+    public static void OnGameEnd(GameEndEvent evt)
+    {
+        ResetMatchState();
+        VisionaryUtilities.DeleteAllScreenshots();
     }
 }

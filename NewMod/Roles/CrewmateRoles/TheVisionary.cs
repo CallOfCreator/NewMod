@@ -12,6 +12,7 @@ public class TheVisionary : CrewmateRole, ICustomRole
     public Color RoleColor => new(0.75f, 0.5f, 1.0f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public RoleOptionsGroup RoleOptionGroup { get; } = RoleOptionsGroup.Crewmate;
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         DefaultRoleCount = 2,
@@ -27,8 +28,4 @@ public class TheVisionary : CrewmateRole, ICustomRole
         CanModifyChance = true,
         RoleHintType = RoleHintType.RoleTab
     };
-    public override bool DidWin(GameOverReason gameOverReason)
-    {
-        return gameOverReason == (GameOverReason)NewModEndReasons.TheVisionaryWin;
-    }
 }
