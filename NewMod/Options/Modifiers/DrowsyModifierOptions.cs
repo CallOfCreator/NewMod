@@ -1,16 +1,14 @@
 using MiraAPI.GameOptions;
-using MiraAPI.Utilities;
 using MiraAPI.GameOptions.Attributes;
-using MiraAPI.GameOptions.OptionTypes;
+using MiraAPI.Utilities;
 using NewMod.Modifiers;
 
-namespace NewMod.Options.Modifiers
-{
-    public class DrowsyModifierOptions : AbstractOptionGroup<DrowsyModifier>
-    {
-        public override string GroupName => "Drowsy Settings";
+namespace NewMod.Options.Modifiers;
 
-        [ModdedNumberOption("Speed Multiplier", min: 0.2f, max: 0.9f, increment: 0.05f, MiraNumberSuffixes.Multiplier)]
-        public float SpeedMultiplier { get; set; } = 0.5f;
-    }
+public class DrowsyModifierOptions : AbstractOptionGroup<DrowsyModifier>
+{
+    public override string GroupName => "Drowsy Settings";
+
+    [ModdedNumberOption("Speed Multiplier", 0.2f, 0.9f, 0.05f, MiraNumberSuffixes.Multiplier)]
+    public float SpeedMultiplier { get; set; } = 0.5f;
 }

@@ -12,3 +12,4 @@ public class GeneralNpcOptions : AbstractOptionGroup
     public ModdedNumberOption GeneralNPCStopTime  { get; } = new("General NPC Stop Time", min: 1f, max: 3f, increment: 1f, defaultValue: 1f, suffixType: MiraAPI.Utilities.MiraNumberSuffixes.None);
     public ModdedNumberOption GeneralNPCRunTime { get; } = new("General NPC Run Time", min: 1f, max: 10f, increment: 1f, defaultValue: 3f, suffixType: MiraAPI.Utilities.MiraNumberSuffixes.None);
 }*/
+

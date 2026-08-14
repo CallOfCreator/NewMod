@@ -1,58 +1,54 @@
 // Inspired by: https://github.com/All-Of-Us-Mods/LaunchpadReloaded/blob/master/LaunchpadReloaded/Patches/Generic/DiscordManagerPatch.cs#L12
+
 using System;
 using Discord;
 using HarmonyLib;
 using MiraAPI;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-namespace NewMod
+namespace NewMod;
+
+[HarmonyPatch]
+public static class NewModDiscordPatch
 {
-    [HarmonyPatch]
-    public static class NewModDiscordPatch
+    private static Discord.Discord discord;
+    public static ActivityManager activityManager;
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ActivityManager), nameof(ActivityManager.UpdateActivity))]
+    public static void UpdateActivityPrefix([HarmonyArgument(0)] ref Activity activity)
     {
-        private static Discord.Discord discord;
-        public static ActivityManager activityManager;
+        if (Application.platform == RuntimePlatform.Android) return;
+        if (activity == null) return;
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(ActivityManager), nameof(ActivityManager.UpdateActivity))]
-        public static void UpdateActivityPrefix([HarmonyArgument(0)] ref Activity activity)
+        var isBeta = false;
+        var details = $"NewMod v{NewMod.ModVersion}" + (isBeta ? " (Beta)" : " (Dev)");
+
+        activity.Details = details;
+        activity.State = $"Playing Among Us | NewMod v{NewMod.ModVersion}";
+        activity.Assets = new ActivityAssets
         {
-            if (Application.platform == RuntimePlatform.Android) return;
-            if (activity == null) return;
+            LargeImage = "nm",
+            SmallText = "Made with MiraAPI"
+        };
 
-            var isBeta = false;
-            string details = $"NewMod v{NewMod.ModVersion}" + (isBeta ? " (Beta)" : " (Dev)");
-
-            activity.Details = details;
-            activity.State = $"Playing Among Us | NewMod v{NewMod.ModVersion}";
-            activity.Assets = new ActivityAssets()
+        try
+        {
+            if (activity.State.Contains("Menus"))
             {
-                LargeImage = "nm",
-                SmallText = "Made with MiraAPI"
-            };
+                var maxPlayers = GameOptionsManager.Instance?.currentNormalGameOptions?.MaxPlayers ?? 10;
+                var lobbyCode = GameStartManager.Instance?.GameRoomNameCode?.text;
+                var miraVersion = MiraApiPlugin.Version;
+                var platform = Application.platform;
 
-            try
-            {
-                if (activity.State.Contains("Menus"))
-                {
-                    int maxPlayers = GameOptionsManager.Instance?.currentNormalGameOptions?.MaxPlayers ?? 10;
-                    var lobbyCode = GameStartManager.Instance?.GameRoomNameCode?.text;
-                    var miraVersion = MiraApiPlugin.Version;
-                    var platform = Application.platform;
-
-                    activity.Details += $" | Lobby: {lobbyCode} | Max: {maxPlayers} | MiraAPI: {miraVersion} | {platform}";
-                }
-
-                if (MeetingHud.Instance)
-                {
-                    activity.Details += " | In Meeting";
-                }
+                activity.Details += $" | Lobby: {lobbyCode} | Max: {maxPlayers} | MiraAPI: {miraVersion} | {platform}";
             }
-            catch (Exception e)
-            {
-                NewMod.Instance.Log.LogError($"Discord RPC activity update failed: {e.Message}\n{e.StackTrace}");
-            }
+
+            if (MeetingHud.Instance) activity.Details += " | In Meeting";
+        }
+        catch (Exception e)
+        {
+            NewMod.Instance.Log.LogError($"Discord RPC activity update failed: {e.Message}\n{e.StackTrace}");
         }
     }
 }

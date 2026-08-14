@@ -24,5 +24,14 @@ public enum CustomRPC
     MirrorBladeArm,
     TerminatorFinalCountdown,
     VerifierRegisterFact,
-    MirrorBladeReflect
+    MirrorBladeReflect,
+
+    // Gamemodes
+    WraithSiegeRequestSummon,
+    WraithSiegeSpawnNpc,
+    WraithSiegeRequestRevive,
+    WraithSiegeRequestBanish,
+    WraithSiegeResolveNpc,
+    WraithSiegeBeginDelivery,
+    WraithSiegeSyncState
 }

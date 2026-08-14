@@ -1,126 +1,115 @@
+using System.Linq;
+using AmongUs.GameOptions;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
+using MiraAPI.Keybinds;
+using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
-using UnityEngine;
 using NewMod.Utilities;
-using MiraAPI.Keybinds;
-using AmongUs.GameOptions;
-using MiraAPI.Utilities;
-using System.Linq;
+using UnityEngine;
 
-namespace NewMod.Buttons.Roles
+namespace NewMod.Buttons.Roles;
+
+/// <summary>
+///     Defines a custom action button for the role.
+/// </summary>
+public class ReviveButton : CustomActionButton
 {
     /// <summary>
-    /// Defines a custom action button for the role.
+    ///     The name displayed on the button. Intentionally left empty to show an existing name elsewhere.
     /// </summary>
-    public class ReviveButton : CustomActionButton
+    public override string Name => ""; // It's currently empty since the button has already a name on it
+
+    /// <summary>
+    ///     Gets the cooldown time for this button, based on <see cref="NecromancerOption" />.
+    /// </summary>
+    public override float Cooldown => OptionGroupSingleton<NecromancerOption>.Instance.ButtonCooldown;
+
+    /// <summary>
+    ///     Gets the maximum number of uses for this button, based on <see cref="NecromancerOption" />.
+    /// </summary>
+    public override int MaxUses => (int)OptionGroupSingleton<NecromancerOption>.Instance.AbilityUses;
+
+    /// <summary>
+    ///     Determines how long the effect from clicking the button lasts. In this case, no duration is set.
+    /// </summary>
+    public override float EffectDuration => 0f;
+
+    /// <summary>
+    ///     Default keybind for Necromancer's Revive ability.
+    /// </summary>
+    public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
+
+    /// <summary>
+    ///     Defines where on the screen this button should appear.
+    /// </summary>
+    public override ButtonLocation Location => ButtonLocation.BottomLeft;
+
+    /// <summary>
+    ///     The visual icon for this button, set to the necromancer sprite asset.
+    /// </summary>
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.NecromancerButton;
+
+    private DeadBody GetReviveTarget()
     {
-        /// <summary>
-        /// The name displayed on the button. Intentionally left empty to show an existing name elsewhere.
-        /// </summary>
-        public override string Name => ""; // It's currently empty since the button has already a name on it
+        var local = PlayerControl.LocalPlayer;
+        var localPos = local.GetTruePosition();
 
-        /// <summary>
-        /// Gets the cooldown time for this button, based on <see cref="NecromancerOption"/>.
-        /// </summary>
-        public override float Cooldown => OptionGroupSingleton<NecromancerOption>.Instance.ButtonCooldown;
+        return Helpers.GetNearestDeadBodies(localPos, ShipStatus.Instance.MaxLightRadius, Helpers.CreateFilter(Constants.NotShipMask)).Where(body => body != null && IsValidReviveTarget(local, body)).OrderBy(body => Vector2.Distance(localPos, body.TruePosition)).FirstOrDefault();
+    }
 
-        /// <summary>
-        /// Gets the maximum number of uses for this button, based on <see cref="NecromancerOption"/>.
-        /// </summary>
-        public override int MaxUses => (int)OptionGroupSingleton<NecromancerOption>.Instance.AbilityUses;
+    public static bool IsValidReviveTarget(PlayerControl local, DeadBody body)
+    {
+        if (PranksterUtilities.IsPranksterBody(body))
+            return false;
 
-        /// <summary>
-        /// Determines how long the effect from clicking the button lasts. In this case, no duration is set.
-        /// </summary>
-        public override float EffectDuration => 0f;
+        var killedPlayer = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
+        if (killedPlayer == null)
+            return false;
 
-        /// <summary>
-        /// Default keybind for Necromancer's Revive ability.
-        /// </summary>
-        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
+        var killer = Utils.GetKiller(killedPlayer);
 
-        /// <summary>
-        /// Defines where on the screen this button should appear.
-        /// </summary>
-        public override ButtonLocation Location => ButtonLocation.BottomLeft;
+        if (killer != null && killer.PlayerId == local.PlayerId)
+            return false;
 
-        /// <summary>
-        /// The visual icon for this button, set to the necromancer sprite asset.
-        /// </summary>
-        public override LoadableAsset<Sprite> Sprite => NewModAsset.NecromancerButton;
+        return true;
+    }
 
-        private DeadBody GetReviveTarget()
-        {
-            var local = PlayerControl.LocalPlayer;
-            var localPos = local.GetTruePosition();
+    /// <summary>
+    ///     Checks whether the player can currently use the revive button, ensuring cooldowns, ability uses, and conditions are
+    ///     met.
+    /// </summary>
+    /// <returns>True if all requirements to use this button are met; otherwise false.</returns
+    public override bool CanUse()
+    {
+        return GetReviveTarget() != null;
+    }
 
-            return Helpers.GetNearestDeadBodies(
-                    localPos,
-                    ShipStatus.Instance.MaxLightRadius,
-                    Helpers.CreateFilter(Constants.NotShipMask))
-                .Where(body => body != null && IsValidReviveTarget(local, body))
-                .OrderBy(body => Vector2.Distance(localPos, body.TruePosition))
-                .FirstOrDefault();
-        }
+    /// <summary>
+    ///     Invoked when the revive button is clicked. Plays a sound and revives the nearest dead body.
+    /// </summary>
+    protected override void OnClick()
+    {
+        var local = PlayerControl.LocalPlayer;
+        var body = GetReviveTarget();
 
-        public static bool IsValidReviveTarget(PlayerControl local, DeadBody body)
-        {
-            if (PranksterUtilities.IsPranksterBody(body))
-                return false;
+        SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
 
-            var killedPlayer = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
-            if (killedPlayer == null)
-                return false;
+        Utils.HandleRevive(local, body.ParentId, RoleTypes.Crewmate, body.transform.position.x, body.transform.position.y);
 
-            var killer = Utils.GetKiller(killedPlayer);
+        NecromancerRole.RevivedPlayers[body.ParentId] = local.PlayerId;
+    }
 
-            if (killer != null && killer.PlayerId == local.PlayerId)
-                return false;
-
-            return true;
-        }
-
-        /// <summary>
-        /// Checks whether the player can currently use the revive button, ensuring cooldowns, ability uses, and conditions are met.
-        /// </summary>
-        /// <returns>True if all requirements to use this button are met; otherwise false.</returns
-        public override bool CanUse()
-        {
-            return GetReviveTarget() != null;
-        }
-
-        /// <summary>
-        /// Invoked when the revive button is clicked. Plays a sound and revives the nearest dead body.
-        /// </summary>
-        protected override void OnClick()
-        {
-            var local = PlayerControl.LocalPlayer;
-            var body = GetReviveTarget();
-
-            SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
-
-            Utils.HandleRevive(
-                local,
-                body.ParentId,
-                RoleTypes.Crewmate,
-                body.transform.position.x,
-                body.transform.position.y
-            );
-
-            NecromancerRole.RevivedPlayers[body.ParentId] = local.PlayerId;
-        }
-
-        /// <summary>
-        /// Determines whether this button is enabled for the role, returning true if the role is <see cref="NecromancerRole"/>.
-        /// </summary>
-        /// <param name="role">The current player's role.</param>
-        /// <returns>True if the role is Necromancer; otherwise false.</returns>
-        public override bool Enabled(RoleBehaviour role)
-        {
-            return role is NecromancerRole;
-        }
+    /// <summary>
+    ///     Determines whether this button is enabled for the role, returning true if the role is
+    ///     <see cref="NecromancerRole" />.
+    /// </summary>
+    /// <param name="role">The current player's role.</param>
+    /// <returns>True if the role is Necromancer; otherwise false.</returns>
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return role is NecromancerRole;
     }
 }

@@ -1,24 +1,24 @@
 using MiraAPI.Roles;
 using UnityEngine;
 
-namespace NewMod.Roles.ImpostorRoles
+namespace NewMod.Roles.ImpostorRoles;
+
+public class Edgeveil : ImpostorRole, INewModRole
 {
-    public class Edgeveil : ImpostorRole, INewModRole
+    public string RoleName => "Edgeveil";
+    public string RoleDescription => "Draw. Cleave. Sheathe.";
+    public string RoleLongDescription => "Perform a fast iaijutsu slash in a short cone. Anyone caught in the arc is killed.";
+    public Color RoleColor => new(0.90f, 0.20f, 0.35f);
+    public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
+    public NewModFaction Faction => NewModFaction.Apex;
+
+    public CustomRoleConfiguration Configuration => new(this)
     {
-        public string RoleName => "Edgeveil";
-        public string RoleDescription => "Draw. Cleave. Sheathe.";
-        public string RoleLongDescription => "Perform a fast iaijutsu slash in a short cone. Anyone caught in the arc is killed.";
-        public Color RoleColor => new(0.90f, 0.20f, 0.35f);
-        public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
-        public NewModFaction Faction => NewModFaction.Apex;
-        public CustomRoleConfiguration Configuration => new(this)
-        {
-            AffectedByLightOnAirship = false,
-            CanUseSabotage = false,
-            CanUseVent = false,
-            UseVanillaKillButton = false,
-            TasksCountForProgress = false,
-            Icon = NewModAsset.SlashIcon
-        };
-    }
+        AffectedByLightOnAirship = false,
+        CanUseSabotage = false,
+        CanUseVent = false,
+        UseVanillaKillButton = false,
+        TasksCountForProgress = false,
+        Icon = NewModAsset.SlashIcon
+    };
 }

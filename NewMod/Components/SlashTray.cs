@@ -1,19 +1,20 @@
 using System;
-using UnityEngine;
-using NewMod;
-using Reactor.Utilities.Attributes;
-using MiraAPI.Networking;
 using MiraAPI.GameOptions;
+using MiraAPI.Networking;
+using NewMod;
 using NewMod.Options.Roles;
+using Reactor.Utilities.Attributes;
+using UnityEngine;
 
 [RegisterInIl2Cpp]
 public class SlashTray(IntPtr ptr) : MonoBehaviour(ptr)
 {
-    public PlayerControl Owner { get; set; }
     public SpriteRenderer SlashTrayRend;
     public Vector2 _dir;
     public float _speed;
     public int _kills;
+    public PlayerControl Owner { get; set; }
+
     public void Awake()
     {
         SlashTrayRend = transform.Find("Background").GetComponent<SpriteRenderer>();
@@ -21,21 +22,10 @@ public class SlashTray(IntPtr ptr) : MonoBehaviour(ptr)
         rb.isKinematic = true;
         rb.simulated = true;
     }
-    public static SlashTray CreateTray()
-    {
-        var gameObject = Instantiate(NewModAsset.SlashTray.LoadAsset(), HudManager.Instance.transform);
-        var tray = gameObject.AddComponent<SlashTray>();
-        return tray;
-    }
+
     public void Update()
     {
         transform.position += (Vector3)(_dir * _speed * Time.deltaTime);
-    }
-
-    public void SetMotion(Vector2 dir, float speed)
-    {
-        _dir = dir.normalized;
-        _speed = speed;
     }
 
     public void OnTriggerEnter2D(Collider2D other)
@@ -49,9 +39,19 @@ public class SlashTray(IntPtr ptr) : MonoBehaviour(ptr)
         PlayerControl.LocalPlayer.RpcCustomMurder(pc, teleportMurderer: false);
 
         _kills++;
-        if (_kills >= (int)OptionGroupSingleton<EdgeveilOptions>.Instance.PlayersToKill)
-        {
-            Destroy(gameObject);
-        }
+        if (_kills >= (int)OptionGroupSingleton<EdgeveilOptions>.Instance.PlayersToKill) Destroy(gameObject);
+    }
+
+    public static SlashTray CreateTray()
+    {
+        var gameObject = Instantiate(NewModAsset.SlashTray.LoadAsset(), HudManager.Instance.transform);
+        var tray = gameObject.AddComponent<SlashTray>();
+        return tray;
+    }
+
+    public void SetMotion(Vector2 dir, float speed)
+    {
+        _dir = dir.normalized;
+        _speed = speed;
     }
 }

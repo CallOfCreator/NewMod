@@ -1,18 +1,24 @@
+using MiraAPI.GameEnd;
 using MiraAPI.Roles;
 using UnityEngine;
-using MiraAPI.GameEnd;
-using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles;
 
 public class InjectorRole : ImpostorRole, ICustomRole
 {
+    public TeamIntroConfiguration TeamConfiguration => new()
+    {
+        IntroTeamDescription = RoleDescription,
+        IntroTeamColor = RoleColor
+    };
+
     public string RoleName => "Injector";
     public string RoleDescription => "You hold unstable serums. Inject. Distort. Dominate";
     public string RoleLongDescription => "Inject other players with serums that alter their abilities";
     public Color RoleColor => new(0.9f, 0.3f, 0.1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         Icon = NewModAsset.InjectIcon,
@@ -24,13 +30,9 @@ public class InjectorRole : ImpostorRole, ICustomRole
         DefaultChance = 50,
         DefaultRoleCount = 1,
         CanModifyChance = true,
-        RoleHintType = RoleHintType.RoleTab,
+        RoleHintType = RoleHintType.RoleTab
     };
-    public TeamIntroConfiguration TeamConfiguration => new()
-    {
-        IntroTeamDescription = RoleDescription,
-        IntroTeamColor = RoleColor
-    };
+
     public override bool DidWin(GameOverReason gameOverReason)
     {
         return gameOverReason == CustomGameOver.GameOverReason<InjectorGameOver>();

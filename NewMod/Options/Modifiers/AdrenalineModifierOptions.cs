@@ -1,16 +1,14 @@
 using MiraAPI.GameOptions;
-using MiraAPI.Utilities;
 using MiraAPI.GameOptions.Attributes;
-using MiraAPI.GameOptions.OptionTypes;
+using MiraAPI.Utilities;
 using NewMod.Modifiers;
 
-namespace NewMod.Options.Modifiers
-{
-    public class AdrenalineModifierOptions : AbstractOptionGroup<AdrenalineModifier>
-    {
-        public override string GroupName => "Adrenaline Settings";
+namespace NewMod.Options.Modifiers;
 
-        [ModdedNumberOption("Speed Multiplier", min: 1.1f, max: 3f, increment: 0.1f, MiraNumberSuffixes.Multiplier)]
-        public float SpeedMultiplier { get; set; } = 1.5f;
-    }
+public class AdrenalineModifierOptions : AbstractOptionGroup<AdrenalineModifier>
+{
+    public override string GroupName => "Adrenaline Settings";
+
+    [ModdedNumberOption("Speed Multiplier", 1.1f, 3f, 0.1f, MiraNumberSuffixes.Multiplier)]
+    public float SpeedMultiplier { get; set; } = 1.5f;
 }

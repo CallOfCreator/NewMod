@@ -1,90 +1,73 @@
 using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Meeting;
+using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Networking;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Options.Roles;
 using UnityEngine;
-using MiraAPI.GameEnd;
-using NewMod.GameEnd;
 
-namespace NewMod.Roles.NeutralRoles
+namespace NewMod.Roles.NeutralRoles;
+
+public class EgoistRole : CrewmateRole, ICustomRole
 {
-    public class EgoistRole : CrewmateRole, ICustomRole
+    public string RoleName => "Egoist";
+    public string RoleDescription => "Crave attention. Earn revenge.";
+
+    public string RoleLongDescription =>
+        "You are the Egoist, a chaotic neutral entity.\n\n" + "Your goal is to be ejected — if you are, and enough players vote for you, they die and you win.";
+
+    public Color RoleColor => new(0.8f, 0.3f, 0.6f, 1f);
+    public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
+    public RoleOptionsGroup RoleOptionsGroup => RoleOptionsGroup.Neutral;
+
+    public CustomRoleConfiguration Configuration => new(this)
     {
-        public string RoleName => "Egoist";
-        public string RoleDescription => "Crave attention. Earn revenge.";
-        public string RoleLongDescription =>
-            "You are the Egoist, a chaotic neutral entity.\n\n"
-            + "Your goal is to be ejected — if you are, and enough players vote for you, they die and you win.";
-        public Color RoleColor => new Color(0.8f, 0.3f, 0.6f, 1f);
-        public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
-        public RoleOptionsGroup RoleOptionsGroup => RoleOptionsGroup.Neutral;
+        AffectedByLightOnAirship = false,
+        CanGetKilled = true,
+        UseVanillaKillButton = false,
+        CanUseVent = false,
+        CanUseSabotage = false,
+        TasksCountForProgress = false,
+        ShowInFreeplay = true,
+        HideSettings = false,
+        MaxRoleCount = 1,
+        OptionsScreenshot = null,
+        Icon = null
+    };
 
-        public CustomRoleConfiguration Configuration => new(this)
+    [RegisterEvent]
+    public static void OnEjection(EjectionEvent evt)
+    {
+        if (!AmongUsClient.Instance.AmHost) return;
+        var egoist = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p.Data.Role is EgoistRole);
+        if (egoist == null)
+            return;
+
+        var ejected = evt.ExileController.initData.networkedPlayer.Object;
+        if (ejected != egoist)
+            return;
+
+        int minVotes = OptionGroupSingleton<EgoistRoleOptions>.Instance.MinimumVotesToWin;
+
+        var voters = PlayerControl.AllPlayerControls.ToArray().Where(p =>
         {
-            AffectedByLightOnAirship = false,
-            CanGetKilled = true,
-            UseVanillaKillButton = false,
-            CanUseVent = false,
-            CanUseSabotage = false,
-            TasksCountForProgress = false,
-            ShowInFreeplay = true,
-            HideSettings = false,
-            MaxRoleCount = 1,
-            OptionsScreenshot = null,
-            Icon = null,
-        };
+            var voteData = p.GetVoteData();
+            return voteData != null && voteData.VotedFor(egoist.PlayerId);
+        }).ToList();
 
-        [RegisterEvent]
-        public static void OnEjection(EjectionEvent evt)
+        if (voters.Count >= minVotes)
         {
-            if (!AmongUsClient.Instance.AmHost) return;
-            var egoist = PlayerControl
-                .AllPlayerControls.ToArray()
-                .FirstOrDefault(p => p.Data.Role is EgoistRole);
-            if (egoist == null)
-                return;
-
-            var ejected = evt.ExileController.initData.networkedPlayer.Object;
-            if (ejected != egoist)
-                return;
-
-            int minVotes = OptionGroupSingleton<EgoistRoleOptions>.Instance.MinimumVotesToWin;
-
-            var voters = PlayerControl
-                .AllPlayerControls
-                .ToArray()
-                .Where(p =>
-                {
-                    var voteData = p.GetVoteData();
-                    return voteData != null && voteData.VotedFor(egoist.PlayerId);
-                })
-                .ToList();
-
-            if (voters.Count >= minVotes)
-            {
-                foreach (var p in voters)
-                {
-                    egoist.RpcCustomMurder(
-                        p,
-                        didSucceed: true,
-                        resetKillTimer: false,
-                        createDeadBody: true,
-                        teleportMurderer: false,
-                        showKillAnim: false,
-                        playKillSound: true
-                    );
-                }
-                CustomGameOver.Trigger<EgoistGameOver>([egoist.Data]);
-            }
+            foreach (var p in voters)
+                egoist.RpcCustomMurder(p, true, false, true, false, false);
+            CustomGameOver.Trigger<EgoistGameOver>([egoist.Data]);
         }
+    }
 
-        public override bool DidWin(GameOverReason gameOverReason)
-        {
-            return gameOverReason == CustomGameOver.GameOverReason<EgoistGameOver>();
-        }
+    public override bool DidWin(GameOverReason gameOverReason)
+    {
+        return gameOverReason == CustomGameOver.GameOverReason<EgoistGameOver>();
     }
 }

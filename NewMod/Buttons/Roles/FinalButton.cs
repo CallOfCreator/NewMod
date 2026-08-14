@@ -1,3 +1,4 @@
+using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
@@ -5,69 +6,65 @@ using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
-using MiraAPI.GameEnd;
-using NewMod.GameEnd;
 
-namespace NewMod.Buttons.Roles
+namespace NewMod.Buttons.Roles;
+
+/// <summary>
+///     The Final Ability button for Overload.
+///     Unlocks after reaching the required absorbed charge count.
+/// </summary>
+public class FinalAbilityButton : CustomActionButton
 {
     /// <summary>
-    /// The Final Ability button for Overload.
-    /// Unlocks after reaching the required absorbed charge count.
+    ///     The name displayed on the button (if any).
     /// </summary>
-    public class FinalAbilityButton : CustomActionButton
+    public override string Name => "OVERLOAD";
+
+    /// <summary>
+    ///     Cooldown (none for final ability).
+    /// </summary>
+    public override float Cooldown => 0f;
+
+    /// <summary>
+    ///     One-time use. Set to 1.
+    /// </summary>
+    public override int MaxUses => 1;
+
+    /// <summary>
+    ///     Default keybind for the Final Ability button.
+    /// </summary>
+    public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
+
+    /// <summary>
+    ///     No duration effect.
+    /// </summary>
+    public override float EffectDuration => 0f;
+
+    /// <summary>
+    ///     Screen location of the button on the HUD.
+    /// </summary>
+    public override ButtonLocation Location => ButtonLocation.BottomRight;
+
+    /// <summary>
+    ///     Icon sprite
+    /// </summary>
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.FinalButton;
+
+    /// <summary>
+    ///     Determines when the button should appear.
+    ///     Only enabled once Overload has enough absorbed abilities.
+    /// </summary>
+    public override bool Enabled(RoleBehaviour role)
     {
-        /// <summary>
-        /// The name displayed on the button (if any).
-        /// </summary>
-        public override string Name => "OVERLOAD";
+        return role is OverloadRole && OverloadRole.AbsorbedAbilityCount >= OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge;
+    }
 
-        /// <summary>
-        /// Cooldown (none for final ability).
-        /// </summary>
-        public override float Cooldown => 0f;
-
-        /// <summary>
-        /// One-time use. Set to 1.
-        /// </summary>
-        public override int MaxUses => 1;
-
-        /// <summary>
-        /// Default keybind for the Final Ability button.
-        /// </summary>
-        public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
-
-        /// <summary>
-        /// No duration effect.
-        /// </summary>
-        public override float EffectDuration => 0f;
-
-        /// <summary>
-        /// Screen location of the button on the HUD.
-        /// </summary>
-        public override ButtonLocation Location => ButtonLocation.BottomRight;
-
-        /// <summary>
-        /// Icon sprite
-        /// </summary>
-        public override LoadableAsset<Sprite> Sprite => NewModAsset.FinalButton;
-
-        /// <summary>
-        /// Determines when the button should appear.
-        /// Only enabled once Overload has enough absorbed abilities.
-        /// </summary>
-        public override bool Enabled(RoleBehaviour role)
-        {
-            return role is OverloadRole &&
-                   OverloadRole.AbsorbedAbilityCount >= OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge;
-        }
-
-        /// <summary>
-        /// What happens when the final ability button is clicked.
-        /// Ends the game with Overload win.
-        /// </summary>
-        protected override void OnClick()
-        {
-            CustomGameOver.Trigger<OverloadGameOver>([PlayerControl.LocalPlayer.Data]);
-        }
+    /// <summary>
+    ///     What happens when the final ability button is clicked.
+    ///     Ends the game with Overload win.
+    /// </summary>
+    protected override void OnClick()
+    {
+        CustomGameOver.Trigger<OverloadGameOver>([PlayerControl.LocalPlayer.Data]);
     }
 }

@@ -40,10 +40,7 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
 
     public static VerifyMinigame CreateMinigame(PlayerControl target)
     {
-        var gameObject = UnityEngine.Object.Instantiate(
-            NewModAsset.VerifyMinigame.LoadAsset(),
-            HudManager.Instance.transform
-        );
+        var gameObject = Instantiate(NewModAsset.VerifyMinigame.LoadAsset(), HudManager.Instance.transform);
 
         gameObject.transform.localPosition = new Vector3(0f, 0f, Depth);
         gameObject.transform.localScale = Vector3.one * 0.5f;
@@ -77,10 +74,7 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
 
         dialogue.transform.localPosition = new Vector3(position.x, position.y, Depth - 10f);
         dialogue.transform.SetAsLastSibling();
-        dialogue.target.text =
-            $"Verify one statement about {Target.Data.PlayerName}.\n" +
-            "Green confirms the statement. Red denies it.\n" +
-            "The answer can be Confirmed, Denied, or Unknown.";
+        dialogue.target.text = $"Verify one statement about {Target.Data.PlayerName}.\n" + "Green confirms the statement. Red denies it.\n" + "The answer can be Confirmed, Denied, or Unknown.";
         dialogue.gameObject.SetActive(true);
     }
 
@@ -106,23 +100,17 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
         confirmRenderer.enabled = true;
         denyRenderer.enabled = true;
 
-        confirm.OnMouseOver.AddListener(
-            (UnityAction)(() => confirmRenderer.sprite = confirmHover));
+        confirm.OnMouseOver.AddListener((UnityAction)(() => confirmRenderer.sprite = confirmHover));
 
-        confirm.OnMouseOut.AddListener(
-            (UnityAction)(() => confirmRenderer.sprite = confirmSprite));
+        confirm.OnMouseOut.AddListener((UnityAction)(() => confirmRenderer.sprite = confirmSprite));
 
-        deny.OnMouseOver.AddListener(
-            (UnityAction)(() => denyRenderer.sprite = denyHover));
+        deny.OnMouseOver.AddListener((UnityAction)(() => denyRenderer.sprite = denyHover));
 
-        deny.OnMouseOut.AddListener(
-            (UnityAction)(() => denyRenderer.sprite = denySprite));
+        deny.OnMouseOut.AddListener((UnityAction)(() => denyRenderer.sprite = denySprite));
 
-        confirm.OnClick.AddListener(
-            (UnityAction)(() => Verify(claim, true)));
+        confirm.OnClick.AddListener((UnityAction)(() => Verify(claim, true)));
 
-        deny.OnClick.AddListener(
-            (UnityAction)(() => Verify(claim, false)));
+        deny.OnClick.AddListener((UnityAction)(() => Verify(claim, false)));
     }
 
     [HideFromIl2Cpp]
@@ -139,8 +127,6 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
 
         Close();
 
-        Coroutines.Start(VerifierUtilities.CoNotifyAfterDelay(
-            0.3f,
-            $"<color=#58E8BE>Verifier result</color>\n{Target.Data.PlayerName}: {result}"));
+        Coroutines.Start(VerifierUtilities.CoNotifyAfterDelay(0.3f, $"<color=#58E8BE>Verifier result</color>\n{Target.Data.PlayerName}: {result}"));
     }
 }

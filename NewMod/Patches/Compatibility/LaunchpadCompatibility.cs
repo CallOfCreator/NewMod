@@ -1,84 +1,84 @@
-using NewMod.Roles.ImpostorRoles;
 using System.Reflection;
+using NewMod.Roles.ImpostorRoles;
 using TMPro;
 using UnityEngine;
 
-namespace NewMod.Patches.Compatibility
+namespace NewMod.Patches.Compatibility;
+
+public static class LaunchpadCompatibility
 {
-    public static class LaunchpadCompatibility
+    private static MethodBase TargetMethod()
     {
-        static MethodBase TargetMethod()
-        {
-            if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
-                return null;
+        if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
+            return null;
 
-            var type = asm.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
-            var method = type?.GetMethod("OnTimerComplete", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            return method;
-        }
-
-        static bool Prefix(object __instance)
-        {
-            var playerField = __instance.GetType().GetField("Player", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (playerField == null) return true;
-
-            var player = playerField.GetValue(__instance) as PlayerControl;
-
-            if (player != null && Revenant.FeignDeathStates.ContainsKey(player.PlayerId))
-            {
-                NewMod.Instance.Log.LogInfo($"Blocked Launchpad hack death on Revenant {player.Data.PlayerName}");
-                return false;
-            }
-            return true;
-        }
+        var type = asm.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
+        var method = type?.GetMethod("OnTimerComplete", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        return method;
     }
 
-    public static class LaunchpadHackTextPatch
+    private static bool Prefix(object __instance)
     {
-        static MethodBase TargetMethod()
-        {
-            if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
-                return null;
+        var playerField = __instance.GetType().GetField("Player", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        if (playerField == null) return true;
 
-            var type = asm.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
-            var method = type?.GetMethod("FixedUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            return method;
+        var player = playerField.GetValue(__instance) as PlayerControl;
+
+        if (player != null && Revenant.FeignDeathStates.ContainsKey(player.PlayerId))
+        {
+            NewMod.Instance.Log.LogInfo($"Blocked Launchpad hack death on Revenant {player.Data.PlayerName}");
+            return false;
         }
 
-        static void Postfix(object __instance)
-        {
-            var player = __instance.GetType().GetField("Player", BindingFlags.Instance | BindingFlags.Public)?.GetValue(__instance) as PlayerControl;
-            var hackedText = __instance.GetType().GetField("_hackedText", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(__instance) as TextMeshPro;
+        return true;
+    }
+}
 
-            if (player != null && hackedText != null && Revenant.FeignDeathStates.ContainsKey(player.PlayerId))
-            {
-                hackedText.SetText("");
-                Debug.Log($"hackedText: {hackedText.text}");
-            }
-        }
+public static class LaunchpadHackTextPatch
+{
+    private static MethodBase TargetMethod()
+    {
+        if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
+            return null;
+
+        var type = asm.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
+        var method = type?.GetMethod("FixedUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        return method;
     }
 
-    public static class LaunchpadTagSpacingPatch
+    private static void Postfix(object __instance)
     {
-        static MethodBase TargetMethod()
-        {
-            if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
-                return null;
+        var player = __instance.GetType().GetField("Player", BindingFlags.Instance | BindingFlags.Public)?.GetValue(__instance) as PlayerControl;
+        var hackedText = __instance.GetType().GetField("_hackedText", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(__instance) as TextMeshPro;
 
-            var type = asm.GetType("LaunchpadReloaded.Components.PlayerTagManager");
-            var method = type?.GetMethod("UpdatePosition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            return method;
+        if (player != null && hackedText != null && Revenant.FeignDeathStates.ContainsKey(player.PlayerId))
+        {
+            hackedText.SetText("");
+            Debug.Log($"hackedText: {hackedText.text}");
         }
+    }
+}
 
-        static void Postfix(object __instance)
+public static class LaunchpadTagSpacingPatch
+{
+    private static MethodBase TargetMethod()
+    {
+        if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
+            return null;
+
+        var type = asm.GetType("LaunchpadReloaded.Components.PlayerTagManager");
+        var method = type?.GetMethod("UpdatePosition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        return method;
+    }
+
+    private static void Postfix(object __instance)
+    {
+        var type = __instance.GetType();
+        var tagHolderObj = type.GetField("tagHolder", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(__instance);
+        if (tagHolderObj is Transform holder)
         {
-            var type = __instance.GetType();
-            var tagHolderObj = type.GetField("tagHolder", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(__instance);
-            if (tagHolderObj is Transform holder)
-            {
-                holder.localPosition = new Vector3(0f, 0.5491f, -0.35f);
-                holder.localScale = new Vector3(0.7455f, 1f, 1f);
-            }
+            holder.localPosition = new Vector3(0f, 0.5491f, -0.35f);
+            holder.localScale = new Vector3(0.7455f, 1f, 1f);
         }
     }
 }

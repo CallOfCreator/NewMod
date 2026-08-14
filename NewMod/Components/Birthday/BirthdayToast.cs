@@ -1,30 +1,34 @@
 using System;
 using System.Collections;
-using Reactor.Utilities;
-using TMPro;
-using UnityEngine;
+using Il2CppInterop.Runtime.Attributes;
+using InnerNet;
 using NewMod;
 using NewMod.Utilities;
+using Reactor.Utilities;
 using Reactor.Utilities.Attributes;
-using Il2CppInterop.Runtime.Attributes;
+using TMPro;
+using UnityEngine;
 
 [RegisterInIl2Cpp]
 public class BirthdayToast(IntPtr ptr) : MonoBehaviour(ptr)
 {
     public SpriteRenderer toastRend;
     public TextMeshPro TimerText;
-    public bool isExpanded = false;
+    public bool isExpanded;
+
     public void Awake()
     {
         toastRend = transform.Find("Background").GetComponent<SpriteRenderer>();
         TimerText = transform.Find("Timer").GetComponent<TextMeshPro>();
     }
+
     public static BirthdayToast CreateBirthdayToast()
     {
         var gameObject = Instantiate(NewModAsset.Toast.LoadAsset(), HudManager.Instance.transform);
         var toast = gameObject.AddComponent<BirthdayToast>();
         return toast;
     }
+
     [HideFromIl2Cpp]
     public void SetText(string msg)
     {
@@ -36,6 +40,7 @@ public class BirthdayToast(IntPtr ptr) : MonoBehaviour(ptr)
     {
         Coroutines.Start(CoCountdown(duration));
     }
+
     [HideFromIl2Cpp]
     public IEnumerator CoCountdown(TimeSpan span)
     {
@@ -50,18 +55,19 @@ public class BirthdayToast(IntPtr ptr) : MonoBehaviour(ptr)
 
             yield return new WaitForSecondsRealtime(0.2f);
         }
+
         if (TimerText) TimerText.text = "00:00:00:00";
 
         DisconnectAllPlayers();
     }
+
     [HideFromIl2Cpp]
     public static void DisconnectAllPlayers()
     {
         var client = AmongUsClient.Instance;
-        if (client.GameState == InnerNet.InnerNetClient.GameStates.Started) return;
+        if (client.GameState == InnerNetClient.GameStates.Started) return;
 
-        client.LastCustomDisconnect =
-            "The Birthday Update is now live! Please restart to see the new lobby and menu style.";
+        client.LastCustomDisconnect = "The Birthday Update is now live! Please restart to see the new lobby and menu style.";
         client.HandleDisconnect(DisconnectReasons.Custom);
     }
 }

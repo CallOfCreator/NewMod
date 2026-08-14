@@ -1,8 +1,7 @@
-using MiraAPI.Roles;
-using UnityEngine;
-using MiraAPI.Utilities.Assets;
 using MiraAPI.GameEnd;
-using NewMod.GameEnd;
+using MiraAPI.Roles;
+using MiraAPI.Utilities.Assets;
+using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles;
 
@@ -14,6 +13,7 @@ public class DoubleAgent : CrewmateRole, ICustomRole
     public Color RoleColor => Palette.ImpostorRed;
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Crewmate;
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         MaxRoleCount = 1,

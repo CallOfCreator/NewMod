@@ -5,8 +5,6 @@ using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
-using MiraAPI.Utilities;
-using NewMod.GameEnd;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
@@ -22,13 +20,10 @@ public static class CustomEndGame
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (evt.TriggeredByIntro)
-        {
-            IsMatchReady = true;
-        }
+        if (evt.TriggeredByIntro) IsMatchReady = true;
     }
 
-    [RegisterEvent()]
+    [RegisterEvent]
     public static void OnGameEnd(GameEndEvent evt)
     {
         IsMatchReady = false;
@@ -36,21 +31,13 @@ public static class CustomEndGame
 
     public static bool TryEndGame()
     {
-        if (!IsMatchReady ||
-            !AmongUsClient.Instance.AmHost ||
-            !GameManager.Instance.ShouldCheckForGameEnd)
-        {
+        if (!IsMatchReady || !AmongUsClient.Instance.AmHost || !GameManager.Instance.ShouldCheckForGameEnd)
             return false;
-        }
 
-        var alivePlayers = PlayerControl.AllPlayerControls.ToArray()
-            .Where(player => !player.Data.IsDead && !player.Data.Disconnected)
-            .ToArray();
+        var alivePlayers = PlayerControl.AllPlayerControls.ToArray().Where(player => !player.Data.IsDead && !player.Data.Disconnected).ToArray();
 
         var wraithRequired = (int)OptionGroupSingleton<WraithCallerOptions>.Instance.RequiredNPCsToSend;
-        var wraithCaller = alivePlayers.FirstOrDefault(player =>
-            player.Data.Role is WraithCaller &&
-            WraithCallerUtilities.GetKillsNPC(player.PlayerId) >= wraithRequired);
+        var wraithCaller = alivePlayers.FirstOrDefault(player => player.Data.Role is WraithCaller && WraithCallerUtilities.GetKillsNPC(player.PlayerId) >= wraithRequired);
 
         if (wraithCaller)
         {
@@ -61,10 +48,7 @@ public static class CustomEndGame
         var shadeRequired = (int)OptionGroupSingleton<ShadeOptions>.Instance.RequiredKills;
         var shade = alivePlayers.FirstOrDefault(player =>
         {
-            if (player.Data.Role is not Shade)
-            {
-                return false;
-            }
+            if (player.Data.Role is not Shade) return false;
 
             Shade.ShadeKills.TryGetValue(player.PlayerId, out var kills);
             return kills >= shadeRequired;
@@ -80,9 +64,7 @@ public static class CustomEndGame
 
         if (alivePlayers.Length <= pulseBladeOptions.PlayersThreshold)
         {
-            var pulseBlade = alivePlayers.FirstOrDefault(player =>
-                player.Data.Role is PulseBlade &&
-                Utils.GetStrikes(player.PlayerId) >= pulseBladeOptions.RequiredStrikes);
+            var pulseBlade = alivePlayers.FirstOrDefault(player => player.Data.Role is PulseBlade && Utils.GetStrikes(player.PlayerId) >= pulseBladeOptions.RequiredStrikes);
 
             if (pulseBlade)
             {
@@ -103,10 +85,7 @@ public static class CustomEndGame
                 {
                     var champion = Utils.PlayerById(Tyrant.ChampionId);
 
-                    if (champion && !champion.Data.Disconnected)
-                    {
-                        winners.Add(champion.Data);
-                    }
+                    if (champion && !champion.Data.Disconnected) winners.Add(champion.Data);
                 }
 
                 CustomGameOver.Trigger<TyrantGameOver>(winners);
@@ -114,10 +93,7 @@ public static class CustomEndGame
             }
         }
 
-        var doubleAgent = alivePlayers.FirstOrDefault(player =>
-            player.Data.Role is DoubleAgent &&
-            player.AllTasksCompleted() &&
-            Utils.IsSabotage());
+        var doubleAgent = alivePlayers.FirstOrDefault(player => player.Data.Role is DoubleAgent && player.AllTasksCompleted() && Utils.IsSabotage());
 
         if (doubleAgent)
         {
@@ -126,10 +102,7 @@ public static class CustomEndGame
         }
 
         var specialAgentRequired = OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
-        var specialAgent = alivePlayers.FirstOrDefault(player =>
-            player.Data.Role is SpecialAgent &&
-            Utils.GetMissionSuccessCount(player.PlayerId) -
-            Utils.GetMissionFailureCount(player.PlayerId) >= specialAgentRequired);
+        var specialAgent = alivePlayers.FirstOrDefault(player => player.Data.Role is SpecialAgent && Utils.GetMissionSuccessCount(player.PlayerId) - Utils.GetMissionFailureCount(player.PlayerId) >= specialAgentRequired);
 
         if (specialAgent)
         {
@@ -137,9 +110,7 @@ public static class CustomEndGame
             return true;
         }
 
-        var prankster = alivePlayers.FirstOrDefault(player =>
-            player.Data.Role is Prankster &&
-            PranksterUtilities.GetReportCount(player.PlayerId) >= 2);
+        var prankster = alivePlayers.FirstOrDefault(player => player.Data.Role is Prankster && PranksterUtilities.GetReportCount(player.PlayerId) >= 2);
 
         if (prankster)
         {
@@ -148,9 +119,7 @@ public static class CustomEndGame
         }
 
         var energyThiefRequired = (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.RequiredDrainCount;
-        var energyThief = alivePlayers.FirstOrDefault(player =>
-            player.Data.Role is EnergyThief &&
-            Utils.GetDrainCount(player.PlayerId) >= energyThiefRequired);
+        var energyThief = alivePlayers.FirstOrDefault(player => player.Data.Role is EnergyThief && Utils.GetDrainCount(player.PlayerId) >= energyThiefRequired);
 
         if (energyThief)
         {
@@ -159,9 +128,7 @@ public static class CustomEndGame
         }
 
         var injectorRequired = (int)OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
-        var injector = alivePlayers.FirstOrDefault(player =>
-            player.Data.Role is InjectorRole &&
-            Utils.GetInjectedCount() >= injectorRequired);
+        var injector = alivePlayers.FirstOrDefault(player => player.Data.Role is InjectorRole && Utils.GetInjectedCount() >= injectorRequired);
 
         if (injector)
         {
@@ -190,15 +157,8 @@ public static class CustomEndGameCheckPatch
     [HarmonyPostfix]
     public static void Postfix()
     {
-        if (!CustomEndGame.IsMatchReady ||
-            !AmongUsClient.Instance.AmHost ||
-            DestroyableSingleton<TutorialManager>.InstanceExists ||
-            MeetingHud.Instance ||
-            ExileController.Instance ||
-            !GameManager.Instance.ShouldCheckForGameEnd)
-        {
+        if (!CustomEndGame.IsMatchReady || !AmongUsClient.Instance.AmHost || DestroyableSingleton<TutorialManager>.InstanceExists || MeetingHud.Instance || ExileController.Instance || !GameManager.Instance.ShouldCheckForGameEnd)
             return;
-        }
 
         CustomEndGame.TryEndGame();
     }

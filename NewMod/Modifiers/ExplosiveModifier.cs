@@ -1,30 +1,33 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers.Types;
-using MiraAPI.Utilities;
-using NewMod.Utilities;
 using MiraAPI.Networking;
-using UnityEngine;
+using MiraAPI.Utilities;
 using NewMod.Options.Modifiers;
+using NewMod.Utilities;
+using UnityEngine;
 
 namespace NewMod.Modifiers;
 
 public class ExplosiveModifier : TimedModifier
 {
+    private bool isFlashing;
     public override string ModifierName => "Explosive";
     public override bool HideOnUi => false;
     public override bool AutoStart => true;
     public override bool ShowInFreeplay => true;
     public override float Duration => OptionGroupSingleton<ExplosiveModifierOptions>.Instance.Duration;
     public override bool RemoveOnComplete => true;
-    private bool isFlashing = false;
+
     public override bool? CanVent()
     {
         return Player.Data.Role.CanVent;
     }
+
     public override string GetDescription()
     {
         return ModifierName + "\nif you die, all nearby players are killed";
     }
+
     public override void FixedUpdate()
     {
         base.FixedUpdate();
@@ -47,29 +50,23 @@ public class ExplosiveModifier : TimedModifier
             }
         }
     }
+
     public override void OnTimerComplete()
     {
-
     }
+
     public override void OnDeath(DeathReason deathReason)
     {
         var murderer = Utils.GetKiller(Player);
         if (murderer == null) return;
 
-        var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<ExplosiveModifierOptions>.Instance.KillDistance, true);
+        var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<ExplosiveModifierOptions>.Instance.KillDistance);
 
         foreach (var player in closestPlayers)
         {
             if (player.Data.IsDead || player.Data.Disconnected) continue;
 
-            murderer.RpcCustomMurder(
-            player,
-            createDeadBody: true,
-            didSucceed: true,
-            showKillAnim: false,
-            playKillSound: true,
-            teleportMurderer: false
-          );
+            murderer.RpcCustomMurder(player, createDeadBody: true, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
             NewMod.Instance.Log.LogInfo($"{player.Data.PlayerName} has been killed by the explosion.");
         }
     }

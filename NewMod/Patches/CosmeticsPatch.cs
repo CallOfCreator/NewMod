@@ -1,18 +1,18 @@
-using MiraAPI.Utilities.Assets;
 using System;
+using System.Collections;
 using System.Linq;
 using AmongUs.Data;
 using CorsacCosmetics.Cosmetics;
 using HarmonyLib;
+using Innersloth.Assets;
+using MiraAPI.Utilities.Assets;
+using Reactor.Utilities;
+using Reactor.Utilities.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
-using Reactor.Utilities.Extensions;
-using Innersloth.Assets;
-using Reactor.Utilities;
-using System.Collections;
 
 namespace NewMod.Patches;
 
@@ -76,6 +76,7 @@ public static class NewModCosmeticTabsPatch
         GenerateVisors(__instance);
         return false;
     }
+
     [HarmonyPatch(typeof(NameplatesTab), nameof(NameplatesTab.OnEnable))]
     [HarmonyPrefix]
     public static bool NameplatesOnEnable(NameplatesTab __instance)
@@ -168,20 +169,16 @@ public static class NewModCosmeticTabsPatch
         title.GetComponent<TextTranslatorTMP>()?.DestroyImmediate();
 
         var pageCount = CosmeticsLoader.Instance.HatGroups.Count + 1;
-        title.text = HatPage == 0
-            ? $"Hats ({HatPage + 1}/{pageCount})"
-            : $"{CosmeticsLoader.Instance.HatGroups.GetGroupNameByIndex(HatPage - 1)} ({HatPage + 1}/{pageCount})";
+        title.text = HatPage == 0 ? $"Hats ({HatPage + 1}/{pageCount})" : $"{CosmeticsLoader.Instance.HatGroups.GetGroupNameByIndex(HatPage - 1)} ({HatPage + 1}/{pageCount})";
 
-        var hats = HatManager.Instance.GetUnlockedHats()
-            .Where(h =>
-            {
-                if (HatPage == 0) return !h.ProductId.StartsWith("corsac");
-                if (!h.ProductId.StartsWith("corsac")) return false;
+        var hats = HatManager.Instance.GetUnlockedHats().Where(h =>
+        {
+            if (HatPage == 0) return !h.ProductId.StartsWith("corsac");
+            if (!h.ProductId.StartsWith("corsac")) return false;
 
-                var group = Names.GetGroup(h.ProductId);
-                return group == CosmeticsLoader.Instance.HatGroups.GetGroupIdByIndex(HatPage - 1);
-            })
-            .ToArray();
+            var group = Names.GetGroup(h.ProductId);
+            return group == CosmeticsLoader.Instance.HatGroups.GetGroupIdByIndex(HatPage - 1);
+        }).ToArray();
 
         tab.currentHat = HatManager.Instance.GetHatById(DataManager.Player.Customization.Hat);
 
@@ -234,20 +231,16 @@ public static class NewModCosmeticTabsPatch
         title.GetComponent<TextTranslatorTMP>()?.DestroyImmediate();
 
         var pageCount = CosmeticsLoader.Instance.VisorGroups.Count + 1;
-        title.text = VisorPage == 0
-            ? $"Visors ({VisorPage + 1}/{pageCount})"
-            : $"{CosmeticsLoader.Instance.VisorGroups.GetGroupNameByIndex(VisorPage - 1)} ({VisorPage + 1}/{pageCount})";
+        title.text = VisorPage == 0 ? $"Visors ({VisorPage + 1}/{pageCount})" : $"{CosmeticsLoader.Instance.VisorGroups.GetGroupNameByIndex(VisorPage - 1)} ({VisorPage + 1}/{pageCount})";
 
-        var visors = HatManager.Instance.GetUnlockedVisors()
-            .Where(v =>
-            {
-                if (VisorPage == 0) return !v.ProductId.StartsWith("corsac");
-                if (!v.ProductId.StartsWith("corsac")) return false;
+        var visors = HatManager.Instance.GetUnlockedVisors().Where(v =>
+        {
+            if (VisorPage == 0) return !v.ProductId.StartsWith("corsac");
+            if (!v.ProductId.StartsWith("corsac")) return false;
 
-                var group = Names.GetGroup(v.ProductId);
-                return group == CosmeticsLoader.Instance.VisorGroups.GetGroupIdByIndex(VisorPage - 1);
-            })
-            .ToArray();
+            var group = Names.GetGroup(v.ProductId);
+            return group == CosmeticsLoader.Instance.VisorGroups.GetGroupIdByIndex(VisorPage - 1);
+        }).ToArray();
 
         tab.visorId = DataManager.Player.Customization.Visor;
 
@@ -287,11 +280,13 @@ public static class NewModCosmeticTabsPatch
         tab.currentVisorIsEquipped = true;
         tab.SetScrollerBounds();
     }
+
     public static IEnumerator CoLoadNameplatePreview(NameplatesTab tab)
     {
         yield return new WaitForEndOfFrame();
         tab.previewArea.PreviewNameplate(DataManager.Player.Customization.NamePlate);
     }
+
     public static void GenerateNameplates(NameplatesTab tab)
     {
         foreach (var chip in tab.ColorChips)
@@ -304,20 +299,16 @@ public static class NewModCosmeticTabsPatch
         title.GetComponent<TextTranslatorTMP>()?.DestroyImmediate();
 
         var pageCount = CosmeticsLoader.Instance.NameplateGroups.Count + 1;
-        title.text = NameplatePage == 0
-            ? $"Nameplates ({NameplatePage + 1}/{pageCount})"
-            : $"{CosmeticsLoader.Instance.NameplateGroups.GetGroupNameByIndex(NameplatePage - 1)} ({NameplatePage + 1}/{pageCount})";
+        title.text = NameplatePage == 0 ? $"Nameplates ({NameplatePage + 1}/{pageCount})" : $"{CosmeticsLoader.Instance.NameplateGroups.GetGroupNameByIndex(NameplatePage - 1)} ({NameplatePage + 1}/{pageCount})";
 
-        var plates = HatManager.Instance.GetUnlockedNamePlates()
-            .Where(p =>
-            {
-                if (NameplatePage == 0) return !p.ProductId.StartsWith("corsac");
-                if (!p.ProductId.StartsWith("corsac")) return false;
+        var plates = HatManager.Instance.GetUnlockedNamePlates().Where(p =>
+        {
+            if (NameplatePage == 0) return !p.ProductId.StartsWith("corsac");
+            if (!p.ProductId.StartsWith("corsac")) return false;
 
-                var group = Names.GetGroup(p.ProductId);
-                return group == CosmeticsLoader.Instance.NameplateGroups.GetGroupIdByIndex(NameplatePage - 1);
-            })
-            .ToArray();
+            var group = Names.GetGroup(p.ProductId);
+            return group == CosmeticsLoader.Instance.NameplateGroups.GetGroupIdByIndex(NameplatePage - 1);
+        }).ToArray();
 
         tab.plateId = DataManager.Player.Customization.NamePlate;
 
@@ -347,10 +338,7 @@ public static class NewModCosmeticTabsPatch
 
             var image = chip.transform.GetChild(1).GetComponent<SpriteRenderer>();
 
-            tab.StartCoroutine(AddressableAssetExtensions.CoLoadAssetAsync<NamePlateViewData>(
-                tab,
-                plate.GetAssetReference(),
-                (Action<NamePlateViewData>)(viewData => image.sprite = viewData?.Image)));
+            tab.StartCoroutine(tab.CoLoadAssetAsync<NamePlateViewData>(plate.GetAssetReference(), (Action<NamePlateViewData>)(viewData => image.sprite = viewData?.Image)));
 
             chip.Tag = plate;
             chip.SelectionHighlight.gameObject.SetActive(false);

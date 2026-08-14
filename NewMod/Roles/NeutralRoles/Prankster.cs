@@ -1,8 +1,8 @@
+using AmongUs.GameOptions;
+using MiraAPI.GameEnd;
 using MiraAPI.Roles;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
-using MiraAPI.GameEnd;
-using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles;
 
@@ -11,9 +11,10 @@ public class Prankster : CrewmateRole, ICustomRole
     public string RoleName => "Prankster";
     public string RoleDescription => "Set up fake bodies to trick others";
     public string RoleLongDescription => "When reported, each fake body triggers a funny or deadly surprise for the reporter";
-    public Color RoleColor => new Color(1f, 0.55f, 0f);
+    public Color RoleColor => new(1f, 0.55f, 0f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         MaxRoleCount = 3,
@@ -24,15 +25,16 @@ public class Prankster : CrewmateRole, ICustomRole
         AffectedByLightOnAirship = false,
         KillButtonOutlineColor = RoleColor,
         RoleHintType = RoleHintType.RoleTab,
-        GhostRole = AmongUs.GameOptions.RoleTypes.CrewmateGhost,
+        GhostRole = RoleTypes.CrewmateGhost,
         CanGetKilled = true,
         UseVanillaKillButton = false,
         CanUseVent = false,
         CanUseSabotage = false,
         TasksCountForProgress = false,
         HideSettings = false,
-        CanModifyChance = true,
+        CanModifyChance = true
     };
+
     public override bool DidWin(GameOverReason gameOverReason)
     {
         return gameOverReason == CustomGameOver.GameOverReason<PranksterGameOver>();

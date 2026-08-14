@@ -1,5 +1,5 @@
-using Reactor.Utilities;
 using MiraAPI.Utilities.Assets;
+using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod;
@@ -73,6 +73,8 @@ public static class NewModAsset
     public static LoadableResourceAsset DeployZoneIcon { get; } = new("NewMod.Resources.RoleIcons.DeployzoneIcon.png");
     public static LoadableResourceAsset ReviveIcon { get; } = new("NewMod.Resources.RoleIcons.ReviveIcon.png");
     public static LoadableResourceAsset VerifyIcon { get; } = new("NewMod.Resources.RoleIcons.VerifyIcon.png");
+    public static LoadableResourceAsset VoidwalkerIcon { get; } = new("NewMod.Resources.RoleIcons.VoidwalkerIcon.png");
+    public static LoadableResourceAsset EnterVoidIcon { get; } = new("NewMod.Resources.RoleIcons.EnterVoidIcon.png");
 
     // Notif Icons
     public static LoadableResourceAsset VisionDebuff { get; } = new("NewMod.Resources.NotifIcons.vision_debuff.png");
@@ -95,22 +97,28 @@ public static class NewModAsset
     //General Events
     public static LoadableAsset<GameObject> GeneralEventHud { get; } = new LoadableBundleAsset<GameObject>("GeneralEvent", Bundle);
     public static LoadableResourceAsset CrismonIcon { get; } = new("NewMod.Resources.crismon_ge_icon.png");
-    public static LoadableResourceAsset NegativeRealityIcon { get; } = new LoadableResourceAsset("NewMod.Resources.NegativeIcon.png");
+    public static LoadableResourceAsset NegativeRealityIcon { get; } = new("NewMod.Resources.NegativeIcon.png");
 
     //Cosmetics
-    public static LoadableResourceAsset OG_NewModHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.og_newmod.png");
-    public static LoadableResourceAsset MintIceCreamHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.minticecream.png");
-    public static LoadableResourceAsset StrawberryIceCreamHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.strawberryicecream.png");
-    public static LoadableResourceAsset PizzaHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.pizza.png");
-    public static LoadableResourceAsset SqueezeCapHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.squeezecap.png");
-    
-    public static LoadableResourceAsset CottonMemoriesVisor { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Visors.cottonmemories.png");
-    public static LoadableResourceAsset MaliciousLook { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Visors.maliciouslook.png");
-    
-    public static LoadableResourceAsset GlitchedRealityHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.glitchedReality.png");
-    public static LoadableResourceAsset SunnyNameplate { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Nameplates.sunnynameplate.png");
-    public static LoadableResourceAsset NMraveNameplate { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Nameplates.nmrave.png");
-    
+    public static LoadableResourceAsset OG_NewModHat { get; } = new("NewMod.Resources.Cosmetics.Hats.og_newmod.png");
+    public static LoadableResourceAsset MintIceCreamHat { get; } = new("NewMod.Resources.Cosmetics.Hats.minticecream.png");
+    public static LoadableResourceAsset StrawberryIceCreamHat { get; } = new("NewMod.Resources.Cosmetics.Hats.strawberryicecream.png");
+    public static LoadableResourceAsset PizzaHat { get; } = new("NewMod.Resources.Cosmetics.Hats.pizza.png");
+    public static LoadableResourceAsset SqueezeCapHat { get; } = new("NewMod.Resources.Cosmetics.Hats.squeezecap.png");
+
+    public static LoadableResourceAsset CottonMemoriesVisor { get; } = new("NewMod.Resources.Cosmetics.Visors.cottonmemories.png");
+    public static LoadableResourceAsset MaliciousLook { get; } = new("NewMod.Resources.Cosmetics.Visors.maliciouslook.png");
+
+    public static LoadableResourceAsset GlitchedRealityHat { get; } = new("NewMod.Resources.Cosmetics.Hats.glitchedReality.png");
+    public static LoadableResourceAsset SunnyNameplate { get; } = new("NewMod.Resources.Cosmetics.Nameplates.sunnynameplate.png");
+    public static LoadableResourceAsset NMraveNameplate { get; } = new("NewMod.Resources.Cosmetics.Nameplates.nmrave.png");
+
     //Minigames
     public static LoadableAsset<GameObject> VerifyMinigame { get; } = new LoadableBundleAsset<GameObject>("VerifyMinigame", Bundle);
+
+    // GameModes
+    public static LoadableResourceAsset WraithSiegeFlag { get; } = new("NewMod.Resources.flag.png");
+    public static LoadableResourceAsset WraithSiegeTicket { get; } = new("NewMod.Resources.ticket.png");
+    public static LoadableResourceAsset WraithSiegeWraith { get; } = new("NewMod.Resources.wraith.png");
+    public static LoadableResourceAsset WraithSiegeBanish { get; } = new("NewMod.Resources.banish.png");
 }

@@ -1,22 +1,23 @@
 using System.Collections.Generic;
+using Il2CppSystem;
 using UnityEngine;
+using Type = System.Type;
 
-namespace NewMod.Seasons
+namespace NewMod.Seasons;
+
+public interface ISeason
 {
-    public interface ISeason
-    {
-        string Name { get; }
-        Il2CppSystem.DateTime SeasonStartDate { get; }
-        Il2CppSystem.DateTime SeasonEndDate { get; }
-        Color SeasonMainColor { get; }
+    string Name { get; }
+    DateTime SeasonStartDate { get; }
+    DateTime SeasonEndDate { get; }
+    Color SeasonMainColor { get; }
 
-        void HandleMainMenu(MainMenuManager menuManager);
+    void HandleMainMenu(MainMenuManager menuManager);
 
-        IReadOnlyList<System.Type> GetSeasonRoleTypes();
-        IReadOnlyList<System.Type> GetSeasonModifierTypes();
-        IReadOnlyList<System.Type> GetSeasonGamemodeTypes();
-        IReadOnlyList<System.Type> GetSeasonOptionTypes();
-        IReadOnlyList<System.Type> GetSeasonButtonTypes();
-        IReadOnlyList<System.Type> GetSeasonGETypes();
-    }
+    IReadOnlyList<Type> GetSeasonRoleTypes();
+    IReadOnlyList<Type> GetSeasonModifierTypes();
+    IReadOnlyList<Type> GetSeasonGamemodeTypes();
+    IReadOnlyList<Type> GetSeasonOptionTypes();
+    IReadOnlyList<Type> GetSeasonButtonTypes();
+    IReadOnlyList<Type> GetSeasonGETypes();
 }

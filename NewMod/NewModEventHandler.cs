@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
+using System.Text;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using NewMod.Buttons.Roles;
@@ -15,7 +15,7 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using NewMod.Utilities;
-using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace NewMod;
 
@@ -26,12 +26,9 @@ public static class NewModEventHandler
         var type = typeof(MiraEventManager);
         var field = type.GetField("EventWrappers", BindingFlags.NonPublic | BindingFlags.Static);
         var wrappersObject = field.GetValue(null);
-        if (wrappersObject is not IDictionary wrappersByEvent || wrappersByEvent.Count == 0)
-        {
-            return;
-        }
+        if (wrappersObject is not IDictionary wrappersByEvent || wrappersByEvent.Count == 0) return;
 
-        var builder = new System.Text.StringBuilder();
+        var builder = new StringBuilder();
         builder.AppendLine("=== Registered NewMod Events ===");
 
         foreach (DictionaryEntry entry in wrappersByEvent)
@@ -40,7 +37,6 @@ public static class NewModEventHandler
             var lines = new List<string>();
 
             if (entry.Value is IEnumerable wrappers)
-            {
                 foreach (var wrapper in wrappers)
                 {
                     if (wrapper == null) continue;
@@ -54,13 +50,9 @@ public static class NewModEventHandler
 
                     lines.Add($" [{priority}] {method.DeclaringType.FullName}.{method.Name}()");
                 }
-            }
 
             builder.AppendLine($"{eventType.FullName}  (handlers: {lines.Count})");
-            foreach (var line in lines)
-            {
-                builder.AppendLine(line);
-            }
+            foreach (var line in lines) builder.AppendLine(line);
         }
 
         NewMod.Instance.Log.LogInfo(builder.ToString());
@@ -84,7 +76,7 @@ public static class NewModEventHandler
         Shade.ShadeKills.Clear();
         Revenant.ResetAllStates();
         NecromancerRole.RevivedPlayers.Clear();
-        VerifierUtilities.Reset(clearFacts: true, hideMeetingButton: false);
+        VerifierUtilities.Reset(true, false);
 
         CoroutinesHelper.bodiesCreated.Clear();
         CoroutinesHelper.drainCount.Clear();
@@ -99,12 +91,9 @@ public static class NewModEventHandler
         AegisUtilities.ActiveOwners.Clear();
 
         foreach (var shield in ShieldArea._active.ToArray())
-        {
             if (shield)
-            {
-                UnityEngine.Object.Destroy(shield.gameObject);
-            }
-        }
+                Object.Destroy(shield.gameObject);
+
         ShieldArea._active.Clear();
 
         Tyrant.ResetState();
@@ -126,10 +115,7 @@ public static class NewModEventHandler
     [RegisterEvent(-100)]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (!evt.TriggeredByIntro)
-        {
-            return;
-        }
+        if (!evt.TriggeredByIntro) return;
 
         HudManager.Instance.Chat.enabled = false;
         VisionaryUtilities.DeleteAllScreenshots();

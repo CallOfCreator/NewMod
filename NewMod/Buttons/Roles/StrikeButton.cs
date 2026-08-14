@@ -15,114 +15,95 @@ using Reactor.Networking.Attributes;
 using Reactor.Utilities;
 using UnityEngine;
 
-namespace NewMod.Buttons.Roles
+namespace NewMod.Buttons.Roles;
+
+public class StrikeButton : CustomActionButton
 {
-    public class StrikeButton : CustomActionButton
+    public override string Name => "Strike";
+    public override float Cooldown => OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeCooldown;
+    public override int MaxUses => (int)OptionGroupSingleton<PulseBladeOptions>.Instance.MaxStrikeUses;
+    public override float EffectDuration => 0f;
+    public override ButtonLocation Location => ButtonLocation.BottomRight;
+    public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.StrikeButton;
+
+    public override bool Enabled(RoleBehaviour role)
     {
-        public override string Name => "Strike";
-        public override float Cooldown => OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeCooldown;
-        public override int MaxUses => (int)OptionGroupSingleton<PulseBladeOptions>.Instance.MaxStrikeUses;
-        public override float EffectDuration => 0f;
-        public override ButtonLocation Location => ButtonLocation.BottomRight;
-        public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-        public override LoadableAsset<Sprite> Sprite => NewModAsset.StrikeButton;
+        return role is PulseBlade;
+    }
 
-        public override bool Enabled(RoleBehaviour role) => role is PulseBlade;
+    protected override void OnClick()
+    {
+        var player = PlayerControl.LocalPlayer;
 
-        protected override void OnClick()
+        var target = PlayerControl.AllPlayerControls.ToArray().Where(p => p != player && !p.Data.IsDead && !p.Data.Disconnected && !p.inVent).OrderBy(p => Vector2.Distance(player.GetTruePosition(), p.GetTruePosition())).FirstOrDefault(p => Vector2.Distance(player.GetTruePosition(), p.GetTruePosition()) <= OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeRange);
+
+        if (target)
+            RpcPulseStrike(player, target);
+    }
+
+    [MethodRpc((uint)CustomRPC.Dash)]
+    public static void RpcPulseStrike(PlayerControl source, PlayerControl target)
+    {
+        Coroutines.Start(DoPulseStrike(source, target));
+    }
+
+    public static IEnumerator DoPulseStrike(PlayerControl killer, PlayerControl target)
+    {
+        var originalSpeed = killer.MyPhysics.Speed;
+        var dashSpeed = OptionGroupSingleton<PulseBladeOptions>.Instance.DashSpeed;
+
+        killer.moveable = false;
+        killer.MyPhysics.inputHandler.enabled = false;
+        killer.MyPhysics.Speed = dashSpeed;
+
+        while (Vector2.Distance(killer.GetTruePosition(), target.GetTruePosition()) > 0.1f)
         {
-            var player = PlayerControl.LocalPlayer;
+            var direction = target.GetTruePosition() - killer.GetTruePosition();
+            killer.MyPhysics.SetNormalizedVelocity(direction.normalized);
 
-            var target = PlayerControl.AllPlayerControls
-                .ToArray()
-                .Where(p => p != player && !p.Data.IsDead && !p.Data.Disconnected && !p.inVent)
-                .OrderBy(p => Vector2.Distance(player.GetTruePosition(), p.GetTruePosition()))
-                .FirstOrDefault(p =>
-                    Vector2.Distance(player.GetTruePosition(), p.GetTruePosition()) <=
-                    OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeRange);
+            if (killer.MyPhysics.TrueSpeed * Time.fixedDeltaTime >= direction.magnitude)
+                break;
 
-            if (target)
-                RpcPulseStrike(player, target);
+            yield return new WaitForFixedUpdate();
         }
 
-        [MethodRpc((uint)CustomRPC.Dash)]
-        public static void RpcPulseStrike(PlayerControl source, PlayerControl target)
+        killer.MyPhysics.SetNormalizedVelocity(Vector2.zero);
+        killer.MyPhysics.Speed = originalSpeed;
+        killer.MyPhysics.inputHandler.enabled = true;
+        killer.moveable = true;
+
+        SoundManager.Instance.PlaySound(NewModAsset.StrikeSound.LoadAsset(), false);
+
+        killer.RpcCustomMurder(target, true, false, true, false, false, false);
+    }
+
+    [RegisterEvent]
+    public static void OnAfterMurder(AfterMurderEvent evt)
+    {
+        if (evt.Source.Data.Role is not PulseBlade)
+            return;
+
+        Utils.RegisterStrikeKill(evt.Source, evt.Target);
+
+        if (evt.Source.AmOwner)
         {
-            Coroutines.Start(DoPulseStrike(source, target));
+            var notification = Helpers.CreateAndShowNotification($"Perfect kill {evt.Target.Data.PlayerName} eliminated", new Color(1f, 0.25f, 0.25f), spr: NewModAsset.StrikeIcon.LoadAsset());
+
+            notification.Text.SetOutlineThickness(0.3f);
         }
 
-        public static IEnumerator DoPulseStrike(PlayerControl killer, PlayerControl target)
-        {
-            float originalSpeed = killer.MyPhysics.Speed;
-            float dashSpeed = OptionGroupSingleton<PulseBladeOptions>.Instance.DashSpeed;
+        if (evt.DeadBody)
+            Coroutines.Start(CoHideBody(evt.DeadBody));
+    }
 
-            killer.moveable = false;
-            killer.MyPhysics.inputHandler.enabled = false;
-            killer.MyPhysics.Speed = dashSpeed;
+    private static IEnumerator CoHideBody(DeadBody body)
+    {
+        body.gameObject.SetActive(false);
 
-            while (Vector2.Distance(killer.GetTruePosition(), target.GetTruePosition()) > 0.1f)
-            {
-                var direction = target.GetTruePosition() - killer.GetTruePosition();
-                killer.MyPhysics.SetNormalizedVelocity(direction.normalized);
+        yield return new WaitForSeconds(OptionGroupSingleton<PulseBladeOptions>.Instance.HideBodyDuration);
 
-                if (killer.MyPhysics.TrueSpeed * Time.fixedDeltaTime >= direction.magnitude)
-                    break;
-
-                yield return new WaitForFixedUpdate();
-            }
-
-            killer.MyPhysics.SetNormalizedVelocity(Vector2.zero);
-            killer.MyPhysics.Speed = originalSpeed;
-            killer.MyPhysics.inputHandler.enabled = true;
-            killer.moveable = true;
-
-            SoundManager.Instance.PlaySound(
-                NewModAsset.StrikeSound.LoadAsset(),
-                false,
-                1f);
-
-            killer.RpcCustomMurder(
-                target,
-                didSucceed: true,
-                resetKillTimer: false,
-                createDeadBody: true,
-                teleportMurderer: false,
-                showKillAnim: false,
-                playKillSound: false
-            );
-        }
-
-        [RegisterEvent]
-        public static void OnAfterMurder(AfterMurderEvent evt)
-        {
-            if (evt.Source.Data.Role is not PulseBlade)
-                return;
-
-            Utils.RegisterStrikeKill(evt.Source, evt.Target);
-
-            if (evt.Source.AmOwner)
-            {
-                var notification = Helpers.CreateAndShowNotification(
-                    $"Perfect kill {evt.Target.Data.PlayerName} eliminated",
-                    new Color(1f, 0.25f, 0.25f),
-                    spr: NewModAsset.StrikeIcon.LoadAsset());
-
-                notification.Text.SetOutlineThickness(0.3f);
-            }
-
-            if (evt.DeadBody)
-                Coroutines.Start(CoHideBody(evt.DeadBody));
-        }
-
-        private static IEnumerator CoHideBody(DeadBody body)
-        {
-            body.gameObject.SetActive(false);
-
-            yield return new WaitForSeconds(
-                OptionGroupSingleton<PulseBladeOptions>.Instance.HideBodyDuration);
-
-            if (body)
-                body.gameObject.SetActive(true);
-        }
+        if (body)
+            body.gameObject.SetActive(true);
     }
 }

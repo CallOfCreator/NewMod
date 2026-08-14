@@ -1,9 +1,6 @@
-using System.Text;
+namespace NewMod.Modifiers;
 
-namespace NewMod.Modifiers
+public interface INewModModifier
 {
-    public interface INewModModifier
-    {
-        ModifierFaction Faction { get; }
-    }
+    ModifierFaction Faction { get; }
 }

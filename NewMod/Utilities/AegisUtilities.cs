@@ -1,41 +1,43 @@
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using MiraAPI.GameOptions;
 using NewMod.Components;
 using NewMod.Options.Roles;
-using MiraAPI.GameOptions;
-using Reactor.Utilities.Extensions;
 using Reactor.Utilities;
+using Reactor.Utilities.Extensions;
+using UnityEngine;
 
-namespace NewMod.Utilities
+namespace NewMod.Utilities;
+
+public static class AegisUtilities
 {
-    public static class AegisUtilities
+    public static readonly HashSet<byte> ActiveOwners = new();
+
+    public static bool HasActiveShield()
     {
-        public static readonly HashSet<byte> ActiveOwners = new();
-        public static bool HasActiveShield()
-        {
-            var lp = PlayerControl.LocalPlayer;
-            return lp && ActiveOwners.Contains(lp.PlayerId);
-        }
-        public static void ActivateShield(PlayerControl owner, Vector2 position)
-        {
-            if (!owner) return;
+        var lp = PlayerControl.LocalPlayer;
+        return lp && ActiveOwners.Contains(lp.PlayerId);
+    }
 
-            var opts = OptionGroupSingleton<AegisOptions>.Instance;
+    public static void ActivateShield(PlayerControl owner, Vector2 position)
+    {
+        if (!owner) return;
 
-            var go = new GameObject("AegisShieldArea").DontDestroy();
-            go.transform.position = position;
+        var opts = OptionGroupSingleton<AegisOptions>.Instance;
 
-            var area = go.AddComponent<ShieldArea>();
-            area.Init(owner.PlayerId, opts.Radius, opts.DurationSeconds);
+        var go = new GameObject("AegisShieldArea").DontDestroy();
+        go.transform.position = position;
 
-            ActiveOwners.Add(owner.PlayerId);
-            Coroutines.Start(CoCleanupOwner(owner.PlayerId, opts.DurationSeconds));
-        }
+        var area = go.AddComponent<ShieldArea>();
+        area.Init(owner.PlayerId, opts.Radius, opts.DurationSeconds);
 
-        static System.Collections.IEnumerator CoCleanupOwner(byte ownerId, float duration)
-        {
-            yield return new WaitForSeconds(duration);
-            ActiveOwners.Remove(ownerId);
-        }
+        ActiveOwners.Add(owner.PlayerId);
+        Coroutines.Start(CoCleanupOwner(owner.PlayerId, opts.DurationSeconds));
+    }
+
+    private static IEnumerator CoCleanupOwner(byte ownerId, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        ActiveOwners.Remove(ownerId);
     }
 }

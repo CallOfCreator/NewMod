@@ -1,31 +1,35 @@
 using System.Linq;
-using UnityEngine;
-using Object = UnityEngine.Object;
 using BepInEx;
-using BepInEx.Unity.IL2CPP;
 using BepInEx.Configuration;
+using BepInEx.Unity.IL2CPP;
+using CorsacCosmetics;
+using CorsacCosmetics.Cosmetics.Hats;
+using CorsacCosmetics.Cosmetics.Nameplates;
+using CorsacCosmetics.Cosmetics.Visors;
+using HarmonyLib;
 using MiraAPI;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
+using MiraAPI.Hud;
 using MiraAPI.PluginLoading;
+using MiraAPI.Roles;
 using MiraAPI.Utilities;
+using NewMod.Buttons.Roles;
+using NewMod.Cosmetics;
+using NewMod.Options;
+using NewMod.Options.Roles;
+using NewMod.Patches.Compatibility;
+using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
+using NewMod.Utilities;
 using Reactor;
+using Reactor.Networking;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
-using HarmonyLib;
-using NewMod.Options;
-using NewMod.Utilities;
-using NewMod.Roles.ImpostorRoles;
-using MiraAPI.Events.Vanilla.Gameplay;
-using NewMod.Roles.NeutralRoles;
-using MiraAPI.Roles;
-using MiraAPI.Hud;
+using UnityEngine;
 using UnityEngine.Events;
-using NewMod.Buttons.Roles;
-using NewMod.Options.Roles;
-using MiraAPI.Events;
-using NewMod.Patches.Compatibility;
-using NewMod.Cosmetics;
-using CorsacCosmetics;
+using Object = UnityEngine.Object;
 
 namespace NewMod;
 
@@ -34,20 +38,26 @@ namespace NewMod;
 [BepInDependency(MiraApiPlugin.Id)]
 [BepInDependency(CorsacCosmeticsPlugin.Id)]
 [BepInDependency(ModCompatibility.LaunchpadReloaded_GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[ReactorModFlags(Reactor.Networking.ModFlags.RequireOnAllClients)]
+[ReactorModFlags(ModFlags.RequireOnAllClients)]
 [BepInProcess("Among Us.exe")]
-public partial class NewMod : BasePlugin, IMiraPlugin
+public class NewMod : BasePlugin, IMiraPlugin
 {
     public const string Id = "com.callofcreator.newmod";
     public const string ModVersion = "1.3.0";
-    public Harmony Harmony { get; } = new Harmony(Id);
+    public const string NewModBackendAPI = "";
     public static BasePlugin Instance;
     public static Minigame minigame;
+    public Harmony Harmony { get; } = new(Id);
     public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
     public static ConfigEntry<bool> ForceEnableAllSeasons { get; set; }
-    public ConfigFile GetConfigFile() => Config;
+
+    public ConfigFile GetConfigFile()
+    {
+        return Config;
+    }
+
     public string OptionsTitleText => "NewMod";
-    public const string NewModBackendAPI = "";
+
     public override void Load()
     {
         Instance = this;
@@ -71,6 +81,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             Harmony.PatchAll(typeof(LaunchpadCompatibility));
             Harmony.PatchAll(typeof(LaunchpadHackTextPatch));
         }
+
         ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
 
@@ -81,22 +92,11 @@ public partial class NewMod : BasePlugin, IMiraPlugin
 
         Instance.Log.LogMessage($"AssetBundle '{bundle.name}' contains {assetNames.Length} assets");
 
-        foreach (var name in assetNames)
-        {
-            Instance.Log.LogMessage($"{name}");
-        }
+        foreach (var name in assetNames) Instance.Log.LogMessage($"{name}");
         RegisterCosmetics();
         Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} ALPHA With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 
-    [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
-    public class KeyboardJoystickUpdatePatch
-    {
-        public static void Postfix(KeyboardJoystick __instance)
-        {
-            InitializeKeyBinds();
-        }
-    }
     public static void InitializeKeyBinds()
     {
         if (Input.GetKeyDown(KeyCode.F2) && PlayerControl.LocalPlayer.Data.IsDead && OptionGroupSingleton<GeneralOption>.Instance.AllowCams)
@@ -109,6 +109,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             minigame.transform.localPosition = new Vector3(0f, 0f, -50f);
             minigame.Begin(null);
         }
+
         if (Input.GetKeyDown(KeyCode.F3) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole)
         {
             var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
@@ -124,18 +125,19 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             }
         }
     }
+
     public static void RegisterCosmetics()
     {
-        NewModCosmeticsRegistry.RegisterHat("og_newmod", NewModAsset.OG_NewModHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "OG NewMod", InFront = true, NoBounce = false });
-        NewModCosmeticsRegistry.RegisterHat("glitch_reality", NewModAsset.GlitchedRealityHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Glitch Reality", InFront = true, NoBounce = false });
-        NewModCosmeticsRegistry.RegisterHat("mint_icecream", NewModAsset.MintIceCreamHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Mint Ice Cream", InFront = true, NoBounce = false });
-        NewModCosmeticsRegistry.RegisterHat("strawberry_icecream", NewModAsset.StrawberryIceCreamHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Strawberry Ice Cream", InFront = true, NoBounce = false });
-        NewModCosmeticsRegistry.RegisterVisor("malicious_look", NewModAsset.MaliciousLook.LoadAsset(), new CorsacCosmetics.Cosmetics.Visors.VisorMetadata { Name = "Malicious Look" });
-        NewModCosmeticsRegistry.RegisterVisor("cotton_memories", NewModAsset.CottonMemoriesVisor.LoadAsset(), new CorsacCosmetics.Cosmetics.Visors.VisorMetadata { Name = "Cotton Memories Visor" });
-        NewModCosmeticsRegistry.RegisterHat("pizza", NewModAsset.PizzaHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Pizza", InFront = true, NoBounce = false });
-        NewModCosmeticsRegistry.RegisterHat("squeeze_cap", NewModAsset.SqueezeCapHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Squeeze Cap", InFront = true, NoBounce = false });
-        NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new CorsacCosmetics.Cosmetics.Nameplates.NameplateMetadata { Name = "NM Rave" });
-        NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new CorsacCosmetics.Cosmetics.Nameplates.NameplateMetadata { Name = "Sunny Sky" });
+        NewModCosmeticsRegistry.RegisterHat("og_newmod", NewModAsset.OG_NewModHat.LoadAsset(), new HatMetadata { Name = "OG NewMod", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("glitch_reality", NewModAsset.GlitchedRealityHat.LoadAsset(), new HatMetadata { Name = "Glitch Reality", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("mint_icecream", NewModAsset.MintIceCreamHat.LoadAsset(), new HatMetadata { Name = "Mint Ice Cream", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("strawberry_icecream", NewModAsset.StrawberryIceCreamHat.LoadAsset(), new HatMetadata { Name = "Strawberry Ice Cream", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterVisor("malicious_look", NewModAsset.MaliciousLook.LoadAsset(), new VisorMetadata { Name = "Malicious Look" });
+        NewModCosmeticsRegistry.RegisterVisor("cotton_memories", NewModAsset.CottonMemoriesVisor.LoadAsset(), new VisorMetadata { Name = "Cotton Memories Visor" });
+        NewModCosmeticsRegistry.RegisterHat("pizza", NewModAsset.PizzaHat.LoadAsset(), new HatMetadata { Name = "Pizza", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("squeeze_cap", NewModAsset.SqueezeCapHat.LoadAsset(), new HatMetadata { Name = "Squeeze Cap", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new NameplateMetadata { Name = "NM Rave" });
+        NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new NameplateMetadata { Name = "Sunny Sky" });
         Instance.Log.LogMessage("Registered NewMod Cosmetics");
     }
 
@@ -151,6 +153,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             Instance.Log.LogMessage($"CachedButton: {buttonsType.GetType().Name}");
         }
     }
+
     [RegisterEvent]
     public static void OnAfterMurder(AfterMurderEvent evt)
     {
@@ -161,7 +164,6 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         if (target != OverloadRole.chosenPrey) return;
 
         foreach (var pc in PlayerControl.AllPlayerControls.ToArray().Where(p => p.AmOwner && p.Data.Role is OverloadRole))
-        {
             if (target.Data.Role is ICustomRole customRole)
             {
                 foreach (var button in OverloadRole.CachedButtons)
@@ -172,27 +174,30 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             }
             else if (target.Data.Role is not ICustomRole)
             {
-                var btn = Object.Instantiate(
-                    HudManager.Instance.AbilityButton,
-                    HudManager.Instance.AbilityButton.transform.parent);
+                var btn = Object.Instantiate(HudManager.Instance.AbilityButton, HudManager.Instance.AbilityButton.transform.parent);
                 btn.SetFromSettings(target.Data.Role.Ability);
                 var pb = btn.GetComponent<PassiveButton>();
                 pb.OnClick.RemoveAllListeners();
                 pb.OnClick.AddListener((UnityAction)target.Data.Role.UseAbility);
             }
-        }
+
         OverloadRole.CachedButtons.Clear();
         OverloadRole.AbsorbedAbilityCount++;
         OverloadRole.chosenPrey = null;
         Coroutines.Start(CoroutinesHelper.CoNotify($"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
 
         if (OverloadRole.AbsorbedAbilityCount >= OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge)
-        {
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FF7F>Objective completed: Final Ability unlocked!</color>"));
-        }
         else
-        {
             Coroutines.Start(OverloadRole.CoShowMenu(1f));
+    }
+
+    [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
+    public class KeyboardJoystickUpdatePatch
+    {
+        public static void Postfix(KeyboardJoystick __instance)
+        {
+            InitializeKeyBinds();
         }
     }
 
@@ -201,10 +206,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     {
         public static void Postfix(TaskPanelBehaviour __instance, [HarmonyArgument(0)] string str)
         {
-            if (PlayerControl.LocalPlayer.Data.IsDead)
-            {
-                __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams ? "<color=blue>Press F2 For Open Cams</color>" : "<color=red>You cannot open cams because the host has disabled this setting</color>");
-            }
+            if (PlayerControl.LocalPlayer.Data.IsDead) __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams ? "<color=blue>Press F2 For Open Cams</color>" : "<color=red>You cannot open cams because the host has disabled this setting</color>");
         }
     }
 }

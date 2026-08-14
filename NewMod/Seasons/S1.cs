@@ -1,6 +1,9 @@
-using System;
 using System.Collections.Generic;
+using Il2CppSystem;
 using NewMod.Buttons.Roles.S1;
+using NewMod.GameModes.WraithSiegeGamemode;
+using NewMod.GameModes.WraithSiegeGamemode.Buttons;
+using NewMod.GameModes.WraithSiegeGamemode.Options;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
@@ -9,65 +12,106 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles.S1;
 using TMPro;
 using UnityEngine;
+using Math = System.Math;
+using Type = System.Type;
 
-namespace NewMod.Seasons
+namespace NewMod.Seasons;
+
+public class S1 : ISeason
 {
-    public class S1 : ISeason
+    public string Name => "Season 1";
+
+    public DateTime SeasonStartDate => new(2026, 08, 14, 0, 0, 0, 0, DateTimeKind.Utc);
+
+    public DateTime SeasonEndDate => new(2026, 08, 16, 0, 0, 0, 0, DateTimeKind.Utc);
+
+    public Color SeasonMainColor => Color.yellow;
+
+    public void HandleMainMenu(MainMenuManager menuManager)
     {
-        public string Name => "Season 1";
-        public Il2CppSystem.DateTime SeasonStartDate => new(2026, 05, 10, 0, 0, 0, 0, Il2CppSystem.DateTimeKind.Utc);
-        public Il2CppSystem.DateTime SeasonEndDate => new(2026, 08, 10, 0, 0, 0, 0, Il2CppSystem.DateTimeKind.Utc);
-        public Color SeasonMainColor => Color.yellow;
+        var seasonText = new GameObject("NewMod_Season");
 
-        public void HandleMainMenu(MainMenuManager menuManager)
-        {
-            var seasonText = new GameObject("NewMod_Season");
-            seasonText.transform.SetParent(menuManager.transform.Find("MainUI/AspectScaler/RightPanel"), false);
-            seasonText.transform.localPosition = new Vector3(-6.552f, 0.1f, 0f);
+        seasonText.transform.SetParent(menuManager.transform.Find("MainUI/AspectScaler/RightPanel"), false);
 
-            var tmp = seasonText.AddComponent<TextMeshPro>();
-            tmp.alignment = TextAlignmentOptions.TopRight;
-            tmp.fontSize = 2.2f;
+        seasonText.transform.localPosition = new Vector3(-6.552f, 0.1f, 0f);
 
-            var now = AmongUsDateTime.UtcNow;
-            int daysLeft = Math.Max(0, (SeasonEndDate.Date - now.Date).Days);
-            string hex = ColorUtility.ToHtmlStringRGB(SeasonMainColor);
+        var text = seasonText.AddComponent<TextMeshPro>();
 
-            tmp.text =
-                $"<color=#00FF00>Active Seasons:</color> <color=#{hex}>{Name}</color>\n" +
-                $"<size=70%><color=#{hex}>{daysLeft} days</color> left</size>";
-        }
+        text.alignment = TextAlignmentOptions.TopRight;
 
-        public IReadOnlyList<Type> GetSeasonRoleTypes() =>
+        text.fontSize = 2.2f;
+
+        var now = AmongUsDateTime.UtcNow;
+
+        var daysLeft = Math.Max(0, (SeasonEndDate.Date - now.Date).Days);
+
+        var color = ColorUtility.ToHtmlStringRGB(SeasonMainColor);
+
+        text.text = $"<color=#00FF00>Active Seasons:</color> " + $"<color=#{color}>{Name}</color>\n" + $"<size=70%><color=#{color}>{daysLeft} days</color> left</size>";
+    }
+
+    public IReadOnlyList<Type> GetSeasonRoleTypes()
+    {
+        return
         [
             typeof(TerminatorRole),
             typeof(MirrorBladeRole),
-            typeof(VerifierRole)
+            typeof(VerifierRole),
+            typeof(Voidwalker)
         ];
+    }
 
-        public IReadOnlyList<Type> GetSeasonModifierTypes() =>
+    public IReadOnlyList<Type> GetSeasonModifierTypes()
+    {
+        return
         [
             typeof(FatefulModifier),
-            typeof(LazyModifier)
+            typeof(LazyModifier),
+            typeof(InVoid),
+            typeof(JustLeftVoid)
         ];
-        public IReadOnlyList<Type> GetSeasonOptionTypes() =>
+    }
+
+    public IReadOnlyList<Type> GetSeasonOptionTypes()
+    {
+        return
         [
             typeof(TerminatorOptions),
             typeof(MirrorBladeOptions),
-            typeof(VerifierOptions)
-        ];
-        public IReadOnlyList<Type> GetSeasonButtonTypes() =>
-        [
-            typeof(MirrorReflectButton),
-            typeof(ObjectiveButton),
-        ];
-
-        public IReadOnlyList<Type> GetSeasonGamemodeTypes() => [];
-
-        public IReadOnlyList<Type> GetSeasonGETypes() =>
-        [
-            typeof(NegativeRealityGE),
-            typeof(CrismonVortexGE)
+            typeof(VerifierOptions),
+            typeof(WraithSiegeOptions),
+            typeof(VoidwalkerOptions),
         ];
     }
-}
+
+    public IReadOnlyList<Type> GetSeasonButtonTypes()
+        {
+            return
+            [
+                typeof(MirrorReflectButton),
+                typeof(ObjectiveButton),
+                typeof(TopWraithLaneButton),
+                typeof(MidWraithLaneButton),
+                typeof(BottomWraithLaneButton),
+                typeof(BanishWraithButton),
+                typeof(WraithSiegeReviveButton)
+            ];
+        }
+
+        public IReadOnlyList<Type> GetSeasonGamemodeTypes()
+        {
+            return
+            [
+                typeof(WraithSiege)
+            ];
+        }
+
+        public IReadOnlyList<Type> GetSeasonGETypes()
+        {
+            return
+            [
+                typeof(NegativeRealityGE),
+                typeof(CrismonVortexGE)
+            ];
+        }
+    }

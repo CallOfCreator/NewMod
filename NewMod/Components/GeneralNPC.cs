@@ -56,7 +56,7 @@ namespace NewMod.Components
             isActive = true;
             Coroutines.Start(WalkStopLoop());
         }
-    
+
         [HideFromIl2Cpp]
         public IEnumerator WalkStopLoop()
         {
@@ -140,3 +140,4 @@ namespace NewMod.Components
         }
     }
 }*/
+

@@ -1,17 +1,18 @@
 using MiraAPI.Roles;
-using UnityEngine;
 using MiraAPI.Utilities.Assets;
+using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles;
 
 public class TheVisionary : CrewmateRole, ICustomRole
 {
+    public RoleOptionsGroup RoleOptionGroup { get; } = RoleOptionsGroup.Crewmate;
     public string RoleName => "The Visionary";
-    public string RoleDescription => $"Take photos during the game";
+    public string RoleDescription => "Take photos during the game";
     public string RoleLongDescription => "Capture key moments during the game by taking photos to gather evidence";
     public Color RoleColor => new(0.75f, 0.5f, 1.0f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
-    public RoleOptionsGroup RoleOptionGroup { get; } = RoleOptionsGroup.Crewmate;
+
     public CustomRoleConfiguration Configuration => new(this)
     {
         DefaultRoleCount = 2,

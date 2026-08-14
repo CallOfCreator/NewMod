@@ -4,68 +4,71 @@ using MiraAPI.Utilities;
 using NewMod.Options.Modifiers;
 using UnityEngine;
 
-namespace NewMod.Modifiers
+namespace NewMod.Modifiers;
+
+public class FalseFormModifier : TimedModifier
 {
-    public class FalseFormModifier : TimedModifier
+    private AppearanceBackup oldAppearance;
+    private float timer;
+    public override string ModifierName => "FalseForm";
+    public override bool ShowInFreeplay => true;
+    public override bool HideOnUi => false;
+    public override float Duration => (int)OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormDuration;
+
+    public override void OnActivate()
     {
-        public override string ModifierName => "FalseForm";
-        public override bool ShowInFreeplay => true;
-        public override bool HideOnUi => false;
-        public override float Duration => (int)OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormDuration;
-        private float timer;
-        private AppearanceBackup oldAppearance;
-        public override void OnActivate()
+        oldAppearance = new AppearanceBackup
         {
-            oldAppearance = new AppearanceBackup
-            {
-                PlayerName = Player.Data.PlayerName,
-                HatId = Player.Data.DefaultOutfit.HatId,
-                SkinId = Player.Data.DefaultOutfit.SkinId,
-                PetId = Player.Data.DefaultOutfit.PetId,
-                ColorId = Player.Data.DefaultOutfit.ColorId
-            };
-        }
-        public override bool? CanVent()
-        {
-            return Player.Data.Role.CanVent;
-        }
-        public override string GetDescription()
-        {
-            return ModifierName
-                + $"\nYour appearance changes every {OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormAppearanceTimer.Value} seconds.";
-        }
+            PlayerName = Player.Data.PlayerName,
+            HatId = Player.Data.DefaultOutfit.HatId,
+            SkinId = Player.Data.DefaultOutfit.SkinId,
+            PetId = Player.Data.DefaultOutfit.PetId,
+            ColorId = Player.Data.DefaultOutfit.ColorId
+        };
+    }
 
-        public override void FixedUpdate()
-        {
-            base.FixedUpdate();
+    public override bool? CanVent()
+    {
+        return Player.Data.Role.CanVent;
+    }
 
-            timer += Time.fixedDeltaTime;
+    public override string GetDescription()
+    {
+        return ModifierName + $"\nYour appearance changes every {OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormAppearanceTimer.Value} seconds.";
+    }
 
-            if (timer >= OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormAppearanceTimer.Value)
-            {
-                Player.RpcSetName(Helpers.RandomString(5));
-                Player.RpcSetColor((byte)Random.Range(0, Palette.PlayerColors.Count));
-                Player.RpcSetHat(HatManager.Instance.AllHats[Random.Range(0, HatManager.Instance.allHats.Count)].ProductId);
-                Player.RpcSetSkin(HatManager.Instance.AllSkins[Random.Range(0, HatManager.Instance.allSkins.Count)].ProductId);
-                Player.RpcSetPet(HatManager.Instance.AllPets[Random.Range(0, HatManager.Instance.allPets.Count)].ProductId);
-            }
-        }
-        public override void OnDeactivate()
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+
+        timer += Time.fixedDeltaTime;
+
+        if (timer >= OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormAppearanceTimer.Value)
         {
-            if (OptionGroupSingleton<FalseFormModifierOptions>.Instance.RevertAppearance)
-            {
-                Player.RpcSetName(oldAppearance.PlayerName);
-                Player.RpcSetColor((byte)oldAppearance.ColorId);
-                Player.RpcSetHat(oldAppearance.HatId);
-                Player.RpcSetSkin(oldAppearance.SkinId);
-                Player.RpcSetPet(oldAppearance.PetId);
-            }
+            Player.RpcSetName(Helpers.RandomString(5));
+            Player.RpcSetColor((byte)Random.Range(0, Palette.PlayerColors.Count));
+            Player.RpcSetHat(HatManager.Instance.AllHats[Random.Range(0, HatManager.Instance.allHats.Count)].ProductId);
+            Player.RpcSetSkin(HatManager.Instance.AllSkins[Random.Range(0, HatManager.Instance.allSkins.Count)].ProductId);
+            Player.RpcSetPet(HatManager.Instance.AllPets[Random.Range(0, HatManager.Instance.allPets.Count)].ProductId);
         }
     }
-    class AppearanceBackup
+
+    public override void OnDeactivate()
     {
-        public string PlayerName;
-        public string HatId, SkinId, PetId;
-        public int ColorId;
+        if (OptionGroupSingleton<FalseFormModifierOptions>.Instance.RevertAppearance)
+        {
+            Player.RpcSetName(oldAppearance.PlayerName);
+            Player.RpcSetColor((byte)oldAppearance.ColorId);
+            Player.RpcSetHat(oldAppearance.HatId);
+            Player.RpcSetSkin(oldAppearance.SkinId);
+            Player.RpcSetPet(oldAppearance.PetId);
+        }
     }
+}
+
+internal class AppearanceBackup
+{
+    public int ColorId;
+    public string HatId, SkinId, PetId;
+    public string PlayerName;
 }

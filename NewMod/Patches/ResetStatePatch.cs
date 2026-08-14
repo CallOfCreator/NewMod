@@ -9,9 +9,6 @@ public static class ResetStatePatch
     [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.ResetStartState))]
     public static void Prefix(GameStartManager __instance)
     {
-        if (__instance.startState == GameStartManager.StartingStates.Countdown)
-        {
-            GameManager.Instance.LogicOptions.SyncOptions();
-        }
+        if (__instance.startState == GameStartManager.StartingStates.Countdown) GameManager.Instance.LogicOptions.SyncOptions();
     }
 }

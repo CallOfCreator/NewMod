@@ -1,112 +1,111 @@
-using UnityEngine;
 using HarmonyLib;
-using NewMod.LocalSettings;
 using MiraAPI.LocalSettings;
+using NewMod.LocalSettings;
 using NewMod.Seasons;
+using UnityEngine;
 
-namespace NewMod.Patches
+namespace NewMod.Patches;
+
+[HarmonyPatch(typeof(MainMenuManager))]
+[HarmonyPriority(Priority.VeryHigh)]
+public static class MainMenuPatch
 {
-    [HarmonyPatch(typeof(MainMenuManager))]
-    [HarmonyPriority(Priority.VeryHigh)]
-    public static class MainMenuPatch
+    public static SpriteRenderer LogoSprite;
+    public static Texture2D _cachedCursor;
+    public static Transform RightPanel;
+    public static bool _injected;
+
+    [HarmonyPatch(nameof(MainMenuManager.Start))]
+    [HarmonyPrefix]
+    [HarmonyPriority(Priority.First)]
+    public static void StartPrefix(MainMenuManager __instance)
     {
-        public static SpriteRenderer LogoSprite;
-        public static Texture2D _cachedCursor;
-        public static Transform RightPanel;
-        public static bool _injected;
+        if (_injected)
+            return;
 
-        [HarmonyPatch(nameof(MainMenuManager.Start))]
-        [HarmonyPrefix]
-        [HarmonyPriority(Priority.First)]
-        public static void StartPrefix(MainMenuManager __instance)
+        _injected = true;
+        SeasonManager.InjectSeasonContent();
+    }
+
+    [HarmonyPatch(nameof(MainMenuManager.Start))]
+    [HarmonyPostfix]
+    public static void StartPostfix(MainMenuManager __instance)
+    {
+        if (_cachedCursor == null)
         {
-            if (_injected)
-                return;
-
-            _injected = true;
-            SeasonManager.InjectSeasonContent();
+            var cur = NewModAsset.CustomCursor.LoadAsset();
+            _cachedCursor = cur != null ? cur.texture : null;
         }
 
-        [HarmonyPatch(nameof(MainMenuManager.Start))]
-        [HarmonyPostfix]
-        public static void StartPostfix(MainMenuManager __instance)
+        if (_cachedCursor != null && LocalSettingsTabSingleton<NewModLocalSettings>.Instance.EnableCustomCursor.Value)
+            Cursor.SetCursor(_cachedCursor, Vector2.zero, CursorMode.Auto);
+
+        RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
+
+        var Logo = new GameObject("NewModLogo");
+        Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
+        Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
+
+        LogoSprite = Logo.AddComponent<SpriteRenderer>();
+        LogoSprite.sprite = NewModAsset.NewModLogo.LoadAsset();
+
+        SeasonManager.InitializeSeasons(__instance);
+        ModCompatibility.Initialize();
+    }
+
+    /*private static IEnumerator ApplyBirthdayUI(MainMenuManager __instance)
+    {
+        yield return null;
+
+        RightPanel.gameObject.SetActive(false);
+        __instance.screenTint.enabled = false;
+
+        var auLogo = GameObject.Find("LOGO-AU");
+        if (auLogo != null)
         {
-            if (_cachedCursor == null)
-            {
-                var cur = NewModAsset.CustomCursor.LoadAsset();
-                _cachedCursor = cur != null ? cur.texture : null;
-            }
-
-            if (_cachedCursor != null && LocalSettingsTabSingleton<NewModLocalSettings>.Instance.EnableCustomCursor.Value)
-                Cursor.SetCursor(_cachedCursor, Vector2.zero, CursorMode.Auto);
-
-            RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
-
-            var Logo = new GameObject("NewModLogo");
-            Logo.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
-            Logo.transform.localPosition = new Vector3(2.34f, -0.7136f, 1f);
-
-            LogoSprite = Logo.AddComponent<SpriteRenderer>();
-            LogoSprite.sprite = NewModAsset.NewModLogo.LoadAsset();
-
-            SeasonManager.InitializeSeasons(__instance);
-            ModCompatibility.Initialize();
+            auLogo.transform.localPosition = new Vector3(-3.50f, 1.85f, 0f);
+            auLogo.transform.localScale = new Vector3(0.32f, 0.32f, 1f);
         }
 
-        /*private static IEnumerator ApplyBirthdayUI(MainMenuManager __instance)
+        var parent = __instance.transform.Find("MainUI/AspectScaler/LeftPanel");
+        if (parent != null)
         {
-            yield return null;
-
-            RightPanel.gameObject.SetActive(false);
-            __instance.screenTint.enabled = false;
-
-            var auLogo = GameObject.Find("LOGO-AU");
-            if (auLogo != null)
-            {
-                auLogo.transform.localPosition = new Vector3(-3.50f, 1.85f, 0f);
-                auLogo.transform.localScale = new Vector3(0.32f, 0.32f, 1f);
-            }
-
-            var parent = __instance.transform.Find("MainUI/AspectScaler/LeftPanel");
-            if (parent != null)
-            {
-                var newmodLogo = new GameObject("NewModLogo");
-                newmodLogo.transform.SetParent(parent, false);
-                newmodLogo.transform.localPosition = new Vector3(-0.1427f, 2.8094f, 0.7182f);
-                newmodLogo.transform.localScale = new Vector3(0.3711f, 0.4214f, 1.16f);
-                LogoSprite = newmodLogo.AddComponent<SpriteRenderer>();
-                var modLogo = NewModAsset.ModLogo.LoadAsset();
-                if (modLogo != null) LogoSprite.sprite = modLogo;
-            }
-
-            var bgTr = __instance.transform.Find("MainUI/AspectScaler/BackgroundTexture");
-            if (bgTr != null)
-            {
-                var auBG = bgTr.GetComponent<SpriteRenderer>();
-                var bg = NewModAsset.MainMenuBG.LoadAsset();
-                if (auBG != null && bg != null) auBG.sprite = bg;
-            }
-        }*/
-        /*[HarmonyPatch(nameof(MainMenuManager.OpenGameModeMenu))]
-        [HarmonyPatch(nameof(MainMenuManager.OpenCredits))]
-        [HarmonyPatch(nameof(MainMenuManager.OpenAccountMenu))]
-        [HarmonyPatch(nameof(MainMenuManager.OpenCreateGame))]
-        [HarmonyPatch(nameof(MainMenuManager.OpenEnterCodeMenu))]
-        [HarmonyPatch(nameof(MainMenuManager.OpenOnlineMenu))]
-        [HarmonyPatch(nameof(MainMenuManager.OpenFindGame))]
-        public static void Postfix(MainMenuManager __instance)
-        {
-            if (!NewModDateTime.IsNewModBirthdayWeek) return;
-            RightPanel.gameObject.SetActive(true);
+            var newmodLogo = new GameObject("NewModLogo");
+            newmodLogo.transform.SetParent(parent, false);
+            newmodLogo.transform.localPosition = new Vector3(-0.1427f, 2.8094f, 0.7182f);
+            newmodLogo.transform.localScale = new Vector3(0.3711f, 0.4214f, 1.16f);
+            LogoSprite = newmodLogo.AddComponent<SpriteRenderer>();
+            var modLogo = NewModAsset.ModLogo.LoadAsset();
+            if (modLogo != null) LogoSprite.sprite = modLogo;
         }
 
-        [HarmonyPatch(nameof(MainMenuManager.ResetScreen))]
-        [HarmonyPostfix]
-        public static void ResetScreenPostfix(MainMenuManager __instance)
+        var bgTr = __instance.transform.Find("MainUI/AspectScaler/BackgroundTexture");
+        if (bgTr != null)
         {
-            if (!NewModDateTime.IsNewModBirthdayWeek) return;
-            RightPanel.gameObject.SetActive(false);
+            var auBG = bgTr.GetComponent<SpriteRenderer>();
+            var bg = NewModAsset.MainMenuBG.LoadAsset();
+            if (auBG != null && bg != null) auBG.sprite = bg;
         }
     }*/
+    /*[HarmonyPatch(nameof(MainMenuManager.OpenGameModeMenu))]
+    [HarmonyPatch(nameof(MainMenuManager.OpenCredits))]
+    [HarmonyPatch(nameof(MainMenuManager.OpenAccountMenu))]
+    [HarmonyPatch(nameof(MainMenuManager.OpenCreateGame))]
+    [HarmonyPatch(nameof(MainMenuManager.OpenEnterCodeMenu))]
+    [HarmonyPatch(nameof(MainMenuManager.OpenOnlineMenu))]
+    [HarmonyPatch(nameof(MainMenuManager.OpenFindGame))]
+    public static void Postfix(MainMenuManager __instance)
+    {
+        if (!NewModDateTime.IsNewModBirthdayWeek) return;
+        RightPanel.gameObject.SetActive(true);
     }
+
+    [HarmonyPatch(nameof(MainMenuManager.ResetScreen))]
+    [HarmonyPostfix]
+    public static void ResetScreenPostfix(MainMenuManager __instance)
+    {
+        if (!NewModDateTime.IsNewModBirthdayWeek) return;
+        RightPanel.gameObject.SetActive(false);
+    }
+}*/
 }

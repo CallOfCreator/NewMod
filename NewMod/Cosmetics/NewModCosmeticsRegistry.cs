@@ -89,6 +89,7 @@ public static class NewModCosmeticsRegistry
 
         PendingVisors.Add(new CustomVisor(id, visorData, viewData, previewData));
     }
+
     public static void RegisterNamePlate(string name, Sprite sprite, NameplateMetadata? meta = null)
     {
         var m = meta ?? new NameplateMetadata { Name = name };
