@@ -62,10 +62,6 @@ namespace NewMod.Roles.CrewmateRoles
             return tab;
         }
 
-        public override bool DidWin(GameOverReason gameOverReason)
-        {
-            return gameOverReason is GameOverReason.CrewmatesByTask or GameOverReason.CrewmatesByVote;
-        }
 
         [RegisterEvent]
         public static void OnAnyButtonClick(MiraButtonClickEvent evt)

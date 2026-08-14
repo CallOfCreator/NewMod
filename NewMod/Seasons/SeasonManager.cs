@@ -71,11 +71,6 @@ namespace NewMod.Seasons
         public static void InjectSeasonContent()
         {
             var pluginInfo = MiraPluginManager.GetPluginByGuid(NewMod.Id);
-            if (pluginInfo == null)
-            {
-                NewMod.Instance.Log.LogError("[SeasonManager] Could not find NewMod plugin info");
-                return;
-            }
 
             var queueProp = typeof(MiraPluginManager).GetProperty(
                 "QueuedRoleRegistrations",
@@ -85,7 +80,6 @@ namespace NewMod.Seasons
 
             if (queueProp?.GetValue(instance) is not Dictionary<MiraPluginInfo, List<Type>> roleQueue)
             {
-                NewMod.Instance.Log.LogError("[SeasonManager] Failed to access QueuedRoleRegistrations");
                 return;
             }
 
@@ -93,18 +87,11 @@ namespace NewMod.Seasons
             {
                 roles = [];
                 roleQueue[pluginInfo] = roles;
-                NewMod.Instance.Log.LogWarning("[SeasonManager] NewMod had no role queue, created one manually");
             }
 
             var fnModifier = GetPrivateMethod("RegisterModifier", typeof(Type), typeof(MiraPluginInfo));
             var fnOptions = GetPrivateMethod("RegisterOptions", typeof(Type), typeof(MiraPluginInfo));
             var fnButton = GetPrivateMethod("RegisterButton", typeof(Type), typeof(MiraPluginInfo));
-
-            int cRoles = 0;
-            int cMods = 0;
-            int cOpts = 0;
-            int cBtns = 0;
-            int cEvts = 0;
 
             foreach (var season in StartedSeasons)
             {
@@ -113,13 +100,12 @@ namespace NewMod.Seasons
                     if (!roles.Contains(type))
                     {
                         roles.Add(type);
-                        cRoles++;
                     }
 
                     foreach (var method in AccessTools.GetDeclaredMethods(type))
                     {
                         var attr = method.GetCustomAttribute<RegisterEventAttribute>();
-                        if (attr == null || !method.IsStatic)
+                        if (!method.IsStatic)
                             continue;
 
                         var parameters = method.GetParameters();
@@ -127,7 +113,6 @@ namespace NewMod.Seasons
                             continue;
 
                         MiraEventManager.RegisterEventHandler(parameters[0].ParameterType, method, attr.Priority);
-                        cEvts++;
                     }
                 }
 
@@ -137,7 +122,6 @@ namespace NewMod.Seasons
                         continue;
 
                     fnModifier.Invoke(null, [type, pluginInfo]);
-                    cMods++;
                 }
 
                 foreach (var type in season.GetSeasonOptionTypes())
@@ -146,7 +130,6 @@ namespace NewMod.Seasons
                         continue;
 
                     fnOptions.Invoke(null, [type, pluginInfo]);
-                    cOpts++;
                 }
 
                 foreach (var type in season.GetSeasonButtonTypes())
@@ -155,15 +138,11 @@ namespace NewMod.Seasons
                         continue;
 
                     fnButton.Invoke(null, [type, pluginInfo]);
-                    cBtns++;
                 }
             }
-
-            NewMod.Instance.Log.LogMessage(
-                $"[SeasonManager] Injected content: roles={cRoles}, mods={cMods}, opts={cOpts}, btns={cBtns}, events={cEvts}");
         }
 
-        static MethodInfo GetPrivateMethod(string name, params Type[] paramTypes)
+        public static MethodInfo GetPrivateMethod(string name, params Type[] paramTypes)
         {
             var method = typeof(MiraPluginManager).GetMethod(
                 name,
@@ -171,9 +150,6 @@ namespace NewMod.Seasons
                 null,
                 paramTypes,
                 null);
-
-            if (method == null)
-                NewMod.Instance.Log.LogWarning($"[SeasonManager] MiraPluginManager.{name} not found, content may not register");
 
             return method;
         }

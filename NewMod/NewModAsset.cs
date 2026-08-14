@@ -19,6 +19,8 @@ public static class NewModAsset
     public static LoadableResourceAsset CustomCursor { get; } = new("NewMod.Resources.cursor.png");
     public static LoadableAsset<GameObject> Toast { get; } = new LoadableBundleAsset<GameObject>("Toast", Bundle);
     public static LoadableAsset<GameObject> SlashTray { get; } = new LoadableBundleAsset<GameObject>("SlashTray", Bundle);
+    public static LoadableAsset<Sprite> ConfirmIconHover { get; } = new LoadableBundleAsset<Sprite>("confirmOutline", Bundle);
+    public static LoadableAsset<Sprite> DenyIconHover { get; } = new LoadableBundleAsset<Sprite>("deniedOutline", Bundle);
 
     // NewMod's First Birthday Assets
     public static LoadableResourceAsset MainMenuBG { get; } = new("NewMod.Resources.Birthday.newmod-birthday-v1.png");
@@ -88,10 +90,27 @@ public static class NewModAsset
 
     // Textures
     public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
-    public static LoadableResourceAsset CrismonTexture { get; } = new ("NewMod.Resources.inkcloud1.png");
+    public static LoadableResourceAsset CrismonTexture { get; } = new("NewMod.Resources.inkcloud1.png");
 
     //General Events
     public static LoadableAsset<GameObject> GeneralEventHud { get; } = new LoadableBundleAsset<GameObject>("GeneralEvent", Bundle);
-    public static LoadableResourceAsset CrismonIcon { get; } = new ("NewMod.Resources.crismon_ge_icon.png");
+    public static LoadableResourceAsset CrismonIcon { get; } = new("NewMod.Resources.crismon_ge_icon.png");
     public static LoadableResourceAsset NegativeRealityIcon { get; } = new LoadableResourceAsset("NewMod.Resources.NegativeIcon.png");
+
+    //Cosmetics
+    public static LoadableResourceAsset OG_NewModHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.og_newmod.png");
+    public static LoadableResourceAsset MintIceCreamHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.minticecream.png");
+    public static LoadableResourceAsset StrawberryIceCreamHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.strawberryicecream.png");
+    public static LoadableResourceAsset PizzaHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.pizza.png");
+    public static LoadableResourceAsset SqueezeCapHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.squeezecap.png");
+    
+    public static LoadableResourceAsset CottonMemoriesVisor { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Visors.cottonmemories.png");
+    public static LoadableResourceAsset MaliciousLook { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Visors.maliciouslook.png");
+    
+    public static LoadableResourceAsset GlitchedRealityHat { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Hats.glitchedReality.png");
+    public static LoadableResourceAsset SunnyNameplate { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Nameplates.sunnynameplate.png");
+    public static LoadableResourceAsset NMraveNameplate { get; } = new LoadableResourceAsset("NewMod.Resources.Cosmetics.Nameplates.nmrave.png");
+    
+    //Minigames
+    public static LoadableAsset<GameObject> VerifyMinigame { get; } = new LoadableBundleAsset<GameObject>("VerifyMinigame", Bundle);
 }

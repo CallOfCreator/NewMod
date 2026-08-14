@@ -40,46 +40,31 @@ namespace NewMod.Utilities
         /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
         public static IEnumerator CoNotify(string message)
         {
-            // Play sound if allowed.
             if (Constants.ShouldPlaySfx())
-            {
                 SoundManager.Instance.PlaySound(HudManager.Instance.TaskCompleteSound, false, 1f, null);
-            }
 
             var overlay = HudManager.Instance.TaskCompleteOverlay;
             var obj = Object.Instantiate(overlay.gameObject, overlay.transform.parent);
+            var textComponent = obj.GetComponentInChildren<TextMeshPro>(true);
+            var translator = textComponent.GetComponent<TextTranslatorTMP>();
 
-            var textComponent = obj.GetComponentInChildren<TextMeshPro>();
-
-            // Adjust font size based on message length
-            if (textComponent != null)
+            if (translator)
             {
-                textComponent.text = message;
-                textComponent.fontSize = Mathf.Clamp(3.5f - (message.Length / 20f), 2f, 3.5f);
-            }
-            obj.gameObject.SetActive(true);
-
-            yield return new WaitForEndOfFrame();
-
-            if (textComponent != null)
-            {
-                textComponent.text = message;
+                translator.enabled = false;
+                Object.Destroy(translator);
             }
 
-            // Animate the overlay into view
+            textComponent.text = message;
+            textComponent.fontSize = Mathf.Clamp(3.5f - message.Length / 20f, 2f, 3.5f);
+            obj.SetActive(true);
+
             yield return Effects.Slide2D(obj.transform, new Vector2(0f, -8f), Vector2.zero, 0.25f);
-
-            // Display for a short duration
-            for (float time = 0f; time < 0.95f; time += Time.deltaTime)
-            {
-                yield return null;
-            }
-
-            // Animate the overlay out of view
+            yield return new WaitForSeconds(0.95f);
             yield return Effects.Slide2D(obj.transform, Vector2.zero, new Vector2(0f, 8f), 0.25f);
 
-            GameObject.Destroy(obj);
+            Object.Destroy(obj);
         }
+
         /// <summary>
         /// Starts and displays a countdown timer for a mission, then fails the mission if time expires.
         /// </summary>
@@ -116,6 +101,7 @@ namespace NewMod.Utilities
                     Object.Destroy(timerLabel.gameObject);
                     yield break;
                 }
+
                 yield return new WaitForSeconds(1f);
                 timeRemaining -= 1f;
 
@@ -129,6 +115,7 @@ namespace NewMod.Utilities
                     {
                         SoundManager.Instance.PlaySound(ShipStatus.Instance.SabotageSound, false, 0.8f);
                     }
+
                     HudManager.Instance.FullScreen.color = new Color(1f, 0f, 0f, 0.1f);
                     HudManager.Instance.FullScreen.gameObject.SetActive(true);
                 }
@@ -145,12 +132,14 @@ namespace NewMod.Utilities
                         HudManager.Instance.FullScreen.gameObject.SetActive(false);
                 }
             }
+
             // Time has expired, destroy the timer and fail the mission
             Object.Destroy(timerLabel.gameObject);
             SoundManager.Instance.StopSound(ShipStatus.Instance.SabotageSound);
             HudManager.Instance.FullScreen.gameObject.SetActive(false);
             Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
         }
+
         /// <summary>
         /// Allows a Prankster to create fake dead bodies by pressing F5, fulfilling a mission if enough bodies are created.
         /// </summary>
@@ -163,6 +152,7 @@ namespace NewMod.Utilities
             {
                 bodiesCreated[target.PlayerId] = 0;
             }
+
             while (true)
             {
                 // If the player dies mid-mission, fail the mission
@@ -179,8 +169,10 @@ namespace NewMod.Utilities
                     bodiesCreated[target.PlayerId]++;
                     if (target.AmOwner)
                     {
-                        Coroutines.Start(CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
+                        Coroutines.Start(
+                            CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
                     }
+
                     // Once enough bodies are created, succeed the mission
                     if (bodiesCreated[target.PlayerId] >= 2)
                     {
@@ -188,9 +180,11 @@ namespace NewMod.Utilities
                         yield break;
                     }
                 }
+
                 yield return null;
             }
         }
+
         /// <summary>
         /// Allows an Energy Thief to drain nearby players' energy by pressing F5, fulfilling a mission after enough drains.
         /// </summary>
@@ -205,6 +199,7 @@ namespace NewMod.Utilities
             {
                 drainCount[target.PlayerId] = 0;
             }
+
             while (true)
             {
                 // If the player dies mid-mission, fail the mission
@@ -213,17 +208,18 @@ namespace NewMod.Utilities
                     Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
                     yield break;
                 }
+
                 // Press F5 to drain energy from a nearby player
                 if (Input.GetKeyDown(KeyCode.F5))
                 {
                     var playersInRange = Helpers.GetClosestPlayers(
-                        target,
-                        drainRange,
-                        ignoreColliders: true,
-                        ignoreSource: true
-                    )
-                    .Where(p => !p.Data.IsDead && !p.Data.Disconnected)
-                    .ToList();
+                            target,
+                            drainRange,
+                            ignoreColliders: true,
+                            ignoreSource: true
+                        )
+                        .Where(p => !p.Data.IsDead && !p.Data.Disconnected)
+                        .ToList();
 
                     if (playersInRange.Count > 0)
                     {
@@ -235,11 +231,14 @@ namespace NewMod.Utilities
                         // Notify both the drainer and the drained player
                         if (target.AmOwner)
                         {
-                            Coroutines.Start(CoNotify($"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
+                            Coroutines.Start(CoNotify(
+                                $"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
                         }
+
                         if (victim.AmOwner)
                         {
-                            Coroutines.Start(CoNotify("<color=#FF0000><b><i>Your energy has been drained!</i></b></color>"));
+                            Coroutines.Start(
+                                CoNotify("<color=#FF0000><b><i>Your energy has been drained!</i></b></color>"));
                         }
 
                         // After enough drains, succeed the mission
@@ -253,10 +252,12 @@ namespace NewMod.Utilities
                     {
                         if (target.AmOwner)
                         {
-                            Coroutines.Start(CoNotify("<color=#FFA500><b><i>No players nearby to drain energy from.</i></b></color>"));
+                            Coroutines.Start(CoNotify(
+                                "<color=#FFA500><b><i>No players nearby to drain energy from.</i></b></color>"));
                         }
                     }
                 }
+
                 yield return null;
             }
         }
@@ -276,6 +277,7 @@ namespace NewMod.Utilities
             {
                 Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Press F5 to revive a dead player!</b></i></color>"));
             }
+
             while (true)
             {
                 if (target.Data.IsDead)
@@ -283,6 +285,7 @@ namespace NewMod.Utilities
                     Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
                     yield break;
                 }
+
                 if (Input.GetKeyDown(KeyCode.F5))
                 {
                     // Perform the revive if not yet done
@@ -291,17 +294,20 @@ namespace NewMod.Utilities
                         var deadBody = Utils.GetClosestBody();
                         if (deadBody == null && target.AmOwner)
                         {
-                            Coroutines.Start(CoNotify("<color=#FFA500><b>No dead body found! Move closer and press F5 again.</b></color>"));
+                            Coroutines.Start(CoNotify(
+                                "<color=#FFA500><b>No dead body found! Move closer and press F5 again.</b></color>"));
                         }
                         else
                         {
                             revivedParentId = deadBody.ParentId;
 
-                            Utils.HandleRevive(target, deadBody.ParentId, RoleTypes.Crewmate, deadBody.transform.position.x, deadBody.transform.position.y);
+                            Utils.HandleRevive(target, deadBody.ParentId, RoleTypes.Crewmate,
+                                deadBody.transform.position.x, deadBody.transform.position.y);
 
                             yield return new WaitForSeconds(0.5f);
 
-                            Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Player revived! Press F5 to kill them again!</b></i></color>"));
+                            Coroutines.Start(CoNotify(
+                                "<color=#8A2BE2><i><b>Player revived! Press F5 to kill them again!</b></i></color>"));
 
                             revived = true;
                         }
@@ -325,6 +331,7 @@ namespace NewMod.Utilities
                         }
                     }
                 }
+
                 yield return null;
             }
         }
@@ -336,7 +343,8 @@ namespace NewMod.Utilities
         /// <param name="mostwantedTarget">The most wanted target player.</param>
         /// <param name="target">The player assigned to eliminate the most wanted target.</param>
         /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
-        public static IEnumerator CoHandleWantedTarget(ArrowBehaviour arrow, PlayerControl mostwantedTarget, PlayerControl target)
+        public static IEnumerator CoHandleWantedTarget(ArrowBehaviour arrow, PlayerControl mostwantedTarget,
+            PlayerControl target)
         {
             // Keep updating the arrow's position as long as the target is alive
             while (!mostwantedTarget.Data.IsDead && !mostwantedTarget.Data.Disconnected)
@@ -344,6 +352,7 @@ namespace NewMod.Utilities
                 arrow.target = mostwantedTarget.transform.position;
                 yield return null;
             }
+
             Object.Destroy(arrow.gameObject);
 
             yield return new WaitForSeconds(0.5f);
@@ -358,8 +367,10 @@ namespace NewMod.Utilities
             {
                 Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
             }
+
             yield break;
         }
+
         /// <summary>
         /// Resets the player's movement speed after the given delay.
         /// Used to revert Adrenaline serum effect.
@@ -393,6 +404,7 @@ namespace NewMod.Utilities
                 target.MyPhysics.inputHandler.enabled = true;
             }
         }
+
         /// <summary>
         /// Resets the player's rotation after a specified delay.
         /// Useful for restoring normal orientation after bounce/spin effects (e.g. Bounce Serum).
@@ -423,6 +435,7 @@ namespace NewMod.Utilities
                 target.MyPhysics.body.velocity = Vector2.zero;
             }
         }
+
         /// <summary>
         /// Coroutine that waits for a given duration before destroying a specified GameObject.
         /// </summary>

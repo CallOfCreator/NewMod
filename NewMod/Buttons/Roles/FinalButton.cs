@@ -5,6 +5,8 @@ using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Buttons.Roles
 {
@@ -65,10 +67,7 @@ namespace NewMod.Buttons.Roles
         /// </summary>
         protected override void OnClick()
         {
-            GameManager.Instance.RpcEndGame(
-                (GameOverReason)NewModEndReasons.OverloadWin,
-                false
-            );
+            CustomGameOver.Trigger<OverloadGameOver>([PlayerControl.LocalPlayer.Data]);
         }
     }
 }

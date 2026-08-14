@@ -8,6 +8,8 @@ using MiraAPI.Hud;
 using NewMod.Buttons.Roles;
 using NewMod.Utilities;
 using System.Collections.Generic;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles;
 
@@ -35,6 +37,18 @@ public class OverloadRole : ImpostorRole, ICustomRole
         OptionsScreenshot = null,
         Icon = null,
     };
+    public override bool DidWin(GameOverReason gameOverReason)
+    {
+        return gameOverReason == CustomGameOver.GameOverReason<OverloadGameOver>();
+    }
+
+    public static void ResetState()
+    {
+        AbsorbedAbilityCount = 0;
+        chosenPrey = null;
+        CachedButtons.Clear();
+        CustomButtonSingleton<OverloadButton>.Instance.absorbed = null;
+    }
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
@@ -42,10 +56,6 @@ public class OverloadRole : ImpostorRole, ICustomRole
 
         if (evt.TriggeredByIntro)
         {
-            CustomButtonSingleton<OverloadButton>.Instance.absorbed = null;
-            AbsorbedAbilityCount = 0;
-            chosenPrey = null;
-
             Coroutines.Start(CoShowMenu(1f));
         }
     }

@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using CorsacCosmetics.Cosmetics;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
+using NewMod.Cosmetics;
 using NewMod.Options;
 using NewMod.Roles;
 using NewMod.Utilities;
@@ -74,6 +76,14 @@ namespace NewMod.Patches
             else
             {
                 __instance.NameText.text = baseName;
+            }
+        }
+        [HarmonyPatch(typeof(CosmeticsLoader), nameof(CosmeticsLoader.InstallCosmetics))]
+        public static class CorsacRegistrationPatch
+        {
+            public static void Prefix()
+            {
+                NewModCosmeticsRegistry.InjectToCorsac();
             }
         }
     }

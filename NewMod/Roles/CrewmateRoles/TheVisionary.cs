@@ -27,8 +27,4 @@ public class TheVisionary : CrewmateRole, ICustomRole
         CanModifyChance = true,
         RoleHintType = RoleHintType.RoleTab
     };
-    public override bool DidWin(GameOverReason gameOverReason)
-    {
-        return gameOverReason == (GameOverReason)NewModEndReasons.TheVisionaryWin;
-    }
 }

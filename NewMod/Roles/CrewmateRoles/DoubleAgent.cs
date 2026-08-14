@@ -1,6 +1,8 @@
 using MiraAPI.Roles;
 using UnityEngine;
 using MiraAPI.Utilities.Assets;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.CrewmateRoles;
 
@@ -30,6 +32,6 @@ public class DoubleAgent : CrewmateRole, ICustomRole
 
     public override bool DidWin(GameOverReason gameOverReason)
     {
-        return gameOverReason == (GameOverReason)NewModEndReasons.DoubleAgentWin;
+        return gameOverReason == CustomGameOver.GameOverReason<DoubleAgentGameOver>();
     }
 }

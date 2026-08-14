@@ -6,6 +6,8 @@ using MiraAPI.Utilities;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.ImpostorRoles
 {
@@ -63,21 +65,8 @@ namespace NewMod.Roles.ImpostorRoles
         }
         public override bool DidWin(GameOverReason reason)
         {
-            if (reason == (GameOverReason)NewModEndReasons.PulseBladeWin)
-                return true;
-            if (reason == (GameOverReason)NewModEndReasons.TyrantWin ||
-                reason == (GameOverReason)NewModEndReasons.ShadeWin ||
-                reason == (GameOverReason)NewModEndReasons.WraithCallerWin ||
-                reason == (GameOverReason)NewModEndReasons.SpecialAgentWin ||
-                reason == (GameOverReason)NewModEndReasons.PranksterWin ||
-                reason == (GameOverReason)NewModEndReasons.EnergyThiefWin ||
-                reason == (GameOverReason)NewModEndReasons.InjectorWin ||
-                reason == (GameOverReason)NewModEndReasons.DoubleAgentWin)
-            {
-                return false;
-            }
-
-            return true;
+            return reason == CustomGameOver.GameOverReason<PulseBladeGameOver>() ||
+                   GameManager.Instance.DidImpostorsWin(reason);
         }
     }
 }

@@ -24,14 +24,15 @@ using NewMod.Buttons.Roles;
 using NewMod.Options.Roles;
 using MiraAPI.Events;
 using NewMod.Patches.Compatibility;
-using NewMod.Buttons;
-using NewMod.Seasons;
+using NewMod.Cosmetics;
+using CorsacCosmetics;
 
 namespace NewMod;
 
 [BepInPlugin(Id, "NewMod", ModVersion)]
 [BepInDependency(ReactorPlugin.Id)]
 [BepInDependency(MiraApiPlugin.Id)]
+[BepInDependency(CorsacCosmeticsPlugin.Id)]
 [BepInDependency(ModCompatibility.LaunchpadReloaded_GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [ReactorModFlags(Reactor.Networking.ModFlags.RequireOnAllClients)]
 [BepInProcess("Among Us.exe")]
@@ -43,7 +44,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     public static BasePlugin Instance;
     public static Minigame minigame;
     public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
-    public static ConfigEntry<bool> ForceEnableAllSeasons  { get; set; }
+    public static ConfigEntry<bool> ForceEnableAllSeasons { get; set; }
     public ConfigFile GetConfigFile() => Config;
     public string OptionsTitleText => "NewMod";
     public const string NewModBackendAPI = "";
@@ -53,6 +54,16 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         AddComponent<DebugWindow>();
         ReactorCredits.Register("NewMod", ModVersion, true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
+
+        Harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.OnEnable)), HarmonyPatchType.All, MiraApiPlugin.Id);
+        Harmony.Unpatch(AccessTools.Method(typeof(VisorsTab), nameof(VisorsTab.OnEnable)), HarmonyPatchType.All, MiraApiPlugin.Id);
+        Harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.Update)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
+        Harmony.Unpatch(AccessTools.Method(typeof(VisorsTab), nameof(VisorsTab.Update)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
+        Harmony.Unpatch(AccessTools.Method(typeof(NameplatesTab), nameof(NameplatesTab.OnEnable)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
+        Harmony.Unpatch(AccessTools.Method(typeof(NameplatesTab), nameof(NameplatesTab.Update)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
+        Harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.OnEnable)), HarmonyPatchType.Prefix, CorsacCosmeticsPlugin.Id);
+        Harmony.Unpatch(AccessTools.Method(typeof(VisorsTab), nameof(VisorsTab.OnEnable)), HarmonyPatchType.Prefix, CorsacCosmeticsPlugin.Id);
+
         NewModEventHandler.RegisterEventsLogs();
 
         if (ModCompatibility.IsLaunchpadLoaded())
@@ -74,6 +85,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         {
             Instance.Log.LogMessage($"{name}");
         }
+        RegisterCosmetics();
         Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} ALPHA With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 
@@ -111,6 +123,20 @@ public partial class NewMod : BasePlugin, IMiraPlugin
                 CoroutinesHelper.CoNotify("<b><color=#FF0000>No dead bodies nearby to teleport to.</color></b>");
             }
         }
+    }
+    public static void RegisterCosmetics()
+    {
+        NewModCosmeticsRegistry.RegisterHat("og_newmod", NewModAsset.OG_NewModHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "OG NewMod", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("glitch_reality", NewModAsset.GlitchedRealityHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Glitch Reality", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("mint_icecream", NewModAsset.MintIceCreamHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Mint Ice Cream", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("strawberry_icecream", NewModAsset.StrawberryIceCreamHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Strawberry Ice Cream", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterVisor("malicious_look", NewModAsset.MaliciousLook.LoadAsset(), new CorsacCosmetics.Cosmetics.Visors.VisorMetadata { Name = "Malicious Look" });
+        NewModCosmeticsRegistry.RegisterVisor("cotton_memories", NewModAsset.CottonMemoriesVisor.LoadAsset(), new CorsacCosmetics.Cosmetics.Visors.VisorMetadata { Name = "Cotton Memories Visor" });
+        NewModCosmeticsRegistry.RegisterHat("pizza", NewModAsset.PizzaHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Pizza", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("squeeze_cap", NewModAsset.SqueezeCapHat.LoadAsset(), new CorsacCosmetics.Cosmetics.Hats.HatMetadata { Name = "Squeeze Cap", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new CorsacCosmetics.Cosmetics.Nameplates.NameplateMetadata { Name = "NM Rave" });
+        NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new CorsacCosmetics.Cosmetics.Nameplates.NameplateMetadata { Name = "Sunny Sky" });
+        Instance.Log.LogMessage("Registered NewMod Cosmetics");
     }
 
     [RegisterEvent]

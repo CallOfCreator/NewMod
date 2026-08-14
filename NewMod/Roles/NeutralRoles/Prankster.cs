@@ -1,6 +1,8 @@
 using MiraAPI.Roles;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles;
 
@@ -33,6 +35,6 @@ public class Prankster : CrewmateRole, ICustomRole
     };
     public override bool DidWin(GameOverReason gameOverReason)
     {
-        return gameOverReason == (GameOverReason)NewModEndReasons.PranksterWin;
+        return gameOverReason == CustomGameOver.GameOverReason<PranksterGameOver>();
     }
 }

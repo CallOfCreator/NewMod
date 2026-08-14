@@ -9,6 +9,7 @@ namespace NewMod.Utilities
     {
         public static readonly Dictionary<byte, int> Sent = [];
         public static readonly Dictionary<byte, int> Kills = [];
+        public static readonly Dictionary<uint, WraithCallerNpc> ActiveNpcs = [];
 
         public static int GetSentNPC(byte ownerId)
         {
@@ -34,6 +35,7 @@ namespace NewMod.Utilities
         {
             Sent.Clear();
             Kills.Clear();
+            ActiveNpcs.Clear();
         }
 
         public static void RequestSummonNPC(PlayerControl owner, PlayerControl target)
@@ -44,13 +46,14 @@ namespace NewMod.Utilities
         [MethodRpc((uint)CustomRPC.RequestSummon)]
         public static void RpcRequestSummonNPC(PlayerControl source, byte targetId)
         {
-            if (!AmongUsClient.Instance.AmHost) return;
+            if (!AmongUsClient.Instance.AmHost)
+                return;
 
             var target = Utils.PlayerById(targetId);
-            if (!target) return;
+            if (!target)
+                return;
 
             var start = source.GetTruePosition();
-
             RpcSummonNPC(source, target.PlayerId, start.x, start.y);
         }
 
@@ -58,12 +61,16 @@ namespace NewMod.Utilities
         public static void RpcSummonNPC(PlayerControl source, byte targetId, float x, float y)
         {
             var target = Utils.PlayerById(targetId);
+            if (!target)
+                return;
 
             AddSentNPC(source.PlayerId);
+            var npcId = GetSentNPC(source.PlayerId);
 
             var holder = new GameObject("WraithNPC_Holder");
             var npc = holder.AddComponent<WraithCallerNpc>();
-            npc.Initialize(source, target, new Vector2(x, y));
+            ActiveNpcs[((uint)source.PlayerId << 16) | (uint)npcId] = npc;
+            npc.Initialize(source, target, new Vector2(x, y), npcId);
         }
     }
 }

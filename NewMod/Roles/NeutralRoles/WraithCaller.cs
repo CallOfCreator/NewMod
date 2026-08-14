@@ -5,6 +5,8 @@ using MiraAPI.Roles;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles
 {
@@ -66,7 +68,7 @@ namespace NewMod.Roles.NeutralRoles
         }
         public override bool DidWin(GameOverReason gameOverReason)
         {
-            return gameOverReason == (GameOverReason)NewModEndReasons.WraithCallerWin;
+            return gameOverReason == CustomGameOver.GameOverReason<WraithCallerGameOver>();
         }
     }
 }

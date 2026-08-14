@@ -23,7 +23,10 @@ namespace NewMod.Roles.ImpostorRoles.S1
     {
         public string RoleName => "MirrorBlade";
         public string RoleDescription => "Reflect the strike meant for you.";
-        public string RoleLongDescription => "Arm your mirror stance. The next murder targeting you during the reflect window is cancelled and reflected back into the attacker.";
+
+        public string RoleLongDescription =>
+            "Arm your mirror stance. The next murder targeting you is turned back on the attacker. A Wraith that reaches you is reflected and hunts its caller instead.";
+
         public Color RoleColor => new Color32(192, 220, 255, 255);
         public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
         public NewModFaction Faction => NewModFaction.Apex;
@@ -51,18 +54,14 @@ namespace NewMod.Roles.ImpostorRoles.S1
         public StringBuilder SetTabText()
         {
             var tabText = INewModRole.GetRoleTabText(this);
-            string state = ArmedReflections.Contains(PlayerControl.LocalPlayer.PlayerId) ? "armed" : "idle";
+            var state = ArmedReflections.Contains(PlayerControl.LocalPlayer.PlayerId) ? "armed" : "idle";
 
             tabText.AppendLine();
             tabText.AppendLine($"<size=65%>Reflect state: <color=#C0DCFF>{state}</color></size>");
-            tabText.AppendLine("<size=65%><color=#B7D8FF>Use Reflect before danger hits. If someone strikes you, they suffer their own blade.</color></size>");
+            tabText.AppendLine(
+                "<size=65%><color=#B7D8FF>Reflect a murder back at its attacker. Reflected Wraiths turn around and hunt their caller.</color></size>");
 
             return tabText;
-        }
-
-        public override bool DidWin(GameOverReason gameOverReason)
-        {
-            return gameOverReason is GameOverReason.ImpostorsByKill or GameOverReason.ImpostorsBySabotage;
         }
 
         [RegisterEvent]
@@ -71,10 +70,7 @@ namespace NewMod.Roles.ImpostorRoles.S1
             if (_reflecting || !PlayerControl.LocalPlayer.IsHost())
                 return;
 
-            if (evt.Target.Data.Role is not MirrorBladeRole)
-                return;
-
-            if (!ArmedReflections.Remove(evt.Target.PlayerId))
+            if (evt.Target.Data.Role is not MirrorBladeRole || !ArmedReflections.Remove(evt.Target.PlayerId))
                 return;
 
             evt.Cancel();
@@ -82,48 +78,93 @@ namespace NewMod.Roles.ImpostorRoles.S1
             if (!evt.Source || evt.Source.Data.IsDead || evt.Source.Data.Disconnected)
                 return;
 
+            RpcReflectionTriggered(evt.Target, evt.Source.PlayerId, -1);
             _reflecting = true;
 
-            evt.Target.RpcCustomMurder(
-                evt.Source,
-                didSucceed: true,
-                resetKillTimer: false,
-                createDeadBody: true,
-                teleportMurderer: false,
-                showKillAnim: false,
-                playKillSound: true
-            );
-
-            _reflecting = false;
+            try
+            {
+                evt.Target.RpcCustomMurder(
+                    evt.Source,
+                    didSucceed: true,
+                    resetKillTimer: false,
+                    createDeadBody: true,
+                    teleportMurderer: false,
+                    showKillAnim: false,
+                    playKillSound: true
+                );
+            }
+            finally
+            {
+                _reflecting = false;
+            }
         }
 
         [RegisterEvent]
         public static void OnRoundStart(RoundStartEvent evt)
         {
-            if (evt.TriggeredByIntro)
-                ArmedReflections.Clear();
+            if (!evt.TriggeredByIntro)
+                return;
+
+            ArmedReflections.Clear();
+            _reflecting = false;
         }
 
         [RegisterEvent]
         public static void OnGameEnd(GameEndEvent evt)
         {
             ArmedReflections.Clear();
+            _reflecting = false;
         }
 
         [MethodRpc((uint)CustomRPC.MirrorBladeArm)]
         public static void RpcArmReflection(PlayerControl source)
         {
             ArmedReflections.Add(source.PlayerId);
-            Coroutines.Start(CoDisarmReflection(source.PlayerId, OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectWindow));
+            Coroutines.Start(CoDisarmReflection(source.PlayerId,
+                OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectWindow));
 
             if (source.AmOwner)
                 Coroutines.Start(CoroutinesHelper.CoNotify("<color=#C0DCFF>Mirror stance armed.</color>"));
         }
 
-        static IEnumerator CoDisarmReflection(byte playerId, float delay)
+        [MethodRpc((uint)CustomRPC.MirrorBladeReflect)]
+        public static void RpcReflectionTriggered(PlayerControl source, byte attackerId, int npcId)
+        {
+            ArmedReflections.Remove(source.PlayerId);
+
+            var attacker = Utils.PlayerById(attackerId);
+            var reflectedWraith = npcId >= 0;
+
+            if (reflectedWraith && attacker)
+            {
+                var key = ((uint)attacker.PlayerId << 16) | (uint)npcId;
+                if (WraithCallerUtilities.ActiveNpcs.TryGetValue(key, out var npc))
+                    npc.RedirectToOwner(source);
+            }
+
+            if (source.AmOwner)
+            {
+                var text = reflectedWraith
+                    ? "<color=#C0DCFF><b>REFLECTED.</b></color> The Wraith has turned on its caller."
+                    : "<color=#C0DCFF><b>REFLECTED.</b></color> Their strike was turned back on them.";
+                Coroutines.Start(CoroutinesHelper.CoNotify(text));
+            }
+
+            if (attacker && attacker.AmOwner)
+            {
+                var text = reflectedWraith
+                    ? "<color=#FF8A80>Your Wraith was reflected. It is hunting you now.</color>"
+                    : "<color=#FF8A80>Your attack was reflected back at you.</color>";
+                Coroutines.Start(CoroutinesHelper.CoNotify(text));
+            }
+        }
+
+        private static IEnumerator CoDisarmReflection(byte playerId, float delay)
         {
             yield return new WaitForSeconds(delay);
-            ArmedReflections.Remove(playerId);
+
+            if (ArmedReflections.Remove(playerId) && PlayerControl.LocalPlayer.PlayerId == playerId)
+                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#AFC6D9>Mirror stance faded.</color>"));
         }
     }
 }

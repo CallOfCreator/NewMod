@@ -20,9 +20,5 @@ namespace NewMod.Roles.ImpostorRoles
             TasksCountForProgress = false,
             Icon = NewModAsset.SlashIcon
         };
-        public override bool DidWin(GameOverReason gameOverReason)
-        {
-            return gameOverReason is GameOverReason.ImpostorsByKill or GameOverReason.ImpostorsBySabotage;
-        }
     }
 }

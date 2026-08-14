@@ -1,392 +1,205 @@
-using UnityEngine;
-using HarmonyLib;
+using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
+using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.Roles;
-using AmongUs.GameOptions;
-using Object = UnityEngine.Object;
+using MiraAPI.GameEnd;
+using MiraAPI.GameOptions;
+using MiraAPI.Utilities;
+using NewMod.GameEnd;
+using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
-using NewMod.Options.Roles;
-using MiraAPI.GameOptions;
-using MiraAPI.Events;
-using NewMod.Roles;
-using System;
-using NewMod.Roles.ImpostorRoles;
-using MiraAPI.Utilities;
 
-namespace NewMod.Patches
+namespace NewMod.Patches;
+
+public static class CustomEndGame
 {
-    public static class EndGamePatch
+    internal static bool IsMatchReady { get; set; }
+
+    [RegisterEvent]
+    public static void OnRoundStart(RoundStartEvent evt)
     {
-        public static bool EndGameTriggered = false;
-
-        [RegisterEvent]
-        public static void OnGameStart(RoundStartEvent evt)
+        if (evt.TriggeredByIntro)
         {
-            EndGameTriggered = false;
-            EndGameResult.CachedWinners.Clear();
-        }
-
-        [RegisterEvent]
-        public static void OnGameEnd(GameEndEvent evt)
-        {
-            EndGameManager endGameManager = evt?.EndGameManager;
-
-            foreach (var playerObj in endGameManager.GetComponentsInChildren<PoolablePlayer>())
-            {
-                GameObject.Destroy(playerObj.gameObject);
-            }
-
-            var winningPlayers = EndGameResult.CachedWinners.ToArray()
-                .OrderByDescending(p => !p.IsYou)
-                .ToList();
-            int num = winningPlayers.Count;
-
-            for (int i = 0; i < num; i++)
-            {
-                var playerData = winningPlayers[i];
-
-                int num2 = (i % 2 == 0 ? -1 : 1);
-                int num3 = (i + 1) / 2;
-                float num4 = (float)num3 / num;
-                float num5 = Mathf.Lerp(1f, 0.75f, num4);
-                float num6 = (i == 0) ? -8f : -1f;
-
-                PoolablePlayer poolablePlayer = Object.Instantiate(endGameManager.PlayerPrefab, endGameManager.transform);
-
-                float xPos = 1f * num2 * num3 * num5 * 0.9f;
-                float yPos = FloatRange.SpreadToEdges(-1.125f, 0f, num3, num) * 0.9f;
-                float zPos = (num6 + num3 * 0.01f) * 0.9f;
-
-                poolablePlayer.transform.localPosition = new Vector3(xPos, yPos, zPos);
-                poolablePlayer.transform.localScale = Vector3.one * num5;
-
-                if (playerData.IsDead)
-                {
-                    poolablePlayer.SetBodyAsGhost();
-                    poolablePlayer.SetDeadFlipX(i % 2 == 0);
-                }
-                else
-                {
-                    poolablePlayer.SetFlipX(i % 2 == 0);
-                }
-
-                poolablePlayer.UpdateFromPlayerOutfit(
-                    playerData.Outfit,
-                    PlayerMaterial.MaskType.None,
-                    playerData.IsDead,
-                    true,
-                    null,
-                    false
-                );
-
-                string roleName = GetRoleName(playerData, out Color roleColor);
-                string playerNameWithRole = $"{playerData.PlayerName}\n{roleName}";
-
-                var nameText = poolablePlayer.cosmetics.nameText;
-                nameText.transform.localPosition = new Vector3(0f, -1.5f, -15f);
-                nameText.text = playerNameWithRole;
-                nameText.color = roleColor;
-                nameText.alignment = TMPro.TextAlignmentOptions.Center;
-            }
-
-            string customWinText;
-            Color customWinColor;
-
-            switch (EndGameResult.CachedGameOverReason)
-            {
-                case (GameOverReason)NewModEndReasons.EnergyThiefWin:
-                    customWinText = "Energy Thief Win!";
-                    customWinColor = GetRoleColor(GetRoleType<EnergyThief>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                case (GameOverReason)NewModEndReasons.DoubleAgentWin:
-                    customWinText = "Double Agent Win!";
-                    customWinColor = GetRoleColor(GetRoleType<DoubleAgent>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                case (GameOverReason)NewModEndReasons.PranksterWin:
-                    customWinText = "Prankster Win!";
-                    customWinColor = GetRoleColor(GetRoleType<Prankster>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                case (GameOverReason)NewModEndReasons.SpecialAgentWin:
-                    customWinText = "Special Agent Victory";
-                    customWinColor = GetRoleColor(GetRoleType<SpecialAgent>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                case (GameOverReason)NewModEndReasons.InjectorWin:
-                    customWinText = "Injector Victory";
-                    customWinColor = GetRoleColor(GetRoleType<InjectorRole>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                case (GameOverReason)NewModEndReasons.PulseBladeWin:
-                    customWinText = "PulseBlade Victory";
-                    customWinColor = GetRoleColor(GetRoleType<PulseBlade>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                case (GameOverReason)NewModEndReasons.TyrantWin:
-                    customWinText = "Tyrant Victory";
-                    customWinColor = GetRoleColor(GetRoleType<Tyrant>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                case (GameOverReason)NewModEndReasons.WraithCallerWin:
-                    customWinText = "NPC Invasion Completed\nWraith Caller Win!";
-                    customWinColor = GetRoleColor(GetRoleType<WraithCaller>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                case (GameOverReason)NewModEndReasons.ShadeWin:
-                    customWinText = "Darkness Consumes All";
-                    customWinColor = GetRoleColor(GetRoleType<Shade>());
-                    endGameManager.BackgroundBar.material.SetColor("_Color", customWinColor);
-                    break;
-                default:
-                    customWinText = string.Empty;
-                    customWinColor = Color.white;
-                    break;
-            }
-
-            if (!string.IsNullOrEmpty(customWinText))
-            {
-                var customWinTextObject = Object.Instantiate(endGameManager.WinText.gameObject, endGameManager.transform);
-                customWinTextObject.transform.localPosition = new Vector3(
-                    endGameManager.WinText.transform.position.x,
-                    endGameManager.WinText.transform.position.y - 0.5f,
-                    endGameManager.WinText.transform.position.z);
-                customWinTextObject.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
-
-                var customWinTextComponent = customWinTextObject.GetComponent<TMPro.TMP_Text>();
-                customWinTextComponent.text = customWinText;
-                customWinTextComponent.color = customWinColor;
-                customWinTextComponent.fontSize = 4f;
-            }
-        }
-
-        public static string GetRoleName(CachedPlayerData playerData, out Color roleColor)
-        {
-            RoleTypes roleType = playerData.RoleWhenAlive;
-            RoleBehaviour roleBehaviour = RoleManager.Instance.GetRole(roleType);
-
-            if (roleBehaviour != null)
-            {
-                if (CustomRoleManager.GetCustomRoleBehaviour(roleType, out var customRole))
-                {
-                    roleColor = customRole.RoleColor;
-
-                    if (customRole is INewModRole newmodRole)
-                    {
-                        return $"{newmodRole.RoleName}\n<size=65%>{Utils.GetFactionDisplay((INewModRole)customRole)}</size>";
-                    }
-
-                    return customRole.RoleName;
-                }
-                else
-                {
-                    roleColor = roleBehaviour.NameColor;
-                    return roleBehaviour.NiceName;
-                }
-            }
-            else
-            {
-                roleColor = Color.white;
-                return null;
-            }
-        }
-
-        private static RoleTypes GetRoleType<T>() where T : ICustomRole
-        {
-            ushort roleId = RoleId.Get<T>();
-            return (RoleTypes)roleId;
-        }
-
-        private static Color GetRoleColor(RoleTypes roleType)
-        {
-            RoleBehaviour roleBehaviour = RoleManager.Instance.GetRole(roleType);
-
-            if (roleBehaviour != null)
-            {
-                if (CustomRoleManager.GetCustomRoleBehaviour(roleType, out var customRole))
-                {
-                    return customRole.RoleColor;
-                }
-                else
-                {
-                    return roleBehaviour.NameColor;
-                }
-            }
-            else
-            {
-                return Color.white;
-            }
-        }
-
-        public static bool EndCustomGame(GameOverReason reason, Action winners = null)
-        {
-            if (EndGameTriggered) return true;
-            if (EndGameResult.CachedWinners.Count > 0) return true;
-
-            EndGameTriggered = true;
-
-            EndGameResult.CachedWinners.Clear();
-            winners?.Invoke();
-
-            GameManager.Instance.RpcEndGame(reason, false);
-            return true;
+            IsMatchReady = true;
         }
     }
 
-    [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
-    public static class CheckGameEndPatch
+    [RegisterEvent()]
+    public static void OnGameEnd(GameEndEvent evt)
     {
-        public static bool Prefix(ShipStatus __instance)
+        IsMatchReady = false;
+    }
+
+    public static bool TryEndGame()
+    {
+        if (!IsMatchReady ||
+            !AmongUsClient.Instance.AmHost ||
+            !GameManager.Instance.ShouldCheckForGameEnd)
         {
-            if (DestroyableSingleton<TutorialManager>.InstanceExists) return true;
-            if (!AmongUsClient.Instance.AmHost) return true;
-            if (Time.timeSinceLevelLoad < 2f) return true;
-            if (EndGamePatch.EndGameTriggered) return false;
+            return false;
+        }
 
-            if (CheckForEndGameFaction<WraithCaller>(__instance, (GameOverReason)NewModEndReasons.WraithCallerWin)) return false;
-            if (CheckForEndGameFaction<Shade>(__instance, (GameOverReason)NewModEndReasons.ShadeWin)) return false;
-            if (CheckForEndGameFaction<PulseBlade>(__instance, (GameOverReason)NewModEndReasons.PulseBladeWin)) return false;
-            if (CheckForEndGameFaction<Tyrant>(__instance, (GameOverReason)NewModEndReasons.TyrantWin)) return false;
-            if (CheckEndGameForRole<DoubleAgent>(__instance, (GameOverReason)NewModEndReasons.DoubleAgentWin)) return false;
-            if (CheckEndGameForRole<SpecialAgent>(__instance, (GameOverReason)NewModEndReasons.SpecialAgentWin)) return false;
-            if (CheckEndGameForRole<Prankster>(__instance, (GameOverReason)NewModEndReasons.PranksterWin, 3)) return false;
-            if (CheckEndGameForRole<EnergyThief>(__instance, (GameOverReason)NewModEndReasons.EnergyThiefWin)) return false;
-            if (CheckEndGameForRole<InjectorRole>(__instance, (GameOverReason)NewModEndReasons.InjectorWin)) return false;
+        var alivePlayers = PlayerControl.AllPlayerControls.ToArray()
+            .Where(player => !player.Data.IsDead && !player.Data.Disconnected)
+            .ToArray();
 
+        var wraithRequired = (int)OptionGroupSingleton<WraithCallerOptions>.Instance.RequiredNPCsToSend;
+        var wraithCaller = alivePlayers.FirstOrDefault(player =>
+            player.Data.Role is WraithCaller &&
+            WraithCallerUtilities.GetKillsNPC(player.PlayerId) >= wraithRequired);
+
+        if (wraithCaller)
+        {
+            CustomGameOver.Trigger<WraithCallerGameOver>([wraithCaller.Data]);
             return true;
         }
 
-        public static bool CheckForEndGameFaction<TFaction>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where TFaction : INewModRole
+        var shadeRequired = (int)OptionGroupSingleton<ShadeOptions>.Instance.RequiredKills;
+        var shade = alivePlayers.FirstOrDefault(player =>
         {
-            var players = PlayerControl.AllPlayerControls.ToArray()
-                .Where(p => p.Data.Role is TFaction)
-                .Take(maxCount)
-                .ToList();
-
-            foreach (var player in players)
+            if (player.Data.Role is not Shade)
             {
-                bool shouldEndGame = false;
-                Action extraWinners = null;
+                return false;
+            }
 
-                if (typeof(TFaction) == typeof(PulseBlade))
+            Shade.ShadeKills.TryGetValue(player.PlayerId, out var kills);
+            return kills >= shadeRequired;
+        });
+
+        if (shade)
+        {
+            CustomGameOver.Trigger<ShadeGameOver>([shade.Data]);
+            return true;
+        }
+
+        var pulseBladeOptions = OptionGroupSingleton<PulseBladeOptions>.Instance;
+
+        if (alivePlayers.Length <= pulseBladeOptions.PlayersThreshold)
+        {
+            var pulseBlade = alivePlayers.FirstOrDefault(player =>
+                player.Data.Role is PulseBlade &&
+                Utils.GetStrikes(player.PlayerId) >= pulseBladeOptions.RequiredStrikes);
+
+            if (pulseBlade)
+            {
+                CustomGameOver.Trigger<PulseBladeGameOver>([pulseBlade.Data]);
+                return true;
+            }
+        }
+
+        if (Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet)
+        {
+            var tyrant = alivePlayers.FirstOrDefault(player => player.Data.Role is Tyrant);
+
+            if (tyrant)
+            {
+                var winners = new List<NetworkedPlayerInfo> { tyrant.Data };
+
+                if (Tyrant.Outcome == Tyrant.ThroneOutcome.ChampionSideWin)
                 {
-                    var opts = OptionGroupSingleton<PulseBladeOptions>.Instance;
-                    float requiredStrikes = opts.RequiredStrikes;
-                    float playersThreshold = opts.PlayersThreshold;
+                    var champion = Utils.PlayerById(Tyrant.ChampionId);
 
-                    var alives = Helpers.GetAlivePlayers();
-
-                    if (alives.Count >= playersThreshold) continue;
-
-                    int strikes = Utils.GetStrikes(player.PlayerId);
-                    if (strikes >= requiredStrikes)
+                    if (champion && !champion.Data.Disconnected)
                     {
-                        shouldEndGame = true;
+                        winners.Add(champion.Data);
                     }
                 }
 
-                if (typeof(TFaction) == typeof(Tyrant))
-                {
-                    if (Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet)
-                    {
-                        shouldEndGame = true;
-
-                        extraWinners = () =>
-                        {
-                            var tyrantRole = player.Data.Role as Tyrant;
-                            byte champId = tyrantRole.GetChampion();
-                            var champion = Utils.PlayerById(champId);
-
-                            bool championWin = Tyrant.Outcome == Tyrant.ThroneOutcome.ChampionSideWin;
-
-                            if (champion && championWin)
-                            {
-                                EndGameResult.CachedWinners.Add(new(champion.Data));
-                            }
-                        };
-                    }
-                }
-
-                if (typeof(TFaction) == typeof(WraithCaller))
-                {
-                    int required = (int)OptionGroupSingleton<WraithCallerOptions>.Instance.RequiredNPCsToSend;
-                    int current = WraithCallerUtilities.GetKillsNPC(player.PlayerId);
-                    shouldEndGame = current >= required;
-                }
-
-                if (typeof(TFaction) == typeof(Shade))
-                {
-                    Shade.ShadeKills.TryGetValue(player.PlayerId, out var count);
-                    int required = (int)OptionGroupSingleton<ShadeOptions>.Instance.RequiredKills;
-                    shouldEndGame = count >= required;
-                }
-
-                if (shouldEndGame)
-                {
-                    return EndGamePatch.EndCustomGame(winReason, extraWinners);
-                }
+                CustomGameOver.Trigger<TyrantGameOver>(winners);
+                return true;
             }
-
-            return false;
         }
 
-        public static bool CheckEndGameForRole<T>(ShipStatus __instance, GameOverReason winReason, int maxCount = 1) where T : RoleBehaviour
+        var doubleAgent = alivePlayers.FirstOrDefault(player =>
+            player.Data.Role is DoubleAgent &&
+            player.AllTasksCompleted() &&
+            Utils.IsSabotage());
+
+        if (doubleAgent)
         {
-            var rolePlayers = PlayerControl.AllPlayerControls.ToArray()
-                .Where(p => p.Data.Role is T)
-                .Take(maxCount)
-                .ToList();
-
-            foreach (var player in rolePlayers)
-            {
-                bool shouldEndGame = false;
-
-                if (typeof(T) == typeof(DoubleAgent))
-                {
-                    bool tasksCompleted = player.AllTasksCompleted();
-                    bool isSabotageActive = Utils.IsSabotage();
-                    shouldEndGame = tasksCompleted && isSabotageActive;
-                }
-
-                if (typeof(T) == typeof(EnergyThief))
-                {
-                    int drainCount = Utils.GetDrainCount(player.PlayerId);
-                    int requiredDrainCount = (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.RequiredDrainCount;
-                    shouldEndGame = drainCount >= requiredDrainCount;
-                }
-
-                if (typeof(T) == typeof(Prankster))
-                {
-                    int WinReportCount = 2;
-                    int currentReportCount = PranksterUtilities.GetReportCount(player.PlayerId);
-                    shouldEndGame = currentReportCount >= WinReportCount;
-                }
-
-                if (typeof(T) == typeof(SpecialAgent))
-                {
-                    int missionSuccessCount = Utils.GetMissionSuccessCount(player.PlayerId);
-                    int missionFailureCount = Utils.GetMissionFailureCount(player.PlayerId);
-                    int netScore = missionSuccessCount - missionFailureCount;
-                    shouldEndGame = netScore >= OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
-                }
-
-                if (typeof(T) == typeof(InjectorRole))
-                {
-                    int injectedCount = Utils.GetInjectedCount();
-                    int required = (int)OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
-                    shouldEndGame = injectedCount >= required;
-                }
-
-                if (shouldEndGame)
-                {
-                    return EndGamePatch.EndCustomGame(winReason);
-                }
-            }
-            return false;
+            CustomGameOver.Trigger<DoubleAgentGameOver>([doubleAgent.Data]);
+            return true;
         }
+
+        var specialAgentRequired = OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
+        var specialAgent = alivePlayers.FirstOrDefault(player =>
+            player.Data.Role is SpecialAgent &&
+            Utils.GetMissionSuccessCount(player.PlayerId) -
+            Utils.GetMissionFailureCount(player.PlayerId) >= specialAgentRequired);
+
+        if (specialAgent)
+        {
+            CustomGameOver.Trigger<SpecialAgentGameOver>([specialAgent.Data]);
+            return true;
+        }
+
+        var prankster = alivePlayers.FirstOrDefault(player =>
+            player.Data.Role is Prankster &&
+            PranksterUtilities.GetReportCount(player.PlayerId) >= 2);
+
+        if (prankster)
+        {
+            CustomGameOver.Trigger<PranksterGameOver>([prankster.Data]);
+            return true;
+        }
+
+        var energyThiefRequired = (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.RequiredDrainCount;
+        var energyThief = alivePlayers.FirstOrDefault(player =>
+            player.Data.Role is EnergyThief &&
+            Utils.GetDrainCount(player.PlayerId) >= energyThiefRequired);
+
+        if (energyThief)
+        {
+            CustomGameOver.Trigger<EnergyThiefGameOver>([energyThief.Data]);
+            return true;
+        }
+
+        var injectorRequired = (int)OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
+        var injector = alivePlayers.FirstOrDefault(player =>
+            player.Data.Role is InjectorRole &&
+            Utils.GetInjectedCount() >= injectorRequired);
+
+        if (injector)
+        {
+            CustomGameOver.Trigger<InjectorGameOver>([injector.Data]);
+            return true;
+        }
+
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(GameManager), nameof(GameManager.StartGame))]
+public static class GameStartPatch
+{
+    [HarmonyPrefix]
+    public static void Prefix()
+    {
+        CustomEndGame.IsMatchReady = false;
+        NewModEventHandler.ResetMatchState();
+    }
+}
+
+[HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
+public static class CustomEndGameCheckPatch
+{
+    [HarmonyPostfix]
+    public static void Postfix()
+    {
+        if (!CustomEndGame.IsMatchReady ||
+            !AmongUsClient.Instance.AmHost ||
+            DestroyableSingleton<TutorialManager>.InstanceExists ||
+            MeetingHud.Instance ||
+            ExileController.Instance ||
+            !GameManager.Instance.ShouldCheckForGameEnd)
+        {
+            return;
+        }
+
+        CustomEndGame.TryEndGame();
     }
 }

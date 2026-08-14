@@ -10,8 +10,11 @@
         <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod" alt="GitHub stars">
     </a>
     <a href="https://github.com/CallOfCreator/NewMod/releases">
-        <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total.svg?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
+        <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
     </a>
+    <a href="https://starlight.allofus.dev/mods/com.callofcreator.newmod">
+    <img alt="Starlight Downloads" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fstarlight.allofus.dev%2Fapi%2Fv3%2Fmods%2Fcom.callofcreator.newmod&query=%24.downloads&suffix=%20downloads&label=%E2%AD%90%20Starlight&labelColor=%23B8860B&color=%23FFD700">
+</a>
     <a href="https://github.com/CallOfCreator/NewMod/network/members">
         <img src="https://img.shields.io/github/forks/CallOfCreator/NewMod?style=social" alt="GitHub forks">
     </a>
@@ -19,7 +22,7 @@
         <img src="https://img.shields.io/github/license/CallOfCreator/NewMod" alt="License">
     </a>
      <a href="https://discord.gg/7UKG528WxZ">
-        <img src="https://img.shields.io/discord/1345441098851422259?label=Discord&logo=discord&color=5865F2&style=flat)" alt="Join">
+        <img src="https://img.shields.io/discord/1345441098851422259?label=Discord&logo=discord&color=5865F2&style=flat" alt="Join">
     </a>
 </p>
 
@@ -52,6 +55,10 @@
 | v1.2.7      | v17.0.0 (2025.9.9)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.7/NewMod.zip) |
 | v1.2.8      | v17.0.1 (2025.10.14) & v17.1.0 (2025.11.18)    | [Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.8/NewMod.zip) |
 | v1.2.9      | v17.1.0 (2025.11.18) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9/NewMod.zip) |
+| v1.2.9 Hotfix 1     | v17.1.0 (2025.11.18) & v17.2 (2026.2.17) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot1/NewMod.zip) |
+| v1.2.9 Hotfix 2     | v17.1.0 (2025.11.18) & v17.2 (2026.2.17) & v17.3 (2026.3.31) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot2/NewMod.zip) |
+| v1.2.9 Hotfix 3     | v17.3 (2026.3.31) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot3/NewMod.zip) |
+| v1.2.9 Hotfix 4     | v17.4 (2026.6.5) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot4/NewMod.zip) |
 
 ---
 
@@ -81,7 +88,7 @@ NewMod is compatible with the following mods, enabling an enhanced experience wi
 | LaunchpadReloaded | v0.3.7+     | [Download](https://github.com/All-Of-Us-Mods/LaunchpadReloaded) | ✅ Supported     |
 | LevelImposter     | v0.21.2-beta+    | [Download](https://github.com/DigiWorm0/LevelImposter) | ✅ Supported     |
 | Submerged     | v2025.11.20+    | [Download](https://github.com/SubmergedAmongUs/Submerged) | ✅ Supported     |
-| Town Of Us Mira | v1.5.2+ | [Download](https://github.com/Au-Avengers/TOU-Mira) | ✅ Supported |
+| Town Of Us Mira | v1.6.1+ | [Download](https://github.com/Au-Avengers/TOU-Mira) | ✅ Supported |
 
 
 ---
@@ -107,7 +114,8 @@ For more information about Starlight, please visit: [https://discord.gg/FYYqJU2b
 - **TownOfUs-R**: - Portions of code (PlayerById, GetClosestBody) and asset (ReviveSprite) derived from [Town-Of-Us-R](https://github.com/eDonnes124/Town-Of-Us-R).
 - **MoreGamemodes**: [MoreGamemodes](https://github.com/Rabek009/MoreGamemodes) - Derivation of IsActive and IsSabotage code.
 - **yanplaRoles**: [yanplaRoles](https://github.com/yanpla/yanplaRoles) - Portions of code (SavePlayerRole, GetPlayerRolesHistory).
-- **EloySus**: [EloySus](https://github.com/EloySus) – for all button sprites used in NewMod
+- **EloySus**: [EloySus](https://github.com/EloySus) – for old button sprites used in NewMod
+- **Jsenm**: [Jsenm Discord](jsenm) - For the newer sprites/art for NewMod
 - **Pixabay**: [Pixabay](https://pixabay.com) - For sound effects used in NewMod
 - **angxlwtf**: [angxlwtf](https://github.com/angxlwtf) - Idea for **Wraith Caller** (originally for Hitman LP)
 

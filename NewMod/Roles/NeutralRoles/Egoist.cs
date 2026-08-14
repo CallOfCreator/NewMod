@@ -7,6 +7,8 @@ using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Options.Roles;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles
 {
@@ -39,6 +41,7 @@ namespace NewMod.Roles.NeutralRoles
         [RegisterEvent]
         public static void OnEjection(EjectionEvent evt)
         {
+            if (!AmongUsClient.Instance.AmHost) return;
             var egoist = PlayerControl
                 .AllPlayerControls.ToArray()
                 .FirstOrDefault(p => p.Data.Role is EgoistRole);
@@ -75,13 +78,13 @@ namespace NewMod.Roles.NeutralRoles
                         playKillSound: true
                     );
                 }
-                GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.EgoistWin, false);
+                CustomGameOver.Trigger<EgoistGameOver>([egoist.Data]);
             }
         }
 
         public override bool DidWin(GameOverReason gameOverReason)
         {
-            return gameOverReason == (GameOverReason)NewModEndReasons.EgoistWin;
+            return gameOverReason == CustomGameOver.GameOverReason<EgoistGameOver>();
         }
     }
 }

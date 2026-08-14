@@ -2,6 +2,8 @@ using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles;
 
@@ -30,6 +32,6 @@ public class EnergyThief : CrewmateRole, ICustomRole
     };
     public override bool DidWin(GameOverReason gameOverReason)
     {
-       return gameOverReason == (GameOverReason)NewModEndReasons.EnergyThiefWin;
+        return gameOverReason == CustomGameOver.GameOverReason<EnergyThiefGameOver>();
     }
 }

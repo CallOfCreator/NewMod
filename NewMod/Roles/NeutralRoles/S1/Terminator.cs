@@ -7,6 +7,7 @@ using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameOptions;
+using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
@@ -14,15 +15,22 @@ using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
+using TMPro;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles.S1
 {
+    [MiraIgnore]
     public class TerminatorRole : CrewmateRole, INewModRole
     {
         public string RoleName => "Terminator";
         public string RoleDescription => "Survive. Escalate. Terminate.";
-        public string RoleLongDescription => "Your existence is publicly announced. Survive meetings to escalate your speed. After enough meetings, a final objective appears. Reach it to win alone.";
+
+        public string RoleLongDescription =>
+            "Your existence is publicly announced. Survive meetings to escalate your speed. After enough meetings, a final objective appears. Reach it to win alone.";
+
         public Color RoleColor => new Color32(217, 110, 32, 255);
         public NewModFaction Faction => NewModFaction.Entropy;
         public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
@@ -31,6 +39,9 @@ namespace NewMod.Roles.NeutralRoles.S1
         public static int MeetingsSurvived;
         public static bool ObjectiveSpawned;
         public static ArrowBehaviour ObjectiveArrow;
+        public static ArrowBehaviour ThreatArrow;
+        public static TextMeshPro ThreatText;
+        public static bool FinalCountdownActive;
         public static Vector2 ObjectivePosition;
         public static GameObject ObjectiveMarker;
         public static float _baseSpeed;
@@ -45,11 +56,9 @@ namespace NewMod.Roles.NeutralRoles.S1
             TasksCountForProgress = false,
             ShowInFreeplay = true,
             HideSettings = false,
-            MaxRoleCount = 1,
+            MaxRoleCount = 2,
             OptionsScreenshot = MiraAssets.Empty,
-            Icon = NewModAsset.CrownIcon,
-            DefaultChance = 25,
-            DefaultRoleCount = 1,
+            Icon = MiraAssets.Empty,
             CanModifyChance = true,
             RoleHintType = RoleHintType.RoleTab,
         };
@@ -62,19 +71,25 @@ namespace NewMod.Roles.NeutralRoles.S1
             int left = Mathf.Max(0, required - MeetingsSurvived);
 
             tabText.AppendLine();
-            tabText.AppendLine($"<size=65%>Meetings survived: <color=#FFD166>{MeetingsSurvived}</color>/<color=#B7B7B7>{required}</color></size>");
+            tabText.AppendLine(
+                $"<size=65%>Meetings survived: <color=#FFD166>{MeetingsSurvived}</color>/<color=#B7B7B7>{required}</color></size>");
 
-            if (ObjectiveSpawned)
-                tabText.AppendLine("<size=65%><color=#FF8C32>Final Objective active. Reach the marked zone and terminate the game.</color></size>");
+            if (FinalCountdownActive)
+                tabText.AppendLine(
+                    "<size=65%><color=#FF453A>Final sequence active. Survive until termination.</color></size>");
+            else if (ObjectiveSpawned)
+                tabText.AppendLine(
+                    "<size=65%><color=#FF8C32>Final Objective active. Reach the marked zone and begin termination.</color></size>");
             else
-                tabText.AppendLine($"<size=65%><color=#FFD166>{left} meeting{(left == 1 ? "" : "s")} left before your Final Objective.</color></size>");
+                tabText.AppendLine(
+                    $"<size=65%><color=#FFD166>{left} meeting{(left == 1 ? "" : "s")} left before your Final Objective.</color></size>");
 
             return tabText;
         }
 
         public override bool DidWin(GameOverReason gameOverReason)
         {
-            return gameOverReason == (GameOverReason)NewModEndReasons.TerminatorWin;
+            return gameOverReason == CustomGameOver.GameOverReason<TerminatorGameOver>();
         }
 
         [RegisterEvent]
@@ -87,10 +102,13 @@ namespace NewMod.Roles.NeutralRoles.S1
                 ResetState();
 
                 if (terminator)
-                    Coroutines.Start(CoroutinesHelper.CoNotify("<color=#D96E20><b>WARNING:</b> The Terminator is aboard.</color>"));
+                    Coroutines.Start(
+                        CoroutinesHelper.CoNotify("<color=#D96E20><b>WARNING:</b> The Terminator is aboard.</color>"));
 
                 if (PlayerControl.LocalPlayer.Data.Role is TerminatorRole)
-                    _baseSpeed = PlayerControl.LocalPlayer.MyPhysics.Speed > 0f ? PlayerControl.LocalPlayer.MyPhysics.Speed : 1f;
+                    _baseSpeed = PlayerControl.LocalPlayer.MyPhysics.Speed > 0f
+                        ? PlayerControl.LocalPlayer.MyPhysics.Speed
+                        : 1f;
 
                 return;
             }
@@ -166,16 +184,118 @@ namespace NewMod.Roles.NeutralRoles.S1
                 Object.Destroy(ObjectiveMarker);
 
             float radius = OptionGroupSingleton<TerminatorOptions>.Instance.FinalObjectiveRadius;
-            ObjectiveMarker = Utils.CreateCircle("TerminatorFinalObjective", new Vector3(x, y, 0f), radius, new Color32(217, 110, 32, 130), 600f);
+            ObjectiveMarker = Utils.CreateCircle("TerminatorFinalObjective", new Vector3(x, y, 0f), radius,
+                new Color32(217, 110, 32, 130), 600f);
             CreateObjectiveArrow(ObjectivePosition);
+            Coroutines.Start(
+                CoroutinesHelper.CoNotify("<color=#D96E20><b>Terminator Final Objective revealed.</b></color>"));
+        }
 
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#D96E20><b>Terminator Final Objective revealed.</b></color>"));
+        [MethodRpc((uint)CustomRPC.TerminatorFinalCountdown)]
+        public static void RpcStartFinalCountdown(PlayerControl source)
+        {
+            if (FinalCountdownActive || source.Data.Role is not TerminatorRole)
+                return;
+
+            float radius = OptionGroupSingleton<TerminatorOptions>.Instance.FinalObjectiveRadius;
+            if (Vector2.Distance(source.GetTruePosition(), ObjectivePosition) > radius)
+                return;
+
+            FinalCountdownActive = true;
+
+            if (ObjectiveMarker)
+                Object.Destroy(ObjectiveMarker);
+
+            ObjectiveMarker = null;
+            DestroyObjectiveArrow();
+            Coroutines.Start(CoFinalCountdown(source));
+        }
+
+        static IEnumerator CoFinalCountdown(PlayerControl terminator)
+        {
+            const float duration = 10f;
+            var hud = HudManager.Instance;
+
+            ThreatText = Helpers.CreateTextLabel(
+                "TerminatorThreatText",
+                hud.transform,
+                AspectPosition.EdgeAlignments.Top,
+                new Vector3(0f, 0.35f, -20f),
+                2.2f,
+                TextAlignmentOptions.Center
+            );
+            ThreatText.color = new Color32(255, 70, 45, 255);
+            ThreatText.fontStyle = FontStyles.Bold;
+
+            if (PlayerControl.LocalPlayer.PlayerId != terminator.PlayerId)
+            {
+                var arrowObject = new GameObject("TerminatorThreatArrow") { layer = 5 };
+                var renderer = arrowObject.AddComponent<SpriteRenderer>();
+                renderer.sprite = NewModAsset.Arrow.LoadAsset();
+                renderer.color = new Color32(255, 45, 45, 255);
+
+                ThreatArrow = arrowObject.AddComponent<ArrowBehaviour>();
+                ThreatArrow.target = terminator.transform.position;
+                ThreatArrow.alwaysMaxSize = true;
+                ThreatArrow.MaxScale = 0.8f;
+            }
+
+            float timeLeft = duration;
+            float alertTimer = 0f;
+
+            while (timeLeft > 0f && FinalCountdownActive && !terminator.Data.IsDead && !terminator.Data.Disconnected)
+            {
+                bool inMeeting = MeetingHud.Instance || ExileController.Instance;
+
+                ThreatText.gameObject.SetActive(!inMeeting);
+                if (ThreatArrow)
+                {
+                    ThreatArrow.gameObject.SetActive(!inMeeting);
+                    ThreatArrow.target = terminator.transform.position;
+                }
+
+                if (inMeeting)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                ThreatText.text =
+                    $"STOP THE TERMINATOR BEFORE IT'S TOO LATE!!!\n<size=75%>{Mathf.CeilToInt(timeLeft)}</size>";
+
+                alertTimer -= Time.deltaTime;
+                if (alertTimer <= 0f)
+                {
+                    hud.AlertFlash.Flash();
+                    if (Constants.ShouldPlaySfx())
+                        SoundManager.Instance.PlaySound(ShipStatus.Instance.SabotageSound, false, 0.9f);
+                    alertTimer = 1f;
+                }
+
+                timeLeft -= Time.deltaTime;
+                yield return null;
+            }
+
+            if (ThreatArrow)
+                Object.Destroy(ThreatArrow.gameObject);
+            if (ThreatText)
+                Object.Destroy(ThreatText.gameObject);
+
+            ThreatArrow = null;
+            ThreatText = null;
+            FinalCountdownActive = false;
+
+            if (timeLeft <= 0f && !terminator.Data.IsDead && !terminator.Data.Disconnected &&
+                AmongUsClient.Instance.AmHost)
+                CustomGameOver.Trigger<TerminatorGameOver>([terminator.Data]);
         }
 
         public static void ApplySpeedBonus()
         {
             if (_baseSpeed <= 0f)
-                _baseSpeed = PlayerControl.LocalPlayer.MyPhysics.Speed > 0f ? PlayerControl.LocalPlayer.MyPhysics.Speed : 1f;
+                _baseSpeed = PlayerControl.LocalPlayer.MyPhysics.Speed > 0f
+                    ? PlayerControl.LocalPlayer.MyPhysics.Speed
+                    : 1f;
 
             float bonus = OptionGroupSingleton<TerminatorOptions>.Instance.SpeedBonusPerMeeting / 100f;
             PlayerControl.LocalPlayer.MyPhysics.Speed = _baseSpeed * (1f + MeetingsSurvived * bonus);
@@ -211,7 +331,8 @@ namespace NewMod.Roles.NeutralRoles.S1
 
         public static PlayerControl GetTerminator()
         {
-            return PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p && p.Data != null && p.Data.Role is TerminatorRole);
+            return PlayerControl.AllPlayerControls.ToArray()
+                .FirstOrDefault(p => p && p.Data != null && p.Data.Role is TerminatorRole);
         }
 
         public static Vector2 PickObjectivePosition()
@@ -330,7 +451,8 @@ namespace NewMod.Roles.NeutralRoles.S1
                     if (!room)
                         continue;
 
-                    if (room.RoomId is SystemTypes.Hallway or SystemTypes.Outside or SystemTypes.Ventilation or SystemTypes.Sabotage or SystemTypes.Doors)
+                    if (room.RoomId is SystemTypes.Hallway or SystemTypes.Outside or SystemTypes.Ventilation
+                        or SystemTypes.Sabotage or SystemTypes.Doors)
                         continue;
 
                     positions.Add(room.roomArea ? room.roomArea.bounds.center : room.transform.position);
@@ -349,8 +471,18 @@ namespace NewMod.Roles.NeutralRoles.S1
         {
             DestroyObjectiveArrow();
 
+            if (ThreatArrow)
+                Object.Destroy(ThreatArrow.gameObject);
+
+            if (ThreatText)
+                Object.Destroy(ThreatText.gameObject);
+
+            ThreatArrow = null;
+            ThreatText = null;
+
             MeetingsSurvived = 0;
             ObjectiveSpawned = false;
+            FinalCountdownActive = false;
             ObjectivePosition = Vector2.zero;
             _baseSpeed = 0f;
 

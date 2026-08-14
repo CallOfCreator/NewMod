@@ -88,8 +88,4 @@ public class Specialist : CrewmateRole, ICustomRole
         int randomIndex = UnityEngine.Random.Range(0, abilityAction.Count);
         abilityAction[randomIndex].Invoke();
     }
-    public override bool DidWin(GameOverReason gameOverReason)
-    {
-        return gameOverReason == GameOverReason.CrewmatesByTask;
-    }
 }

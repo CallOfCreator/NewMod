@@ -19,18 +19,20 @@ namespace NewMod.Buttons.Roles.S1
         public override ButtonLocation Location => ButtonLocation.BottomRight;
         public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
         public override bool Enabled(RoleBehaviour role) => role is TerminatorRole;
+
         public override bool CanUse()
         {
-            if (!base.CanUse() || !TerminatorRole.ObjectiveSpawned)
+            if (!base.CanUse() || !TerminatorRole.ObjectiveSpawned || TerminatorRole.FinalCountdownActive)
                 return false;
 
             float radius = OptionGroupSingleton<TerminatorOptions>.Instance.FinalObjectiveRadius;
-            return Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), TerminatorRole.ObjectivePosition) <= radius;
+            return Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), TerminatorRole.ObjectivePosition) <=
+                   radius;
         }
 
         protected override void OnClick()
         {
-            GameManager.Instance.RpcEndGame((GameOverReason)NewModEndReasons.TerminatorWin, false);
+            TerminatorRole.RpcStartFinalCountdown(PlayerControl.LocalPlayer);
         }
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using MiraAPI.GameModes;
@@ -8,6 +8,8 @@ using MiraAPI.Utilities;
 using NewMod.Buttons.Roles;
 using NewMod.Roles.ImpostorRoles;
 using TMPro;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.CustomGameModes
 {
@@ -47,7 +49,10 @@ namespace NewMod.CustomGameModes
                     ReviveCounter.text = $"Revive Count: {ReviveCount}";
                     if (ReviveCount >= 6)
                     {
-                        GameManager.Instance.RpcEndGame(GameOverReason.ImpostorsByKill, true);
+                        if (AmongUsClient.Instance.AmHost)
+                        {
+                            CustomGameOver.Trigger<RevivalRoyaleGameOver>(CalculateWinners());
+                        }
                         break;
                     }
                 }
@@ -82,3 +87,4 @@ namespace NewMod.CustomGameModes
         }
     }
 }
+*/

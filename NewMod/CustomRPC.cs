@@ -22,5 +22,7 @@ public enum CustomRPC
     EndGeneralEvent,
     TerminatorObjective,
     MirrorBladeArm,
-    VerifierRegisterFact
+    TerminatorFinalCountdown,
+    VerifierRegisterFact,
+    MirrorBladeReflect
 }

@@ -1,5 +1,7 @@
 using MiraAPI.Roles;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.NeutralRoles;
 
@@ -31,6 +33,6 @@ public class InjectorRole : ImpostorRole, ICustomRole
     };
     public override bool DidWin(GameOverReason gameOverReason)
     {
-        return gameOverReason == (GameOverReason)NewModEndReasons.InjectorWin;
+        return gameOverReason == CustomGameOver.GameOverReason<InjectorGameOver>();
     }
 }

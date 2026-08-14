@@ -19,6 +19,8 @@ using Reactor.Networking.Rpc;
 using Reactor.Utilities;
 using Reactor.Utilities.Extensions;
 using UnityEngine;
+using MiraAPI.GameEnd;
+using NewMod.GameEnd;
 
 namespace NewMod.Roles.ImpostorRoles
 {
@@ -95,21 +97,7 @@ namespace NewMod.Roles.ImpostorRoles
         }
         public override bool DidWin(GameOverReason reason)
         {
-            if (reason == (GameOverReason)NewModEndReasons.TyrantWin) return true;
-            if (reason == (GameOverReason)NewModEndReasons.TyrantWin)
-                return true;
-
-            if (reason == (GameOverReason)NewModEndReasons.ShadeWin ||
-                reason == (GameOverReason)NewModEndReasons.WraithCallerWin ||
-                reason == (GameOverReason)NewModEndReasons.SpecialAgentWin ||
-                reason == (GameOverReason)NewModEndReasons.PranksterWin ||
-                reason == (GameOverReason)NewModEndReasons.EnergyThiefWin ||
-                reason == (GameOverReason)NewModEndReasons.InjectorWin ||
-                reason == (GameOverReason)NewModEndReasons.DoubleAgentWin)
-            {
-                return false;
-            }
-            return true;
+            return reason == CustomGameOver.GameOverReason<TyrantGameOver>();
         }
         public int _kills;
         public static byte _championId;
@@ -120,15 +108,26 @@ namespace NewMod.Roles.ImpostorRoles
         public static readonly HashSet<byte> PendingBetrayals = new();
         public int GetKillCount() => _kills;
         public byte GetChampion() => _championId;
+        public static byte ChampionId => _championId;
         public void SetChampion(byte playerId) => _championId = playerId;
         public static void ClearChampion() => _championId = byte.MaxValue;
+
+        public static void ResetState()
+        {
+            CustomRoleSingleton<Tyrant>.Instance._kills = 0;
+            ApexThroneReady = false;
+            ApexThroneOutcomeSet = false;
+            Outcome = ThroneOutcome.None;
+            PendingBetrayals.Clear();
+            ClearChampion();
+        }
 
         [RegisterEvent]
         public static void OnAfterMurderEvent(AfterMurderEvent evt)
         {
             if (!Utils.IsRoleActive("Tyrant")) return;
 
-            var tyrant = evt.Source.Data.Role as Tyrant;
+            if (evt.Source.Data.Role is not Tyrant tyrant) return;
 
             tyrant._kills++;
 
@@ -268,14 +267,6 @@ namespace NewMod.Roles.ImpostorRoles
                 evt.ExiledPlayer = info;
             }
         }
-        [RegisterEvent]
-        public static void OnGameEnd(GameEndEvent evt)
-        {
-            ApexThroneReady = false;
-            ApexThroneOutcomeSet = false;
-            Outcome = ThroneOutcome.None;
-            ClearChampion();
-        }
         public void SpawnSuppressionDome(Vector3 pos)
         {
             var go = new GameObject("Supression_Dome");
@@ -322,6 +313,11 @@ namespace NewMod.Roles.ImpostorRoles
         [MethodRpc((uint)CustomRPC.NotifyChampion)]
         public static void RpcNotifyChampion(PlayerControl source, PlayerControl target)
         {
+            if (source.Data.Role is Tyrant tyrant)
+            {
+                tyrant.SetChampion(target.PlayerId);
+            }
+
             if (target.AmOwner)
             {
                 Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD54F>{source.Data.PlayerName}</color> is your <color=#C62828>Tyrant</color>. Obey or be exiled."));

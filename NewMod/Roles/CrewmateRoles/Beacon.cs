@@ -54,10 +54,6 @@ namespace NewMod.Roles.CrewmateRoles
 
             return tab;
         }
-        public override bool DidWin(GameOverReason gameOverReason)
-        {
-            return gameOverReason is GameOverReason.CrewmatesByVote or GameOverReason.CrewmatesByTask;
-        }
         public static int charges;
         public static int grantedFromTasks;
         public static int lastCompletedTasks;
