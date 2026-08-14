@@ -4,7 +4,8 @@ namespace NewMod
     {
         Apex,
         Entropy,
-        Sentinel
+        Sentinel,
+        Rift
     }
     public enum ModifierFaction
     {

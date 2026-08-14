@@ -762,6 +762,7 @@ namespace NewMod.Utilities
                 NewModFaction.Apex => $"<b><color=#FF5A5A>Apex</color></b>",
                 NewModFaction.Entropy => $"<b><color=#EAAA3E>Entropy</color></b>",
                 NewModFaction.Sentinel => $"<b><color=#3AA6FF>Sentinel</color></b>",
+                NewModFaction.Rift => $"<b><color=#8A5CFF>Rift</color></b>",
                 _ => $"Unknown"
             };
         }
