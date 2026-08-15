@@ -25,6 +25,10 @@ public enum CustomRPC
     TerminatorFinalCountdown,
     VerifierRegisterFact,
     MirrorBladeReflect,
+    StickyRequestLink,
+    StickyStartLink,
+    StickyEndLink,
+    MarkedReveal,
 
     // Gamemodes
     WraithSiegeRequestSummon,

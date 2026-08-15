@@ -16,9 +16,10 @@ public class JustLeftVoid : TimedModifier
 {
     public override string ModifierName => "Just Left Void";
     public override float Duration => 4f;
-    public bool DidKill = false;
     public override bool HideOnUi => true;
     public override bool ShowInFreeplay => false;
+
+    public bool DidKill;
 
     public override void OnActivate()
     {
@@ -27,21 +28,22 @@ public class JustLeftVoid : TimedModifier
 
     public override void OnDeactivate()
     {
-        if (!DidKill)
-        {
-            CustomButtonSingleton<EnterVoid>.Instance.ResetCooldownAndOrEffect();
-            Player.SetKillTimer(float.MaxValue);
-        }
+        if (DidKill)
+            return;
+
+        CustomButtonSingleton<EnterVoid>.Instance.ResetCooldownAndOrEffect();
+        Player.SetKillTimer(float.MaxValue);
     }
 
     [RegisterEvent]
     public static void OnMurderEvent(AfterMurderEvent @event)
     {
-        if (@event.Source.HasModifier<JustLeftVoid>() && @event.Source.AmOwner)
-        {
-            @event.Source.GetModifier<JustLeftVoid>().DidKill = true;
-            Logger<NewMod>.Warning(CustomButtonSingleton<EnterVoid>.Instance.Timer);
-            CustomButtonSingleton<EnterVoid>.Instance.SetTimer(OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterVoidCooldown / 2);
-        }
+        if (!@event.Source.HasModifier<JustLeftVoid>() || !@event.Source.AmOwner)
+            return;
+
+        @event.Source.GetModifier<JustLeftVoid>().DidKill = true;
+
+        Logger<NewMod>.Warning(CustomButtonSingleton<EnterVoid>.Instance.Timer);
+        CustomButtonSingleton<EnterVoid>.Instance.SetTimer(OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterVoidCooldown / 2f);
     }
 }

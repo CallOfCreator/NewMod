@@ -122,6 +122,7 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
             if (GUILayout.Button("Apply ShadowFlux Effect") && allow) Camera.main.gameObject.AddComponent<ShadowFluxEffect>();
             if (GUILayout.Button("Apply CrismonVortex Effect") && allow) Camera.main.gameObject.AddComponent<CrimsonVortexEffect>();
             if (GUILayout.Button("Apply Negative Reality Effect") && allow) Camera.main.gameObject.AddComponent<NegativeRealityEffect>();
+            if (GUILayout.Button("Apply ShatteredGlass Effect") && allow) Camera.main.gameObject.AddComponent<ShatteredGlassEffect>();
             if (GUILayout.Button("Reset Effects") && allow) Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 1f));
         }
 

@@ -44,7 +44,7 @@ public class NegativeRealityEffect(IntPtr ptr) : MonoBehaviour(ptr)
 
     public void OnEnable()
     {
-        var shader = NewModAsset.NegativeReality.LoadAsset();
+        var shader = NewModAsset.NegativeRealityShader.LoadAsset();
 
         if (shader == null)
         {

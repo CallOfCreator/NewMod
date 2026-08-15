@@ -7,93 +7,125 @@ namespace NewMod.Components.ScreenEffects;
 [RegisterInIl2Cpp]
 public class CrimsonVortexEffect(IntPtr ptr) : MonoBehaviour(ptr)
 {
-    public float opacity = 0.78f;
-    public float tiling = 1.15f;
-    public float detailTiling = 2.35f;
-    public float detailStrength = 0.45f;
-    public float brightness = 1.2f;
-    public float contrast = 1.65f;
+    public Color tint = new(0.85f, 0.015f, 0.025f, 1f);
+    public Color hotTint = new(1f, 0.18f, 0.055f, 1f);
+    public Color deepTint = new(0.16f, 0f, 0.015f, 1f);
+    public Color coreTint = new(0.015f, 0f, 0.008f, 1f);
+
+    public float amount = 1f;
+    public float opacity = 0.88f;
+
+    public float tiling = 1.35f;
+    public float detailTiling = 3.15f;
+
+    public float flowSpeed = 0.22f;
+    public float vortexStrength = 2.1f;
+    public float vortexSpeed = 0.42f;
+
+    public float distortStrength = 0.025f;
+    public float suctionStrength = 0.018f;
+    public float chromaticShift = 0.0022f;
+
+    public float density = 1.25f;
+    public float contrast = 1.7f;
+
+    public float filamentStrength = 1.35f;
+    public float filamentSharpness = 5.5f;
+
+    public float radius = 0.92f;
+    public float edgeSoftness = 0.24f;
+
+    public float coreRadius = 0.17f;
+    public float coreSoftness = 0.1f;
+    public float coreDarkness = 0.88f;
+    public float coreGlow = 1.8f;
+
+    public float pulseStrength = 0.12f;
+    public float pulseSpeed = 1.5f;
+
+    public float vignette = 0.45f;
+
     public Vector2 scrollDir = new(1f, 0f);
-    public float scrollSpeed = 0.12f;
-    public float distortStrength = 0.055f;
-    public float distortSpeed = 0.35f;
-    public float distortScale = 1.85f;
-    public float swirlStrength = 0.95f;
-    public float swirlSpeed = 0.55f;
-    public float detailSwirlStrength = 1.35f;
-    public float detailSwirlSpeed = -0.75f;
-    public Vector2 center = new(0.5f, 0.5f);
-    public float radius = 0.95f;
-    public float edgeSoftness = 0.26f;
-    public float coreRadius = 0.28f;
-    public float coreSoftness = 0.16f;
-    public float coreIntensity = 1.25f;
-    public float pulseStrength = 0.16f;
-    public float pulseSpeed = 0.9f;
-    public float frontWidth = 0.72f;
-    public float frontSoftness = 0.2f;
-    public float frontTravel = 0.48f;
-    public float leadingEdgeWidth = 0.055f;
-    public float leadingEdgeStrength = 1.15f;
+    public float frontWidth = 0.75f;
+    public float frontSoftness = 0.18f;
+    public float frontTravel = 0.38f;
+
+    public float leadingEdgeWidth = 0.045f;
+    public float leadingEdgeStrength = 2.2f;
+
     public bool useCircular;
+
     public Material _mat;
 
     public void OnEnable()
     {
-        var shader = NewModAsset.CrismonVortex.LoadAsset();
-        var crimTex = NewModAsset.CrismonTexture.LoadAsset();
+        var shader = NewModAsset.CrismonVortexShader.LoadAsset();
+        var texture = NewModAsset.CrismonTexture.LoadAsset();
 
-        if (shader == null || crimTex == null)
+        if (!shader || !texture)
         {
             enabled = false;
             return;
         }
 
         _mat = new Material(shader) { hideFlags = HideFlags.DontSave };
-        _mat.SetTexture("_CrimsonTex", crimTex.texture);
+        _mat.SetTexture("_CrimsonTex", texture);
     }
 
     public void OnDisable()
     {
-        if (_mat != null)
-        {
+        if (_mat)
             Destroy(_mat);
-            _mat = null;
-        }
+
+        _mat = null;
     }
 
     public void OnRenderImage(RenderTexture src, RenderTexture dst)
     {
+        if (!_mat)
+        {
+            Graphics.Blit(src, dst);
+            return;
+        }
+
+        _mat.SetFloat("_Amount", amount);
+
+        _mat.SetColor("_Tint", tint);
+        _mat.SetColor("_HotTint", hotTint);
+        _mat.SetColor("_DeepTint", deepTint);
+        _mat.SetColor("_CoreTint", coreTint);
+
         _mat.SetFloat("_Opacity", opacity);
         _mat.SetFloat("_Tiling", tiling);
         _mat.SetFloat("_DetailTiling", detailTiling);
-        _mat.SetFloat("_DetailStrength", detailStrength);
-        _mat.SetFloat("_Brightness", brightness);
-        _mat.SetFloat("_Contrast", contrast);
 
-        _mat.SetVector("_ScrollDir", new Vector4(scrollDir.x, scrollDir.y, 0f, 0f));
-        _mat.SetFloat("_ScrollSpeed", scrollSpeed);
+        _mat.SetFloat("_FlowSpeed", flowSpeed);
+        _mat.SetFloat("_VortexStrength", vortexStrength);
+        _mat.SetFloat("_VortexSpeed", vortexSpeed);
 
         _mat.SetFloat("_DistortStrength", distortStrength);
-        _mat.SetFloat("_DistortSpeed", distortSpeed);
-        _mat.SetFloat("_DistortScale", distortScale);
+        _mat.SetFloat("_SuctionStrength", suctionStrength);
+        _mat.SetFloat("_ChromaticShift", chromaticShift);
 
-        _mat.SetFloat("_SwirlStrength", swirlStrength);
-        _mat.SetFloat("_SwirlSpeed", swirlSpeed);
-        _mat.SetFloat("_DetailSwirlStrength", detailSwirlStrength);
-        _mat.SetFloat("_DetailSwirlSpeed", detailSwirlSpeed);
+        _mat.SetFloat("_Density", density);
+        _mat.SetFloat("_Contrast", contrast);
 
-        _mat.SetVector("_Center", new Vector4(center.x, center.y, 0f, 0f));
+        _mat.SetFloat("_FilamentStrength", filamentStrength);
+        _mat.SetFloat("_FilamentSharpness", filamentSharpness);
+
         _mat.SetFloat("_Radius", radius);
         _mat.SetFloat("_EdgeSoftness", edgeSoftness);
 
         _mat.SetFloat("_CoreRadius", coreRadius);
         _mat.SetFloat("_CoreSoftness", coreSoftness);
-        _mat.SetFloat("_CoreIntensity", coreIntensity);
+        _mat.SetFloat("_CoreDarkness", coreDarkness);
+        _mat.SetFloat("_CoreGlow", coreGlow);
 
         _mat.SetFloat("_PulseStrength", pulseStrength);
         _mat.SetFloat("_PulseSpeed", pulseSpeed);
+        _mat.SetFloat("_Vignette", vignette);
 
+        _mat.SetVector("_ScrollDir", new Vector4(scrollDir.x, scrollDir.y, 0f, 0f));
         _mat.SetFloat("_FrontWidth", frontWidth);
         _mat.SetFloat("_FrontSoftness", frontSoftness);
         _mat.SetFloat("_FrontTravel", frontTravel);

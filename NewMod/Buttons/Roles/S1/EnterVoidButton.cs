@@ -13,7 +13,7 @@ public class EnterVoid : CustomActionButton
 {
     public override string Name => "Enter Void";
     public override float Cooldown => OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterVoidCooldown;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.EnterVoidIcon;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.EnterVoid;
     public override bool IsEffectCancellable() => true;
     public override bool Enabled(RoleBehaviour role)
     {

@@ -83,8 +83,7 @@ public static class NewModEventHandler
         PendingEffectManager.pendingEffects.Clear();
         DoomAwakening.killedPlayers.Clear();
 
-        StickyModifier.linkedPlayers.Clear();
-        StickyModifier._IsActive = false;
+        StickyModifier.ResetState();
         FearPulseArea.AffectedPlayers.Clear();
         FearPulseArea._speedNotifShown.Clear();
         FearPulseArea._visionNotifShown.Clear();

@@ -6,6 +6,7 @@ using NewMod.GameModes.WraithSiegeGamemode.Buttons;
 using NewMod.GameModes.WraithSiegeGamemode.Options;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
+using NewMod.Options.Modifiers;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.ImpostorRoles.S1;
@@ -21,7 +22,7 @@ public class S1 : ISeason
 {
     public string Name => "Season 1";
 
-    public DateTime SeasonStartDate => new(2026, 08, 14, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonStartDate => new(2026, 08, 15, 0, 0, 0, 0, DateTimeKind.Utc);
 
     public DateTime SeasonEndDate => new(2026, 08, 16, 0, 0, 0, 0, DateTimeKind.Utc);
 
@@ -68,7 +69,9 @@ public class S1 : ISeason
             typeof(FatefulModifier),
             typeof(LazyModifier),
             typeof(InVoid),
-            typeof(JustLeftVoid)
+            typeof(JustLeftVoid),
+            typeof(MarkedModifier),
+            typeof(MomentumModifier)
         ];
     }
 
@@ -81,6 +84,8 @@ public class S1 : ISeason
             typeof(VerifierOptions),
             typeof(WraithSiegeOptions),
             typeof(VoidwalkerOptions),
+            typeof(MomentumModifierOptions),
+            typeof(MarkedModifierOptions)
         ];
     }
 
@@ -111,7 +116,8 @@ public class S1 : ISeason
             return
             [
                 typeof(NegativeRealityGE),
-                typeof(CrismonVortexGE)
+                typeof(CrismonVortexGE),
+                typeof(ShatteredGlassGE)
             ];
         }
     }

@@ -329,7 +329,7 @@ public sealed class WraithSiegeWraithGameOver : CustomGameOver
         subtitle.color = WraithSiege.WraithColor;
         subtitle.fontSize = 1.8f;
         subtitle.enableAutoSizing = false;
-        subtitle.transform.localPosition = manager.WinText.transform.localPosition + new Vector3(0f, -0.5f, 0f);
+        subtitle.transform.localPosition = manager.WinText.transform.localPosition + new Vector3(00f, 1.8668f, -14f);
     }
 }
 

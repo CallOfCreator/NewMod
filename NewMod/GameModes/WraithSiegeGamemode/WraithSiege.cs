@@ -246,7 +246,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         _flagZone = Utils.CreateCircle("WraithSiegeFlagZone", _flagPosition, options.FlagRadius, new Color32(155, 108, 255, 90), options.RoundTime + 10f);
 
-        _flagObject = new GameObject("WraithSiegeFlag") { layer = 5 };
+        _flagObject = new GameObject("WraithSiegeFlag");
 
         _flagObject.transform.SetParent(ShipStatus.Instance.transform, true);
 
@@ -274,14 +274,10 @@ public sealed class WraithSiege : AbstractGameMode
 
         var localPlayer = PlayerControl.LocalPlayer;
 
-        var spawn = IsWraith(localPlayer) ? _wraithSpawn : _reviverSpawn;
-
-        var angle = localPlayer.PlayerId * 47f * Mathf.Deg2Rad;
-
-        var offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 0.55f;
+        var spawn = IsWraith(localPlayer) ? WraithSiegeMapData.GetWraithPlayerSpawn(localPlayer.PlayerId) : WraithSiegeMapData.GetReviverPlayerSpawn(localPlayer.PlayerId);
 
         localPlayer.NetTransform.Halt();
-        localPlayer.NetTransform.RpcSnapTo(spawn + offset);
+        localPlayer.NetTransform.RpcSnapTo(spawn);
 
         hud.PlayerCam.SnapToTarget();
 
@@ -735,13 +731,13 @@ public sealed class WraithSiege : AbstractGameMode
         return _wraithIds.Contains(player.PlayerId);
     }
 
-    private Vector2 GetDeliveryPoint(int slot)
+    public Vector2 GetDeliveryPoint(int slot)
     {
         var capacity = Mathf.Max(1, (int)OptionGroupSingleton<WraithSiegeOptions>.Instance.FlagCapacity);
-
         var angle = slot * Mathf.PI * 2f / capacity;
+        var desired = _flagPosition + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 0.4f;
 
-        return _flagPosition + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 0.4f;
+        return WraithSiegeMapData.GetSafeNearby(desired, _flagPosition);
     }
 
     private void Reset()
@@ -1066,7 +1062,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         var timer = 0f;
 
-        while (timer < 5.5f)
+        while (timer < 6f)
         {
             timer += Time.unscaledDeltaTime;
 

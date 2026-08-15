@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace NewMod.GameModes.WraithSiegeGamemode;
 
@@ -28,6 +29,12 @@ public sealed class WraithSiegeMapDefinition(SystemTypes wraithBase, SystemTypes
 
 public static class WraithSiegeMapData
 {
+    private const float SafeRadius = 0.34f;
+
+    private static readonly Dictionary<SystemTypes, Vector2> RoomPointCache = [];
+
+    private static int _cachedShipId = -1;
+
     private static readonly WraithSiegeMapDefinition[] Skeld =
     [
         new(SystemTypes.Reactor, SystemTypes.Nav, SystemTypes.Admin, [
@@ -53,7 +60,7 @@ public static class WraithSiegeMapData
             SystemTypes.Admin
         ], [
             SystemTypes.Nav,
-            SystemTypes.Shields
+            SystemTypes.Admin
         ], [
             SystemTypes.Nav,
             SystemTypes.Shields,
@@ -181,7 +188,8 @@ public static class WraithSiegeMapData
             SystemTypes.GapRoom
         ], [
             SystemTypes.CargoBay,
-            SystemTypes.Showers
+            SystemTypes.Showers,
+            SystemTypes.MainHall
         ], [
             SystemTypes.CargoBay,
             SystemTypes.Lounge,
@@ -291,6 +299,10 @@ public static class WraithSiegeMapData
 
     public static WraithSiegeMapDefinition Current => Layouts[LayoutIndex];
 
+    public static Vector2 WraithSpawn => GetRoomPoint(Current.WraithBase);
+    public static Vector2 ReviverSpawn => GetRoomPoint(Current.ReviverBase);
+    public static Vector2 FlagPoint => GetRoomPoint(Current.Flag);
+
     public static byte PickRandomLayout()
     {
         return (byte)HashRandom.FastNext(Layouts.Length);
@@ -299,11 +311,18 @@ public static class WraithSiegeMapData
     public static void SetLayout(byte index)
     {
         LayoutIndex = (byte)(index % Layouts.Length);
+        EnsureRoomCache();
     }
 
-    public static Vector2 WraithSpawn => GetRoomPoint(Current.WraithBase);
-    public static Vector2 ReviverSpawn => GetRoomPoint(Current.ReviverBase);
-    public static Vector2 FlagPoint => GetRoomPoint(Current.Flag);
+    public static Vector2 GetWraithPlayerSpawn(byte playerId)
+    {
+        return GetPlayerSpawn(Current.WraithBase, playerId);
+    }
+
+    public static Vector2 GetReviverPlayerSpawn(byte playerId)
+    {
+        return GetPlayerSpawn(Current.ReviverBase, playerId);
+    }
 
     public static Vector2[] ResolveLane(WraithLane lane, float flagRadius)
     {
@@ -319,17 +338,160 @@ public static class WraithSiegeMapData
         if (direction.sqrMagnitude < 0.01f)
             direction = Vector2.left;
 
-        points[^1] = flag + direction.normalized * (flagRadius + 0.4f);
+        var preferred = flag + direction.normalized * (flagRadius + 0.4f);
+        points[^1] = GetSafeNearby(preferred, flag);
+
         return points;
     }
 
     public static Vector2 GetRoomPoint(SystemTypes roomId)
     {
+        EnsureRoomCache();
+
+        if (RoomPointCache.TryGetValue(roomId, out var cached))
+            return cached;
+
         var ship = ShipStatus.Instance;
 
         if (!ship.FastRooms.TryGetValue(roomId, out var room))
-            return ship.InitialSpawnCenter;
+        {
+            var fallback = GetSafeNearby(ship.InitialSpawnCenter, ship.InitialSpawnCenter);
+            RoomPointCache[roomId] = fallback;
+            return fallback;
+        }
 
-        return room.roomArea ? room.roomArea.bounds.center : room.transform.position;
+        if (!room.roomArea)
+        {
+            var fallback = GetSafeNearby(room.transform.position, ship.InitialSpawnCenter);
+            RoomPointCache[roomId] = fallback;
+            return fallback;
+        }
+
+        var area = room.roomArea;
+        var center = (Vector2)area.bounds.center;
+
+        if (IsSafePoint(center, area))
+        {
+            RoomPointCache[roomId] = center;
+            return center;
+        }
+
+        var maxRadius = Mathf.Max(area.bounds.extents.x, area.bounds.extents.y);
+
+        for (var radius = 0.35f; radius <= maxRadius; radius += 0.35f)
+        {
+            for (var i = 0; i < 20; i++)
+            {
+                var angle = i * Mathf.PI * 2f / 20f;
+                var candidate = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+
+                if (!IsSafePoint(candidate, area))
+                    continue;
+
+                RoomPointCache[roomId] = candidate;
+                return candidate;
+            }
+        }
+
+        var safeFallback = GetSafeNearby(room.transform.position, ship.InitialSpawnCenter);
+        RoomPointCache[roomId] = safeFallback;
+
+        return safeFallback;
+    }
+
+    public static Vector2 GetSafeNearby(Vector2 preferred, Vector2 fallback)
+    {
+        if (IsSafePoint(preferred))
+            return preferred;
+
+        for (var radius = 0.25f; radius <= 2.5f; radius += 0.25f)
+        {
+            for (var i = 0; i < 20; i++)
+            {
+                var angle = i * Mathf.PI * 2f / 20f;
+                var candidate = preferred + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+
+                if (IsSafePoint(candidate))
+                    return candidate;
+            }
+        }
+
+        return fallback;
+    }
+
+    private static Vector2 GetPlayerSpawn(SystemTypes roomId, byte playerId)
+    {
+        var basePoint = GetRoomPoint(roomId);
+
+        ShipStatus.Instance.FastRooms.TryGetValue(roomId, out var room);
+        var area = room && room.roomArea ? room.roomArea : null;
+
+        var startAngle = playerId * 47f * Mathf.Deg2Rad;
+        var desired = basePoint + new Vector2(Mathf.Cos(startAngle), Mathf.Sin(startAngle)) * 0.55f;
+
+        if (IsSafePoint(desired, area))
+            return desired;
+
+        for (var ring = 0.4f; ring <= 1.2f; ring += 0.2f)
+        {
+            for (var i = 0; i < 16; i++)
+            {
+                var angle = startAngle + i * 22.5f * Mathf.Deg2Rad;
+                var candidate = basePoint + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * ring;
+
+                if (IsSafePoint(candidate, area))
+                    return candidate;
+            }
+        }
+
+        return basePoint;
+    }
+
+    private static bool IsSafePoint(Vector2 point, Collider2D roomArea = null)
+    {
+        if (roomArea && !roomArea.OverlapPoint(point))
+            return false;
+
+        if (HasSolidCollider(point, SafeRadius))
+            return false;
+
+        var openDirections = 0;
+
+        if (!HasSolidCollider(point + Vector2.up * 0.55f, SafeRadius))
+            openDirections++;
+
+        if (!HasSolidCollider(point + Vector2.down * 0.55f, SafeRadius))
+            openDirections++;
+
+        if (!HasSolidCollider(point + Vector2.left * 0.55f, SafeRadius))
+            openDirections++;
+
+        if (!HasSolidCollider(point + Vector2.right * 0.55f, SafeRadius))
+            openDirections++;
+
+        return openDirections >= 2;
+    }
+
+    private static bool HasSolidCollider(Vector2 point, float radius)
+    {
+        foreach (var collider in Physics2D.OverlapCircleAll(point, radius, Constants.ShipOnlyMask))
+        {
+            if (collider && collider.enabled && !collider.isTrigger)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static void EnsureRoomCache()
+    {
+        var ship = ShipStatus.Instance;
+        var shipId = ship.GetInstanceID();
+
+        if (_cachedShipId == shipId)
+            return;
+
+        _cachedShipId = shipId;
+        RoomPointCache.Clear();
     }
 }

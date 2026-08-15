@@ -48,6 +48,8 @@ public static class NewModAsset
     public static LoadableResourceAsset VerifyButton { get; } = new("NewMod.Resources.verifier.png");
     public static LoadableResourceAsset VanillaKillButton { get; } = new("NewMod.Resources.killbutton.png");
 
+    public static LoadableResourceAsset EnterVoid { get; } = new("NewMod.Resources.EnterVoid.png");
+
 
     // SFX
     public static LoadableAudioResourceAsset ReviveSound { get; } = new("NewMod.Resources.Sounds.revive.wav");
@@ -74,7 +76,6 @@ public static class NewModAsset
     public static LoadableResourceAsset ReviveIcon { get; } = new("NewMod.Resources.RoleIcons.ReviveIcon.png");
     public static LoadableResourceAsset VerifyIcon { get; } = new("NewMod.Resources.RoleIcons.VerifyIcon.png");
     public static LoadableResourceAsset VoidwalkerIcon { get; } = new("NewMod.Resources.RoleIcons.VoidwalkerIcon.png");
-    public static LoadableResourceAsset EnterVoidIcon { get; } = new("NewMod.Resources.RoleIcons.EnterVoidIcon.png");
 
     // Notif Icons
     public static LoadableResourceAsset VisionDebuff { get; } = new("NewMod.Resources.NotifIcons.vision_debuff.png");
@@ -87,12 +88,17 @@ public static class NewModAsset
     public static LoadableAsset<Shader> SlowPulseHueShader { get; } = new LoadableBundleAsset<Shader>("SlowPulseHue.shader", Bundle);
     public static LoadableAsset<Shader> DistorationWaveShader { get; } = new LoadableBundleAsset<Shader>("DistorationWave.shader", Bundle);
     public static LoadableAsset<Shader> ShadowFluxShader { get; } = new LoadableBundleAsset<Shader>("ShadowFlux.shader", Bundle);
-    public static LoadableAsset<Shader> CrismonVortex { get; } = new LoadableBundleAsset<Shader>("CrismonVortexV2.shader", Bundle);
-    public static LoadableAsset<Shader> NegativeReality { get; } = new LoadableBundleAsset<Shader>("NegativeReality.shader", Bundle);
+    public static LoadableAsset<Shader> CrismonVortexShader { get; } = new LoadableBundleAsset<Shader>("CrismonVortexV3.shader", Bundle);
+    
+    public static LoadableAsset<Shader> VoidwalkerTransitionVoid { get; } = new LoadableBundleAsset<Shader>("VoidwalkerTransition.shader", Bundle);
+    public static LoadableAsset<Shader> VoidwalkerVoidShader { get; } = new LoadableBundleAsset<Shader>("VoidwalkerVoid.shader", Bundle);
+    public static LoadableAsset<Shader> NegativeRealityShader { get; } = new LoadableBundleAsset<Shader>("NegativeReality.shader", Bundle);
+    public static LoadableAsset<Shader> ShatteredGlassShader { get; } = new LoadableBundleAsset<Shader>("ShatteredGlass.shader", Bundle);
 
     // Textures
     public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
-    public static LoadableResourceAsset CrismonTexture { get; } = new("NewMod.Resources.inkcloud1.png");
+    public static LoadableAsset<Texture2D> CrismonTexture { get; } = new LoadableBundleAsset<Texture2D>("turbulence8.png", Bundle);
+    public static LoadableAsset<Texture2D> ShatteredGlassTexture { get; } = new LoadableBundleAsset<Texture2D>("radialShatter.png", Bundle);
 
     //General Events
     public static LoadableAsset<GameObject> GeneralEventHud { get; } = new LoadableBundleAsset<GameObject>("GeneralEvent", Bundle);
@@ -105,6 +111,10 @@ public static class NewModAsset
     public static LoadableResourceAsset StrawberryIceCreamHat { get; } = new("NewMod.Resources.Cosmetics.Hats.strawberryicecream.png");
     public static LoadableResourceAsset PizzaHat { get; } = new("NewMod.Resources.Cosmetics.Hats.pizza.png");
     public static LoadableResourceAsset SqueezeCapHat { get; } = new("NewMod.Resources.Cosmetics.Hats.squeezecap.png");
+
+    public static LoadableResourceAsset ZrosHat { get; } = new("NewMod.Resources.Cosmetics.Hats.zros.png");
+    
+    public static LoadableResourceAsset IGotanIdeaHat { get; } = new("NewMod.Resources.Cosmetics.Hats.igotanidea.png");
 
     public static LoadableResourceAsset CottonMemoriesVisor { get; } = new("NewMod.Resources.Cosmetics.Visors.cottonmemories.png");
     public static LoadableResourceAsset MaliciousLook { get; } = new("NewMod.Resources.Cosmetics.Visors.maliciouslook.png");

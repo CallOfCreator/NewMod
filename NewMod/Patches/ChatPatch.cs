@@ -1,40 +1,16 @@
-using AmongUs.Data;
 using HarmonyLib;
-using InnerNet;
+using UnityEngine;
 
 namespace NewMod.Patches;
 
-[HarmonyPatch(typeof(ChatController), nameof(ChatController.SendChat))]
-public static class ChatPatch
+[HarmonyPatch(typeof(ChatController), nameof(ChatController.LateUpdate))]
+public static class ChatScreenRootPatch
 {
-    public static bool Prefix(ChatController __instance)
-    {
-        __instance.timeSinceLastMessage = 0f;
-
-        if (__instance.quickChatMenu.CanSend)
-        {
-            __instance.SendQuickChat();
-        }
-        else
-        {
-            if (__instance.quickChatMenu.IsOpen || string.IsNullOrWhiteSpace(__instance.freeChatField.Text) || DataManager.Settings.Multiplayer.ChatMode != QuickChatModes.FreeChatOrQuickChat) return false;
-            __instance.SendFreeChat();
-        }
-
-        __instance.timeSinceLastMessage = 0f;
-        __instance.freeChatField.Clear();
-        __instance.quickChatMenu.Clear();
-        __instance.quickChatField.Clear();
-        __instance.UpdateChatMode();
-
-        return false;
-    }
-
-    [HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.Start))]
     [HarmonyPostfix]
-    public static void StartPostfix(TextBoxTMP __instance)
+    public static void Postfix(GameObject ___chatScreen, PassiveButton ___chatButton)
     {
-        __instance.AllowSymbols = true;
-        __instance.allowAllCharacters = true;
+        var position = ___chatScreen.transform.localPosition;
+        position.y = ___chatButton.transform.localPosition.y;
+        ___chatScreen.transform.localPosition = position;
     }
 }

@@ -407,5 +407,9 @@ public static class CoroutinesHelper
             Object.Destroy(sf);
         if (cam.TryGetComponent<CrimsonVortexEffect>(out var cv))
             Object.Destroy(cv);
+        if (cam.TryGetComponent<NegativeRealityEffect>(out var nr))
+            Object.Destroy(nr);
+        if (cam.TryGetComponent<ShatteredGlassEffect>(out var sg))
+            Object.Destroy(sg);
     }
 }
