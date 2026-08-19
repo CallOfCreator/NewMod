@@ -49,7 +49,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     {
         Instance = this;
         AddComponent<DebugWindow>();
-        ReactorCredits.Register("NewMod", "v1.2.9 Hotfix 4", true, ReactorCredits.AlwaysShow);
+        ReactorCredits.Register("NewMod", "v1.2.9 Hotfix 5", true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
         NewModEventHandler.RegisterEventsLogs();
 
@@ -59,12 +59,10 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             Harmony.PatchAll(typeof(LaunchpadHackTextPatch));
         }
 
-        ShouldEnableBepInExConsole =
-            Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");
+        ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
 
-        Instance.Log.LogMessage(
-            $"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version}");
+        Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 
     [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
@@ -78,8 +76,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
 
     public static void InitializeKeyBinds()
     {
-        if (Input.GetKeyDown(KeyCode.F2) && PlayerControl.LocalPlayer.Data.IsDead &&
-            OptionGroupSingleton<GeneralOption>.Instance.AllowCams)
+        if (Input.GetKeyDown(KeyCode.F2) && PlayerControl.LocalPlayer.Data.IsDead && OptionGroupSingleton<GeneralOption>.Instance.AllowCams)
         {
             var sys = Utils.FindSurveillanceConsole();
             var mainCam = Camera.main;
@@ -92,8 +89,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
 
         if (Input.GetKeyDown(KeyCode.F3) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole)
         {
-            var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f,
-                Helpers.CreateFilter(Constants.NotShipMask));
+            var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
             if (deadBodies != null && deadBodies.Count > 0)
             {
                 var randomIndex = Random.Range(0, deadBodies.Count);
@@ -113,8 +109,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         if (evt.Target != OverloadRole.chosenPrey) return;
 
         //TODO: Use the newest MiraAPI roles for button mapping
-        if (evt.Target.Data.Role is ICustomRole customRole &&
-            Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
+        if (evt.Target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
         {
             OverloadRole.CachedButtons = [.. CustomButtonManager.Buttons.Where(b => buttonsType.Contains(b.GetType()))];
             Instance.Log.LogMessage($"CachedButton: {buttonsType.GetType().Name}");
@@ -130,8 +125,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
 
         if (target != OverloadRole.chosenPrey) return;
 
-        foreach (var pc in PlayerControl.AllPlayerControls.ToArray()
-                     .Where(p => p.AmOwner && p.Data.Role is OverloadRole))
+        foreach (var pc in PlayerControl.AllPlayerControls.ToArray().Where(p => p.AmOwner && p.Data.Role is OverloadRole))
         {
             if (target.Data.Role is ICustomRole customRole)
             {
@@ -143,9 +137,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             }
             else if (target.Data.Role is not ICustomRole)
             {
-                var btn = Object.Instantiate(
-                    HudManager.Instance.AbilityButton,
-                    HudManager.Instance.AbilityButton.transform.parent);
+                var btn = Object.Instantiate(HudManager.Instance.AbilityButton, HudManager.Instance.AbilityButton.transform.parent);
                 btn.SetFromSettings(target.Data.Role.Ability);
                 var pb = btn.GetComponent<PassiveButton>();
                 pb.OnClick.RemoveAllListeners();
@@ -156,13 +148,11 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         OverloadRole.CachedButtons.Clear();
         OverloadRole.AbsorbedAbilityCount++;
         OverloadRole.chosenPrey = null;
-        Coroutines.Start(CoroutinesHelper.CoNotify(
-            $"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
+        Coroutines.Start(CoroutinesHelper.CoNotify($"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
 
         if (OverloadRole.AbsorbedAbilityCount >= OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge)
         {
-            Coroutines.Start(
-                CoroutinesHelper.CoNotify("<color=#00FF7F>Objective completed: Final Ability unlocked!</color>"));
+            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FF7F>Objective completed: Final Ability unlocked!</color>"));
         }
         else
         {
@@ -177,9 +167,7 @@ public partial class NewMod : BasePlugin, IMiraPlugin
         {
             if (__instance.taskText != null && PlayerControl.LocalPlayer.Data.IsDead)
             {
-                __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams
-                    ? "<color=blue>Press F2 For Open Cams</color>"
-                    : "<color=red>You cannot open cams because the host has disabled this setting</color>");
+                __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams ? "<color=blue>Press F2 For Open Cams</color>" : "<color=red>You cannot open cams because the host has disabled this setting</color>");
             }
         }
     }
