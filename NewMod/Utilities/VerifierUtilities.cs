@@ -10,6 +10,7 @@ using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Events.Vanilla.Usables;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
+using NewMod.Achievements;
 using NewMod.Components;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
@@ -179,7 +180,7 @@ public static class VerifierUtilities
 
     public static IEnumerator CoSetupMeetingButton(MeetingHud hud)
     {
-        while (hud && hud.CurrentState == MeetingHud.VoteStates.Animating)
+        while (hud && hud.CurrentState == MeetingHud.MeetingStates.Animating)
             yield return null;
 
         yield return new WaitForSeconds(0.25f);
@@ -228,6 +229,8 @@ public static class VerifierUtilities
 
         RoundFacts.TryGetValue(target.PlayerId, out var facts);
         var happened = (facts & GetFlag(claim)) != 0;
+
+        NewModAchievementsTab.TrustButVerify.Unlock();
 
         return happened == expected ? "<color=#58E8BE>Confirmed</color>" : "<color=#FF4D4D>Denied</color>";
     }

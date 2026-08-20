@@ -206,7 +206,7 @@ public sealed class Tyrant : ImpostorRole, INewModRole
             if (tyrantPlayer)
             {
                 foreach (var ps in hud.playerStates)
-                    if (ps.TargetPlayerId == tyrantPlayer.PlayerId)
+                    if (ps.PlayerId == tyrantPlayer.PlayerId)
                     {
                         ps.NameText.text += "\n<color=#C62828><size=60%>Tyrant</size></color>";
                         break;

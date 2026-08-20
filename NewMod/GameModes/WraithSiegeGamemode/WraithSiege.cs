@@ -71,7 +71,7 @@ public sealed class WraithSiege : AbstractGameMode
 
     public override string Name => "Wraith Siege";
 
-    public override string Description => "Wraiths send spirits to the Flag. Revivers defend with shared lives.";
+    public override string Description => "Wraiths send spirits to the Flag\nRevivers defend with shared lives.";
 
     public override LoadableAsset<Sprite> Icon => NewModAsset.WraithSiegeFlag;
     public override Color Color => WraithColor;

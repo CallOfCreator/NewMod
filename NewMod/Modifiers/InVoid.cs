@@ -32,6 +32,7 @@ public class InVoid : BaseModifier
 
         if (Player.AmOwner)
         {
+            SoundManager.Instance.PlaySoundImmediate(NewModAsset.EnterVoidSFX.LoadAsset(), false, 1f);
             HudManager.Instance.KillButton.Hide();
             Player.killTimer = 240f;
 

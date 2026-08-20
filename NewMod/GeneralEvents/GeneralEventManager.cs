@@ -2,8 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Meeting;
+using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
+using NewMod.Options;
 using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
 using Reactor.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -13,22 +18,20 @@ namespace NewMod.GeneralEvents;
 
 public static class GeneralEventManager
 {
-    private const float MinInterval = 20f;
-    private const float MaxInterval = 30f;
     private static uint _nextTypeId;
-    private static readonly Dictionary<uint, Type> TypeIdMap = new();
-    private static readonly Dictionary<Type, uint> TypeToIdMap = new();
-    private static readonly List<IGeneralEvent> _registered = new();
+    private static uint _issuedSequence;
+    private static uint _lastSequence;
+    private static uint _activeSequence;
+
+    private static readonly Dictionary<uint, Type> TypeIdMap = [];
+    private static readonly Dictionary<Type, uint> TypeToIdMap = [];
+    private static readonly List<IGeneralEvent> Registered = [];
+
     private static GeneralEventHud _hud;
-    public static IEnumerator _cycleRoutine;
+    private static IEnumerator _cycleRoutine;
+    private static IEnumerator _eventRoutine;
 
     public static IGeneralEvent CurrentEvent { get; private set; }
-
-    public static uint GenerateNextTypeId()
-    {
-        _nextTypeId++;
-        return _nextTypeId;
-    }
 
     public static void RegisterEvent<T>() where T : IGeneralEvent, new()
     {
@@ -40,26 +43,19 @@ public static class GeneralEventManager
         if (TypeToIdMap.ContainsKey(type))
             return;
 
-        var id = GenerateNextTypeId();
+        var id = ++_nextTypeId;
+
         TypeToIdMap[type] = id;
         TypeIdMap[id] = type;
-
-        var instance = (IGeneralEvent)Activator.CreateInstance(type);
-        _registered.Add(instance);
-
-        NewMod.Instance.Log.LogMessage($"[GE] Registered '{instance.Title}' (id={id}, chance={instance.OccurrenceChance}%)");
+        Registered.Add((IGeneralEvent)Activator.CreateInstance(type));
     }
 
     public static void StartCycle()
     {
-        if (!AmongUsClient.Instance.AmHost)
-            return;
-
-        if (_cycleRoutine != null)
+        if (!AmongUsClient.Instance.AmHost || _cycleRoutine != null)
             return;
 
         _cycleRoutine = Coroutines.Start(CoCycle());
-        NewMod.Instance.Log.LogMessage("[GE] Event cycle started.");
     }
 
     public static void StopCycle()
@@ -75,106 +71,182 @@ public static class GeneralEventManager
     {
         StopCycle();
 
-        CurrentEvent?.OnEventEnd();
-        CurrentEvent = null;
+        if (_eventRoutine != null)
+        {
+            Coroutines.Stop(_eventRoutine);
+            _eventRoutine = null;
+        }
+
+        if (CurrentEvent != null)
+        {
+            CurrentEvent.OnEventEnd();
+            CurrentEvent = null;
+        }
 
         if (_hud)
             Object.Destroy(_hud.gameObject);
 
         _hud = null;
+
+        _issuedSequence = 0;
+        _lastSequence = 0;
+        _activeSequence = 0;
+    }
+
+    public static void ForceEvent<T>() where T : IGeneralEvent
+    {
+        if (!AmongUsClient.Instance.AmHost)
+            return;
+
+        if (!TypeToIdMap.TryGetValue(typeof(T), out var id))
+            return;
+
+        _issuedSequence++;
+
+        RpcStartGeneralEvent(PlayerControl.LocalPlayer, id, _issuedSequence);
+    }
+
+    public static void ForceEnd()
+    {
+        if (!AmongUsClient.Instance.AmHost || CurrentEvent == null)
+            return;
+
+        RpcEndGeneralEvent(PlayerControl.LocalPlayer, _activeSequence);
     }
 
     public static IEnumerator CoCycle()
     {
         while (true)
         {
-            yield return new WaitForSeconds(Random.Range(MinInterval, MaxInterval));
+            var options = OptionGroupSingleton<GEOptions>.Instance;
+
+            var minimum = options.MinimumInterval;
+            var maximum = Mathf.Max(minimum, options.MaximumInterval);
+
+            yield return new WaitForSeconds(Random.Range(minimum, maximum));
 
             if (MeetingHud.Instance || ExileController.Instance || CurrentEvent != null)
+            {
                 continue;
+            }
 
             var candidate = PickEvent();
 
             if (candidate == null)
                 continue;
+            _issuedSequence++;
 
-            RpcStartGeneralEvent(PlayerControl.LocalPlayer, TypeToIdMap[candidate.GetType()]);
+            RpcStartGeneralEvent(PlayerControl.LocalPlayer, TypeToIdMap[candidate.GetType()], _issuedSequence);
         }
     }
 
     public static IGeneralEvent PickEvent()
     {
-        var eligible = _registered.Where(e => e.CanOccur() && Helpers.CheckChance(e.OccurrenceChance)).OrderBy(_ => Random.value).ToList();
+        var eligible = Registered.Where(ge => ge.CanOccur() && Helpers.CheckChance(ge.OccurrenceChance)).OrderBy(_ => Random.value).ToList();
 
         return eligible.Count > 0 ? eligible[0] : null;
     }
 
-    [MethodRpc((uint)CustomRPC.StartGeneralEvent)]
-    public static void RpcStartGeneralEvent(PlayerControl source, uint eventTypeId)
+    [RegisterEvent]
+    public static void OnMeetingStart(StartMeetingEvent evt)
     {
+        if (_hud)
+            _hud.gameObject.SetActive(false);
+    }
+
+    [RegisterEvent]
+    public static void OnMeetingEnd(EndMeetingEvent evt)
+    {
+        if (_hud && CurrentEvent != null)
+            _hud.gameObject.SetActive(true);
+    }
+
+    [MethodRpc((uint)CustomRPC.StartGeneralEvent, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcStartGeneralEvent(PlayerControl source, uint eventTypeId, uint sequence)
+    {
+        if (sequence <= _lastSequence)
+            return;
+
         if (!TypeIdMap.TryGetValue(eventTypeId, out var type))
-        {
-            NewMod.Instance.Log.LogWarning($"[GE] Unknown event type id: {eventTypeId}");
             return;
-        }
 
-        StartEvent((IGeneralEvent)Activator.CreateInstance(type));
-    }
+        _lastSequence = sequence;
 
-    [MethodRpc((uint)CustomRPC.EndGeneralEvent)]
-    public static void RpcEndGeneralEvent(PlayerControl source)
-    {
-        EndEvent();
-    }
-
-    public static void StartEvent(IGeneralEvent ge)
-    {
         if (CurrentEvent != null)
-        {
-            NewMod.Instance.Log.LogMessage("[GE] Start blocked because another GE is already active.");
-            return;
-        }
+            EndEvent(_activeSequence);
 
+        StartEvent((IGeneralEvent)Activator.CreateInstance(type), sequence);
+    }
+
+    [MethodRpc((uint)CustomRPC.EndGeneralEvent, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcEndGeneralEvent(PlayerControl source, uint sequence)
+    {
+        EndEvent(sequence);
+    }
+
+    public static void StartEvent(IGeneralEvent ge, uint sequence)
+    {
         CurrentEvent = ge;
-
-        NewMod.Instance.Log.LogMessage($"[GE] Starting '{ge.Title}' ({ge.Duration}s)");
+        _activeSequence = sequence;
 
         ge.OnEventStart();
 
         _hud = GeneralEventHud.Create();
         _hud.Show(ge);
 
+        if (MeetingHud.Instance || ExileController.Instance)
+            _hud.gameObject.SetActive(false);
+
         SoundManager.Instance.PlaySound(NewModAsset.GEEnterSound.LoadAsset(), false);
 
-        Coroutines.Start(CoEventTimer(ge));
-    }
-
-    public static void EndEvent()
-    {
-        if (CurrentEvent == null)
+        if (!AmongUsClient.Instance.AmHost)
             return;
 
-        NewMod.Instance.Log.LogMessage($"[GE] Ending '{CurrentEvent.Title}'");
+        if (_eventRoutine != null)
+            Coroutines.Stop(_eventRoutine);
 
-        CurrentEvent.OnEventEnd();
+        _eventRoutine = Coroutines.Start(CoEventTimer(sequence, ge.Duration));
+    }
+
+    public static void EndEvent(uint sequence)
+    {
+        if (CurrentEvent == null || sequence != _activeSequence)
+        {
+            return;
+        }
+
+        if (_eventRoutine != null)
+        {
+            Coroutines.Stop(_eventRoutine);
+            _eventRoutine = null;
+        }
+
+        var ge = CurrentEvent;
+
         CurrentEvent = null;
+        _activeSequence = 0;
+
+        ge.OnEventEnd();
 
         if (_hud)
             _hud.Hide();
 
-        SoundManager.Instance.PlaySound(NewModAsset.GEExitSound.LoadAsset(), false);
-
         _hud = null;
+
+        SoundManager.Instance.PlaySound(NewModAsset.GEExitSound.LoadAsset(), false);
     }
 
-    public static IEnumerator CoEventTimer(IGeneralEvent ge)
+    public static IEnumerator CoEventTimer(uint sequence, float duration)
     {
-        yield return new WaitForSeconds(ge.Duration);
+        yield return new WaitForSeconds(duration);
 
-        if (CurrentEvent != ge)
+        if (CurrentEvent == null || _activeSequence != sequence || !AmongUsClient.Instance.AmHost)
+        {
             yield break;
+        }
 
-        if (AmongUsClient.Instance.AmHost)
-            RpcEndGeneralEvent(PlayerControl.LocalPlayer);
+        _eventRoutine = null;
+
+        RpcEndGeneralEvent(PlayerControl.LocalPlayer, sequence);
     }
 }

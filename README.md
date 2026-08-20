@@ -118,6 +118,8 @@ For more information about Starlight, please visit: [https://discord.gg/FYYqJU2b
 - **Jsenm**: [Jsenm Discord](jsenm) - For the newer sprites/art for NewMod
 - **Pixabay**: [Pixabay](https://pixabay.com) - For sound effects used in NewMod
 - **angxlwtf**: [angxlwtf](https://github.com/angxlwtf) - Idea for **Wraith Caller** (originally for Hitman LP)
+- **shawarma**: [angxlwtf](https://github.com/am-clonec) - For the Voidwalker Role
+- **Wandering Pix**: [WanderingPix](https://github.com/WanderingPix) - For the Thinking Animation
 
 ---
 

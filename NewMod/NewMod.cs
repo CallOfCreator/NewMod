@@ -1,4 +1,6 @@
 using System.Linq;
+using AchievementsAPI;
+using AchievementsAPI.API;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
@@ -15,6 +17,7 @@ using MiraAPI.Hud;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
+using NewMod.Achievements;
 using NewMod.Buttons.Roles;
 using NewMod.Cosmetics;
 using NewMod.Options;
@@ -38,6 +41,7 @@ namespace NewMod;
 [BepInDependency(MiraApiPlugin.Id)]
 [BepInDependency(CorsacCosmeticsPlugin.Id)]
 [BepInDependency(ModCompatibility.LaunchpadReloaded_GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(AchievementsAPIPlugin.Id)]
 [ReactorModFlags(ModFlags.RequireOnAllClients)]
 [BepInProcess("Among Us.exe")]
 public class NewMod : BasePlugin, IMiraPlugin
@@ -62,7 +66,7 @@ public class NewMod : BasePlugin, IMiraPlugin
     {
         Instance = this;
         AddComponent<DebugWindow>();
-        ReactorCredits.Register("NewMod", ModVersion, true, ReactorCredits.AlwaysShow);
+        ReactorCredits.Register("NewMod", ModVersion + " ALPHA", true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
 
         Harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.OnEnable)), HarmonyPatchType.All, MiraApiPlugin.Id);
@@ -86,6 +90,12 @@ public class NewMod : BasePlugin, IMiraPlugin
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
 
         ForceEnableAllSeasons = Config.Bind("NewMod", "ForceEnableAllSeasons", false, "Force all seasons as started");
+
+        AchievementStorage.Load();
+        AchievementStorage.AchievementStorageGet(new NewModAchievementsTab());
+
+        if (!NewModAchievementsTab.ThreeInARow.Unlocked)
+            NewModAchievementsTab.ThreeInARow.SetValue(0, false);
 
         var bundle = NewModAsset.Bundle;
         var assetNames = bundle.GetAllAssetNames();
@@ -136,10 +146,10 @@ public class NewMod : BasePlugin, IMiraPlugin
         NewModCosmeticsRegistry.RegisterHat("squeeze_cap", NewModAsset.SqueezeCapHat.LoadAsset(), new HatMetadata { Name = "Squeeze Cap", InFront = true, NoBounce = false });
         NewModCosmeticsRegistry.RegisterHat("zros", NewModAsset.ZrosHat.LoadAsset(), new HatMetadata { Name = "Zro's Hat", InFront = true, NoBounce = false });
         NewModCosmeticsRegistry.RegisterHat("igotanidea", NewModAsset.IGotanIdeaHat.LoadAsset(), new HatMetadata { Name = "i got an idea", InFront = true, NoBounce = false });
-        
+
         NewModCosmeticsRegistry.RegisterVisor("malicious_look", NewModAsset.MaliciousLook.LoadAsset(), new VisorMetadata { Name = "Malicious Look" });
         NewModCosmeticsRegistry.RegisterVisor("cotton_memories", NewModAsset.CottonMemoriesVisor.LoadAsset(), new VisorMetadata { Name = "Cotton Memories Visor" });
-        
+
         NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new NameplateMetadata { Name = "NM Rave" });
         NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new NameplateMetadata { Name = "Sunny Sky" });
         Instance.Log.LogMessage("Registered NewMod Cosmetics");

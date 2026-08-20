@@ -8,6 +8,7 @@ public static class StartGECyclePatch
 {
     public static void Postfix(IntroCutscene __instance)
     {
+        GeneralEventManager.Reset();
         GeneralEventManager.StartCycle();
     }
 }
@@ -15,8 +16,8 @@ public static class StartGECyclePatch
 [HarmonyPatch(typeof(EndGameManager), nameof(EndGameManager.Start))]
 public static class StopGECyclePatch
 {
-    public static void Postfix(EndGameManager __instance)
+    public static void Postfix()
     {
-        GeneralEventManager.StopCycle();
+        GeneralEventManager.Reset();
     }
 }

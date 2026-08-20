@@ -33,7 +33,7 @@ public static class MeetingHudPatches
         [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.PopulateButtons))]
         public static class MeetingHud_PopulateButtons_Patch
         {
-            public static bool Prefix(MeetingHud __instance, byte reporter)
+            public static bool Prefix(MeetingHud __instance)
             {
                 if (!Utils.IsRoleActive("Prankster")) return true;
 
@@ -47,8 +47,8 @@ public static class MeetingHudPatches
                     var player = realPlayers[i];
                     var voteArea = __instance.CreateButton(player);
                     voteArea.Parent = __instance;
-                    voteArea.SetTargetPlayerId(player.PlayerId);
-                    voteArea.SetDead(player.PlayerId == reporter, player.Disconnected || player.IsDead, player.Role != null && player.Role.Role == RoleTypes.GuardianAngel);
+                    voteArea.SetPlayerId(player.PlayerId);
+                    voteArea.SetDead(player.Disconnected || player.IsDead);
                     __instance.playerStates[i] = voteArea;
                 }
 

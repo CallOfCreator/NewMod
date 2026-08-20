@@ -13,7 +13,7 @@ namespace NewMod.Buttons.Roles;
 ///     Custom action button for the Shade role.
 ///     Deploys a Shadow Zone where the Shade becomes invisible and gains kill power.
 /// </summary>
-public class ShadeButton : CustomActionButton
+public class DeployShadow : CustomActionButton
 {
     /// <summary>
     ///     Display name of the button.

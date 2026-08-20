@@ -6,6 +6,7 @@ using NewMod.GameModes.WraithSiegeGamemode.Buttons;
 using NewMod.GameModes.WraithSiegeGamemode.Options;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
+using NewMod.Options;
 using NewMod.Options.Modifiers;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
@@ -13,20 +14,19 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles.S1;
 using TMPro;
 using UnityEngine;
-using Math = System.Math;
 using Type = System.Type;
 
 namespace NewMod.Seasons;
 
 public class S1 : ISeason
 {
-    public string Name => "Season 1";
+    public string Name => "Preseason ALPHA";
 
-    public DateTime SeasonStartDate => new(2026, 08, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonStartDate => new(2026, 08, 18, 0, 0, 0, 0, DateTimeKind.Utc);
 
-    public DateTime SeasonEndDate => new(2026, 08, 16, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonEndDate => new(2026, 08, 20, 0, 0, 0, 0, DateTimeKind.Utc);
 
-    public Color SeasonMainColor => Color.yellow;
+    public Color SeasonMainColor => Color.blue;
 
     public void HandleMainMenu(MainMenuManager menuManager)
     {
@@ -58,7 +58,9 @@ public class S1 : ISeason
             typeof(TerminatorRole),
             typeof(MirrorBladeRole),
             typeof(VerifierRole),
-            typeof(Voidwalker)
+            typeof(Voidwalker),
+            typeof(WardenRole),
+            typeof(ArbitratorRole)
         ];
     }
 
@@ -85,7 +87,10 @@ public class S1 : ISeason
             typeof(WraithSiegeOptions),
             typeof(VoidwalkerOptions),
             typeof(MomentumModifierOptions),
-            typeof(MarkedModifierOptions)
+            typeof(MarkedModifierOptions),
+            typeof(WardenOptions),
+            typeof(ArbitratorOptions),
+            typeof(GEOptions)
         ];
     }
 
@@ -99,7 +104,10 @@ public class S1 : ISeason
                 typeof(MidWraithLaneButton),
                 typeof(BottomWraithLaneButton),
                 typeof(BanishWraithButton),
-                typeof(WraithSiegeReviveButton)
+                typeof(WraithSiegeReviveButton),
+                typeof(InspectResidualButton),
+                typeof(WardenSealButton),
+                typeof(ArbitratorLeverageButton)
             ];
         }
 
@@ -117,7 +125,11 @@ public class S1 : ISeason
             [
                 typeof(NegativeRealityGE),
                 typeof(CrismonVortexGE),
-                typeof(ShatteredGlassGE)
+                typeof(AbilityExchangeGE),
+                typeof(IdentityCrisisGE),
+                typeof(NoMansLandGE),
+                typeof(RoleScrambleGE),
+                typeof(SystemOverrideGE)
             ];
         }
     }

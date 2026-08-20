@@ -146,7 +146,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
 
     private static IEnumerator CoShowMeetingWarning(MeetingHud hud)
     {
-        while (hud && hud.CurrentState == MeetingHud.VoteStates.Animating)
+        while (hud && hud.CurrentState == MeetingHud.MeetingStates.Animating)
             yield return null;
 
         yield return new WaitForSeconds(0.35f);
@@ -391,14 +391,6 @@ public class TerminatorRole : CrewmateRole, INewModRole
                     SystemTypes.Kitchen,
                     SystemTypes.MiningPit,
                     SystemTypes.FishingDock
-                ],
-
-                _ =>
-                [
-                    SystemTypes.Cafeteria,
-                    SystemTypes.Admin,
-                    SystemTypes.Storage,
-                    SystemTypes.Electrical
                 ]
             };
 

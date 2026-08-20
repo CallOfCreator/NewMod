@@ -1,8 +1,10 @@
 using System.Linq;
 using MiraAPI.GameEnd;
+using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.GameModes.WraithSiegeGamemode;
+using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
@@ -289,6 +291,31 @@ public class TerminatorGameOver : CustomGameOver
     {
         NewModGameOver.SetPresentation<TerminatorRole>(manager, "Terminator Victory");
     }
+}
+
+public sealed class ArbitratorGameOver : CustomGameOver
+{
+    private byte[] _winnerIds = [];
+
+    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
+    {
+        if (winners.Length != 1)
+            return false;
+
+        ArbitratorRole.JudgmentTokens.TryGetValue(winners[0].PlayerId, out var tokens);
+
+        if (tokens < OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin)
+        {
+            return false;
+        }
+
+        _winnerIds = [winners[0].PlayerId];
+        return true;
+    }
+
+    public override bool BeforeEndGameSetup(EndGameManager manager) => NewModGameOver.SetWinners(_winnerIds);
+
+    public override void AfterEndGameSetup(EndGameManager manager) => NewModGameOver.SetPresentation<ArbitratorRole>(manager, "Judgment Has Been Passed\nArbitrator Wins!");
 }
 
 public sealed class WraithSiegeWraithGameOver : CustomGameOver

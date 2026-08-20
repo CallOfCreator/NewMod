@@ -29,6 +29,14 @@ public enum CustomRPC
     StickyStartLink,
     StickyEndLink,
     MarkedReveal,
+    WardenSeal,
+    WardenAbilityUsed,
+    WardenResidualMark,
+    ArbitratorJudgmentResult,
+    ArbitratorJudgment,
+    AbilityExchangeAssignment,
+    CrismonVortexPosition,
+    CrismonVortexEscape,
 
     // Gamemodes
     WraithSiegeRequestSummon,

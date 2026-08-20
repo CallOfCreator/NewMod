@@ -21,6 +21,7 @@ public static class NewModAsset
     public static LoadableAsset<GameObject> SlashTray { get; } = new LoadableBundleAsset<GameObject>("SlashTray", Bundle);
     public static LoadableAsset<Sprite> ConfirmIconHover { get; } = new LoadableBundleAsset<Sprite>("confirmOutline", Bundle);
     public static LoadableAsset<Sprite> DenyIconHover { get; } = new LoadableBundleAsset<Sprite>("deniedOutline", Bundle);
+    public static LoadableResourceAsset ResidualTrace { get; } = new LoadableResourceAsset("NewMod.Resources.residualTrace.png");
 
     // NewMod's First Birthday Assets
     public static LoadableResourceAsset MainMenuBG { get; } = new("NewMod.Resources.Birthday.newmod-birthday-v1.png");
@@ -47,8 +48,12 @@ public static class NewModAsset
     public static LoadableResourceAsset DeployZone { get; } = new("NewMod.Resources.deployzone.png");
     public static LoadableResourceAsset VerifyButton { get; } = new("NewMod.Resources.verifier.png");
     public static LoadableResourceAsset VanillaKillButton { get; } = new("NewMod.Resources.killbutton.png");
-
     public static LoadableResourceAsset EnterVoid { get; } = new("NewMod.Resources.EnterVoid.png");
+    public static LoadableResourceAsset WardenSeal { get; } = new("NewMod.Resources.Seal.png");
+    public static LoadableResourceAsset WardenInvestigate { get; } = new("NewMod.Resources.investigate.png");
+    public static LoadableResourceAsset AccuseButton { get; } = new("NewMod.Resources.Accuse.png");
+    public static LoadableResourceAsset DefendButton { get; } = new("NewMod.Resources.Defend.png");
+    public static LoadableResourceAsset LeverageButton { get; } = new("NewMod.Resources.leverage.png");
 
 
     // SFX
@@ -63,6 +68,7 @@ public static class NewModAsset
     public static LoadableAudioResourceAsset HeartbeatSound { get; } = new("NewMod.Resources.Sounds.heartbeat_sound.wav");
     public static LoadableAudioResourceAsset GEEnterSound { get; } = new("NewMod.Resources.Sounds.ge_enter.wav");
     public static LoadableAudioResourceAsset GEExitSound { get; } = new("NewMod.Resources.Sounds.ge_exit.wav");
+    public static LoadableAudioResourceAsset EnterVoidSFX { get; } = new("NewMod.Resources.Sounds.entervoid.wav");
 
     // Role Icons
     public static LoadableResourceAsset StrikeIcon { get; } = new("NewMod.Resources.RoleIcons.StrikeIcon.png");
@@ -76,6 +82,7 @@ public static class NewModAsset
     public static LoadableResourceAsset ReviveIcon { get; } = new("NewMod.Resources.RoleIcons.ReviveIcon.png");
     public static LoadableResourceAsset VerifyIcon { get; } = new("NewMod.Resources.RoleIcons.VerifyIcon.png");
     public static LoadableResourceAsset VoidwalkerIcon { get; } = new("NewMod.Resources.RoleIcons.VoidwalkerIcon.png");
+    public static LoadableResourceAsset WardenIcon { get; } = new("NewMod.Resources.RoleIcons.WardenRoleIcon.png");
 
     // Notif Icons
     public static LoadableResourceAsset VisionDebuff { get; } = new("NewMod.Resources.NotifIcons.vision_debuff.png");
@@ -97,13 +104,15 @@ public static class NewModAsset
 
     // Textures
     public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
-    public static LoadableAsset<Texture2D> CrismonTexture { get; } = new LoadableBundleAsset<Texture2D>("turbulence8.png", Bundle);
+    public static LoadableResourceAsset CrismonTexture { get; } = new LoadableResourceAsset("NewMod.Resources.turbulence8.png");
     public static LoadableAsset<Texture2D> ShatteredGlassTexture { get; } = new LoadableBundleAsset<Texture2D>("radialShatter.png", Bundle);
 
     //General Events
     public static LoadableAsset<GameObject> GeneralEventHud { get; } = new LoadableBundleAsset<GameObject>("GeneralEvent", Bundle);
-    public static LoadableResourceAsset CrismonIcon { get; } = new("NewMod.Resources.crismon_ge_icon.png");
-    public static LoadableResourceAsset NegativeRealityIcon { get; } = new("NewMod.Resources.NegativeIcon.png");
+    public static LoadableResourceAsset CrismonIcon { get; } = new("NewMod.Resources.GeneralEvents.crismon_ge_icon.png");
+    public static LoadableResourceAsset NegativeRealityIcon { get; } = new("NewMod.Resources.GeneralEvents.NegativeIcon.png");
+    public static LoadableResourceAsset IdentityCrisisIcon { get; } = new("NewMod.Resources.GeneralEvents.IdentityCrisis.png");
+    public static LoadableResourceAsset RoleScrambleIcon { get; } = new("NewMod.Resources.GeneralEvents.RoleScramble.png");
 
     //Cosmetics
     public static LoadableResourceAsset OG_NewModHat { get; } = new("NewMod.Resources.Cosmetics.Hats.og_newmod.png");

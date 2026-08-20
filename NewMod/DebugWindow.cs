@@ -4,6 +4,7 @@ using MiraAPI.Hud;
 using MiraAPI.Roles;
 using NewMod.Components.ScreenEffects;
 using NewMod.GeneralEvents;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
@@ -85,7 +86,7 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
             GUILayout.BeginVertical(GUI.skin.box);
             GUILayout.Label("Camera Zoom");
             var newZoom = GUILayout.HorizontalSlider(Instance.Zoom, ZoomMin, ZoomMax, GUILayout.Width(220f));
-            if (!Mathf.Approximately(newZoom, Instance.Zoom) /*&& allow*/)
+            if (!Mathf.Approximately(newZoom, Instance.Zoom) && allow)
             {
                 Instance.Zoom = newZoom;
                 Instance.ApplyZoom(Instance.Zoom);
@@ -103,8 +104,6 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
             if (GUILayout.Button("Become DoubleAgent") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<DoubleAgent>());
             if (GUILayout.Button("Become EnergyThief") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<EnergyThief>());
             if (GUILayout.Button("Become SpecialAgent") && allow) PlayerControl.LocalPlayer.RpcSetRole((RoleTypes)RoleId.Get<SpecialAgent>());
-            if (GUILayout.Button("Start GE Cycle") && allow) GeneralEventManager.StartCycle();
-            if (GUILayout.Button("Stop GE Cycle") && allow) GeneralEventManager.StopCycle();
             if (GUILayout.Button("Increase Uses by 3") && allow)
                 foreach (var b in CustomButtonManager.Buttons)
                     b.SetUses(3);
@@ -124,6 +123,45 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
             if (GUILayout.Button("Apply Negative Reality Effect") && allow) Camera.main.gameObject.AddComponent<NegativeRealityEffect>();
             if (GUILayout.Button("Apply ShatteredGlass Effect") && allow) Camera.main.gameObject.AddComponent<ShatteredGlassEffect>();
             if (GUILayout.Button("Reset Effects") && allow) Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 1f));
+            
+            GUILayout.Space(6);
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            GUILayout.Label("General Events");
+
+            if (GUILayout.Button("Start GE Cycle") && allow)
+                GeneralEventManager.StartCycle();
+
+            if (GUILayout.Button("Stop GE Cycle") && allow)
+                GeneralEventManager.StopCycle();
+
+            if (GUILayout.Button("End Current GE") && allow)
+                GeneralEventManager.ForceEnd();
+
+            GUILayout.Space(4);
+
+            if (GUILayout.Button("GE: Negative Reality") && allow)
+                GeneralEventManager.ForceEvent<NegativeRealityGE>();
+
+            if (GUILayout.Button("GE: Crismon Vortex") && allow)
+                GeneralEventManager.ForceEvent<CrismonVortexGE>();
+
+            if (GUILayout.Button("GE: Identity Crisis") && allow)
+                GeneralEventManager.ForceEvent<IdentityCrisisGE>();
+
+            if (GUILayout.Button("GE: Role Scramble") && allow)
+                GeneralEventManager.ForceEvent<RoleScrambleGE>();
+
+            if (GUILayout.Button("GE: Ability Exchange") && allow)
+                GeneralEventManager.ForceEvent<AbilityExchangeGE>();
+
+            if (GUILayout.Button("GE: No Man's Land") && allow)
+                GeneralEventManager.ForceEvent<NoMansLandGE>();
+
+            if (GUILayout.Button("GE: System Override") && allow)
+                GeneralEventManager.ForceEvent<SystemOverrideGE>();
+
+            GUILayout.EndVertical();
         }
 
         if (Instance.tab == 1)

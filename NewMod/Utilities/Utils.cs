@@ -10,12 +10,16 @@ using MiraAPI.Networking;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Buttons.Roles;
+using NewMod.Buttons.Roles.S1;
 using NewMod.Modifiers;
 using NewMod.Options.Roles;
 using NewMod.Roles;
 using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
+using NewMod.Roles.NeutralRoles.S1;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
 using TMPro;
@@ -126,7 +130,17 @@ public static class Utils
         { typeof(SpecialAgent), new List<Type> { typeof(AssignButton) } },
         { typeof(TheVisionary), new List<Type> { typeof(CaptureButton), typeof(ShowScreenshotButton) } },
         { typeof(PulseBlade), new List<Type> { typeof(StrikeButton) } },
-        { typeof(WraithCaller), new List<Type> { typeof(CallWraithButton) } }
+        { typeof(WraithCaller), new List<Type> { typeof(CallWraithButton) } },
+        { typeof(Edgeveil), new List<Type> { typeof(ArcButton) } },
+        { typeof(Aegis), new List<Type> { typeof(AegisButton) } },
+        { typeof(WardenRole), new List<Type> { typeof(WardenSealButton), typeof(InspectResidualButton) } },
+        { typeof(Voidwalker), new List<Type> { typeof(EnterVoid) } },
+        { typeof(TerminatorRole), new List<Type> { typeof(ObjectiveButton) } },
+        { typeof(ArbitratorRole), new List<Type> { typeof(ArbitratorLeverageButton) } },
+        { typeof(MirrorBladeRole), new List<Type> { typeof(MirrorReflectButton) } },
+        { typeof(Shade), new List<Type> { typeof(DeployShadow) } },
+        // Verifier is excluded since it uses a meeting ability.
+        // I hate this system, I gotta replace it
         // TODO: Add Launchpad roles and their associated buttons here
     };
 
@@ -135,13 +149,12 @@ public static class Utils
     /// </summary>
     /// <param name="id">The player's ID.</param>
     /// <returns>The PlayerControl object or null if not found.</returns>
-    //  Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
+//  Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
     public static PlayerControl PlayerById(byte id)
     {
         foreach (var player in PlayerControl.AllPlayerControls)
             if (player.PlayerId == id)
                 return player;
-
         return null;
     }
 
@@ -198,7 +211,7 @@ public static class Utils
         return closestBody;
     }
 
-    // Thanks to: https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L66
+// Thanks to: https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L66
     /// <summary>
     ///     Checks if a particular system type is active on the current map.
     /// </summary>
@@ -250,7 +263,7 @@ public static class Utils
         }
     }
 
-    // Thanks to : https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L118
+// Thanks to : https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L118
     /// <summary>
     ///     Checks if any sabotage system is currently active.
     /// </summary>
@@ -405,7 +418,7 @@ public static class Utils
     {
         InjectedPlayerIds.Clear();
     }
-    // Inspired By: https://github.com/AU-Avengers/TOU-Mira/blob/dev/TownOfUs/Modules/ReviveUtilities.cs#L40
+// Inspired By: https://github.com/AU-Avengers/TOU-Mira/blob/dev/TownOfUs/Modules/ReviveUtilities.cs#L40
 
     [MethodRpc((uint)CustomRPC.HandleRevive)]
     public static IEnumerator HandleRevive(PlayerControl source, byte revivedId, RoleTypes roleToSet, float reviveX, float reviveY)
@@ -458,7 +471,7 @@ public static class Utils
         }
     }
 
-    // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L55
+// Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L55
     /// <summary>
     ///     Records a player's role in their role history.
     /// </summary>
@@ -471,7 +484,7 @@ public static class Utils
         savedPlayerRoles[playerId].Add(role);
     }
 
-    // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L64
+// Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L64
     /// <summary>
     ///     Retrieves the role history for a specific player.
     /// </summary>
@@ -824,12 +837,7 @@ public static class Utils
 
         var body = player.GetNearestDeadBody(15f);
 
-        var info = new Revenant.FeignDeathInfo
-        {
-            Timer = 10f,
-            DeadBody = body,
-            Reported = false
-        };
+        var info = new Revenant.FeignDeathInfo { Timer = 10f, DeadBody = body, Reported = false };
         Revenant.FeignDeathStates[player.PlayerId] = info;
 
         Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You are now feigning death.\nYou will be revived in 10 seconds if unreported.</color>"));
@@ -1048,10 +1056,7 @@ public static class Utils
     public static Material GetCircleMat()
     {
         if (_circleMat) return _circleMat;
-        _circleMat = new Material(Shader.Find("Sprites/Default"))
-        {
-            renderQueue = 3000
-        };
+        _circleMat = new Material(Shader.Find("Sprites/Default")) { renderQueue = 3000 };
         return _circleMat;
     }
 
