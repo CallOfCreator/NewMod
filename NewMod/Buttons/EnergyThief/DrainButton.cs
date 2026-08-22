@@ -7,12 +7,14 @@ using ET = NewMod.Roles.NeutralRoles.EnergyThief;
 using UnityEngine;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
+using MiraAPI.PluginLoading;
 
 namespace NewMod.Buttons.EnergyThief
 {
     /// <summary>
     /// Defines a custom action button for the role.
     /// </summary>
+    [MiraIgnore]
     public class DrainButton : CustomActionButton<PlayerControl>
     {
         /// <summary>
@@ -105,6 +107,7 @@ namespace NewMod.Buttons.EnergyThief
             {
                 HudManager.Instance.Notifier.AddDisconnectMessage($"The Drain effect will be applied to {Target.Data.PlayerName} after the meeting ends.");
             }
+
             Utils.waitingPlayers.Add(PlayerControl.LocalPlayer);
         }
 
@@ -119,6 +122,7 @@ namespace NewMod.Buttons.EnergyThief
             {
                 return false;
             }
+
             return base.CanUse();
         }
     }

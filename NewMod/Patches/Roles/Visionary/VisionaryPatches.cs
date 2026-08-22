@@ -1,81 +1,55 @@
-using HarmonyLib;
+using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Usables;
-using NewMod.Utilities;
 using MiraAPI.Utilities;
+using NewMod.Roles.CrewmateRoles;
+using NewMod.Utilities;
 using Reactor.Utilities;
-using MiraAPI.Events;
 
 namespace NewMod.Patches.Roles.Visionary
 {
-    public static class VisionaryVentPatch
+    public static class VisionaryVentEvents
     {
         [RegisterEvent]
         public static void OnEnterVent(EnterVentEvent evt)
         {
-            if (!Utils.IsRoleActive("The Visionary")) return;
+            var localPlayer = PlayerControl.LocalPlayer;
+            if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || evt.Player == localPlayer || !Helpers.CheckChance(20))
+                return;
 
-            PlayerControl player = evt.Player;
-            var chancePercentage = (int)(0.2f * 100);
+            var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
+            var filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
 
-            if (Helpers.CheckChance(chancePercentage))
-            {
-                string timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
-                string filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-                Coroutines.Start(Utils.CaptureScreenshot(filePath));
-
-                if (player.AmOwner)
-                {
-                    Coroutines.Start(CoroutinesHelper.CoNotify("<color=red>Warning: Visionary might have seen you vent!</color>"));
-                }
-            }
+            Coroutines.Start(Utils.CaptureScreenshot(filePath));
         }
-        [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.RpcExitVent))]
-        public static void Postfix(PlayerPhysics __instance, int ventId)
+
+        [RegisterEvent]
+        public static void OnExitVent(ExitVentEvent evt)
         {
-            if (!Utils.IsRoleActive("The Visionary")) return;
+            var localPlayer = PlayerControl.LocalPlayer;
+            if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || evt.Player == localPlayer || !Helpers.CheckChance(20))
+                return;
 
-            var chancePercentage = (int)(0.2f * 100);
-            if (Helpers.CheckChance(chancePercentage))
-            {
-                var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
-                string filePath = System.IO.Path.Combine(
-                    VisionaryUtilities.ScreenshotDirectory,
-                    $"screenshot_{timestamp}.png"
-                );
-                Coroutines.Start(Utils.CaptureScreenshot(filePath));
+            var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
+            var filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
 
-                if (__instance.myPlayer.AmOwner)
-                {
-                    Coroutines.Start(CoroutinesHelper.CoNotify("<color=red>Warning: Visionary might have seen you exit vent!</color>"));
-                }
-            }
+            Coroutines.Start(Utils.CaptureScreenshot(filePath));
         }
     }
-    public static class VisionaryMurderPatch
+
+    public static class VisionaryMurderEvent
     {
         [RegisterEvent]
         public static void OnBeforeMurder(BeforeMurderEvent evt)
         {
-            if (!Utils.IsRoleActive("The Visionary")) return;
+            var localPlayer = PlayerControl.LocalPlayer;
+            if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || !Helpers.CheckChance(20))
+                return;
 
-            PlayerControl source = evt.Source;
-            int chancePercentage = (int)(0.2f * 100);
+            var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
+            var filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
 
-            if (Helpers.CheckChance(chancePercentage))
-            {
-                var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
-                string filePath = System.IO.Path.Combine(
-                    VisionaryUtilities.ScreenshotDirectory,
-                    $"screenshot_{timestamp}.png"
-                );
-                Coroutines.Start(Utils.CaptureScreenshot(filePath));
-
-                if (source.AmOwner)
-                {
-                    Coroutines.Start(CoroutinesHelper.CoNotify("<color=red>Warning: The Visionary may have captured your crime!</color>"));
-                }
-            }
+            Coroutines.Start(Utils.CaptureScreenshot(filePath));
         }
     }
 }

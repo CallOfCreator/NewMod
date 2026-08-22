@@ -1,4 +1,6 @@
 using System.Collections;
+using System;
+using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Utilities.Assets;
@@ -8,6 +10,7 @@ using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using MiraAPI.Keybinds;
+using Random = UnityEngine.Random;
 
 namespace NewMod.Buttons.SpecialAgent
 {
@@ -70,36 +73,57 @@ namespace NewMod.Buttons.SpecialAgent
             return base.CanUse() && SA.AssignedPlayer == null;
         }
 
-        /// <summary>
-        /// Invoked when the button is clicked. Opens a custom player menu to pick a mission target.
-        /// </summary>
+        public override void ClickHandler()
+        {
+            if (CanClick())
+                OnClick();
+        }
+
         protected override void OnClick()
         {
-            NewMod.Instance.Log.LogError("Special Agent assign menu open...");
-            CustomPlayerMenu menu = CustomPlayerMenu.Create();
+            var menu = CustomPlayerMenu.Create();
 
-            SetTimerPaused(true);
+            menu.Begin(player => !player.Data.IsDead && !player.Data.Disconnected && player.PlayerId != PlayerControl.LocalPlayer.PlayerId, player =>
+            {
+                menu.Close();
 
-            menu.Begin(
-                player => !player.Data.IsDead &&
-                          !player.Data.Disconnected &&
-                          player.PlayerId != PlayerControl.LocalPlayer.PlayerId,
-                player =>
+                DecreaseUses();
+                ResetCooldownAndOrEffect();
+
+                var missions = (MissionType[])Enum.GetValues(typeof(MissionType));
+                var mission = missions[Random.Range(0, missions.Length)];
+                var mostWantedId = byte.MaxValue;
+
+                if (mission == MissionType.KillMostWanted)
                 {
-                    SA.AssignedPlayer = player;
-                    Utils.RpcAssignMission(PlayerControl.LocalPlayer, SA.AssignedPlayer);
-                    NewMod.Instance.Log.LogError($"Assigning target: {SA.AssignedPlayer.Data.PlayerName}");
+                    var candidates = PlayerControl.AllPlayerControls.ToArray().Where(candidate => candidate && candidate.Data != null && !candidate.Data.IsDead && !candidate.Data.Disconnected && candidate != player && candidate != PlayerControl.LocalPlayer).ToArray();
 
-                    if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
+                    if (candidates.Length == 0)
                     {
-                        var cam = Camera.main.GetComponent<FollowerCamera>();
-                        cam?.SetTarget(player);
-                        Coroutines.Start(CoResetCamera(cam, OptionGroupSingleton<SpecialAgentOptions>.Instance.CameraTrackingDuration));
+                        mission = MissionType.DrainEnergy;
                     }
-                    menu.Close();
-                    SetTimerPaused(false);
+                    else
+                    {
+                        mostWantedId = candidates[Random.Range(0, candidates.Length)].PlayerId;
+                    }
                 }
-            );
+
+                SA.AssignedPlayer = player;
+
+                Utils.RpcAssignMission(PlayerControl.LocalPlayer, player, mission, mostWantedId);
+
+                if (OptionGroupSingleton<SpecialAgentOptions>.Instance.TargetCameraTracking)
+                {
+                    var camera = Camera.main.GetComponent<FollowerCamera>();
+
+                    if (camera)
+                    {
+                        camera.SetTarget(player);
+
+                        Coroutines.Start(CoResetCamera(camera, OptionGroupSingleton<SpecialAgentOptions>.Instance.CameraTrackingDuration));
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -110,12 +134,15 @@ namespace NewMod.Buttons.SpecialAgent
         /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
         public static IEnumerator CoResetCamera(FollowerCamera cam, float duration)
         {
+            if (!cam)
+                yield break;
+
             float timeElapsed = 0f;
-            Vector3 originalPosition = cam.transform.position;
+            Vector3 originalPosition = cam.transform.localPosition;
             float shakeThreshold = 1.5f;
             bool shouldShake = OptionGroupSingleton<SpecialAgentOptions>.Instance.ShouldShakeCamera;
 
-            while (timeElapsed < duration)
+            while (timeElapsed < duration && cam)
             {
                 timeElapsed += Time.deltaTime;
                 if (shouldShake && (duration - timeElapsed) <= shakeThreshold)
@@ -128,10 +155,15 @@ namespace NewMod.Buttons.SpecialAgent
                 {
                     cam.transform.localPosition = originalPosition;
                 }
+
                 yield return null;
             }
+
+            if (!cam)
+                yield break;
+
             cam.transform.localPosition = originalPosition;
-            cam?.SetTarget(PlayerControl.LocalPlayer);
+            cam.SetTarget(PlayerControl.LocalPlayer);
         }
     }
 }

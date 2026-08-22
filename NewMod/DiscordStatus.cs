@@ -1,6 +1,6 @@
 // Inspired by: https://github.com/All-Of-Us-Mods/LaunchpadReloaded/blob/master/LaunchpadReloaded/Patches/Generic/DiscordManagerPatch.cs#L12
 
-using System;
+/*using System;
 using Discord;
 using HarmonyLib;
 using MiraAPI;
@@ -54,4 +54,5 @@ namespace NewMod
             }
         }
     }
-}
+}*/
+

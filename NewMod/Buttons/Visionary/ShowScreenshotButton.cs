@@ -6,8 +6,6 @@ using NewMod.Roles.CrewmateRoles;
 using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
-using System.Linq;
-using System.IO;
 using MiraAPI.Keybinds;
 
 namespace NewMod.Buttons.Visionary
@@ -50,7 +48,7 @@ namespace NewMod.Buttons.Visionary
         /// <summary>
         /// Default keybind for Visionary's Show ability.
         /// </summary>
-       public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
+        public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
 
         /// <summary>
         /// Checks if the button can be used, ensuring there's at least one captured screenshot.
@@ -58,7 +56,7 @@ namespace NewMod.Buttons.Visionary
         /// <returns>True if base conditions are met and there is a screenshot, otherwise false.</returns>
         public override bool CanUse()
         {
-            return base.CanUse() && Directory.GetFiles(VisionaryUtilities.ScreenshotDirectory, "screenshot_*.png").Any();
+            return base.CanUse() && VisionaryUtilities.HasScreenshots && !VisionaryUtilities.IsShowing;
         }
 
         /// <summary>

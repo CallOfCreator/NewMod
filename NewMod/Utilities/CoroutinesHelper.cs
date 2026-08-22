@@ -31,8 +31,6 @@ namespace NewMod.Utilities
         /// <summary>
         /// Reference to a <see cref="TextMeshPro"/> element used for displaying mission-related timers.
         /// </summary>
-        private static TextMeshPro timerLabel;
-
         /// <summary>
         /// Displays a temporary notification on the screen using an overlay animation.
         /// </summary>
@@ -88,73 +86,40 @@ namespace NewMod.Utilities
         /// <param name="target">The player assigned to the mission.</param>
         /// <param name="duration">The desired duration for the mission timer (clamped to 30 seconds max).</param>
         /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
-        public static IEnumerator CoMissionTimer(PlayerControl target, float duration)
+        public static IEnumerator CoMissionTimer(PlayerControl specialAgent, PlayerControl target, float duration)
         {
-            // Clamp duration to a maximum of 30 seconds
             duration = Mathf.Min(duration, 30f);
+            var timerLabel = Helpers.CreateTextLabel("MissionTimerText", HudManager.Instance.transform, AspectPosition.EdgeAlignments.LeftBottom, new(9.9f, 3.5f, 0f), fontSize: 3f, textAlignment: TextAlignmentOptions.BottomLeft);
 
-            // Create a text label for the mission timer
-            timerLabel = Helpers.CreateTextLabel(
-                "MissionTimerText",
-                HudManager.Instance.transform,
-                AspectPosition.EdgeAlignments.LeftBottom,
-                new(9.9f, 3.5f, 0f),
-                fontSize: 3f,
-                textAlignment: TextAlignmentOptions.BottomLeft
-            );
-
-            timerLabel!.text = $"Time Remaining: {duration}s";
+            timerLabel.text = $"Time Remaining: {duration}s";
             timerLabel.color = Color.yellow;
 
             float timeRemaining = duration;
 
             while (timeRemaining > 0)
             {
-                // If the assigned player is unassigned, cancel the timer
-                if (SpecialAgent.AssignedPlayer == null)
+                if (!target || target.Data == null || SpecialAgent.AssignedPlayer != target)
                 {
-                    if (HudManager.Instance.FullScreen.gameObject.activeSelf)
-                        HudManager.Instance.FullScreen.gameObject.SetActive(false);
-                    Object.Destroy(timerLabel.gameObject);
+                    if (timerLabel)
+                        Object.Destroy(timerLabel.gameObject);
                     yield break;
                 }
 
                 yield return new WaitForSeconds(1f);
                 timeRemaining -= 1f;
 
-                timerLabel.text = $"Time Remaining: {Mathf.CeilToInt(timeRemaining)}s";
-
-                // Manage colors and background overlay based on remaining time
-                if (timeRemaining <= 10f)
+                if (timerLabel)
                 {
-                    timerLabel.color = Color.red;
-                    if (Constants.ShouldPlaySfx())
-                    {
-                        SoundManager.Instance.PlaySound(ShipStatus.Instance.SabotageSound, false, 0.8f);
-                    }
-
-                    HudManager.Instance.FullScreen.color = new Color(1f, 0f, 0f, 0.1f);
-                    HudManager.Instance.FullScreen.gameObject.SetActive(true);
-                }
-                else if (timeRemaining <= 20f)
-                {
-                    timerLabel.color = Color.yellow;
-                    if (HudManager.Instance.FullScreen.gameObject.activeSelf)
-                        HudManager.Instance.FullScreen.gameObject.SetActive(false);
-                }
-                else
-                {
-                    timerLabel.color = Color.green;
-                    if (HudManager.Instance.FullScreen.gameObject.activeSelf)
-                        HudManager.Instance.FullScreen.gameObject.SetActive(false);
+                    timerLabel.text = $"Time Remaining: {Mathf.CeilToInt(timeRemaining)}s";
+                    timerLabel.color = timeRemaining <= 10f ? Color.red : timeRemaining <= 20f ? Color.yellow : Color.green;
                 }
             }
 
-            // Time has expired, destroy the timer and fail the mission
-            Object.Destroy(timerLabel.gameObject);
-            SoundManager.Instance.StopSound(ShipStatus.Instance.SabotageSound);
-            HudManager.Instance.FullScreen.gameObject.SetActive(false);
-            Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+            if (timerLabel)
+                Object.Destroy(timerLabel.gameObject);
+
+            if (target && target.Data != null && SpecialAgent.AssignedPlayer == target)
+                Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
         }
 
         /// <summary>
@@ -162,7 +127,7 @@ namespace NewMod.Utilities
         /// </summary>
         /// <param name="target">The player executing the prankster abilities.</param>
         /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
-        public static IEnumerator UsePranksterAbilities(PlayerControl target)
+        public static IEnumerator UsePranksterAbilities(PlayerControl specialAgent, PlayerControl target)
         {
             // Initialize dictionary entry for this player if missing
             if (!bodiesCreated.ContainsKey(target.PlayerId))
@@ -173,9 +138,10 @@ namespace NewMod.Utilities
             while (true)
             {
                 // If the player dies mid-mission, fail the mission
-                if (target.Data.IsDead)
+                if (!target || target.Data == null || target.Data.IsDead || target.Data.Disconnected)
                 {
-                    Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+                    if (target)
+                        Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
                     yield break;
                 }
 
@@ -186,14 +152,13 @@ namespace NewMod.Utilities
                     bodiesCreated[target.PlayerId]++;
                     if (target.AmOwner)
                     {
-                        Coroutines.Start(
-                            CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
+                        Coroutines.Start(CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
                     }
 
                     // Once enough bodies are created, succeed the mission
                     if (bodiesCreated[target.PlayerId] >= 2)
                     {
-                        Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, target);
+                        Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, specialAgent, target);
                         yield break;
                     }
                 }
@@ -207,7 +172,7 @@ namespace NewMod.Utilities
         /// </summary>
         /// <param name="target">The player executing the energy draining abilities.</param>
         /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
-        public static IEnumerator UseEnergyThiefAbilities(PlayerControl target)
+        public static IEnumerator UseEnergyThiefAbilities(PlayerControl specialAgent, PlayerControl target)
         {
             float drainRange = 3.5f;
 
@@ -220,23 +185,17 @@ namespace NewMod.Utilities
             while (true)
             {
                 // If the player dies mid-mission, fail the mission
-                if (target.Data.IsDead)
+                if (!target || target.Data == null || target.Data.IsDead || target.Data.Disconnected)
                 {
-                    Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+                    if (target)
+                        Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
                     yield break;
                 }
 
                 // Press F5 to drain energy from a nearby player
                 if (Input.GetKeyDown(KeyCode.F5))
                 {
-                    var playersInRange = Helpers.GetClosestPlayers(
-                            target,
-                            drainRange,
-                            ignoreColliders: true,
-                            ignoreSource: true
-                        )
-                        .Where(p => !p.Data.IsDead && !p.Data.Disconnected)
-                        .ToList();
+                    var playersInRange = Helpers.GetClosestPlayers(target, drainRange, ignoreColliders: true, ignoreSource: true).Where(p => !p.Data.IsDead && !p.Data.Disconnected).ToList();
 
                     if (playersInRange.Count > 0)
                     {
@@ -248,20 +207,18 @@ namespace NewMod.Utilities
                         // Notify both the drainer and the drained player
                         if (target.AmOwner)
                         {
-                            Coroutines.Start(CoNotify(
-                                $"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
+                            Coroutines.Start(CoNotify($"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
                         }
 
                         if (victim.AmOwner)
                         {
-                            Coroutines.Start(
-                                CoNotify("<color=#FF0000><b><i>Your energy has been drained!</i></b></color>"));
+                            Coroutines.Start(CoNotify("<color=#FF0000><b><i>Your energy has been drained!</i></b></color>"));
                         }
 
                         // After enough drains, succeed the mission
                         if (drainCount[target.PlayerId] >= 2)
                         {
-                            Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, target);
+                            Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, specialAgent, target);
                             yield break;
                         }
                     }
@@ -269,8 +226,7 @@ namespace NewMod.Utilities
                     {
                         if (target.AmOwner)
                         {
-                            Coroutines.Start(CoNotify(
-                                "<color=#FFA500><b><i>No players nearby to drain energy from.</i></b></color>"));
+                            Coroutines.Start(CoNotify("<color=#FFA500><b><i>No players nearby to drain energy from.</i></b></color>"));
                         }
                     }
                 }
@@ -284,7 +240,7 @@ namespace NewMod.Utilities
         /// </summary>
         /// <param name="target">The player controlling the revive and kill actions.</param>
         /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
-        public static IEnumerator CoReviveAndKill(PlayerControl target)
+        public static IEnumerator CoReviveAndKill(PlayerControl specialAgent, PlayerControl target)
         {
             bool revived = false;
             byte revivedParentId = 255;
@@ -297,9 +253,10 @@ namespace NewMod.Utilities
 
             while (true)
             {
-                if (target.Data.IsDead)
+                if (!target || target.Data == null || target.Data.IsDead || target.Data.Disconnected)
                 {
-                    Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+                    if (target)
+                        Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
                     yield break;
                 }
 
@@ -311,20 +268,17 @@ namespace NewMod.Utilities
                         var deadBody = Utils.GetClosestBody();
                         if (deadBody == null && target.AmOwner)
                         {
-                            Coroutines.Start(CoNotify(
-                                "<color=#FFA500><b>No dead body found! Move closer and press F5 again.</b></color>"));
+                            Coroutines.Start(CoNotify("<color=#FFA500><b>No dead body found! Move closer and press F5 again.</b></color>"));
                         }
                         else
                         {
                             revivedParentId = deadBody.ParentId;
 
-                            Utils.HandleRevive(target, deadBody.ParentId, RoleTypes.Crewmate,
-                                deadBody.transform.position.x, deadBody.transform.position.y);
+                            Utils.HandleRevive(target, deadBody.ParentId, RoleTypes.Crewmate, deadBody.transform.position.x, deadBody.transform.position.y);
 
                             yield return new WaitForSeconds(0.5f);
 
-                            Coroutines.Start(CoNotify(
-                                "<color=#8A2BE2><i><b>Player revived! Press F5 to kill them again!</b></i></color>"));
+                            Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Player revived! Press F5 to kill them again!</b></i></color>"));
 
                             revived = true;
                         }
@@ -335,15 +289,8 @@ namespace NewMod.Utilities
                         var revivedData = GameData.Instance.GetPlayerById(revivedParentId);
                         if (revivedData != null && revivedData.Object != null && !revivedData.Object.Data.IsDead)
                         {
-                            PlayerControl.LocalPlayer.RpcCustomMurder(
-                                revivedData.Object,
-                                createDeadBody: true,
-                                didSucceed: true,
-                                showKillAnim: false,
-                                playKillSound: true,
-                                teleportMurderer: false
-                            );
-                            Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, target);
+                            PlayerControl.LocalPlayer.RpcCustomMurder(revivedData.Object, createDeadBody: true, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
+                            Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, specialAgent, target);
                             yield break;
                         }
                     }
@@ -360,32 +307,29 @@ namespace NewMod.Utilities
         /// <param name="mostwantedTarget">The most wanted target player.</param>
         /// <param name="target">The player assigned to eliminate the most wanted target.</param>
         /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
-        public static IEnumerator CoHandleWantedTarget(ArrowBehaviour arrow, PlayerControl mostwantedTarget,
-            PlayerControl target)
+        public static IEnumerator CoHandleWantedTarget(PlayerControl specialAgent, ArrowBehaviour arrow, PlayerControl mostwantedTarget, PlayerControl target)
         {
-            // Keep updating the arrow's position as long as the target is alive
-            while (!mostwantedTarget.Data.IsDead && !mostwantedTarget.Data.Disconnected)
+            while (mostwantedTarget && mostwantedTarget.Data != null && !mostwantedTarget.Data.IsDead && !mostwantedTarget.Data.Disconnected)
             {
-                arrow.target = mostwantedTarget.transform.position;
+                if (arrow)
+                    arrow.target = mostwantedTarget.transform.position;
                 yield return null;
             }
 
-            Object.Destroy(arrow.gameObject);
+            if (arrow)
+                Object.Destroy(arrow.gameObject);
+
+            var killer = mostwantedTarget && mostwantedTarget.Data != null && !mostwantedTarget.Data.Disconnected ? Utils.GetKiller(mostwantedTarget) : null;
 
             yield return new WaitForSeconds(0.5f);
 
-            // If the assigned player was the killer, mission succeeds; otherwise, it fails
-            var killer = Utils.GetKiller(mostwantedTarget);
-            if (killer != null && killer == target)
-            {
-                Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, target);
-            }
-            else
-            {
-                Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
-            }
+            if (!target || target.Data == null || SpecialAgent.AssignedPlayer != target)
+                yield break;
 
-            yield break;
+            if (killer == target)
+                Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, specialAgent, target);
+            else
+                Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
         }
 
         /// <summary>
