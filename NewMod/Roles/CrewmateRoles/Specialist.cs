@@ -21,21 +21,22 @@ public class Specialist : CrewmateRole, ICustomRole
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Crewmate;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        MaxRoleCount = 1,
-        OptionsScreenshot = MiraAssets.Empty,
-        Icon = MiraAssets.Empty,
-        CanGetKilled = true,
-        UseVanillaKillButton = false,
-        CanUseVent = false,
-        TasksCountForProgress = true,
-        CanUseSabotage = false,
-        DefaultChance = 50,
-        DefaultRoleCount = 1,
-        CanModifyChance = true,
-        RoleHintType = RoleHintType.RoleTab
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            MaxRoleCount = 1,
+            OptionsScreenshot = MiraAssets.Empty,
+            Icon = MiraAssets.Empty,
+            CanGetKilled = true,
+            UseVanillaKillButton = false,
+            CanUseVent = false,
+            TasksCountForProgress = true,
+            CanUseSabotage = false,
+            DefaultChance = 50,
+            DefaultRoleCount = 1,
+            CanModifyChance = true,
+            RoleHintType = RoleHintType.RoleTab
+        };
 
     [RegisterEvent]
     public static void OnTaskComplete(CompleteTaskEvent evt)
@@ -80,7 +81,21 @@ public class Specialist : CrewmateRole, ICustomRole
             },
             () =>
             {
-                Utils.RpcAssignMission(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer);
+                var missions = (MissionType[])Enum.GetValues(typeof(MissionType));
+                var mission = missions[UnityEngine.Random.Range(0, missions.Length)];
+                var mostWantedId = byte.MaxValue;
+
+                if (mission == MissionType.KillMostWanted)
+                {
+                    var mostWanted = Utils.GetRandomPlayer(player => player != PlayerControl.LocalPlayer && !player.Data.IsDead && !player.Data.Disconnected);
+
+                    if (mostWanted)
+                        mostWantedId = mostWanted.PlayerId;
+                    else
+                        mission = MissionType.DrainEnergy;
+                }
+
+                Utils.RpcAssignMission(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer, mission, mostWantedId);
                 Helpers.CreateAndShowNotification("You have been assigned a mission. Complete it or die.", Color.red);
             }
         };

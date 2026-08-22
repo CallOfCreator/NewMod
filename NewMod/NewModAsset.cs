@@ -113,6 +113,9 @@ public static class NewModAsset
     public static LoadableResourceAsset NegativeRealityIcon { get; } = new("NewMod.Resources.GeneralEvents.NegativeIcon.png");
     public static LoadableResourceAsset IdentityCrisisIcon { get; } = new("NewMod.Resources.GeneralEvents.IdentityCrisis.png");
     public static LoadableResourceAsset RoleScrambleIcon { get; } = new("NewMod.Resources.GeneralEvents.RoleScramble.png");
+    public static LoadableResourceAsset SystemOverrideIcon { get; } = new("NewMod.Resources.GeneralEvents.SystemOverride.png");
+    
+    public static LoadableResourceAsset AbilityExchangeIcon { get; } = new("NewMod.Resources.GeneralEvents.AbilityExchange.png");
 
     //Cosmetics
     public static LoadableResourceAsset OG_NewModHat { get; } = new("NewMod.Resources.Cosmetics.Hats.og_newmod.png");

@@ -21,6 +21,7 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
 using Reactor.Utilities;
 using TMPro;
 using UnityEngine;
@@ -511,6 +512,16 @@ public static class Utils
         return null;
     }
 
+    public static string GetModifierFactionDisplay(INewModModifier modifier)
+    {
+        return modifier.Faction switch
+        {
+            ModifierFaction.Crew => $"<b><color=#00B7C7>Crew</color></b>",
+            ModifierFaction.Murder => $"<b><color=#FF4C4C>Murder</color></b>",
+            _ => $"Unknown"
+        };
+    }
+
     /// <summary>
     ///     Checks if there is at least one dead player in the game.
     /// </summary>
@@ -579,191 +590,149 @@ public static class Utils
     }
 
     /// <summary>
-    ///     Selects and processes a mission for the specified target player based on the provided MissionType.
+    /// Selects and processes a mission for the specified target player based on the provided MissionType.
     /// </summary>
     /// <param name="target">The target player receiving the mission.</param>
     /// <param name="mission">The type of mission assigned.</param>
     /// <returns>A formatted string describing the selected mission.</returns>
-    public static string GetMission(PlayerControl target, MissionType mission)
+    public static string GetMission(PlayerControl specialAgent, PlayerControl target, MissionType mission, byte mostWantedId)
     {
-        var mostwantedTarget = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
-
-        var selectedMission = mission switch
+        switch (mission)
         {
-            MissionType.KillMostWanted => $"Kill the Most Wanted Target: {mostwantedTarget.Data.PlayerName}",
-            MissionType.DrainEnergy => "Drain one player using Energy Thief abilities",
-            MissionType.CreateFakeBodies => "Disguise yourself as a random player and create fake dead bodies around the map using Prankster abilities!",
-            MissionType.ReviveAndKill => "Revive a dead player using Necromancer powers and kill them again",
-            _ => "Unknown mission."
-        };
-        try
-        {
-            switch (mission)
+            case MissionType.KillMostWanted:
             {
-                case MissionType.KillMostWanted:
-                    NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: KillMostWanted");
-                    var gameObj = new GameObject();
-                    var arrow = gameObj.AddComponent<ArrowBehaviour>();
-                    gameObj.transform.parent = mostwantedTarget.gameObject.transform;
-                    gameObj.layer = 5;
-                    var renderer = gameObj.AddComponent<SpriteRenderer>();
-                    renderer.sprite = NewModAsset.Arrow.LoadAsset();
-                    arrow.target = mostwantedTarget.transform.position;
-                    arrow.image = renderer;
+                var mostWanted = PlayerById(mostWantedId);
+                var arrowObject = new GameObject("SpecialAgent_MostWantedArrow") { layer = 5 };
+                var renderer = arrowObject.AddComponent<SpriteRenderer>();
+                renderer.sprite = NewModAsset.Arrow.LoadAsset();
 
-                    SavePlayerRole(target.PlayerId, target.Data.Role);
+                var arrow = arrowObject.AddComponent<ArrowBehaviour>();
+                arrow.image = renderer;
+                arrow.target = mostWanted.transform.position;
 
-                    target.RpcSetRole(RoleTypes.Impostor, true);
+                Coroutines.Start(CoroutinesHelper.CoHandleWantedTarget(specialAgent, arrow, mostWanted, target));
 
-                    Coroutines.Start(CoroutinesHelper.CoHandleWantedTarget(arrow, mostwantedTarget, target));
+                return $"Kill the Most Wanted Target: {mostWanted.Data.PlayerName}";
+            }
+            case MissionType.CreateFakeBodies:
+            {
+                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to create two fake bodies</b></i></color>"));
+                Coroutines.Start(CoroutinesHelper.UsePranksterAbilities(specialAgent, target));
+                return "Create two fake dead bodies using Prankster abilities";
+            }
+            case MissionType.DrainEnergy:
+            {
+                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain two nearby players</b></i></color>"));
+                Coroutines.Start(CoroutinesHelper.UseEnergyThiefAbilities(specialAgent, target));
+                return "Drain two nearby players using Energy Thief abilities";
+            }
+            case MissionType.ReviveAndKill:
+            {
+                Coroutines.Start(CoroutinesHelper.CoReviveAndKill(specialAgent, target));
+                return "Revive a dead player and kill them again";
+            }
+            default:
+                return "Unknown mission";
+        }
+    }
 
-                    var rolesHistory = GetPlayerRolesHistory(target.PlayerId);
-                    if (rolesHistory.Count > 0)
-                    {
-                        var lastIndex = rolesHistory.Count - 1;
-                        var originalRole = rolesHistory[lastIndex];
-                        rolesHistory.RemoveAt(lastIndex);
-                        target.RpcSetRole(originalRole.Role, true);
-                    }
+    [MethodRpc((uint)CustomRPC.MissionSuccess, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcMissionSuccess(PlayerControl requester, PlayerControl specialAgent, PlayerControl target)
+    {
+        if (!AmongUsClient.Instance.AmHost || requester != target || specialAgent.Data.Role is not SpecialAgent || SpecialAgent.AssignedPlayer != target)
+            return;
 
-                    break;
+        RpcApplyMissionResult(PlayerControl.LocalPlayer, specialAgent, target, true);
+    }
 
-                case MissionType.CreateFakeBodies:
-                    NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: CreateFakeBodies");
-                    if (target.AmOwner)
-                        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to Create Dead Bodies</b></i></color>"));
+    [MethodRpc((uint)CustomRPC.MissionFails, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcMissionFails(PlayerControl requester, PlayerControl specialAgent, PlayerControl target)
+    {
+        if (!AmongUsClient.Instance.AmHost || requester != target || specialAgent.Data.Role is not SpecialAgent || SpecialAgent.AssignedPlayer != target)
+            return;
 
-                    Coroutines.Start(CoroutinesHelper.UsePranksterAbilities(target));
-                    break;
+        RpcApplyMissionResult(PlayerControl.LocalPlayer, specialAgent, target, false);
+    }
 
-                case MissionType.DrainEnergy:
-                    NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: DrainEnergy");
-                    if (target.AmOwner)
-                        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain nearby players'energy</b></i></color>"));
+    [MethodRpc((uint)CustomRPC.ApplyMissionResult, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcApplyMissionResult(PlayerControl source, PlayerControl specialAgent, PlayerControl target, bool succeeded)
+    {
+        if (succeeded)
+            RecordMissionSuccess(specialAgent);
+        else
+            RecordMissionFailure(specialAgent);
 
-                    Coroutines.Start(CoroutinesHelper.UseEnergyThiefAbilities(target));
-                    break;
+        if (specialAgent.AmOwner)
+        {
+            var score = GetMissionSuccessCount(specialAgent.PlayerId) - GetMissionFailureCount(specialAgent.PlayerId);
+            var color = succeeded ? "#FFD700" : "#FF0000";
+            var outcome = succeeded ? "completed" : "failed";
+            Coroutines.Start(CoroutinesHelper.CoNotify($"<color={color}>Target {target.Data.PlayerName} {outcome} their mission!\nNet score: {score}/3</color>"));
+        }
 
-                case MissionType.ReviveAndKill:
-                    NewMod.Instance.Log.LogMessage("[SpecialAgent] Mission assigned: ReviveAndKill");
-                    Coroutines.Start(CoroutinesHelper.CoReviveAndKill(target));
-                    break;
+        if (target.AmOwner)
+        {
+            Coroutines.Start(CoroutinesHelper.CoNotify(succeeded ? "<color=#32CD32>Mission completed. You are free to go!</color>" : "<color=#FF0000>Mission failed. You will face the consequences!</color>"));
+
+            if (savedTasks.TryGetValue(target, out var tasks))
+            {
+                target.myTasks = tasks;
+                savedTasks.Remove(target);
+            }
+
+            if (target.Data.Role is ICustomRole role && RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
+            {
+                foreach (var buttonType in buttonTypes)
+                {
+                    var button = CustomButtonManager.Buttons.FirstOrDefault(candidate => candidate.GetType() == buttonType);
+                    if (button != null && button.Button)
+                        button.Button.SetEnabled();
+                }
             }
         }
-        catch (Exception ex)
+
+        if (!succeeded && AmongUsClient.Instance.AmHost && !target.Data.IsDead)
         {
-            NewMod.Instance.Log.LogError($"Failed to assign mission to {target.Data.PlayerName}. Reason: {ex.Message} | StackTrace: {ex.StackTrace}");
+            specialAgent.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
         }
 
-        return selectedMission;
-    }
-
-    [MethodRpc((uint)CustomRPC.MissionSuccess)]
-    public static void RpcMissionSuccess(PlayerControl source, PlayerControl target)
-    {
-        RecordMissionSuccess(source);
-
-        if (source.AmOwner)
-        {
-            var currentSuccessCount = GetMissionSuccessCount(source.PlayerId);
-            var netScore = currentSuccessCount - GetMissionFailureCount(source.PlayerId);
-            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD700>Target {target.Data.PlayerName} has completed their mission!\nCurrent net score: {netScore}/3</color>"));
-        }
-        else
-        {
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32>Mission Completed! You are free to go!</color>"));
-        }
-
-        if (savedTasks.ContainsKey(target))
-        {
-            target.myTasks = savedTasks[target];
-            savedTasks.Remove(target);
-        }
-
-        if (SpecialAgent.AssignedPlayer == target) SpecialAgent.AssignedPlayer = null;
-
-        if (target.Data.Role is ICustomRole role)
-            if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
-                foreach (var btnType in buttonTypes)
-                {
-                    var btn = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == btnType);
-
-                    btn.Button.SetEnabled();
-                }
-    }
-
-    [MethodRpc((uint)CustomRPC.MissionFails)]
-    public static void RpcMissionFails(PlayerControl source, PlayerControl target)
-    {
-        RecordMissionFailure(source);
-
-        if (source.AmOwner)
-        {
-            var currentFailureCount = GetMissionFailureCount(source.PlayerId);
-            var netScore = GetMissionSuccessCount(source.PlayerId) - currentFailureCount;
-            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF0000>Target {target.Data.PlayerName} has failed their mission! <b>Current net score: {netScore}/3</b></color>"));
-        }
-        else
-        {
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF0000>Mission Failed! You will face the consequences!</color>"));
-        }
-
-        source.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
-
-        if (savedTasks.ContainsKey(target))
-        {
-            target.myTasks = savedTasks[target];
-            savedTasks.Remove(target);
-        }
-
-        if (SpecialAgent.AssignedPlayer == target) SpecialAgent.AssignedPlayer = null;
-
-        if (target.Data.Role is ICustomRole role)
-            if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
-                foreach (var btnType in buttonTypes)
-                {
-                    var btn = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == btnType);
-
-                    btn.Button.SetEnabled();
-                }
+        if (SpecialAgent.AssignedPlayer == target)
+            SpecialAgent.AssignedPlayer = null;
     }
 
     public static string GetFactionDisplay(INewModRole role)
     {
         return role.Faction switch
         {
-            NewModFaction.Apex => "<b><color=#FF5A5A>Apex</color></b>",
-            NewModFaction.Entropy => "<b><color=#EAAA3E>Entropy</color></b>",
-            NewModFaction.Sentinel => "<b><color=#3AA6FF>Sentinel</color></b>",
-            NewModFaction.Rift => "<b><color=#8A5CFF>Rift</color></b>",
-            _ => "Unknown"
-        };
-    }
-
-    public static string GetModifierFactionDisplay(INewModModifier modifier)
-    {
-        return modifier.Faction switch
-        {
-            ModifierFaction.Crew => "<b><color=#00B7C7>Crew</color></b>",
-            ModifierFaction.Murder => "<b><color=#FF4C4C>Murder</color></b>",
-            _ => "Unknown"
+            NewModFaction.Apex => $"<b><color=#FF5A5A>Apex</color></b>",
+            NewModFaction.Entropy => $"<b><color=#EAAA3E>Entropy</color></b>",
+            NewModFaction.Sentinel => $"<b><color=#3AA6FF>Sentinel</color></b>",
+            _ => $"Unknown"
         };
     }
 
     /// <summary>
-    ///     Assigns a random mission to the target player as a custom RPC.
+    /// Assigns a random mission to the target player as a custom RPC.
     /// </summary>
     /// <param name="source">The player initiating the assignment (Special Agent).</param>
     /// <param name="target">The player who will receive the mission.</param>
     [MethodRpc((uint)CustomRPC.AssignMission)]
-    public static void RpcAssignMission(PlayerControl source, PlayerControl target)
+    public static void RpcAssignMission(PlayerControl source, PlayerControl target, MissionType mission, byte mostWantedId)
     {
+        SpecialAgent.AssignedPlayer = target;
+
+        if (!target.AmOwner)
+            return;
+
         // Save the target's tasks
         if (!savedTasks.ContainsKey(target))
         {
             var newTaskList = new Il2CppSystem.Collections.Generic.List<PlayerTask>();
 
-            foreach (var task in target.myTasks) newTaskList.Add(task);
+            foreach (var task in target.myTasks)
+            {
+                newTaskList.Add(task);
+            }
 
             savedTasks[target] = newTaskList;
         }
@@ -771,51 +740,55 @@ public static class Utils
         // Clear all assigned tasks for the specified target player
         target.myTasks.Clear();
 
-        // Get all values of the MissionType enum
-        var missions = (MissionType[])Enum.GetValues(typeof(MissionType));
-        // Pick a random mission
-        var randomMission = missions[Random.Range(0, missions.Length)];
-
         // Add the mission message to the player's tasks
-        var Missionmessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
-        Missionmessage.transform.SetParent(AmongUsClient.Instance.transform, false);
-        Missionmessage.Text = $"<color=red>Special Agent</color> has given you a mission!\n" + $"<b><color=blue>Mission:</color></b> {GetMission(target, randomMission)}\n" + $"<i><color=green>Complete it or face the consequences!</color></i>";
+        ImportantTextTask missionMessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
+        missionMessage.transform.SetParent(AmongUsClient.Instance.transform, false);
+        missionMessage.Text = $"<color=red>Special Agent</color> has given you a mission!\n" + $"<b><color=blue>Mission:</color></b> {GetMission(source, target, mission, mostWantedId)}\n" + $"<i><color=green>Complete it or face the consequences!</color></i>";
 
-        target.myTasks.Insert(0, Missionmessage);
+        target.myTasks.Insert(0, missionMessage);
         // Disable the Role Player's Ability
         if (target.Data.Role is ICustomRole role)
+        {
             if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
+            {
                 foreach (var btnType in buttonTypes)
                 {
                     var btn = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == btnType);
 
-                    btn.Button.SetDisabled();
+                    if (btn != null && btn.Button)
+                        btn.Button.SetDisabled();
                 }
+            }
+        }
 
-        Coroutines.Start(CoroutinesHelper.CoMissionTimer(target, 60f));
+        Coroutines.Start(CoroutinesHelper.CoMissionTimer(source, target, 30f));
     }
 
     /// <summary>
-    ///     Captures a screenshot of the current game screen, hides the HUD, and then reactivates it.
+    /// Captures a screenshot of the current game screen, hides the HUD, and then reactivates it.
     /// </summary>
     /// <param name="filePath">The path to save the screenshot file.</param>
     /// <returns>An IEnumerator for coroutine control.</returns>
     public static IEnumerator CaptureScreenshot(string filePath)
     {
+        if (VisionaryUtilities.IsCapturing)
+            yield break;
+
+        VisionaryUtilities.IsCapturing = true;
         var clip = NewModAsset.VisionarySound.LoadAsset();
 
         HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
-        SoundManager.Instance.PlaySound(clip, false);
+        SoundManager.Instance.PlaySound(clip, false, 1f, null);
         yield return new WaitForEndOfFrame();
-        var tex = ScreenCapture.CaptureScreenshotAsTexture(4);
-        File.WriteAllBytes(filePath, tex.EncodeToPNG());
-        Object.Destroy(tex);
+        ScreenCapture.CaptureScreenshot(filePath, 1);
+        VisionaryUtilities.HasScreenshots = true;
         NewMod.Instance.Log.LogInfo($"Capturing screenshot at {Path.GetFileName(filePath)}.");
 
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForEndOfFrame();
 
         SoundManager.Instance.StopSound(clip);
         HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
+        VisionaryUtilities.IsCapturing = false;
     }
 
     /// <summary>

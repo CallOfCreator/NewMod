@@ -60,7 +60,8 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
         var color = Random.Range(0, Palette.PlayerColors.Length);
         var bodySprite = Visual.cosmetics.currentBodySprite;
         bodySprite.Visible = true;
-        PlayerMaterial.SetColors(color, bodySprite.BodySprite);
+        Visual.cosmetics.SetBodyColor(color);
+        Visual.cosmetics.colorBlindText.text = "NPC";
 
         var noShadow = Visual.gameObject.AddComponent<NoShadowBehaviour>();
         noShadow.rend = bodySprite.BodySprite;

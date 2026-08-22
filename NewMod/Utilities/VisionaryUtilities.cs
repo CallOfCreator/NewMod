@@ -6,180 +6,164 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace NewMod.Utilities;
-
-public static class VisionaryUtilities
+namespace NewMod.Utilities
 {
-    /// <summary>
-    ///     The active screenshot panel currently displayed on screen.
-    /// </summary>
-    public static GameObject _panel;
-
-    /// <summary>
-    ///     Indicates whether a screenshot is currently being displayed.
-    /// </summary>
-    public static bool _showing;
-
-    /// <summary>
-    ///     Gets whether the Visionary screenshot panel is currently active and showing.
-    /// </summary>
-    public static bool IsShowing => _showing;
-
-    /// <summary>
-    ///     Gets the directory where Visionary screenshots are stored. If the directory does not exist, it is created.
-    /// </summary>
-    public static string ScreenshotDirectory
+    public static class VisionaryUtilities
     {
-        get
+        public static GameObject _panel;
+        public static bool _showing;
+
+        public static bool IsShowing => _showing;
+        public static bool IsCapturing { get; set; }
+        public static bool HasScreenshots { get; set; }
+
+        public static string ScreenshotDirectory
         {
-            string basePath;
-
-            if (OperatingSystem.IsAndroid())
-                basePath = Environment.GetEnvironmentVariable("STAR_DATA_PATH")!;
-            else
-                basePath = Application.persistentDataPath;
-
-            var directory = Path.Combine(basePath, "NewMod", "Screenshots");
-
-            Directory.CreateDirectory(directory);
-
-            return directory;
-        }
-    }
-
-    // <summary>
-    /// Displays the most recent screenshot to the Visionary for a specified duration.  
-    /// Skips if a meeting is active or another screenshot is already showing.
-    /// <param name="displayDuration">The duration, in seconds, to display the screenshot.</param>
-    /// <returns>An IEnumerator coroutine to manage screenshot display.</returns>
-    /// </summary>
-    public static IEnumerator ShowScreenshots(float displayDuration)
-    {
-        if (MeetingHud.Instance) yield break;
-        if (_showing) yield break;
-        var files = Directory.GetFiles(ScreenshotDirectory, "screenshot_*.png");
-        if (files.Length == 0) yield break;
-
-        Array.Sort(files);
-        var latestScreenshot = files[^1];
-        NewMod.Instance.Log.LogInfo($"Displaying the latest screenshot: {latestScreenshot}");
-
-        var t = 0f;
-        const float timeout = 3f;
-
-        while (t < timeout)
-        {
-            FileStream fs = null;
-            try
+            get
             {
-                fs = new FileStream(latestScreenshot, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                if (fs.Length > 0) break;
+                var basePath = OperatingSystem.IsAndroid() ? Environment.GetEnvironmentVariable("STAR_DATA_PATH")! : Application.persistentDataPath;
+
+                var directory = Path.Combine(basePath, "NewMod", "Screenshots");
+                Directory.CreateDirectory(directory);
+                return directory;
             }
-            finally
+        }
+
+        public static IEnumerator ShowScreenshots(float displayDuration)
+        {
+            if (MeetingHud.Instance || _showing || !HasScreenshots)
+                yield break;
+
+            var files = Directory.GetFiles(ScreenshotDirectory, "screenshot_*.png");
+
+            if (files.Length == 0)
             {
-                fs.Dispose();
+                HasScreenshots = false;
+                yield break;
             }
 
-            t += Time.deltaTime;
-            yield return null;
-        }
+            Array.Sort(files, StringComparer.Ordinal);
+            var latestScreenshot = files[^1];
 
-        if (t >= timeout) yield break;
+            var elapsed = 0f;
+            var previousSize = -1L;
+            var stableFrames = 0;
 
-        var data = File.ReadAllBytes(latestScreenshot);
-        var tex = new Texture2D(2, 2);
-        tex.LoadImage(data);
-        var screenshotSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-
-        yield return ShowScreenshot(screenshotSprite, File.GetCreationTime(latestScreenshot), displayDuration);
-    }
-
-    /// <summary>
-    ///     Displays a screenshot sprite on screen with fade-in and fade-out effects.
-    /// </summary>
-    /// <param name="sprite">The screenshot sprite to display.</param>
-    /// <param name="timestamp">The time the screenshot was taken.</param>
-    /// <param name="duration">The duration, in seconds, to display the screenshot.</param>
-    /// <returns>An IEnumerator coroutine</returns>
-    public static IEnumerator ShowScreenshot(Sprite sprite, DateTime timestamp, float duration)
-    {
-        if (_panel) Object.Destroy(_panel);
-        _panel = new GameObject("Visionary_ScreenshotPanel");
-        _showing = true;
-
-        var canvas = _panel.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 1000;
-        _panel.AddComponent<CanvasGroup>();
-        _panel.AddComponent<GraphicRaycaster>();
-
-        var group = _panel.GetComponent<CanvasGroup>();
-        group.alpha = 0f;
-
-        var bgObj = new GameObject("BorderOnBG");
-        bgObj.transform.SetParent(_panel.transform, false);
-        var bg = bgObj.AddComponent<Image>();
-        bg.color = new Color(0f, 0f, 0f, 0.6f);
-        var bgRT = bgObj.GetComponent<RectTransform>();
-        bgRT.anchorMin = bgRT.anchorMax = bgRT.pivot = new Vector2(0.5f, 0.5f);
-        bgRT.sizeDelta = new Vector2(810, 610);
-        bgRT.anchoredPosition = Vector2.zero;
-
-        var imageObj = new GameObject("ScreenshotImage");
-        imageObj.transform.SetParent(_panel.transform, false);
-        var img = imageObj.AddComponent<Image>();
-        img.sprite = sprite;
-        img.preserveAspect = true;
-        var imgRT = imageObj.GetComponent<RectTransform>();
-        imgRT.sizeDelta = new Vector2(800, 600);
-        imgRT.anchorMin = imgRT.anchorMax = imgRT.pivot = new Vector2(0.5f, 0.5f);
-        imgRT.anchoredPosition = Vector2.zero;
-
-        var labelObj = new GameObject("ScreenshotLabel");
-        labelObj.transform.SetParent(_panel.transform, false);
-        var tmp = labelObj.AddComponent<TextMeshProUGUI>();
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.fontSize = 20;
-        tmp.text = $"<color=green>*Screenshot taken at: {timestamp.ToShortTimeString()}*</color>";
-        var labelRT = labelObj.GetComponent<RectTransform>();
-        labelRT.anchorMin = labelRT.anchorMax = labelRT.pivot = new Vector2(0.5f, 0.5f);
-        labelRT.sizeDelta = new Vector2(800, 50);
-        labelRT.anchoredPosition = new Vector2(0, 380);
-
-        var fade = 0.15f;
-        var e = 0f;
-        while (e < fade)
-        {
-            e += Time.deltaTime;
-            group.alpha = Mathf.Clamp01(e / fade);
-            yield return null;
-        }
-
-        yield return new WaitForSeconds(duration);
-
-        e = 0f;
-        while (e < fade)
-        {
-            e += Time.deltaTime;
-            group.alpha = 1f - Mathf.Clamp01(e / fade);
-            yield return null;
-        }
-
-        Object.Destroy(_panel);
-        _panel = null;
-        _showing = false;
-    }
-
-    /// <summary>
-    ///     Deletes all screenshots from the Visionary screenshot directory.
-    /// </summary>
-    public static void DeleteAllScreenshots()
-    {
-        if (Directory.Exists(ScreenshotDirectory))
-            foreach (var file in Directory.GetFiles(ScreenshotDirectory, "*.png"))
+            while (elapsed < 3f && stableFrames < 2)
             {
+                if (File.Exists(latestScreenshot))
+                {
+                    var currentSize = new FileInfo(latestScreenshot).Length;
+
+                    if (currentSize > 0 && currentSize == previousSize)
+                        stableFrames++;
+                    else
+                        stableFrames = 0;
+
+                    previousSize = currentSize;
+                }
+
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (stableFrames < 2)
+                yield break;
+
+            var data = File.ReadAllBytes(latestScreenshot);
+            var texture = new Texture2D(2, 2);
+
+            if (!texture.LoadImage(data))
+            {
+                Object.Destroy(texture);
+                yield break;
+            }
+
+            var sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+
+            yield return ShowScreenshot(sprite, File.GetCreationTime(latestScreenshot), displayDuration);
+
+            Object.Destroy(sprite);
+            Object.Destroy(texture);
+        }
+
+        public static IEnumerator ShowScreenshot(Sprite sprite, DateTime timestamp, float duration)
+        {
+            if (_panel)
+                Object.Destroy(_panel);
+
+            _panel = new GameObject("Visionary_ScreenshotPanel");
+            _showing = true;
+
+            var canvas = _panel.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 1000;
+
+            var group = _panel.AddComponent<CanvasGroup>();
+            group.alpha = 0f;
+            _panel.AddComponent<GraphicRaycaster>();
+
+            var backgroundObject = new GameObject("BorderOnBG");
+            backgroundObject.transform.SetParent(_panel.transform, false);
+            var background = backgroundObject.AddComponent<Image>();
+            background.color = new Color(0f, 0f, 0f, 0.6f);
+            var backgroundRect = backgroundObject.GetComponent<RectTransform>();
+            backgroundRect.anchorMin = backgroundRect.anchorMax = backgroundRect.pivot = new Vector2(0.5f, 0.5f);
+            backgroundRect.sizeDelta = new Vector2(810f, 610f);
+
+            var imageObject = new GameObject("ScreenshotImage");
+            imageObject.transform.SetParent(_panel.transform, false);
+            var image = imageObject.AddComponent<Image>();
+            image.sprite = sprite;
+            image.preserveAspect = true;
+            var imageRect = imageObject.GetComponent<RectTransform>();
+            imageRect.anchorMin = imageRect.anchorMax = imageRect.pivot = new Vector2(0.5f, 0.5f);
+            imageRect.sizeDelta = new Vector2(800f, 600f);
+
+            var labelObject = new GameObject("ScreenshotLabel");
+            labelObject.transform.SetParent(_panel.transform, false);
+            var label = labelObject.AddComponent<TextMeshProUGUI>();
+            label.alignment = TextAlignmentOptions.Center;
+            label.fontSize = 20f;
+            label.text = $"<color=green>*Screenshot taken at: {timestamp.ToShortTimeString()}*</color>";
+            var labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.anchorMin = labelRect.anchorMax = labelRect.pivot = new Vector2(0.5f, 0.5f);
+            labelRect.sizeDelta = new Vector2(800f, 50f);
+            labelRect.anchoredPosition = new Vector2(0f, 380f);
+
+            const float fadeDuration = 0.15f;
+            for (var elapsed = 0f; elapsed < fadeDuration; elapsed += Time.deltaTime)
+            {
+                group.alpha = Mathf.Clamp01(elapsed / fadeDuration);
+                yield return null;
+            }
+
+            group.alpha = 1f;
+            yield return new WaitForSeconds(duration);
+
+            for (var elapsed = 0f; elapsed < fadeDuration; elapsed += Time.deltaTime)
+            {
+                group.alpha = 1f - Mathf.Clamp01(elapsed / fadeDuration);
+                yield return null;
+            }
+
+            Object.Destroy(_panel);
+            _panel = null;
+            _showing = false;
+        }
+
+        public static void DeleteAllScreenshots()
+        {
+            if (_panel)
+                Object.Destroy(_panel);
+
+            _panel = null;
+            _showing = false;
+            IsCapturing = false;
+            HasScreenshots = false;
+
+            foreach (var file in Directory.GetFiles(ScreenshotDirectory, "screenshot_*.png"))
                 File.Delete(file);
-                NewMod.Instance.Log.LogInfo($"Deleted screenshot: {file}");
-            }
+        }
     }
 }

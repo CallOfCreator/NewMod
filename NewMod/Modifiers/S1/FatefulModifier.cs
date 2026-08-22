@@ -3,6 +3,7 @@ using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
+using MiraAPI.Networking;
 using MiraAPI.PluginLoading;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
@@ -41,7 +42,7 @@ public class FatefulModifier : GameModifier, INewModModifier
         var roll = Random.Range(0f, 100f);
         if (roll >= chance) return;
 
-        evt.Player.RpcMurderPlayer(evt.Player, true);
+        evt.Player.RpcCustomMurder(evt.Player, true);
         evt.Player.RemoveModifier<FatefulModifier>();
     }
 }

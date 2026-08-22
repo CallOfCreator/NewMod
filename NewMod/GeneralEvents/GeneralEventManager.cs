@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Meeting;
+using MiraAPI.GameModes;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
 using NewMod.Options;
@@ -52,8 +53,10 @@ public static class GeneralEventManager
 
     public static void StartCycle()
     {
-        if (!AmongUsClient.Instance.AmHost || _cycleRoutine != null)
+        if (!AmongUsClient.Instance.AmHost || _cycleRoutine != null || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
+        {
             return;
+        }
 
         _cycleRoutine = Coroutines.Start(CoCycle());
     }
@@ -95,8 +98,10 @@ public static class GeneralEventManager
 
     public static void ForceEvent<T>() where T : IGeneralEvent
     {
-        if (!AmongUsClient.Instance.AmHost)
+        if (!AmongUsClient.Instance.AmHost || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
+        {
             return;
+        }
 
         if (!TypeToIdMap.TryGetValue(typeof(T), out var id))
             return;
@@ -120,10 +125,22 @@ public static class GeneralEventManager
         {
             var options = OptionGroupSingleton<GEOptions>.Instance;
 
+            if (!options.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
+            {
+                _cycleRoutine = null;
+                yield break;
+            }
+
             var minimum = options.MinimumInterval;
             var maximum = Mathf.Max(minimum, options.MaximumInterval);
 
             yield return new WaitForSeconds(Random.Range(minimum, maximum));
+
+            if (!options.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
+            {
+                _cycleRoutine = null;
+                yield break;
+            }
 
             if (MeetingHud.Instance || ExileController.Instance || CurrentEvent != null)
             {
@@ -134,6 +151,7 @@ public static class GeneralEventManager
 
             if (candidate == null)
                 continue;
+
             _issuedSequence++;
 
             RpcStartGeneralEvent(PlayerControl.LocalPlayer, TypeToIdMap[candidate.GetType()], _issuedSequence);
@@ -164,6 +182,11 @@ public static class GeneralEventManager
     [MethodRpc((uint)CustomRPC.StartGeneralEvent, LocalHandling = RpcLocalHandling.After)]
     public static void RpcStartGeneralEvent(PlayerControl source, uint eventTypeId, uint sequence)
     {
+        if (!source.IsHost() || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
+        {
+            return;
+        }
+
         if (sequence <= _lastSequence)
             return;
 
@@ -181,6 +204,9 @@ public static class GeneralEventManager
     [MethodRpc((uint)CustomRPC.EndGeneralEvent, LocalHandling = RpcLocalHandling.After)]
     public static void RpcEndGeneralEvent(PlayerControl source, uint sequence)
     {
+        if (!source.IsHost())
+            return;
+
         EndEvent(sequence);
     }
 

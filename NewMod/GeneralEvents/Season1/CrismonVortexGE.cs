@@ -35,7 +35,7 @@ public class CrismonVortexGE : IGeneralEvent
 
         var rooms = ShipStatus.Instance.AllRooms.Where(room => room.RoomId != SystemTypes.Hallway && room.roomArea).ToArray();
 
-        return rooms.Any(vortexRoom => rooms.Any(escapeRoom => escapeRoom != vortexRoom && Vector2.Distance(vortexRoom.roomArea.bounds.center, escapeRoom.roomArea.bounds.center) > options.CrimsonRadius + options.CrimsonEscapeSafeDistance));
+        return rooms.Any(vortexRoom => rooms.Any(escapeRoom => escapeRoom != vortexRoom && Vector2.Distance(vortexRoom.roomArea.bounds.center, escapeRoom.roomArea.bounds.center) > options.CrimsonRadius + 1.5f));
     }
 
     public void OnEventStart()
@@ -50,7 +50,7 @@ public class CrismonVortexGE : IGeneralEvent
 
         var rooms = ShipStatus.Instance.AllRooms.Where(room => room.RoomId != SystemTypes.Hallway && room.roomArea).ToArray();
 
-        var validVortexRooms = rooms.Where(vortexRoom => rooms.Any(escapeRoom => escapeRoom != vortexRoom && Vector2.Distance(vortexRoom.roomArea.bounds.center, escapeRoom.roomArea.bounds.center) > options.CrimsonRadius + options.CrimsonEscapeSafeDistance)).ToArray();
+        var validVortexRooms = rooms.Where(vortexRoom => rooms.Any(escapeRoom => escapeRoom != vortexRoom && Vector2.Distance(vortexRoom.roomArea.bounds.center, escapeRoom.roomArea.bounds.center) > options.CrimsonRadius + 1.5f)).ToArray();
 
         var room = validVortexRooms[Random.Range(0, validVortexRooms.Length)];
 

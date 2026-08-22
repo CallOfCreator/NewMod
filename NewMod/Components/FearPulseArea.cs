@@ -7,135 +7,146 @@ using Reactor.Utilities;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
 
-namespace NewMod.Components;
-
-[RegisterInIl2Cpp]
-public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
+namespace NewMod.Components
 {
-    public static readonly HashSet<byte> AffectedPlayers = new();
-    public static readonly HashSet<byte> _speedNotifShown = new();
-    public static readonly HashSet<byte> _visionNotifShown = new();
-    public byte ownerId;
-    public AudioClip _enterClip;
-    public AudioClip _heartbeatClip;
-    public bool _pulsingHb;
-    private readonly HashSet<byte> _insideNow = new();
-    private readonly Dictionary<byte, float> _origSpeed = new();
-    private float _radius, _duration, _speedMul, _t;
-
-    public void Update()
+    [RegisterInIl2Cpp]
+    public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
     {
-        _t += Time.deltaTime;
-        if (_t > _duration)
+        public byte ownerId;
+
+        private float _radius;
+        private float _duration;
+        private float _speedMultiplier;
+        private float _elapsed;
+        private bool _restored;
+
+        private readonly Dictionary<byte, float> _originalSpeeds = new();
+        private readonly HashSet<byte> _insideNow = new();
+
+        public static readonly HashSet<byte> AffectedPlayers = new();
+        public static readonly HashSet<byte> _speedNotifShown = new();
+        public static readonly HashSet<byte> _visionNotifShown = new();
+
+        private AudioClip _enterClip;
+        private AudioClip _heartbeatClip;
+
+        public void Init(byte ownerId, float radius, float duration, float speedMul)
+        {
+            this.ownerId = ownerId;
+            _radius = radius;
+            _duration = duration;
+            _speedMultiplier = Mathf.Max(0f, 1f - speedMul / 100f);
+            _enterClip = NewModAsset.FearSound.LoadAsset();
+            _heartbeatClip = NewModAsset.HeartbeatSound.LoadAsset();
+        }
+
+        public void Update()
+        {
+            if (_restored)
+                return;
+
+            _elapsed += Time.deltaTime;
+            if (_elapsed >= _duration)
+            {
+                RestoreAll();
+                Destroy(gameObject);
+                return;
+            }
+
+            var localPlayer = PlayerControl.LocalPlayer;
+            if (!localPlayer || localPlayer.Data == null || localPlayer.PlayerId == ownerId)
+                return;
+
+            _insideNow.Clear();
+
+            var inside = !localPlayer.Data.IsDead && !localPlayer.Data.Disconnected && Vector2.Distance(localPlayer.GetTruePosition(), transform.position) <= _radius;
+
+            if (inside)
+            {
+                _insideNow.Add(localPlayer.PlayerId);
+
+                if (!_originalSpeeds.ContainsKey(localPlayer.PlayerId))
+                {
+                    _originalSpeeds[localPlayer.PlayerId] = localPlayer.MyPhysics.Speed;
+                    localPlayer.MyPhysics.Speed *= _speedMultiplier;
+                    AffectedPlayers.Add(localPlayer.PlayerId);
+
+                    if (_speedNotifShown.Add(localPlayer.PlayerId))
+                    {
+                        var notification = Helpers.CreateAndShowNotification("You have entered the Fear Pulse Area. Your speed is reduced!", Color.red, spr: NewModAsset.SpeedDebuff.LoadAsset());
+                        notification.Text.SetOutlineThickness(0.36f);
+                    }
+
+                    if (_visionNotifShown.Add(localPlayer.PlayerId))
+                    {
+                        var notification = Helpers.CreateAndShowNotification("You have entered the Fear Pulse Area. Your vision is reduced!", new Color(1f, 0.8f, 0.2f), spr: NewModAsset.VisionDebuff.LoadAsset());
+                        notification.Text.SetOutlineThickness(0.36f);
+                    }
+
+                    if (localPlayer.lightSource && localPlayer.lightSource.lightChild)
+                        localPlayer.lightSource.lightChild.SetActive(false);
+
+                    if (Constants.ShouldPlaySfx())
+                        SoundManager.Instance.PlaySound(_enterClip, false, 1f);
+
+                    var camera = Camera.main.GetComponent<FollowerCamera>();
+                    if (camera)
+                        Coroutines.Start(Utils.CoShakeCamera(camera, 0.5f));
+                }
+
+                if (localPlayer.MyPhysics.Velocity.sqrMagnitude > 0.0001f && Constants.ShouldPlaySfx() && !SoundManager.Instance.SoundIsPlaying(_heartbeatClip))
+                {
+                    SoundManager.Instance.PlaySound(_heartbeatClip, false, 1f);
+                }
+            }
+
+            foreach (var playerId in _originalSpeeds.Keys.Where(id => !_insideNow.Contains(id)).ToArray())
+                RestorePlayer(playerId);
+        }
+
+        public void RestorePlayer(byte playerId)
+        {
+            if (_originalSpeeds.Remove(playerId, out var originalSpeed))
+            {
+                var player = Utils.PlayerById(playerId);
+                if (player && player.MyPhysics)
+                {
+                    player.MyPhysics.Speed = originalSpeed;
+
+                    if (player.AmOwner)
+                    {
+                        if (player.lightSource && player.lightSource.lightChild)
+                            player.lightSource.lightChild.SetActive(true);
+
+                        SoundManager.Instance.StopSound(_enterClip);
+                        SoundManager.Instance.StopSound(_heartbeatClip);
+
+                        Helpers.CreateAndShowNotification("Your speed and vision are restored.", new Color(0.8f, 1f, 0.8f));
+                    }
+                }
+            }
+
+            AffectedPlayers.Remove(playerId);
+            _speedNotifShown.Remove(playerId);
+            _visionNotifShown.Remove(playerId);
+        }
+
+        public void RestoreAll()
+        {
+            if (_restored)
+                return;
+
+            _restored = true;
+
+            foreach (var playerId in _originalSpeeds.Keys.ToArray())
+                RestorePlayer(playerId);
+
+            _insideNow.Clear();
+        }
+
+        public void OnDestroy()
         {
             RestoreAll();
-            Destroy(gameObject);
-            return;
         }
-
-        var center = (Vector2)transform.position;
-
-        var nearby = PlayerControl.AllPlayerControls.ToArray().Where(p => !p.Data.IsDead && !p.Data.Disconnected && p.PlayerId != ownerId).Where(p => Vector2.Distance(p.GetTruePosition(), center) <= _radius).ToList();
-
-        _insideNow.Clear();
-
-        foreach (var p in nearby)
-        {
-            _insideNow.Add(p.PlayerId);
-
-            if (!_origSpeed.ContainsKey(p.PlayerId))
-            {
-                _origSpeed[p.PlayerId] = p.MyPhysics.Speed;
-                p.MyPhysics.Speed = _origSpeed[p.PlayerId] * _speedMul;
-
-                if (p.AmOwner && !_speedNotifShown.Contains(p.PlayerId))
-                {
-                    _speedNotifShown.Add(p.PlayerId);
-                    var notif = Helpers.CreateAndShowNotification("You have entered the Fear Pulse Area. Your speed is reduced!", Color.red, spr: NewModAsset.SpeedDebuff.LoadAsset());
-                    notif.Text.SetOutlineThickness(0.36f);
-                }
-            }
-
-            if (p.AmOwner)
-            {
-                if (!AffectedPlayers.Contains(p.PlayerId))
-                {
-                    AffectedPlayers.Add(p.PlayerId);
-                    p.lightSource.lightChild.SetActive(false);
-                }
-
-                if (!p.Data.IsDead && Constants.ShouldPlaySfx() && !SoundManager.Instance.SoundIsPlaying(_enterClip))
-                    SoundManager.Instance.PlaySound(_enterClip, false);
-
-                if (!_visionNotifShown.Contains(p.PlayerId))
-                {
-                    _visionNotifShown.Add(p.PlayerId);
-                    var notif = Helpers.CreateAndShowNotification("You have entered the Fear Pulse Area. Your vision is reduced!", new Color(1f, 0.8f, 0.2f), spr: NewModAsset.VisionDebuff.LoadAsset());
-                    notif.Text.SetOutlineThickness(0.36f);
-                }
-
-                Coroutines.Start(Utils.CoShakeCamera(Camera.main.GetComponent<FollowerCamera>(), 0.5f));
-            }
-
-            if (p.MyPhysics.Velocity.sqrMagnitude > 0.0001f)
-            {
-                _pulsingHb = true;
-                if (!p.Data.IsDead && Constants.ShouldPlaySfx() && !SoundManager.Instance.SoundIsPlaying(_heartbeatClip))
-                    SoundManager.Instance.PlaySound(_heartbeatClip, false);
-                _pulsingHb = false;
-            }
-        }
-
-        if (_origSpeed.Count > 0)
-        {
-            var toRestore = _origSpeed.Keys.Where(id => !_insideNow.Contains(id)).ToList();
-            foreach (var id in toRestore)
-            {
-                var p = Utils.PlayerById(id);
-                if (p) p.MyPhysics.Speed = _origSpeed[id];
-                _origSpeed.Remove(id);
-
-                if (p.AmOwner)
-                {
-                    AffectedPlayers.Remove(p.PlayerId);
-                    p.lightSource.lightChild.SetActive(true);
-                    _speedNotifShown.Remove(p.PlayerId);
-                    _visionNotifShown.Remove(p.PlayerId);
-                    Helpers.CreateAndShowNotification("Your vision is restored.", new Color(0.8f, 1f, 0.8f));
-                }
-            }
-        }
-    }
-
-    public void Init(byte ownerId, float radius, float duration, float speedMul)
-    {
-        this.ownerId = ownerId;
-        _radius = radius;
-        _duration = duration;
-        _speedMul = Mathf.Max(0f, 1f - speedMul / 100f);
-        _enterClip = NewModAsset.FearSound.LoadAsset();
-        _heartbeatClip = NewModAsset.HeartbeatSound.LoadAsset();
-    }
-
-    public void RestoreAll()
-    {
-        foreach (var kv in _origSpeed)
-        {
-            var p = Utils.PlayerById(kv.Key);
-            if (p) p.MyPhysics.Speed = kv.Value;
-        }
-
-        _origSpeed.Clear();
-        AffectedPlayers.Clear();
-
-        var lp = PlayerControl.LocalPlayer;
-
-        if (AffectedPlayers.Contains(lp.PlayerId))
-            AffectedPlayers.Remove(lp.PlayerId);
-
-        lp.lightSource.lightChild.SetActive(true);
-
-        _speedNotifShown.Remove(lp.PlayerId);
-        _visionNotifShown.Remove(lp.PlayerId);
     }
 }

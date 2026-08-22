@@ -92,10 +92,11 @@ public class NewMod : BasePlugin, IMiraPlugin
         ForceEnableAllSeasons = Config.Bind("NewMod", "ForceEnableAllSeasons", false, "Force all seasons as started");
 
         AchievementStorage.Load();
-        AchievementStorage.AchievementStorageGet(new NewModAchievementsTab());
+        AchievementStorage.AchievementStorageGet(
+            new PreseasonAchievementsTab());
 
-        if (!NewModAchievementsTab.ThreeInARow.Unlocked)
-            NewModAchievementsTab.ThreeInARow.SetValue(0, false);
+        if (!PreseasonAchievementsTab.ThreeInARow.Unlocked)
+            PreseasonAchievementsTab.ThreeInARow.SetValue(0, false);
 
         var bundle = NewModAsset.Bundle;
         var assetNames = bundle.GetAllAssetNames();

@@ -12,6 +12,8 @@ public interface ISeason
     DateTime SeasonEndDate { get; }
     Color SeasonMainColor { get; }
 
+    bool ContentExpires => false;
+
     void HandleMainMenu(MainMenuManager menuManager);
 
     IReadOnlyList<Type> GetSeasonRoleTypes();
@@ -20,4 +22,5 @@ public interface ISeason
     IReadOnlyList<Type> GetSeasonOptionTypes();
     IReadOnlyList<Type> GetSeasonButtonTypes();
     IReadOnlyList<Type> GetSeasonGETypes();
+    IReadOnlyList<Type> GetSeasonAchievementTabTypes() => [];
 }

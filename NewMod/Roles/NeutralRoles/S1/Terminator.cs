@@ -220,8 +220,13 @@ public class TerminatorRole : CrewmateRole, INewModRole
             ThreatArrow.MaxScale = 0.8f;
         }
 
+        var warningFlash = Object.Instantiate(hud.FullScreen, hud.FullScreen.transform.parent);
+        warningFlash.gameObject.name = "TerminatorWarningFlash";
+        warningFlash.color = new Color(1f, 0f, 0f, 0.37254903f);
+        warningFlash.gameObject.SetActive(false);
+
         var timeLeft = duration;
-        var alertTimer = 0f;
+        var flashTimer = 0f;
 
         while (timeLeft > 0f && FinalCountdownActive && !terminator.Data.IsDead && !terminator.Data.Disconnected)
         {
@@ -236,19 +241,20 @@ public class TerminatorRole : CrewmateRole, INewModRole
 
             if (inMeeting)
             {
+                warningFlash.gameObject.SetActive(false);
                 yield return null;
                 continue;
             }
 
             ThreatText.text = $"STOP THE TERMINATOR BEFORE IT'S TOO LATE!!!\n<size=75%>{Mathf.CeilToInt(timeLeft)}</size>";
 
-            alertTimer -= Time.deltaTime;
-            if (alertTimer <= 0f)
+            flashTimer -= Time.deltaTime;
+            if (flashTimer <= 0f)
             {
-                hud.AlertFlash.Flash();
+                warningFlash.gameObject.SetActive(!warningFlash.gameObject.activeSelf);
                 if (Constants.ShouldPlaySfx())
                     SoundManager.Instance.PlaySound(ShipStatus.Instance.SabotageSound, false, 0.9f);
-                alertTimer = 1f;
+                flashTimer = 1f;
             }
 
             timeLeft -= Time.deltaTime;
@@ -259,6 +265,8 @@ public class TerminatorRole : CrewmateRole, INewModRole
             Destroy(ThreatArrow.gameObject);
         if (ThreatText)
             Destroy(ThreatText.gameObject);
+        if (warningFlash)
+            Destroy(warningFlash.gameObject);
 
         ThreatArrow = null;
         ThreatText = null;
@@ -391,7 +399,9 @@ public class TerminatorRole : CrewmateRole, INewModRole
                     SystemTypes.Kitchen,
                     SystemTypes.MiningPit,
                     SystemTypes.FishingDock
-                ]
+                ],
+
+                _ => []
             };
 
         var positions = new List<Vector2>();

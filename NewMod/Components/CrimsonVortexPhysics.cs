@@ -1,8 +1,10 @@
-﻿using MiraAPI.GameOptions;
+﻿using System.Linq;
+using MiraAPI.GameOptions;
 using MiraAPI.Networking;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Achievements;
 using NewMod.Options;
+using NewMod.Seasons;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
 
@@ -22,6 +24,8 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     private float _escapeProgress;
     private float _lastPressTime;
+    private Vector2 _lastSafePosition;
+    private bool _lastSafePositionReady;
 
     public void Awake()
     {
@@ -37,6 +41,12 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead)
         {
+            if (!CrismonVortexGE.Active && _physics.AmOwner && !_player.Data.IsDead && _player.CanMove && !_player.inVent)
+            {
+                _lastSafePosition = _player.GetTruePosition();
+                _lastSafePositionReady = true;
+            }
+
             _escapeProgress = 0f;
             _lastPressTime = float.NegativeInfinity;
 
@@ -52,9 +62,31 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
 
-        var escapeRadius = options.CrimsonRadius * options.CrimsonEscapeZone / 100f;
+        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
+        var escapeRadius = options.CrimsonRadius * 0.75f;
+        var progressPerPress = options.CrimsonEscapeDifficulty switch
+        {
+            GEOptions.EscapeDifficulty.Easy => 0.12f,
+            GEOptions.EscapeDifficulty.Standard => 0.09f,
+            GEOptions.EscapeDifficulty.Hard => 0.07f,
+            _ => 0.09f
+        };
+        var decayDelay = options.CrimsonEscapeDifficulty switch
+        {
+            GEOptions.EscapeDifficulty.Easy => 0.25f,
+            GEOptions.EscapeDifficulty.Standard => 0.15f,
+            GEOptions.EscapeDifficulty.Hard => 0.1f,
+            _ => 0.15f
+        };
+        var decayRate = options.CrimsonEscapeDifficulty switch
+        {
+            GEOptions.EscapeDifficulty.Easy => 0.35f,
+            GEOptions.EscapeDifficulty.Standard => 0.55f,
+            GEOptions.EscapeDifficulty.Hard => 0.75f,
+            _ => 0.55f
+        };
 
-        if (_escapedThisEntry || !_player.CanMove || _player.inVent || distance > escapeRadius || distance <= options.CrimsonKillRadius)
+        if (_escapedThisEntry || !_player.CanMove || _player.inVent || distance > escapeRadius || distance <= killRadius)
         {
             _escapeProgress = 0f;
             _lastPressTime = float.NegativeInfinity;
@@ -69,16 +101,16 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         if (!inputBlocked && Input.GetKeyDown(KeyCode.Space))
         {
-            _escapeProgress = Mathf.Clamp01(_escapeProgress + options.CrimsonEscapeProgressPerPress / 100f);
+            _escapeProgress = Mathf.Clamp01(_escapeProgress + progressPerPress);
 
             _lastPressTime = Time.time;
 
             if (CrimsonVortexEscapeHud.Instance)
                 CrimsonVortexEscapeHud.Instance.Pulse();
         }
-        else if (Time.time - _lastPressTime > options.CrimsonEscapeDecayDelay)
+        else if (Time.time - _lastPressTime > decayDelay)
         {
-            _escapeProgress = Mathf.Max(0f, _escapeProgress - options.CrimsonEscapeDecayRate / 100f * Time.deltaTime);
+            _escapeProgress = Mathf.Max(0f, _escapeProgress - decayRate * Time.deltaTime);
         }
 
         if (CrimsonVortexEscapeHud.Instance)
@@ -111,12 +143,19 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
 
-        if (distance > options.CrimsonKillRadius)
+        if (distance > killRadius)
             _deathRequested = false;
 
         if (distance >= options.CrimsonRadius)
         {
+            if (_physics.AmOwner && _player.CanMove && !_player.inVent)
+            {
+                _lastSafePosition = _player.GetTruePosition();
+                _lastSafePositionReady = true;
+            }
+
             _escaping = false;
             _escapedThisEntry = false;
 
@@ -127,7 +166,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             }
         }
 
-        if (AmongUsClient.Instance.AmHost && !_deathRequested && !_escaping && !_player.inVent && distance <= options.CrimsonKillRadius)
+        if (AmongUsClient.Instance.AmHost && !_deathRequested && !_escaping && !_player.inVent && distance <= killRadius)
         {
             _deathRequested = true;
 
@@ -214,10 +253,15 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         var proximity = Mathf.Clamp01(1f - distance / options.CrimsonRadius);
 
         var pullProgress = proximity * proximity;
-
-        var pull = Mathf.Lerp(options.CrimsonEdgePull, options.CrimsonPullStrength, pullProgress);
-
-        var orbit = options.CrimsonOrbitStrength * (1f - pullProgress);
+        var intensity = options.CrimsonIntensity switch
+        {
+            GEOptions.VortexIntensity.Gentle => 0.75f,
+            GEOptions.VortexIntensity.Standard => 1f,
+            GEOptions.VortexIntensity.Brutal => 1.3f,
+            _ => 1f
+        };
+        var pull = Mathf.Lerp(0.55f, 4.25f, pullProgress) * intensity;
+        var orbit = 2.25f * intensity * (1f - pullProgress);
 
         var currentDirection = Vector2.zero;
 
@@ -230,7 +274,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         _writingVelocity = true;
 
-        _physics.SetNormalizedVelocity(Vector2.ClampMagnitude(direction, options.CrimsonMaxSpeed));
+        _physics.SetNormalizedVelocity(Vector2.ClampMagnitude(direction, 2.1f * intensity));
 
         _writingVelocity = false;
     }
@@ -244,8 +288,9 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
 
-        return distance < options.CrimsonRadius && distance > options.CrimsonKillRadius;
+        return distance < options.CrimsonRadius && distance > killRadius;
     }
 
     public void BeginEscape()
@@ -261,35 +306,12 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         if (!_physics.AmOwner)
             return;
 
-        var options = OptionGroupSingleton<GEOptions>.Instance;
-        var escapePosition = Vector2.zero;
-        var closestDistance = float.MaxValue;
-
-        foreach (var room in ShipStatus.Instance.AllRooms)
-        {
-            if (room.RoomId == SystemTypes.Hallway || !room.roomArea)
-            {
-                continue;
-            }
-
-            var roomPosition = (Vector2)room.roomArea.bounds.center;
-
-            if (Vector2.Distance(roomPosition, CrismonVortexGE.VortexPosition) <= options.CrimsonRadius + options.CrimsonEscapeSafeDistance)
-            {
-                continue;
-            }
-
-            var distance = Vector2.Distance(_player.GetTruePosition(), roomPosition);
-
-            if (distance >= closestDistance)
-                continue;
-
-            closestDistance = distance;
-            escapePosition = roomPosition;
-        }
-
+        var escapePosition = _lastSafePositionReady ? _lastSafePosition : ShipStatus.Instance.InitialSpawnCenter;
         _player.NetTransform.RpcSnapTo(escapePosition);
-        NewModAchievementsTab.EventHorizonDenied.Unlock();
+        if (SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
+        {
+            PreseasonAchievementsTab.EventHorizonDenied.Unlock();
+        }
 
         if (_collisionDisabled)
         {
@@ -313,8 +335,9 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
 
-        return !_escapedThisEntry && distance <= options.CrimsonRadius * options.CrimsonEscapeZone / 100f && distance > options.CrimsonKillRadius;
+        return !_escapedThisEntry && distance <= options.CrimsonRadius * 0.75f && distance > killRadius;
     }
 
     public void OnDestroy()

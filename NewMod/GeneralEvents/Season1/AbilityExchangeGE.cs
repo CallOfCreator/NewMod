@@ -16,7 +16,7 @@ public class AbilityExchangeGE : IGeneralEvent
 
     public string Title => "Ability Exchange";
     public string Description => "YOUR ABILITY HAS BEEN EXCHANGED!";
-    public LoadableAsset<Sprite> Icon => MiraAssets.Empty;
+    public LoadableAsset<Sprite> Icon => NewModAsset.AbilityExchangeIcon;
     public Color AccentColor => new(0.55f, 0.24f, 1f);
     public int OccurrenceChance => 8;
     public float Duration => 18f;

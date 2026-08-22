@@ -12,7 +12,7 @@ namespace NewMod.GeneralEvents.Season1
         public static bool Active { get; private set; }
         public string Title => "System Override";
         public string Description => "SHIP SYSTEMS ARE BEING OVERRIDDEN!";
-        public LoadableAsset<Sprite> Icon => MiraAssets.Empty;
+        public LoadableAsset<Sprite> Icon => NewModAsset.SystemOverrideIcon;
         public Color AccentColor => new(1f, 0.16f, 0.2f);
         public int OccurrenceChance => 8;
         public float Duration => 22f;

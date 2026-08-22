@@ -1,6 +1,8 @@
-﻿using HarmonyLib;
+﻿using System.Linq;
+using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
+using NewMod.Seasons;
 
 namespace NewMod.Achievements;
 
@@ -14,7 +16,15 @@ public static class NewModAchievementTracker
         if (!evt.TriggeredByIntro)
             return;
 
-        NewModAchievementsTab.WelcomeToNewMod.Unlock();
+        _onlineMatchActive = false;
+
+        if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
+        {
+            return;
+        }
+
+        PreseasonAchievementsTab.WelcomeToNewMod.Unlock();
+
         _onlineMatchActive = AmongUsClient.Instance.NetworkMode == NetworkModes.OnlineGame;
     }
 
@@ -26,8 +36,13 @@ public static class NewModAchievementTracker
 
         _onlineMatchActive = false;
 
-        if (!NewModAchievementsTab.ThreeInARow.Unlocked)
-            NewModAchievementsTab.ThreeInARow.Increment(1);
+        if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
+        {
+            return;
+        }
+
+        if (!PreseasonAchievementsTab.ThreeInARow.Unlocked)
+            PreseasonAchievementsTab.ThreeInARow.Increment(1);
     }
 
     [HarmonyPatch(typeof(GameData), nameof(GameData.OnDisconnected))]
@@ -41,8 +56,8 @@ public static class NewModAchievementTracker
 
             _onlineMatchActive = false;
 
-            if (!NewModAchievementsTab.ThreeInARow.Unlocked)
-                NewModAchievementsTab.ThreeInARow.SetValue(0, false);
+            if (!PreseasonAchievementsTab.ThreeInARow.Unlocked)
+                PreseasonAchievementsTab.ThreeInARow.SetValue(0, false);
         }
     }
 }

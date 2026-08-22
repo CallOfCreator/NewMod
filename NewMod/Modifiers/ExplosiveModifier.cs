@@ -10,7 +10,6 @@ namespace NewMod.Modifiers;
 
 public class ExplosiveModifier : TimedModifier
 {
-    private bool isFlashing;
     public override string ModifierName => "Explosive";
     public override bool HideOnUi => false;
     public override bool AutoStart => true;
@@ -25,48 +24,58 @@ public class ExplosiveModifier : TimedModifier
 
     public override string GetDescription()
     {
-        return ModifierName + "\nif you die, all nearby players are killed";
+        return "If you are killed, all nearby players are killed.";
     }
 
     public override void FixedUpdate()
     {
         base.FixedUpdate();
 
-        if (Player.AmOwner)
+        if (!Player.AmOwner)
+            return;
+
+        var material = Player.cosmetics.currentBodySprite.BodySprite.material;
+
+        if (TimeRemaining <= 5f)
         {
-            if (Duration <= 5f)
-            {
-                isFlashing = !isFlashing;
-                var color = isFlashing ? new Color(1f, 0f, 0f) : new Color(0.5f, 0.5f, 0.5f);
-                Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor, color);
-            }
-            else if (Duration <= 10f)
-            {
-                Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor, new Color(0f, 0.8f, 1f));
-            }
-            else if (Duration <= 30f)
-            {
-                Player.cosmetics.currentBodySprite.BodySprite.material.SetColor(ShaderID.VisorColor, new Color(0f, 1.5f, 0f));
-            }
+            var flash = Mathf.FloorToInt(TimeRemaining * 4f) % 2 == 0;
+            material.SetColor(ShaderID.VisorColor, flash ? Color.red : Palette.VisorColor);
+        }
+        else if (TimeRemaining <= 10f)
+        {
+            material.SetColor(ShaderID.VisorColor, new Color(0f, 0.8f, 1f));
+        }
+        else if (TimeRemaining <= 30f)
+        {
+            material.SetColor(ShaderID.VisorColor, Color.green);
         }
     }
 
-    public override void OnTimerComplete()
+    public override void OnDeactivate()
     {
+        if (Player.AmOwner)
+            Player.SetPlayerMaterialColors(Player.cosmetics.currentBodySprite.BodySprite);
     }
 
     public override void OnDeath(DeathReason deathReason)
     {
+        if (!AmongUsClient.Instance.AmHost)
+            return;
+
         var murderer = Utils.GetKiller(Player);
-        if (murderer == null) return;
+
+        if (murderer == null)
+            return;
 
         var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<ExplosiveModifierOptions>.Instance.KillDistance);
 
         foreach (var player in closestPlayers)
         {
-            if (player.Data.IsDead || player.Data.Disconnected) continue;
+            if (player.Data.IsDead || player.Data.Disconnected)
+                continue;
 
-            murderer.RpcCustomMurder(player, createDeadBody: true, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
+            murderer.RpcCustomMurder(player, didSucceed: true, createDeadBody: true, teleportMurderer: false, showKillAnim: false, playKillSound: true);
+
             NewMod.Instance.Log.LogInfo($"{player.Data.PlayerName} has been killed by the explosion.");
         }
     }

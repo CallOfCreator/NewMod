@@ -434,7 +434,7 @@ public class WardenRole : CrewmateRole, INewModRole
         Object.Destroy(mark);
 
         Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#3AA6FF>Residual Trace</color>\n{clue}"));
-        NewModAchievementsTab.TraceEvidence.Unlock();
+        //NewModAchievementsTab.TraceEvidence.Unlock();
     }
 
     private static void ResetState()

@@ -1,11 +1,12 @@
 using MiraAPI.GameEnd;
+using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles;
-
+[MiraIgnore]
 public class EnergyThief : CrewmateRole, ICustomRole
 {
     public string RoleName => "Energy Thief";

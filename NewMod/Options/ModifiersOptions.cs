@@ -9,7 +9,7 @@ namespace NewMod.Options;
 public class ModifiersOptions : AbstractOptionGroup
 {
     public override string GroupName => "Modifiers Settings";
-    public override bool ShowInModifiersMenu => true;
+    public override MenuCategory ParentMenu => MenuCategory.Modifiers;
 
     [ModdedNumberOption("Sticky Amount", 0f, 2f)]
     public float StickyAmount { get; set; } = 1f;

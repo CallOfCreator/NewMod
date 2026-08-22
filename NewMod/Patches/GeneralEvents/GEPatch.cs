@@ -1,23 +1,19 @@
-using HarmonyLib;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
 using NewMod.GeneralEvents;
 
 namespace NewMod.Patches.GeneralEvents;
 
-[HarmonyPatch(typeof(IntroCutscene), nameof(IntroCutscene.OnDestroy))]
-public static class StartGECyclePatch
+public static class GeneralEventCycleEvents
 {
-    public static void Postfix(IntroCutscene __instance)
+    [RegisterEvent]
+    public static void OnRoundStart(RoundStartEvent evt)
     {
+        if (!evt.TriggeredByIntro)
+            return;
+
         GeneralEventManager.Reset();
         GeneralEventManager.StartCycle();
-    }
-}
-
-[HarmonyPatch(typeof(EndGameManager), nameof(EndGameManager.Start))]
-public static class StopGECyclePatch
-{
-    public static void Postfix()
-    {
-        GeneralEventManager.Reset();
+        NewMod.Instance.Log.LogMessage("Started Cycle");
     }
 }

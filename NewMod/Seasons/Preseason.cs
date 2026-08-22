@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Il2CppSystem;
 using NewMod.Buttons.Roles.S1;
 using NewMod.GameModes.WraithSiegeGamemode;
@@ -12,22 +12,24 @@ using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles.S1;
+using NewMod.Achievements;
 using TMPro;
 using UnityEngine;
 using Type = System.Type;
 
 namespace NewMod.Seasons;
 
-public class S1 : ISeason
+public class Preseason : ISeason
 {
-    public string Name => "Season 1";
+    public string Name => "Preseason ALPHA";
 
-    public DateTime SeasonStartDate => new(2026, 09, 01, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonStartDate => new(2026, 08, 21, 0, 0, 0, 0, DateTimeKind.Utc);
 
-    public DateTime SeasonEndDate => new(2026, 10, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonEndDate => new(2026, 08, 26, 0, 0, 0, 0, DateTimeKind.Utc);
 
     public Color SeasonMainColor => Color.blue;
-    public bool ContentExpires => false;
+    
+    public bool ContentExpires => true;
 
     public void HandleMainMenu(MainMenuManager menuManager)
     {
@@ -59,9 +61,9 @@ public class S1 : ISeason
             typeof(TerminatorRole),
             typeof(MirrorBladeRole),
             typeof(VerifierRole),
-            typeof(Voidwalker),
-            typeof(WardenRole),
-            typeof(ArbitratorRole)
+            //typeof(Voidwalker),
+            //typeof(WardenRole),
+            // typeof(ArbitratorRole)
         ];
     }
 
@@ -71,9 +73,9 @@ public class S1 : ISeason
         [
             typeof(FatefulModifier),
             typeof(LazyModifier),
-            typeof(InVoid),
-            typeof(JustLeftVoid),
-            typeof(MarkedModifier),
+            // typeof(InVoid),
+            //typeof(JustLeftVoid),
+            //typeof(MarkedModifier),
             typeof(MomentumModifier)
         ];
     }
@@ -86,51 +88,58 @@ public class S1 : ISeason
             typeof(MirrorBladeOptions),
             typeof(VerifierOptions),
             typeof(WraithSiegeOptions),
-            typeof(VoidwalkerOptions),
+            // typeof(VoidwalkerOptions),
             typeof(MomentumModifierOptions),
-            typeof(MarkedModifierOptions),
-            typeof(WardenOptions),
-            typeof(ArbitratorOptions),
+            // typeof(MarkedModifierOptions),
+            //typeof(WardenOptions),
+            //typeof(ArbitratorOptions),
             typeof(GEOptions)
         ];
     }
 
     public IReadOnlyList<Type> GetSeasonButtonTypes()
-        {
-            return
-            [
-                typeof(MirrorReflectButton),
-                typeof(ObjectiveButton),
-                typeof(TopWraithLaneButton),
-                typeof(MidWraithLaneButton),
-                typeof(BottomWraithLaneButton),
-                typeof(BanishWraithButton),
-                typeof(WraithSiegeReviveButton),
-                typeof(InspectResidualButton),
-                typeof(WardenSealButton),
-                typeof(ArbitratorLeverageButton)
-            ];
-        }
-
-        public IReadOnlyList<Type> GetSeasonGamemodeTypes()
-        {
-            return
-            [
-                typeof(WraithSiege)
-            ];
-        }
-
-        public IReadOnlyList<Type> GetSeasonGETypes()
-        {
-            return
-            [
-                typeof(NegativeRealityGE),
-                typeof(CrismonVortexGE),
-                typeof(AbilityExchangeGE),
-                typeof(IdentityCrisisGE),
-                typeof(NoMansLandGE),
-                typeof(RoleScrambleGE),
-                typeof(SystemOverrideGE)
-            ];
-        }
+    {
+        return
+        [
+            typeof(MirrorReflectButton),
+            typeof(ObjectiveButton),
+            typeof(TopWraithLaneButton),
+            typeof(MidWraithLaneButton),
+            typeof(BottomWraithLaneButton),
+            typeof(BanishWraithButton),
+            typeof(WraithSiegeReviveButton),
+            //typeof(InspectResidualButton),
+            // typeof(WardenSealButton),
+            // typeof(ArbitratorLeverageButton)
+        ];
     }
+
+    public IReadOnlyList<Type> GetSeasonGamemodeTypes()
+    {
+        return
+        [
+            typeof(WraithSiege)
+        ];
+    }
+
+    public IReadOnlyList<Type> GetSeasonGETypes()
+    {
+        return
+        [
+            //typeof(NegativeRealityGE),
+            typeof(CrismonVortexGE),
+            // typeof(AbilityExchangeGE),
+            typeof(IdentityCrisisGE),
+            typeof(NoMansLandGE),
+            //typeof(RoleScrambleGE),
+            //typeof(SystemOverrideGE)
+        ];
+    }
+    public IReadOnlyList<Type> GetSeasonAchievementTabTypes()
+    {
+        return
+        [
+            typeof(PreseasonAchievementsTab)
+        ];
+    }
+}

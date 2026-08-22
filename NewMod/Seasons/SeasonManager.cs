@@ -24,24 +24,47 @@ public static class SeasonManager
 
     public static readonly List<ISeason> ActiveSeasons =
     [
+        new Preseason(),
         new S1()
     ];
 
     public static IReadOnlyList<ISeason> StartedSeasons =>
-    [
-        .. ActiveSeasons.Where(season => EffectiveNow >= season.SeasonStartDate.ToUniversalTime())
-    ];
+        NewMod.ForceEnableAllSeasons?.Value == true
+            ? [.. ActiveSeasons]
+            :
+            [
+                .. ActiveSeasons.Where(season => EffectiveNow >= season.SeasonStartDate.ToUniversalTime())
+            ];
 
     public static IReadOnlyList<ISeason> CurrentActiveSeasons =>
+        NewMod.ForceEnableAllSeasons?.Value == true
+            ? [.. ActiveSeasons]
+            :
+            [
+                .. ActiveSeasons.Where(season => EffectiveNow >= season.SeasonStartDate.ToUniversalTime() && EffectiveNow <= season.SeasonEndDate.ToUniversalTime())
+            ];
+
+    public static IReadOnlyList<ISeason> ContentSeasons =>
+        NewMod.ForceEnableAllSeasons?.Value == true
+            ? [.. ActiveSeasons]
+            :
+            [
+                .. ActiveSeasons.Where(season => EffectiveNow >= season.SeasonStartDate.ToUniversalTime() && (!season.ContentExpires || EffectiveNow <= season.SeasonEndDate.ToUniversalTime()))
+            ];
+    public static IReadOnlyList<Type> AvailableAchievementTabTypes =>
     [
-        .. ActiveSeasons.Where(season => EffectiveNow >= season.SeasonStartDate.ToUniversalTime() && EffectiveNow <= season.SeasonEndDate.ToUniversalTime())
+        .. ContentSeasons
+            .SelectMany(season => season.GetSeasonAchievementTabTypes())
+            .Distinct()
     ];
 
-    private static DateTime EffectiveNow =>
-        NewMod.ForceEnableAllSeasons?.Value == true ? DateTime.MaxValue : AmongUsDateTime.UtcNow;
+    private static DateTime EffectiveNow => AmongUsDateTime.UtcNow;
 
     public static SeasonState GetState(ISeason season)
     {
+        if (NewMod.ForceEnableAllSeasons?.Value == true)
+            return SeasonState.Active;
+
         var now = EffectiveNow;
 
         if (now < season.SeasonStartDate.ToUniversalTime())
@@ -55,7 +78,7 @@ public static class SeasonManager
 
     public static void InitializeSeasons(MainMenuManager menuManager)
     {
-        foreach (var season in StartedSeasons)
+        foreach (var season in ContentSeasons)
             RegisterSeasonGeneralEvents(season);
 
         foreach (var season in CurrentActiveSeasons)
@@ -82,7 +105,9 @@ public static class SeasonManager
         var roleQueueProperty = managerType.GetProperty("QueuedRoleRegistrations", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
         if (roleQueueProperty?.GetValue(instance) is not Dictionary<MiraPluginInfo, List<Type>> roleQueue)
+        {
             return;
+        }
 
         if (!roleQueue.TryGetValue(pluginInfo, out var roles))
         {
@@ -101,7 +126,7 @@ public static class SeasonManager
             typeof(MiraPluginInfo)
         ], null);
 
-        foreach (var season in StartedSeasons)
+        foreach (var season in ContentSeasons)
         {
             foreach (var type in season.GetSeasonRoleTypes())
             {
@@ -120,7 +145,9 @@ public static class SeasonManager
                     var parameters = method.GetParameters();
 
                     if (parameters.Length != 1 || !parameters[0].ParameterType.IsSubclassOf(typeof(MiraEvent)))
+                    {
                         continue;
+                    }
 
                     MiraEventManager.RegisterEventHandler(parameters[0].ParameterType, method, attribute.Priority);
                 }
@@ -129,7 +156,9 @@ public static class SeasonManager
             foreach (var type in season.GetSeasonModifierTypes())
             {
                 if (registerModifier == null || !RegisteredSeasonContent.Add(type))
+                {
                     continue;
+                }
 
                 registerModifier.Invoke(null, [type, pluginInfo]);
             }
@@ -137,7 +166,9 @@ public static class SeasonManager
             foreach (var type in season.GetSeasonOptionTypes())
             {
                 if (registerOptions == null || !RegisteredSeasonContent.Add(type))
+                {
                     continue;
+                }
 
                 registerOptions.Invoke(null, [type, pluginInfo]);
             }
@@ -145,7 +176,9 @@ public static class SeasonManager
             foreach (var type in season.GetSeasonButtonTypes())
             {
                 if (registerButton == null || !RegisteredSeasonContent.Add(type))
+                {
                     continue;
+                }
 
                 registerButton.Invoke(null, [type, pluginInfo]);
             }
@@ -153,7 +186,9 @@ public static class SeasonManager
             foreach (var type in season.GetSeasonGamemodeTypes())
             {
                 if (registerGameMode == null || !RegisteredSeasonContent.Add(type))
+                {
                     continue;
+                }
 
                 registerGameMode.Invoke(null, [type, pluginInfo]);
             }

@@ -2,6 +2,7 @@ using Il2CppSystem;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.PluginLoading;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
@@ -14,6 +15,8 @@ namespace NewMod.Buttons.Roles;
 /// <summary>
 ///     Defines a custom action button for the role.
 /// </summary>
+
+[MiraIgnore]
 public class DrainButton : CustomActionButton<PlayerControl>
 {
     /// <summary>

@@ -4,6 +4,7 @@ using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameEnd;
 using MiraAPI.Hud;
+using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using NewMod.Buttons.Roles;
 using NewMod.Utilities;
@@ -12,6 +13,7 @@ using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles;
 
+[MiraIgnore]
 public class OverloadRole : ImpostorRole, ICustomRole
 {
     public static int AbsorbedAbilityCount;

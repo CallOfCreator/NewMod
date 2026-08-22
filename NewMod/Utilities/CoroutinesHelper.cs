@@ -18,6 +18,9 @@ namespace NewMod.Utilities;
 /// </summary>
 public static class CoroutinesHelper
 {
+    private static readonly Queue<string> Notifications = new();
+    private static bool _displayingNotification;
+
     /// <summary>
     ///     Keeps track of the number of fake bodies created by each player, keyed by their PlayerId.
     /// </summary>
@@ -29,40 +32,49 @@ public static class CoroutinesHelper
     public static Dictionary<byte, int> drainCount = new();
 
     /// <summary>
-    ///     Reference to a <see cref="TextMeshPro" /> element used for displaying mission-related timers.
-    /// </summary>
-    private static TextMeshPro timerLabel;
-
-    /// <summary>
-    ///     Displays a temporary notification on the screen using an overlay animation.
+    ///   Displays a temporary notification on the screen using an overlay animation.
     /// </summary>
     /// <param name="message">The message to display.</param>
     /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
     public static IEnumerator CoNotify(string message)
     {
-        if (Constants.ShouldPlaySfx())
-            SoundManager.Instance.PlaySound(HudManager.Instance.TaskCompleteSound, false);
+        Notifications.Enqueue(message);
 
-        var overlay = HudManager.Instance.TaskCompleteOverlay;
-        var obj = Object.Instantiate(overlay.gameObject, overlay.transform.parent);
-        var textComponent = obj.GetComponentInChildren<TextMeshPro>(true);
-        var translator = textComponent.GetComponent<TextTranslatorTMP>();
+        if (_displayingNotification)
+            yield break;
 
-        if (translator)
+        _displayingNotification = true;
+
+        while (Notifications.Count > 0)
         {
-            translator.enabled = false;
-            Object.Destroy(translator);
+            message = Notifications.Dequeue();
+
+            if (Constants.ShouldPlaySfx())
+                SoundManager.Instance.PlaySound(HudManager.Instance.TaskCompleteSound, false);
+
+            var overlay = HudManager.Instance.TaskCompleteOverlay;
+            var obj = Object.Instantiate(overlay.gameObject, overlay.transform.parent);
+            var textComponent = obj.GetComponentInChildren<TextMeshPro>(true);
+            var translator = textComponent.GetComponent<TextTranslatorTMP>();
+
+            if (translator)
+            {
+                translator.enabled = false;
+                Object.Destroy(translator);
+            }
+
+            textComponent.text = message;
+            textComponent.fontSize = Mathf.Clamp(3.5f - message.Length / 20f, 2f, 3.5f);
+            obj.SetActive(true);
+
+            yield return Effects.Slide2D(obj.transform, new Vector2(0f, -8f), Vector2.zero, 0.25f);
+            yield return new WaitForSeconds(2.25f);
+            yield return Effects.Slide2D(obj.transform, Vector2.zero, new Vector2(0f, 8f), 0.25f);
+
+            Object.Destroy(obj);
         }
 
-        textComponent.text = message;
-        textComponent.fontSize = Mathf.Clamp(3.5f - message.Length / 20f, 2f, 3.5f);
-        obj.SetActive(true);
-
-        yield return Effects.Slide2D(obj.transform, new Vector2(0f, -8f), Vector2.zero, 0.25f);
-        yield return new WaitForSeconds(0.95f);
-        yield return Effects.Slide2D(obj.transform, Vector2.zero, new Vector2(0f, 8f), 0.25f);
-
-        Object.Destroy(obj);
+        _displayingNotification = false;
     }
 
     /// <summary>
@@ -71,13 +83,13 @@ public static class CoroutinesHelper
     /// <param name="target">The player assigned to the mission.</param>
     /// <param name="duration">The desired duration for the mission timer (clamped to 30 seconds max).</param>
     /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
-    public static IEnumerator CoMissionTimer(PlayerControl target, float duration)
+    public static IEnumerator CoMissionTimer(PlayerControl specialAgent, PlayerControl target, float duration)
     {
         // Clamp duration to a maximum of 30 seconds
         duration = Mathf.Min(duration, 30f);
 
         // Create a text label for the mission timer
-        timerLabel = Helpers.CreateTextLabel("MissionTimerText", HudManager.Instance.transform, AspectPosition.EdgeAlignments.LeftBottom, new Vector3(9.9f, 3.5f, 0f), 3f, TextAlignmentOptions.BottomLeft);
+        var timerLabel = Helpers.CreateTextLabel("MissionTimerText", HudManager.Instance.transform, AspectPosition.EdgeAlignments.LeftBottom, new Vector3(9.9f, 3.5f, 0f), 3f, TextAlignmentOptions.BottomLeft);
 
         timerLabel!.text = $"Time Remaining: {duration}s";
         timerLabel.color = Color.yellow;
@@ -87,65 +99,51 @@ public static class CoroutinesHelper
         while (timeRemaining > 0)
         {
             // If the assigned player is unassigned, cancel the timer
-            if (SpecialAgent.AssignedPlayer == null)
+            if (!target || target.Data == null || SpecialAgent.AssignedPlayer != target)
             {
-                if (HudManager.Instance.FullScreen.gameObject.activeSelf)
-                    HudManager.Instance.FullScreen.gameObject.SetActive(false);
-                Object.Destroy(timerLabel.gameObject);
+                if (timerLabel)
+                    Object.Destroy(timerLabel.gameObject);
                 yield break;
             }
 
             yield return new WaitForSeconds(1f);
             timeRemaining -= 1f;
 
-            timerLabel.text = $"Time Remaining: {Mathf.CeilToInt(timeRemaining)}s";
-
-            // Manage colors and background overlay based on remaining time
-            if (timeRemaining <= 10f)
+            if (timerLabel)
             {
-                timerLabel.color = Color.red;
-                if (Constants.ShouldPlaySfx()) SoundManager.Instance.PlaySound(ShipStatus.Instance.SabotageSound, false, 0.8f);
-
-                HudManager.Instance.FullScreen.color = new Color(1f, 0f, 0f, 0.1f);
-                HudManager.Instance.FullScreen.gameObject.SetActive(true);
-            }
-            else if (timeRemaining <= 20f)
-            {
-                timerLabel.color = Color.yellow;
-                if (HudManager.Instance.FullScreen.gameObject.activeSelf)
-                    HudManager.Instance.FullScreen.gameObject.SetActive(false);
-            }
-            else
-            {
-                timerLabel.color = Color.green;
-                if (HudManager.Instance.FullScreen.gameObject.activeSelf)
-                    HudManager.Instance.FullScreen.gameObject.SetActive(false);
+                timerLabel.text = $"Time Remaining: {Mathf.CeilToInt(timeRemaining)}s";
+                timerLabel.color = timeRemaining <= 10f ? Color.red : timeRemaining <= 20f ? Color.yellow : Color.green;
             }
         }
 
         // Time has expired, destroy the timer and fail the mission
-        Object.Destroy(timerLabel.gameObject);
-        SoundManager.Instance.StopSound(ShipStatus.Instance.SabotageSound);
-        HudManager.Instance.FullScreen.gameObject.SetActive(false);
-        Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+        if (timerLabel)
+            Object.Destroy(timerLabel.gameObject);
+
+        if (target && target.Data != null && SpecialAgent.AssignedPlayer == target)
+            Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
     }
 
     /// <summary>
-    ///     Allows a Prankster to create fake dead bodies by pressing F5, fulfilling a mission if enough bodies are created.
+    /// Allows a Prankster to create fake dead bodies by pressing F5, fulfilling a mission if enough bodies are created.
     /// </summary>
     /// <param name="target">The player executing the prankster abilities.</param>
-    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
-    public static IEnumerator UsePranksterAbilities(PlayerControl target)
+    /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
+    public static IEnumerator UsePranksterAbilities(PlayerControl specialAgent, PlayerControl target)
     {
         // Initialize dictionary entry for this player if missing
-        if (!bodiesCreated.ContainsKey(target.PlayerId)) bodiesCreated[target.PlayerId] = 0;
+        if (!bodiesCreated.ContainsKey(target.PlayerId))
+        {
+            bodiesCreated[target.PlayerId] = 0;
+        }
 
         while (true)
         {
             // If the player dies mid-mission, fail the mission
-            if (target.Data.IsDead)
+            if (!target || target.Data == null || target.Data.IsDead || target.Data.Disconnected)
             {
-                Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+                if (target)
+                    Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
                 yield break;
             }
 
@@ -155,12 +153,14 @@ public static class CoroutinesHelper
                 PranksterUtilities.CreatePranksterDeadBody(target, target.PlayerId);
                 bodiesCreated[target.PlayerId]++;
                 if (target.AmOwner)
+                {
                     Coroutines.Start(CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
+                }
 
                 // Once enough bodies are created, succeed the mission
                 if (bodiesCreated[target.PlayerId] >= 2)
                 {
-                    Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, target);
+                    Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, specialAgent, target);
                     yield break;
                 }
             }
@@ -170,30 +170,34 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    ///     Allows an Energy Thief to drain nearby players' energy by pressing F5, fulfilling a mission after enough drains.
+    /// Allows an Energy Thief to drain nearby players' energy by pressing F5, fulfilling a mission after enough drains.
     /// </summary>
     /// <param name="target">The player executing the energy draining abilities.</param>
-    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
-    public static IEnumerator UseEnergyThiefAbilities(PlayerControl target)
+    /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
+    public static IEnumerator UseEnergyThiefAbilities(PlayerControl specialAgent, PlayerControl target)
     {
-        var drainRange = 3.5f;
+        float drainRange = 3.5f;
 
         // Initialize dictionary entry for this player if missing
-        if (!drainCount.ContainsKey(target.PlayerId)) drainCount[target.PlayerId] = 0;
+        if (!drainCount.ContainsKey(target.PlayerId))
+        {
+            drainCount[target.PlayerId] = 0;
+        }
 
         while (true)
         {
             // If the player dies mid-mission, fail the mission
-            if (target.Data.IsDead)
+            if (!target || target.Data == null || target.Data.IsDead || target.Data.Disconnected)
             {
-                Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+                if (target)
+                    Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
                 yield break;
             }
 
             // Press F5 to drain energy from a nearby player
             if (Input.GetKeyDown(KeyCode.F5))
             {
-                var playersInRange = Helpers.GetClosestPlayers(target, drainRange).Where(p => !p.Data.IsDead && !p.Data.Disconnected).ToList();
+                var playersInRange = Helpers.GetClosestPlayers(target, drainRange, ignoreColliders: true, ignoreSource: true).Where(p => !p.Data.IsDead && !p.Data.Disconnected).ToList();
 
                 if (playersInRange.Count > 0)
                 {
@@ -204,22 +208,28 @@ public static class CoroutinesHelper
 
                     // Notify both the drainer and the drained player
                     if (target.AmOwner)
+                    {
                         Coroutines.Start(CoNotify($"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
+                    }
 
                     if (victim.AmOwner)
+                    {
                         Coroutines.Start(CoNotify("<color=#FF0000><b><i>Your energy has been drained!</i></b></color>"));
+                    }
 
                     // After enough drains, succeed the mission
                     if (drainCount[target.PlayerId] >= 2)
                     {
-                        Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, target);
+                        Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, specialAgent, target);
                         yield break;
                     }
                 }
                 else
                 {
                     if (target.AmOwner)
+                    {
                         Coroutines.Start(CoNotify("<color=#FFA500><b><i>No players nearby to drain energy from.</i></b></color>"));
+                    }
                 }
             }
 
@@ -228,23 +238,27 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    ///     Allows a player to revive a dead player and then kill them again. F5 is used to initiate each action.
+    /// Allows a player to revive a dead player and then kill them again. F5 is used to initiate each action.
     /// </summary>
     /// <param name="target">The player controlling the revive and kill actions.</param>
-    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
-    public static IEnumerator CoReviveAndKill(PlayerControl target)
+    /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
+    public static IEnumerator CoReviveAndKill(PlayerControl specialAgent, PlayerControl target)
     {
-        var revived = false;
+        bool revived = false;
         byte revivedParentId = 255;
 
         // Prompt the player to press F5 for the initial revive
-        if (target.AmOwner) Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Press F5 to revive a dead player!</b></i></color>"));
+        if (target.AmOwner)
+        {
+            Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Press F5 to revive a dead player!</b></i></color>"));
+        }
 
         while (true)
         {
-            if (target.Data.IsDead)
+            if (!target || target.Data == null || target.Data.IsDead || target.Data.Disconnected)
             {
-                Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+                if (target)
+                    Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
                 yield break;
             }
 
@@ -278,7 +292,7 @@ public static class CoroutinesHelper
                     if (revivedData != null && revivedData.Object != null && !revivedData.Object.Data.IsDead)
                     {
                         PlayerControl.LocalPlayer.RpcCustomMurder(revivedData.Object, createDeadBody: true, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
-                        Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, target);
+                        Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, specialAgent, target);
                         yield break;
                     }
                 }
@@ -289,31 +303,35 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    ///     Handles logic for tracking and validating a "most wanted" target using an arrow indicator.
+    /// Handles logic for tracking and validating a "most wanted" target using an arrow indicator.
     /// </summary>
-    /// <param name="arrow">An <see cref="ArrowBehaviour" /> used to point toward the target.</param>
+    /// <param name="arrow">An <see cref="ArrowBehaviour"/> used to point toward the target.</param>
     /// <param name="mostwantedTarget">The most wanted target player.</param>
     /// <param name="target">The player assigned to eliminate the most wanted target.</param>
-    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
-    public static IEnumerator CoHandleWantedTarget(ArrowBehaviour arrow, PlayerControl mostwantedTarget, PlayerControl target)
+    /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
+    public static IEnumerator CoHandleWantedTarget(PlayerControl specialAgent, ArrowBehaviour arrow, PlayerControl mostwantedTarget, PlayerControl target)
     {
-        // Keep updating the arrow's position as long as the target is alive
-        while (!mostwantedTarget.Data.IsDead && !mostwantedTarget.Data.Disconnected)
+        while (mostwantedTarget && mostwantedTarget.Data != null && !mostwantedTarget.Data.IsDead && !mostwantedTarget.Data.Disconnected)
         {
-            arrow.target = mostwantedTarget.transform.position;
+            if (arrow)
+                arrow.target = mostwantedTarget.transform.position;
             yield return null;
         }
 
-        Object.Destroy(arrow.gameObject);
+        if (arrow)
+            Object.Destroy(arrow.gameObject);
+
+        var killer = mostwantedTarget && mostwantedTarget.Data != null && !mostwantedTarget.Data.Disconnected ? Utils.GetKiller(mostwantedTarget) : null;
 
         yield return new WaitForSeconds(0.5f);
 
-        // If the assigned player was the killer, mission succeeds; otherwise, it fails
-        var killer = Utils.GetKiller(mostwantedTarget);
-        if (killer != null && killer == target)
-            Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, target);
+        if (!target || target.Data == null || SpecialAgent.AssignedPlayer != target)
+            yield break;
+
+        if (killer == target)
+            Utils.RpcMissionSuccess(PlayerControl.LocalPlayer, specialAgent, target);
         else
-            Utils.RpcMissionFails(PlayerControl.LocalPlayer, target);
+            Utils.RpcMissionFails(PlayerControl.LocalPlayer, specialAgent, target);
     }
 
     /// <summary>

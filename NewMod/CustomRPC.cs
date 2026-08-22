@@ -3,6 +3,7 @@ namespace NewMod;
 public enum CustomRPC
 {
     HandleRevive,
+    ApplyMissionResult,
     Drain,
     FakeBody,
     AssignMission,

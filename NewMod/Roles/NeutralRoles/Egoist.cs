@@ -15,28 +15,26 @@ public class EgoistRole : CrewmateRole, ICustomRole
 {
     public string RoleName => "Egoist";
     public string RoleDescription => "Crave attention. Earn revenge.";
-
-    public string RoleLongDescription =>
-        "You are the Egoist, a chaotic neutral entity.\n\n" + "Your goal is to be ejected — if you are, and enough players vote for you, they die and you win.";
-
+    public string RoleLongDescription => "You are the Egoist, a chaotic neutral entity.\n\n" + "Your goal is to be ejected — if you are, and enough players vote for you, they die and you win.";
     public Color RoleColor => new(0.8f, 0.3f, 0.6f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup => RoleOptionsGroup.Neutral;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        AffectedByLightOnAirship = false,
-        CanGetKilled = true,
-        UseVanillaKillButton = false,
-        CanUseVent = false,
-        CanUseSabotage = false,
-        TasksCountForProgress = false,
-        ShowInFreeplay = true,
-        HideSettings = false,
-        MaxRoleCount = 1,
-        OptionsScreenshot = null,
-        Icon = null
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = false,
+            CanGetKilled = true,
+            UseVanillaKillButton = false,
+            CanUseVent = false,
+            CanUseSabotage = false,
+            TasksCountForProgress = false,
+            ShowInFreeplay = true,
+            HideSettings = false,
+            MaxRoleCount = 1,
+            OptionsScreenshot = null,
+            Icon = null
+        };
 
     [RegisterEvent]
     public static void OnEjection(EjectionEvent evt)
@@ -46,7 +44,7 @@ public class EgoistRole : CrewmateRole, ICustomRole
         if (egoist == null)
             return;
 
-        var ejected = evt.ExileController.initData.networkedPlayer.Object;
+        var ejected = evt.ExileController.initData?.networkedPlayer?.Object;
         if (ejected != egoist)
             return;
 
