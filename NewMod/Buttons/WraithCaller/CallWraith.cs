@@ -61,16 +61,15 @@ namespace NewMod.Buttons.WraithCaller
             return role is Wraith;
         }
 
-        /// <summary>
-        /// Triggered when the Call Wraith button is clicked.
-        /// </summary>
+        public override void ClickHandler()
+        {
+            if (CanClick())
+                OnClick();
+        }
+
         protected override void OnClick()
         {
-            //TODO: Replace this with the custom minigame once it’s fixed
-            CustomPlayerMenu menu = CustomPlayerMenu.Create();
-
-            SetTimerPaused(true);
-
+            var menu = CustomPlayerMenu.Create();
             var allowedPlayers = new HashSet<byte>();
 
             foreach (var info in GameData.Instance.AllPlayers)
@@ -81,18 +80,22 @@ namespace NewMod.Buttons.WraithCaller
                 allowedPlayers.Add(info.PlayerId);
             }
 
-            menu.Begin(player => allowedPlayers.Contains(player.PlayerId) && !player.notRealPlayer,
-                       player =>
-                       {
-                           menu.Close();
-                          WraithCallerUtilities.RequestSummonNPC(PlayerControl.LocalPlayer, player);
-                           SetTimerPaused(false);
-                       });
+            menu.Begin(player => allowedPlayers.Contains(player.PlayerId) && !player.notRealPlayer, player =>
+            {
+                menu.Close();
+
+                DecreaseUses();
+                ResetCooldownAndOrEffect();
+
+                WraithCallerUtilities.RequestSummonNPC(PlayerControl.LocalPlayer, player);
+            });
 
             foreach (var panel in menu.potentialVictims)
             {
-                var icon = panel.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(sr => sr.name == "ShapeshifterIcon");
-                icon.sprite = NewModAsset.WraithIcon.LoadAsset();
+                var icon = panel.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(renderer => renderer.name == "ShapeshifterIcon");
+
+                if (icon)
+                    icon.sprite = NewModAsset.WraithIcon.LoadAsset();
             }
         }
     }

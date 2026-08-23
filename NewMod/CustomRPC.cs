@@ -15,6 +15,10 @@ public enum CustomRPC
     WitnessTrap,
     NotifyChampion,
     SummonNPC,
+    StickyEndLink,
+    StickyStartLink,
+    StickyRequestLink,
+    ApplyMissionResult,
     RequestSummon,
     BeaconPulse,
     DeployZone

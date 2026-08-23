@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.Events.Vanilla.Meeting;
 using NewMod.Buttons.Revenant;
 using NewMod.Components;
 using NewMod.Modifiers;
@@ -43,10 +44,8 @@ public static class NewModEventHandler
                     if (wrapper == null) continue;
 
                     var wrapperType = wrapper.GetType();
-                    var eventHandlerProperty =
-                        wrapperType.GetProperty("EventHandler", BindingFlags.Public | BindingFlags.Instance);
-                    var priorityProperty =
-                        wrapperType.GetProperty("Priority", BindingFlags.Public | BindingFlags.Instance);
+                    var eventHandlerProperty = wrapperType.GetProperty("EventHandler", BindingFlags.Public | BindingFlags.Instance);
+                    var priorityProperty = wrapperType.GetProperty("Priority", BindingFlags.Public | BindingFlags.Instance);
                     var handler = eventHandlerProperty.GetValue(wrapper) as Delegate;
                     var priority = priorityProperty.GetValue(wrapper) as int? ?? 0;
                     var method = handler.Method;
@@ -89,8 +88,7 @@ public static class NewModEventHandler
         PendingEffectManager.pendingEffects.Clear();
         DoomAwakening.killedPlayers.Clear();
 
-        StickyModifier.linkedPlayers.Clear();
-        StickyModifier._IsActive = false;
+        StickyModifier.ResetState();
         FearPulseArea.AffectedPlayers.Clear();
         FearPulseArea._speedNotifShown.Clear();
         FearPulseArea._visionNotifShown.Clear();
@@ -127,6 +125,15 @@ public static class NewModEventHandler
 
         HudManager.Instance.Chat.enabled = false;
         VisionaryUtilities.DeleteAllScreenshots();
+    }
+
+    [RegisterEvent]
+    public static void OnMeetingStart(StartMeetingEvent evt)
+    {
+        if (evt.MeetingHud != null)
+        {
+            HudManager.Instance.Chat.enabled = true;
+        }
     }
 
     [RegisterEvent(100)]

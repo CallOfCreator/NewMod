@@ -28,36 +28,32 @@ namespace NewMod.Roles.ImpostorRoles
         public string RoleName => "Tyrant";
         public string RoleDescription => "Slow them. Bind them. End them";
 
-        public string RoleLongDescription =>
-            "You are the Tyrant. Each kill strengthens your control over the ship:\n";
+        public string RoleLongDescription => "You are the Tyrant. Each kill strengthens your control over the ship:\n";
 
         public Color RoleColor => new(0.78f, 0.10f, 0.16f, 1f);
         public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
         public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
         public NewModFaction Faction => NewModFaction.Apex;
 
-        public CustomRoleConfiguration Configuration => new(this)
-        {
-            MaxRoleCount = 1,
-            OptionsScreenshot = MiraAssets.Empty,
-            Icon = NewModAsset.CrownIcon,
-            CanGetKilled = true,
-            UseVanillaKillButton = true,
-            CanUseVent = true,
-            TasksCountForProgress = false,
-            CanUseSabotage = true,
-            DefaultChance = 25,
-            DefaultRoleCount = 1,
-            CanModifyChance = true,
-            GhostRole = AmongUs.GameOptions.RoleTypes.Crewmate,
-            RoleHintType = RoleHintType.RoleTab
-        };
+        public CustomRoleConfiguration Configuration =>
+            new(this)
+            {
+                MaxRoleCount = 1,
+                OptionsScreenshot = MiraAssets.Empty,
+                Icon = NewModAsset.CrownIcon,
+                CanGetKilled = true,
+                UseVanillaKillButton = true,
+                CanUseVent = true,
+                TasksCountForProgress = false,
+                CanUseSabotage = true,
+                DefaultChance = 25,
+                DefaultRoleCount = 1,
+                CanModifyChance = true,
+                GhostRole = AmongUs.GameOptions.RoleTypes.Crewmate,
+                RoleHintType = RoleHintType.RoleTab
+            };
 
-        public TeamIntroConfiguration TeamConfiguration => new()
-        {
-            IntroTeamDescription = RoleDescription,
-            IntroTeamColor = RoleColor
-        };
+        public TeamIntroConfiguration TeamConfiguration => new() { IntroTeamDescription = RoleDescription, IntroTeamColor = RoleColor };
 
         [HideFromIl2Cpp]
         public StringBuilder SetTabText()
@@ -66,8 +62,7 @@ namespace NewMod.Roles.ImpostorRoles
             var green = Palette.AcceptedGreen.ToHtmlStringRGBA();
             int kills = GetKillCount();
 
-            string firstKill =
-                "* 1st Kill — Fear Pulse: nearby foes suffer reduced vision and speed for a short time.\n";
+            string firstKill = "* 1st Kill — Fear Pulse: nearby foes suffer reduced vision and speed for a short time.\n";
             string secondKill = "* 2nd Kill — Zone of Suppression: a dome that disables buttons for those inside.\n";
             string thirdKill = "* 3rd Kill — Intimidation Protocol: the next witness is frozen briefly.\n";
             string fourthKill = "* 4th Kill — Apex Throne: designate a Champion who cannot oppose you.\n";
@@ -162,21 +157,16 @@ namespace NewMod.Roles.ImpostorRoles
                 ApexThroneOutcomeSet = false;
 
                 var menu = CustomPlayerMenu.Create();
-                menu.Begin(
-                    player => !player.Data.IsDead &&
-                              !player.Data.Disconnected &&
-                              player.PlayerId != PlayerControl.LocalPlayer.PlayerId,
-                    player =>
-                    {
-                        tyrant.SetChampion(player.PlayerId);
-                        menu.Close();
+                menu.Begin(player => !player.Data.IsDead && !player.Data.Disconnected && player.PlayerId != PlayerControl.LocalPlayer.PlayerId, player =>
+                {
+                    tyrant.SetChampion(player.PlayerId);
+                    menu.Close();
 
-                        if (tyrant.Player.AmOwner)
-                            Coroutines.Start(CoroutinesHelper.CoNotify(
-                                "<color=#9CCC65>Apex Throne is armed. You have chosen a Champion.</color>"));
+                    if (tyrant.Player.AmOwner)
+                        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#9CCC65>Apex Throne is armed. You have chosen a Champion.</color>"));
 
-                        RpcNotifyChampion(tyrant.Player, player);
-                    });
+                    RpcNotifyChampion(tyrant.Player, player);
+                });
             }
         }
 
@@ -192,15 +182,13 @@ namespace NewMod.Roles.ImpostorRoles
 
             if (PlayerControl.LocalPlayer.PlayerId == _championId)
             {
-                var tyrantPlayer = PlayerControl.AllPlayerControls
-                    .ToArray()
-                    .FirstOrDefault(p => p && p.Data != null && p.Data.Role is Tyrant);
+                var tyrantPlayer = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p && p.Data != null && p.Data.Role is Tyrant);
 
                 if (tyrantPlayer)
                 {
                     foreach (var ps in hud.playerStates)
                     {
-                        if (ps.TargetPlayerId == tyrantPlayer.PlayerId)
+                        if (ps.PlayerId == tyrantPlayer.PlayerId)
                         {
                             ps.NameText.text += "\n<color=#C62828><size=60%>Tyrant</size></color>";
                             break;
@@ -256,9 +244,7 @@ namespace NewMod.Roles.ImpostorRoles
 
                 if (voter.AmOwner)
                 {
-                    var msg = (Outcome == ThroneOutcome.ChampionSideWin)
-                        ? "<color=#64B5F6>You submitted to the Tyrant’s will.</color>"
-                        : "<color=red>Betrayal detected. You will be punished.</color>";
+                    var msg = (Outcome == ThroneOutcome.ChampionSideWin) ? "<color=#64B5F6>You submitted to the Tyrant’s will.</color>" : "<color=red>Betrayal detected. You will be punished.</color>";
                     Coroutines.Start(CoroutinesHelper.CoNotify(msg));
                 }
 
@@ -296,13 +282,10 @@ namespace NewMod.Roles.ImpostorRoles
             go.transform.position = pos;
 
             var area = go.AddComponent<SuppressionDomeArea>();
-            area.Init(Player.PlayerId, radius: OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius,
-                OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
+            area.Init(Player.PlayerId, radius: OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius, OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
 
             if (Player.AmOwner)
-                Utils.CreateCircle("SupressionDome", Player.GetTruePosition(),
-                    OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius, Palette.AcceptedGreen,
-                    OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
+                Utils.CreateCircle("SupressionDome", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius, Palette.AcceptedGreen, OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
         }
 
         public void ArmWitnessTrap(Vector3 pos)
@@ -311,17 +294,10 @@ namespace NewMod.Roles.ImpostorRoles
             go.transform.position = pos;
 
             var trap = go.AddComponent<WitnessTrapArea>();
-            trap.Init(
-                ownerId: Player.PlayerId,
-                radius: OptionGroupSingleton<TyrantOptions>.Instance.WitnessRange,
-                freeze: OptionGroupSingleton<TyrantOptions>.Instance.WitnessFreezeDuration,
-                duration: OptionGroupSingleton<TyrantOptions>.Instance.WitnessArmWindow
-            );
+            trap.Init(ownerId: Player.PlayerId, radius: OptionGroupSingleton<TyrantOptions>.Instance.WitnessRange, freeze: OptionGroupSingleton<TyrantOptions>.Instance.WitnessFreezeDuration, duration: OptionGroupSingleton<TyrantOptions>.Instance.WitnessArmWindow);
 
             if (Player.AmOwner)
-                Utils.CreateCircle("ArmWitnessTrap", Player.GetTruePosition(),
-                    OptionGroupSingleton<TyrantOptions>.Instance.WitnessRange, Color.cyan,
-                    OptionGroupSingleton<TyrantOptions>.Instance.WitnessArmWindow);
+                Utils.CreateCircle("ArmWitnessTrap", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.WitnessRange, Color.cyan, OptionGroupSingleton<TyrantOptions>.Instance.WitnessArmWindow);
         }
 
         public void SpawnFearPulse(Vector3 pos)
@@ -330,17 +306,10 @@ namespace NewMod.Roles.ImpostorRoles
             go.transform.position = pos;
 
             var area = go.AddComponent<FearPulseArea>();
-            area.Init(
-                ownerId: Player.PlayerId,
-                radius: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseRadius,
-                duration: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseDuration,
-                speedMul: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseSpeed
-            );
+            area.Init(ownerId: Player.PlayerId, radius: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseRadius, duration: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseDuration, speedMul: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseSpeed);
 
             if (Player.AmOwner)
-                Utils.CreateCircle("FearPulse", Player.GetTruePosition(),
-                    OptionGroupSingleton<TyrantOptions>.Instance.FearPulseRadius, new Color(1f, 0.35f, 0.2f, 0.6f),
-                    OptionGroupSingleton<TyrantOptions>.Instance.FearPulseDuration);
+                Utils.CreateCircle("FearPulse", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.FearPulseRadius, new Color(1f, 0.35f, 0.2f, 0.6f), OptionGroupSingleton<TyrantOptions>.Instance.FearPulseDuration);
         }
 
         [MethodRpc((uint)CustomRPC.NotifyChampion)]
@@ -353,8 +322,7 @@ namespace NewMod.Roles.ImpostorRoles
 
             if (target.AmOwner)
             {
-                Coroutines.Start(CoroutinesHelper.CoNotify(
-                    $"<color=#FFD54F>{source.Data.PlayerName}</color> is your <color=#C62828>Tyrant</color>. Obey or be exiled."));
+                Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD54F>{source.Data.PlayerName}</color> is your <color=#C62828>Tyrant</color>. Obey or be exiled."));
             }
         }
 
