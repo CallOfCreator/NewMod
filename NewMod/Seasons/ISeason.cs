@@ -22,5 +22,9 @@ public interface ISeason
     IReadOnlyList<Type> GetSeasonOptionTypes();
     IReadOnlyList<Type> GetSeasonButtonTypes();
     IReadOnlyList<Type> GetSeasonGETypes();
-    IReadOnlyList<Type> GetSeasonAchievementTabTypes() => [];
+
+    IReadOnlyList<Type> GetSeasonAchievementTabTypes()
+    {
+        return [];
+    }
 }

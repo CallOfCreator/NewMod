@@ -26,28 +26,28 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
     public string RoleName => "MirrorBlade";
     public string RoleDescription => "Reflect the strike meant for you.";
 
-    public string RoleLongDescription =>
-        "Arm your mirror stance. The next murder targeting you is turned back on the attacker. A Wraith that reaches you is reflected and hunts its caller instead.";
+    public string RoleLongDescription => "Arm your mirror stance. The next murder targeting you is turned back on the attacker. A Wraith that reaches you is reflected and hunts its caller instead.";
 
     public Color RoleColor => new Color32(192, 220, 255, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public NewModFaction Faction => NewModFaction.Apex;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        AffectedByLightOnAirship = false,
-        CanUseSabotage = true,
-        CanUseVent = true,
-        UseVanillaKillButton = true,
-        TasksCountForProgress = false,
-        Icon = MiraAssets.Empty,
-        OptionsScreenshot = MiraAssets.Empty,
-        MaxRoleCount = 1,
-        DefaultChance = 25,
-        DefaultRoleCount = 1,
-        CanModifyChance = true,
-        RoleHintType = RoleHintType.RoleTab
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = false,
+            CanUseSabotage = true,
+            CanUseVent = true,
+            UseVanillaKillButton = true,
+            TasksCountForProgress = false,
+            Icon = NewModAsset.ReflectIcon,
+            OptionsScreenshot = MiraAssets.Empty,
+            MaxRoleCount = 1,
+            DefaultChance = 25,
+            DefaultRoleCount = 1,
+            CanModifyChance = true,
+            RoleHintType = RoleHintType.RoleTab
+        };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()
@@ -78,15 +78,8 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
 
         RpcReflectionTriggered(evt.Target, evt.Source.PlayerId, -1);
         _reflecting = true;
-
-        try
-        {
-            evt.Target.RpcCustomMurder(evt.Source, true, false, true, false, false, true);
-        }
-        finally
-        {
-            _reflecting = false;
-        }
+        evt.Target.RpcCustomMurder(evt.Source, true, false, true, false, false);
+        _reflecting = false;
     }
 
     [RegisterEvent]

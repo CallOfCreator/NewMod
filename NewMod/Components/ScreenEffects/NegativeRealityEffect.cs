@@ -1,5 +1,7 @@
 using System;
 using Reactor.Utilities.Attributes;
+using MiraAPI.Modifiers;
+using NewMod.Modifiers.S1;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
@@ -66,7 +68,7 @@ public class NegativeRealityEffect(IntPtr ptr) : MonoBehaviour(ptr)
 
     public void OnRenderImage(RenderTexture src, RenderTexture dst)
     {
-        if (_mat == null)
+        if (_mat == null || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {
             Graphics.Blit(src, dst);
             return;

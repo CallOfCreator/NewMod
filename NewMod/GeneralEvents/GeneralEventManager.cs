@@ -8,6 +8,7 @@ using MiraAPI.GameModes;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
 using NewMod.Options;
+using NewMod.Roles.NeutralRoles.S1;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
 using Reactor.Utilities;
@@ -33,6 +34,9 @@ public static class GeneralEventManager
     private static IEnumerator _eventRoutine;
 
     public static IGeneralEvent CurrentEvent { get; private set; }
+    public static bool CycleRunning => _cycleRoutine != null;
+    public static int RegisteredCount => Registered.Count;
+    public static IReadOnlyList<IGeneralEvent> RegisteredEvents => Registered;
 
     public static void RegisterEvent<T>() where T : IGeneralEvent, new()
     {
@@ -53,10 +57,8 @@ public static class GeneralEventManager
 
     public static void StartCycle()
     {
-        if (!AmongUsClient.Instance.AmHost || _cycleRoutine != null || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
-        {
+        if (!AmongUsClient.Instance.AmHost || _cycleRoutine != null || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
             return;
-        }
 
         _cycleRoutine = Coroutines.Start(CoCycle());
     }
@@ -98,12 +100,15 @@ public static class GeneralEventManager
 
     public static void ForceEvent<T>() where T : IGeneralEvent
     {
-        if (!AmongUsClient.Instance.AmHost || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
-        {
-            return;
-        }
+        ForceEvent(typeof(T));
+    }
 
-        if (!TypeToIdMap.TryGetValue(typeof(T), out var id))
+    public static void ForceEvent(Type type)
+    {
+        if (!AmongUsClient.Instance.AmHost || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
+            return;
+
+        if (!TypeToIdMap.TryGetValue(type, out var id))
             return;
 
         _issuedSequence++;
@@ -121,11 +126,14 @@ public static class GeneralEventManager
 
     public static IEnumerator CoCycle()
     {
-        while (true)
+        while (GameManager.Instance && !GameManager.Instance.GameHasStarted)
+            yield return null;
+
+        while (GameManager.Instance && GameManager.Instance.GameHasStarted)
         {
             var options = OptionGroupSingleton<GEOptions>.Instance;
 
-            if (!options.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
+            if (!options.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
             {
                 _cycleRoutine = null;
                 yield break;
@@ -136,16 +144,19 @@ public static class GeneralEventManager
 
             yield return new WaitForSeconds(Random.Range(minimum, maximum));
 
-            if (!options.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
+            if (!GameManager.Instance || !GameManager.Instance.GameHasStarted)
+                break;
+
+            if (!options.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
             {
                 _cycleRoutine = null;
                 yield break;
             }
 
-            if (MeetingHud.Instance || ExileController.Instance || CurrentEvent != null)
-            {
+            if (MeetingHud.Instance || ExileController.Instance || CurrentEvent != null) continue;
+
+            if (Random.Range(0f, 100f) >= options.EventTriggerChance)
                 continue;
-            }
 
             var candidate = PickEvent();
 
@@ -156,13 +167,28 @@ public static class GeneralEventManager
 
             RpcStartGeneralEvent(PlayerControl.LocalPlayer, TypeToIdMap[candidate.GetType()], _issuedSequence);
         }
+
+        _cycleRoutine = null;
     }
 
     public static IGeneralEvent PickEvent()
     {
-        var eligible = Registered.Where(ge => ge.CanOccur() && Helpers.CheckChance(ge.OccurrenceChance)).OrderBy(_ => Random.value).ToList();
+        var eligible = Registered.Where(ge => ge.OccurrenceChance > 0 && ge.CanOccur()).ToArray();
 
-        return eligible.Count > 0 ? eligible[0] : null;
+        if (eligible.Length == 0)
+            return null;
+
+        var totalWeight = eligible.Sum(ge => ge.OccurrenceChance);
+        var roll = Random.Range(0, totalWeight);
+
+        foreach (var ge in eligible)
+        {
+            roll -= ge.OccurrenceChance;
+            if (roll < 0)
+                return ge;
+        }
+
+        return eligible[^1];
     }
 
     [RegisterEvent]
@@ -182,10 +208,8 @@ public static class GeneralEventManager
     [MethodRpc((uint)CustomRPC.StartGeneralEvent, LocalHandling = RpcLocalHandling.After)]
     public static void RpcStartGeneralEvent(PlayerControl source, uint eventTypeId, uint sequence)
     {
-        if (!source.IsHost() || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || !CustomGameModeManager.IsClassic())
-        {
+        if (!source.IsHost() || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
             return;
-        }
 
         if (sequence <= _lastSequence)
             return;
@@ -236,10 +260,7 @@ public static class GeneralEventManager
 
     public static void EndEvent(uint sequence)
     {
-        if (CurrentEvent == null || sequence != _activeSequence)
-        {
-            return;
-        }
+        if (CurrentEvent == null || sequence != _activeSequence) return;
 
         if (_eventRoutine != null)
         {
@@ -253,23 +274,20 @@ public static class GeneralEventManager
         _activeSequence = 0;
 
         ge.OnEventEnd();
-
         if (_hud)
             _hud.Hide();
 
         _hud = null;
 
-        SoundManager.Instance.PlaySound(NewModAsset.GEExitSound.LoadAsset(), false);
+        if (GameManager.Instance && GameManager.Instance.GameHasStarted)
+            SoundManager.Instance.PlaySound(NewModAsset.GEExitSound.LoadAsset(), false);
     }
 
     public static IEnumerator CoEventTimer(uint sequence, float duration)
     {
         yield return new WaitForSeconds(duration);
 
-        if (CurrentEvent == null || _activeSequence != sequence || !AmongUsClient.Instance.AmHost)
-        {
-            yield break;
-        }
+        if (CurrentEvent == null || _activeSequence != sequence || !AmongUsClient.Instance.AmHost) yield break;
 
         _eventRoutine = null;
 

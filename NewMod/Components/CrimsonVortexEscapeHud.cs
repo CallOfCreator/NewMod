@@ -7,28 +7,20 @@ namespace NewMod.Components;
 [RegisterInIl2Cpp]
 public class CrimsonVortexEscapeHud(nint ptr) : MonoBehaviour(ptr)
 {
-    public static CrimsonVortexEscapeHud Instance { get; private set; }
-
-    private GameObject _root;
-    private SpriteRenderer _glow;
     private SpriteRenderer _fill;
+    private SpriteRenderer _glow;
     private TextMeshPro _label;
+    private int _lastPercentage = -1;
     private TextMeshPro _percentage;
-    private Texture2D _texture;
-    private Sprite _sprite;
 
     private float _pulse;
-    private float _successEndsAt;
-    private int _lastPercentage = -1;
-    private State _state;
 
-    private enum State
-    {
-        Hidden,
-        Mashing,
-        Escaping,
-        Success
-    }
+    private GameObject _root;
+    private Sprite _sprite;
+    private State _state;
+    private float _successEndsAt;
+    private Texture2D _texture;
+    public static CrimsonVortexEscapeHud Instance { get; private set; }
 
     public void Awake()
     {
@@ -169,13 +161,22 @@ public class CrimsonVortexEscapeHud(nint ptr) : MonoBehaviour(ptr)
         _glow.color = new Color(0.95f, 0.02f, 0.04f, 0.14f + _pulse * 0.28f);
     }
 
+    public void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+
+        Destroy(_sprite);
+        Destroy(_texture);
+    }
+
     public void SetProgress(float progress)
     {
         if (_state != State.Mashing)
         {
             _state = State.Mashing;
 
-            _label.text = "MASH <color=#FFFFFF>[SPACE]</color> TO BREAK FREE!";
+            _label.text = Application.platform == RuntimePlatform.Android ? "TAP RAPIDLY TO BREAK FREE!" : "MASH <color=#FFFFFF>[SPACE]</color> TO BREAK FREE!";
 
             _label.color = new Color(0.95f, 0.025f, 0.045f, 1f);
         }
@@ -247,10 +248,7 @@ public class CrimsonVortexEscapeHud(nint ptr) : MonoBehaviour(ptr)
 
     public void Hide()
     {
-        if (_state == State.Success && Time.time < _successEndsAt)
-        {
-            return;
-        }
+        if (_state == State.Success && Time.time < _successEndsAt) return;
 
         ForceHide();
     }
@@ -265,12 +263,11 @@ public class CrimsonVortexEscapeHud(nint ptr) : MonoBehaviour(ptr)
         _root.SetActive(false);
     }
 
-    public void OnDestroy()
+    private enum State
     {
-        if (Instance == this)
-            Instance = null;
-
-        Object.Destroy(_sprite);
-        Object.Destroy(_texture);
+        Hidden,
+        Mashing,
+        Escaping,
+        Success
     }
 }

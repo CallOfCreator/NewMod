@@ -20,25 +20,27 @@ public class OverloadRole : ImpostorRole, ICustomRole
     public static PlayerControl chosenPrey;
     public static List<CustomActionButton> CachedButtons = new();
     public string RoleName => "Overload";
-    public string RoleDescription => "Absorb, Consume, Devour, Overload.";
-    public string RoleLongDescription => "You are the Overload, an impostor who thrives on the abilities of the fallen. Each ejected player fuels your chaos, granting you their power";
+    public string RoleDescription => "Hunt chosen prey to absorb their power.";
+    public string RoleLongDescription => "Choose prey and kill them yourself to gain a charge.\nReach the required charge and use OVERLOAD to win.";
     public Color RoleColor => new(0.6f, 0.1f, 0.3f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        AffectedByLightOnAirship = false,
-        CanGetKilled = true,
-        UseVanillaKillButton = true,
-        CanUseVent = true,
-        CanUseSabotage = false,
-        TasksCountForProgress = false,
-        ShowInFreeplay = true,
-        HideSettings = false,
-        OptionsScreenshot = null,
-        Icon = null
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = false,
+            CanGetKilled = true,
+            UseVanillaKillButton = true,
+            CanUseVent = true,
+            CanUseSabotage = false,
+            TasksCountForProgress = false,
+            ShowInFreeplay = true,
+            HideSettings = false,
+            MaxRoleCount = 1,
+            OptionsScreenshot = null,
+            Icon = null
+        };
 
     public override bool DidWin(GameOverReason gameOverReason)
     {
@@ -50,7 +52,6 @@ public class OverloadRole : ImpostorRole, ICustomRole
         AbsorbedAbilityCount = 0;
         chosenPrey = null;
         CachedButtons.Clear();
-        CustomButtonSingleton<OverloadButton>.Instance.absorbed = null;
     }
 
     [RegisterEvent]

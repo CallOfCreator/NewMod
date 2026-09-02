@@ -58,7 +58,7 @@ public class ShieldArea(IntPtr ptr) : MonoBehaviour(ptr)
         var shouldSee = false;
 
         if (lp.PlayerId == ownerId)
-            shouldSee = OptionGroupSingleton<AegisOptions>.Instance.Visibility != WardVisibilityMode.AllPlayers || true;
+            shouldSee = true;
         if (!shouldSee)
             switch (OptionGroupSingleton<AegisOptions>.Instance.Visibility)
             {

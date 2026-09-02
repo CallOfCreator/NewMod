@@ -61,6 +61,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
 
         var bodySprite = Visual.cosmetics.currentBodySprite;
         bodySprite.Visible = true;
+        Visual.cosmetics.colorBlindText.text = "NPC Delivery";
 
         PlayerMaterial.SetColors(owner.Data.DefaultOutfit.ColorId, bodySprite.BodySprite);
 

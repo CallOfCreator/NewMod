@@ -17,8 +17,10 @@ namespace NewMod.Buttons.Roles;
 ///     Represents the serum injection button for the Injector role.
 ///     Allows injecting a random serum into nearby players.
 /// </summary>
-public class InjectButton : CustomActionButton<PlayerControl>
+public class InjectButton : CustomActionButton<PlayerControl>, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Control;
+
     /// <summary>
     ///     The name displayed on the button (if any).
     /// </summary>

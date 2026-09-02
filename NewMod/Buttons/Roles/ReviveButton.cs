@@ -7,6 +7,7 @@ using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using UnityEngine;
 
@@ -15,8 +16,10 @@ namespace NewMod.Buttons.Roles;
 /// <summary>
 ///     Defines a custom action button for the role.
 /// </summary>
-public class ReviveButton : CustomActionButton
+public class ReviveButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Protection;
+
     /// <summary>
     ///     The name displayed on the button. Intentionally left empty to show an existing name elsewhere.
     /// </summary>

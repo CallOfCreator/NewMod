@@ -42,7 +42,7 @@ public class FatefulModifier : GameModifier, INewModModifier
         var roll = Random.Range(0f, 100f);
         if (roll >= chance) return;
 
-        evt.Player.RpcCustomMurder(evt.Player, true);
+        evt.Player.RpcCustomMurder(evt.Player);
         evt.Player.RemoveModifier<FatefulModifier>();
     }
 }

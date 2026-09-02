@@ -5,20 +5,26 @@ using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
+using NewMod.Roles.NeutralRoles;
 using UnityEngine;
 
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public class WardenSealButton : CustomActionButton
+public class WardenSealButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Control;
     public override string Name => "Seal";
     public override float Cooldown => OptionGroupSingleton<WardenOptions>.Instance.SealCooldown;
     public override float EffectDuration => OptionGroupSingleton<WardenOptions>.Instance.SealDuration;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.WardenSeal;
-    public override bool Enabled(RoleBehaviour role) => role is WardenRole;
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return role is WardenRole;
+    }
 
     public override bool CanUse()
     {

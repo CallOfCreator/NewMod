@@ -13,12 +13,30 @@ namespace NewMod.Patches;
 public static class LobbyPatch
 {
     public static string lastContent;
+    private static IEnumerator _announcementRoutine;
 
     [HarmonyPatch(nameof(LobbyBehaviour.Start))]
     [HarmonyPostfix]
     public static void StartPostfix()
     {
-        Coroutines.Start(CoCheckAnnouncement());
+        StopAnnouncementRoutine();
+        _announcementRoutine = Coroutines.Start(CoCheckAnnouncement());
+    }
+
+    [HarmonyPatch(nameof(LobbyBehaviour.OnDestroy))]
+    [HarmonyPostfix]
+    public static void OnDestroyPostfix()
+    {
+        StopAnnouncementRoutine();
+    }
+
+    private static void StopAnnouncementRoutine()
+    {
+        if (_announcementRoutine == null)
+            return;
+
+        Coroutines.Stop(_announcementRoutine);
+        _announcementRoutine = null;
     }
 
     private static IEnumerator CoCheckAnnouncement()

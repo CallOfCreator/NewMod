@@ -12,29 +12,29 @@ namespace NewMod.Roles.CrewmateRoles.S1;
 public class VerifierRole : CrewmateRole, INewModRole
 {
     public string RoleName => "Verifier";
-    public string RoleDescription => "Test claims, not identities.";
+    public string RoleDescription => "Check one recorded action each meeting.";
 
-    public string RoleLongDescription =>
-        "During meetings, choose a player and verify one type of claim:\n\n" + "• This player did a task\n" + "• This player entered a vent\n" + "• This player was near a body\n" + "• This player used an ability\n\n" + "The result is only Confirmed, Denied, or Unknown. It never reveals what actually happened.";
+    public string RoleLongDescription => "Once per meeting, verify whether a player did a task, entered a vent, was near a body, or used an ability. Only you see the result: Confirmed, Denied, or Unknown.";
 
     public Color RoleColor => new Color32(88, 232, 190, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public NewModFaction Faction => NewModFaction.Sentinel;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        AffectedByLightOnAirship = true,
-        CanUseSabotage = false,
-        CanUseVent = false,
-        UseVanillaKillButton = false,
-        TasksCountForProgress = true,
-        Icon = NewModAsset.VerifyIcon,
-        MaxRoleCount = 1,
-        DefaultChance = 25,
-        DefaultRoleCount = 1,
-        CanModifyChance = true,
-        RoleHintType = RoleHintType.RoleTab
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = true,
+            CanUseSabotage = false,
+            CanUseVent = false,
+            UseVanillaKillButton = false,
+            TasksCountForProgress = true,
+            Icon = NewModAsset.VerifyIcon,
+            MaxRoleCount = 1,
+            DefaultChance = 25,
+            DefaultRoleCount = 1,
+            CanModifyChance = true,
+            RoleHintType = RoleHintType.RoleTab
+        };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()

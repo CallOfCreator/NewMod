@@ -15,6 +15,7 @@ using NewMod.Roles.NeutralRoles.S1;
 using TMPro;
 using UnityEngine;
 using Type = System.Type;
+using DeadwireRole = NewMod.Roles.ImpostorRoles.S1.Deadwire;
 
 namespace NewMod.Seasons;
 
@@ -22,10 +23,9 @@ public class S1 : ISeason
 {
     public string Name => "Season 1";
 
-    public DateTime SeasonStartDate => new(2026, 09, 01, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonStartDate => new(2026, 09, 24, 0, 0, 0, 0, DateTimeKind.Utc);
 
     public DateTime SeasonEndDate => new(2026, 10, 15, 0, 0, 0, 0, DateTimeKind.Utc);
-
     public Color SeasonMainColor => Color.blue;
     public bool ContentExpires => false;
 
@@ -61,7 +61,12 @@ public class S1 : ISeason
             typeof(VerifierRole),
             typeof(Voidwalker),
             typeof(WardenRole),
-            typeof(ArbitratorRole)
+            typeof(ArbitratorRole),
+            typeof(DeadwireRole),
+            typeof(Nomad),
+            typeof(Collector),
+            typeof(Bounty),
+            typeof(Usurper)
         ];
     }
 
@@ -91,46 +96,63 @@ public class S1 : ISeason
             typeof(MarkedModifierOptions),
             typeof(WardenOptions),
             typeof(ArbitratorOptions),
+            typeof(DeadwireOptions),
+            typeof(NomadOptions),
+            typeof(CollectorOptions),
+            typeof(BountyOptions),
+            typeof(UsurperOptions),
             typeof(GEOptions)
         ];
     }
 
     public IReadOnlyList<Type> GetSeasonButtonTypes()
-        {
-            return
-            [
-                typeof(MirrorReflectButton),
-                typeof(ObjectiveButton),
-                typeof(TopWraithLaneButton),
-                typeof(MidWraithLaneButton),
-                typeof(BottomWraithLaneButton),
-                typeof(BanishWraithButton),
-                typeof(WraithSiegeReviveButton),
-                typeof(InspectResidualButton),
-                typeof(WardenSealButton),
-                typeof(ArbitratorLeverageButton)
-            ];
-        }
-
-        public IReadOnlyList<Type> GetSeasonGamemodeTypes()
-        {
-            return
-            [
-                typeof(WraithSiege)
-            ];
-        }
-
-        public IReadOnlyList<Type> GetSeasonGETypes()
-        {
-            return
-            [
-                typeof(NegativeRealityGE),
-                typeof(CrismonVortexGE),
-                typeof(AbilityExchangeGE),
-                typeof(IdentityCrisisGE),
-                typeof(NoMansLandGE),
-                typeof(RoleScrambleGE),
-                typeof(SystemOverrideGE)
-            ];
-        }
+    {
+        return
+        [
+            typeof(MirrorReflectButton),
+            typeof(ObjectiveButton),
+            typeof(TerminateButton),
+            typeof(TopWraithLaneButton),
+            typeof(MidWraithLaneButton),
+            typeof(BottomWraithLaneButton),
+            typeof(BanishWraithButton),
+            typeof(WraithSiegeReviveButton),
+            typeof(InspectResidualButton),
+            typeof(WardenSealButton),
+            typeof(EnterVoid),
+            typeof(ArbitratorLeverageButton),
+            typeof(DeadlockButton),
+            typeof(OverrideButton),
+            typeof(AnchorButton),
+            typeof(WanderButton),
+            typeof(HarvestButton),
+            typeof(ManifestButton),
+            typeof(CashOutButton),
+            typeof(ClaimButton),
+            typeof(SpecialistScanButton),
+            typeof(SpecialistModeButton)
+        ];
     }
+
+    public IReadOnlyList<Type> GetSeasonGamemodeTypes()
+    {
+        return
+        [
+            typeof(WraithSiege)
+        ];
+    }
+
+    public IReadOnlyList<Type> GetSeasonGETypes()
+    {
+        return
+        [
+            typeof(NegativeRealityGE),
+            typeof(CrismonVortexGE),
+            typeof(AbilityExchangeGE),
+            typeof(IdentityCrisisGE),
+            typeof(NoMansLandGE),
+            typeof(RoleScrambleGE),
+            typeof(SystemOverrideGE)
+        ];
+    }
+}

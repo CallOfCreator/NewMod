@@ -3,6 +3,7 @@ using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using NewMod.Seasons;
+using UnityEngine;
 
 namespace NewMod.Achievements;
 
@@ -13,18 +14,15 @@ public static class NewModAchievementTracker
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (!evt.TriggeredByIntro)
-            return;
-
         _onlineMatchActive = false;
 
-        if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
-        {
+        if (!evt.TriggeredByIntro || Application.platform == RuntimePlatform.Android)
             return;
-        }
+
+        if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
+            return;
 
         PreseasonAchievementsTab.WelcomeToNewMod.Unlock();
-
         _onlineMatchActive = AmongUsClient.Instance.NetworkMode == NetworkModes.OnlineGame;
     }
 
@@ -36,13 +34,13 @@ public static class NewModAchievementTracker
 
         _onlineMatchActive = false;
 
-        if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
-        {
+        if (Application.platform == RuntimePlatform.Android)
             return;
-        }
+
+        if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab))) return;
 
         if (!PreseasonAchievementsTab.ThreeInARow.Unlocked)
-            PreseasonAchievementsTab.ThreeInARow.Increment(1);
+            PreseasonAchievementsTab.ThreeInARow.Increment(1, false);
     }
 
     [HarmonyPatch(typeof(GameData), nameof(GameData.OnDisconnected))]

@@ -52,8 +52,10 @@ public static class VerifierUtilities
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (evt.TriggeredByIntro)
-            Reset(true);
+        if (!evt.TriggeredByIntro || (Application.platform == RuntimePlatform.Android && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay))
+            return;
+
+        Reset(true);
     }
 
     [RegisterEvent]
@@ -65,15 +67,14 @@ public static class VerifierUtilities
     [RegisterEvent]
     public static void OnCompleteTask(CompleteTaskEvent evt)
     {
-        if (evt.Player && evt.Player.AmOwner)
-            RpcRegisterFact(evt.Player, (byte)VerifierClaimType.DidTask);
+        PublishFact(evt.Player, VerifierClaimType.DidTask);
     }
 
     [RegisterEvent]
     public static void OnEnterVent(EnterVentEvent evt)
     {
-        if (evt.Player && evt.Player.AmOwner)
-            RpcRegisterFact(evt.Player, (byte)VerifierClaimType.EnteredVent);
+        if (!evt.IsCancelled)
+            PublishFact(evt.Player, VerifierClaimType.EnteredVent);
     }
 
     [RegisterEvent]
@@ -81,10 +82,10 @@ public static class VerifierUtilities
     {
         var player = PlayerControl.LocalPlayer;
 
-        if (!player || MeetingHud.Instance || ExileController.Instance || !evt.Button.CanClick())
+        if (evt.IsCancelled || !player || MeetingHud.Instance || ExileController.Instance || !evt.Button.CanClick())
             return;
 
-        RpcRegisterFact(player, (byte)VerifierClaimType.UsedAbility);
+        PublishFact(player, VerifierClaimType.UsedAbility);
     }
 
     [RegisterEvent]
@@ -92,10 +93,10 @@ public static class VerifierUtilities
     {
         var player = PlayerControl.LocalPlayer;
 
-        if (!player || MeetingHud.Instance || ExileController.Instance)
+        if (evt.IsCancelled || !player || MeetingHud.Instance || ExileController.Instance)
             return;
 
-        RpcRegisterFact(player, (byte)VerifierClaimType.UsedAbility);
+        PublishFact(player, VerifierClaimType.UsedAbility);
     }
 
     [RegisterEvent]
@@ -123,7 +124,7 @@ public static class VerifierUtilities
         if (Minigame.Instance is VerifyMinigame minigame)
             minigame.ForceClose();
 
-        Reset();
+        Reset(true);
     }
 
     [RegisterEvent]
@@ -150,7 +151,31 @@ public static class VerifierUtilities
     [MethodRpc((uint)CustomRPC.VerifierRegisterFact)]
     public static void RpcRegisterFact(PlayerControl source, byte claimType)
     {
+        if (!source || !source.Data || source.Data.Disconnected || claimType is < (byte)VerifierClaimType.DidTask or > (byte)VerifierClaimType.UsedAbility)
+            return;
+
         RegisterFact(source.PlayerId, (VerifierClaimType)claimType);
+    }
+
+    public static void PublishFact(PlayerControl player, VerifierClaimType claim)
+    {
+        if (!player || !player.AmOwner || !player.Data || player.Data.IsDead || player.Data.Disconnected || !AmongUsClient.Instance || !AmongUsClient.Instance.IsGameStarted || MeetingHud.Instance || ExileController.Instance)
+            return;
+
+        var flag = GetFlag(claim);
+        if (flag == VerifierFactFlags.None || (RoundFacts.TryGetValue(player.PlayerId, out var facts) && (facts & flag) != 0))
+            return;
+
+        RpcRegisterFact(player, (byte)claim);
+    }
+
+    [MethodRpc((uint)CustomRPC.VerifierRegisterNearBody)]
+    public static void RpcRegisterNearBody(PlayerControl host, byte playerId)
+    {
+        if (!host || !host.IsHost())
+            return;
+
+        RegisterFact(playerId, VerifierClaimType.NearBody);
     }
 
     public static void RegisterFact(byte playerId, VerifierClaimType claimType)
@@ -166,17 +191,20 @@ public static class VerifierUtilities
 
     public static void RegisterNearBody()
     {
+        if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost || !PlayerControl.LocalPlayer)
+            return;
+
         var radius = OptionGroupSingleton<VerifierOptions>.Instance.NearBodyRadius;
 
         foreach (var player in PlayerControl.AllPlayerControls)
         {
-            if (!player || player.Data.IsDead || player.Data.Disconnected)
+            if (!player || !player.Data || player.Data.IsDead || player.Data.Disconnected || (RoundFacts.TryGetValue(player.PlayerId, out var facts) && (facts & VerifierFactFlags.NearBody) != 0))
                 continue;
 
             var bodies = Helpers.GetNearestDeadBodies(player.GetTruePosition(), radius, Helpers.CreateFilter(Constants.NotShipMask));
 
             if (bodies != null && bodies.Count > 0)
-                RpcRegisterFact(player, (byte)VerifierClaimType.NearBody);
+                RpcRegisterNearBody(PlayerControl.LocalPlayer, player.PlayerId);
         }
     }
 
@@ -232,10 +260,8 @@ public static class VerifierUtilities
         RoundFacts.TryGetValue(target.PlayerId, out var facts);
         var happened = (facts & GetFlag(claim)) != 0;
 
-        if (SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
-        {
+        if (Application.platform != RuntimePlatform.Android && SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
             PreseasonAchievementsTab.TrustButVerify.Unlock();
-        }
 
         return happened == expected ? "<color=#58E8BE>Confirmed</color>" : "<color=#FF4D4D>Denied</color>";
     }

@@ -12,11 +12,9 @@ public static class NewModDateTime
     public static readonly TimeSpan Window = TimeSpan.FromDays(8);
     public static readonly TimeSpan HalloweenWindow = TimeSpan.FromDays(7);
 
-    public static DateTime BirthdayStartThisYear =>
-        new(DateTime.Now.Year, Month, Day, Hour, 0, 0, DateTimeKind.Local);
+    public static DateTime BirthdayStartThisYear => new(DateTime.Now.Year, Month, Day, Hour, 0, 0, DateTimeKind.Local);
 
-    public static DateTime BirthdayStartNextYear =>
-        new(DateTime.Now.Year + 1, Month, Day, Hour, 0, 0, DateTimeKind.Local);
+    public static DateTime BirthdayStartNextYear => new(DateTime.Now.Year + 1, Month, Day, Hour, 0, 0, DateTimeKind.Local);
 
     public static DateTime UpcomingBirthdayStart
     {
@@ -46,11 +44,9 @@ public static class NewModDateTime
         }
     }
 
-    public static DateTime HalloweenStartThisYear =>
-        new(DateTime.Now.Year, HalloweenMonth, HalloweenDay, 0, 0, 0, DateTimeKind.Local);
+    public static DateTime HalloweenStartThisYear => new(DateTime.Now.Year, HalloweenMonth, HalloweenDay, 0, 0, 0, DateTimeKind.Local);
 
-    public static DateTime HalloweenStartNextYear =>
-        new(DateTime.Now.Year + 1, HalloweenMonth, HalloweenDay, 0, 0, 0, DateTimeKind.Local);
+    public static DateTime HalloweenStartNextYear => new(DateTime.Now.Year + 1, HalloweenMonth, HalloweenDay, 0, 0, 0, DateTimeKind.Local);
 
     public static bool IsNewModHalloween
     {

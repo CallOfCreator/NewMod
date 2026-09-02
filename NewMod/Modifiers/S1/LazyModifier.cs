@@ -27,7 +27,7 @@ public class LazyModifier : GameModifier, INewModModifier
         if (!AmongUsClient.Instance.AmHost || Player.Data.Tasks.Count <= 1)
             return;
 
-        Player.Data.RpcSetTasks(new byte[] { Player.Data.Tasks[0].TypeId });
+        Player.Data.RpcSetTasks(new[] { Player.Data.Tasks[0].TypeId });
     }
 
     public override string GetDescription()

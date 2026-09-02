@@ -10,26 +10,26 @@ public class TyrantOptions : AbstractOptionGroup<Tyrant>
     public override string GroupName => "Tyrant";
 
     [ModdedNumberOption("Fear Pulse Radius", 1f, 6f, suffixType: MiraNumberSuffixes.None)]
-    public float FearPulseRadius { get; set; } = 5f;
+    public float FearPulseRadius { get; set; } = 4f;
 
     [ModdedNumberOption("Fear Pulse Duration", 1f, 12f, suffixType: MiraNumberSuffixes.Seconds)]
-    public float FearPulseDuration { get; set; } = 6f;
+    public float FearPulseDuration { get; set; } = 4f;
 
     [ModdedNumberOption("Fear Pulse Speed Reduction %", 30f, 80f, suffixType: MiraNumberSuffixes.Percent)]
-    public float FearPulseSpeed { get; set; } = 20f;
+    public float FearPulseSpeed { get; set; } = 40f;
 
     [ModdedNumberOption("Dome Radius", 1f, 6f, suffixType: MiraNumberSuffixes.None)]
-    public float DomeRadius { get; set; } = 5f;
+    public float DomeRadius { get; set; } = 4f;
 
     [ModdedNumberOption("Dome Duration", 2f, 12f, suffixType: MiraNumberSuffixes.Seconds)]
-    public float DomeDuration { get; set; } = 8f;
+    public float DomeDuration { get; set; } = 5f;
 
     [ModdedNumberOption("Witness Range", 1f, 6f, suffixType: MiraNumberSuffixes.None)]
-    public float WitnessRange { get; set; } = 5f;
+    public float WitnessRange { get; set; } = 4f;
 
     [ModdedNumberOption("Witness Freeze Duration", 2f, 6f, suffixType: MiraNumberSuffixes.Seconds)]
-    public float WitnessFreezeDuration { get; set; } = 3f;
+    public float WitnessFreezeDuration { get; set; } = 2f;
 
     [ModdedNumberOption("Witness Arm Window", 1f, 12f, suffixType: MiraNumberSuffixes.Seconds)]
-    public float WitnessArmWindow { get; set; } = 8f;
+    public float WitnessArmWindow { get; set; } = 6f;
 }

@@ -1,5 +1,7 @@
 using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using NewMod.GeneralEvents.Season1;
+using NewMod.Modifiers.S1;
 using NewMod.Options;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
@@ -74,7 +76,7 @@ public class CrimsonVortexEffect(nint ptr) : MonoBehaviour(ptr)
 
     public void OnRenderImage(RenderTexture src, RenderTexture dst)
     {
-        if (!_mat || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance)
+        if (!_mat || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {
             Graphics.Blit(src, dst);
             return;

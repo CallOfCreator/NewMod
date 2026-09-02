@@ -27,39 +27,40 @@ public sealed class WraithSiege : AbstractGameMode
     private readonly Dictionary<int, WraithSiegeNpc> _activeNpcs = [];
     private readonly Dictionary<byte, float> _burnTimers = [];
     private readonly Dictionary<int, int> _deliverySlots = [];
-    private readonly Dictionary<byte, float> _summonCooldowns = [];
     private readonly Dictionary<byte, float> _nextSummonAt = [];
+    private readonly Dictionary<byte, float> _summonCooldowns = [];
     private readonly HashSet<byte> _wraithIds = [];
 
+    private int _deliveries;
+
     private TextMeshPro _energyText;
-    private TextMeshPro _hudText;
-    private TextMeshPro _warningText;
-
-    private SpriteRenderer _ticketIcon;
+    private TextMeshPro _countdownText;
+    private bool _finalAlert;
     private ArrowBehaviour _flagArrow;
-
-    private GameObject _flagZone;
     private GameObject _flagObject;
 
-    private int _deliveries;
-    private int _nextNpcId;
-    private int _lastCountdownSecond = -1;
+    private Vector2 _flagPosition;
 
-    private float _remainingTime;
-    private float _syncTimer;
-    private float _localBurnTime;
+    private GameObject _flagZone;
+    private TextMeshPro _hudText;
 
     private bool _initialized;
+    private int _lastCountdownSecond = -1;
     private bool _lastStandPending;
-    private bool _finalAlert;
-    private bool _wraithsWon;
-    private bool _layoutReady;
 
     private byte _layoutIndex;
+    private bool _layoutReady;
+    private float _localBurnTime;
+    private int _nextNpcId;
 
-    private Vector2 _flagPosition;
-    private Vector2 _wraithSpawn;
+    private float _remainingTime;
     private Vector2 _reviverSpawn;
+    private float _syncTimer;
+
+    private SpriteRenderer _ticketIcon;
+    private TextMeshPro _warningText;
+    private Vector2 _wraithSpawn;
+    private bool _wraithsWon;
 
     public float WraithEnergy { get; private set; }
 
@@ -89,12 +90,8 @@ public sealed class WraithSiege : AbstractGameMode
             var count = 0;
 
             foreach (var player in PlayerControl.AllPlayerControls)
-            {
                 if (!IsWraith(player) && !player.Data.IsDead && !player.Data.Disconnected)
-                {
                     count++;
-                }
-            }
 
             return count;
         }
@@ -107,12 +104,8 @@ public sealed class WraithSiege : AbstractGameMode
             var count = 0;
 
             foreach (var player in PlayerControl.AllPlayerControls)
-            {
                 if (!IsWraith(player) && !player.Data.Disconnected)
-                {
                     count++;
-                }
-            }
 
             return count;
         }
@@ -125,12 +118,8 @@ public sealed class WraithSiege : AbstractGameMode
             var count = 0;
 
             foreach (var player in PlayerControl.AllPlayerControls)
-            {
                 if (IsWraith(player) && !player.Data.Disconnected)
-                {
                     count++;
-                }
-            }
 
             return count;
         }
@@ -150,7 +139,8 @@ public sealed class WraithSiege : AbstractGameMode
 
         var players = GameData.Instance.AllPlayers.ToArray().Where(player => player != null && player.Object && !player.Disconnected).ToList();
 
-        var requested = (int)OptionGroupSingleton<WraithSiegeOptions>.Instance.WraithPlayers;
+        var options = OptionGroupSingleton<WraithSiegeOptions>.Instance;
+        var requested = options.ReviverPlayers > 0f ? players.Count - (int)options.ReviverPlayers : (int)options.WraithPlayers;
 
         var wraithCount = Mathf.Clamp(requested, 1, Mathf.Max(1, players.Count - 1));
 
@@ -169,14 +159,18 @@ public sealed class WraithSiege : AbstractGameMode
 
     public override void Initialize()
     {
+        Reset();
         Coroutines.Start(CoInitializeRound());
     }
 
     private IEnumerator CoInitializeRound()
     {
-        yield return new WaitForEndOfFrame();
+        var game = GameManager.Instance;
+        while (game && !game.GameHasStarted)
+            yield return null;
 
-        Reset();
+        if (!game)
+            yield break;
 
         var options = OptionGroupSingleton<WraithSiegeOptions>.Instance;
 
@@ -219,14 +213,19 @@ public sealed class WraithSiege : AbstractGameMode
 
         _hudText = Helpers.CreateTextLabel("WraithSiegeHud", hud.transform, AspectPosition.EdgeAlignments.Top, new Vector3(0f, 0.2f, -20f), 1.55f, TextAlignmentOptions.TopRight);
 
-        _warningText = Helpers.CreateTextLabel("WraithSiegeWarning", hud.transform, AspectPosition.EdgeAlignments.Top, new Vector3(0f, 0.8f, -20f), 1.7f, TextAlignmentOptions.Center);
+        _warningText = Helpers.CreateTextLabel("WraithSiegeWarning", hud.transform, AspectPosition.EdgeAlignments.Top, new Vector3(0f, 0.8f, -20f), 1.7f);
 
-        _energyText = Helpers.CreateTextLabel("WraithSiegeEnergy", hud.transform, AspectPosition.EdgeAlignments.Bottom, new Vector3(0f, 1.05f, -20f), 1.45f, TextAlignmentOptions.Center);
+        _energyText = Helpers.CreateTextLabel("WraithSiegeEnergy", hud.transform, AspectPosition.EdgeAlignments.Bottom, new Vector3(0f, 1.05f, -20f), 1.45f);
 
         _energyText.fontStyle = FontStyles.Bold;
         _energyText.gameObject.SetActive(IsWraith(PlayerControl.LocalPlayer));
 
         _warningText.fontStyle = FontStyles.Bold;
+
+        _countdownText = Helpers.CreateTextLabel("WraithSiegeCountdown", hud.transform, AspectPosition.EdgeAlignments.Center, new Vector3(0f, -0.6f, -20f), 2.5f);
+        _countdownText.fontStyle = FontStyles.Bold;
+        _countdownText.color = new Color32(255, 77, 77, 255);
+        _countdownText.gameObject.SetActive(false);
 
         var ticketObject = new GameObject("WraithSiegeTicketIcon") { layer = 5 };
 
@@ -250,7 +249,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         _flagObject.transform.SetParent(ShipStatus.Instance.transform, true);
 
-        _flagObject.transform.position = new Vector3(_flagPosition.x, _flagPosition.y, -5f);
+        _flagObject.transform.position = new Vector3(_flagPosition.x, _flagPosition.y, _flagPosition.y / 1000f);
 
         _flagObject.transform.localScale = Vector3.one * 0.8f;
 
@@ -258,7 +257,8 @@ public sealed class WraithSiege : AbstractGameMode
 
         flagRenderer.sprite = NewModAsset.WraithSiegeFlag.LoadAsset();
 
-        flagRenderer.sortingOrder = 100;
+        flagRenderer.sharedMaterial = new Material(DestroyableSingleton<HatManager>.Instance.DefaultShader);
+        PlayerMaterial.SetMaskLayerBasedOnLocalPlayer(flagRenderer, false);
 
         var arrowObject = new GameObject("WraithSiegeFlagArrow") { layer = 5 };
 
@@ -296,6 +296,9 @@ public sealed class WraithSiege : AbstractGameMode
         if (!_initialized || Ended)
             return;
 
+        if (instance.Chat && !instance.Chat.gameObject.activeSelf)
+            instance.Chat.gameObject.SetActive(true);
+
         var deltaTime = Time.deltaTime;
         var options = OptionGroupSingleton<WraithSiegeOptions>.Instance;
 
@@ -305,10 +308,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         foreach (var playerId in _wraithIds)
         {
-            if (!_summonCooldowns.TryGetValue(playerId, out var cooldown) || cooldown <= 0f)
-            {
-                continue;
-            }
+            if (!_summonCooldowns.TryGetValue(playerId, out var cooldown) || cooldown <= 0f) continue;
 
             _summonCooldowns[playerId] = Mathf.Max(0f, cooldown - deltaTime);
         }
@@ -316,6 +316,8 @@ public sealed class WraithSiege : AbstractGameMode
         UpdateLocalBurn(deltaTime);
         UpdateFinalCountdown();
         UpdateHud();
+
+        _flagArrow.gameObject.SetActive(Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), _flagPosition) > options.FlagRadius);
 
         if (!AmongUsClient.Instance.AmHost)
             return;
@@ -364,7 +366,7 @@ public sealed class WraithSiege : AbstractGameMode
 
             _burnTimers.Remove(playerId);
 
-            player.RpcCustomMurder(player, didSucceed: true, resetKillTimer: false, createDeadBody: true, teleportMurderer: false, showKillAnim: false, playKillSound: false);
+            player.RpcCustomMurder(player, true, false, true, false, false, false);
         }
     }
 
@@ -384,10 +386,8 @@ public sealed class WraithSiege : AbstractGameMode
 
     private void UpdateFinalCountdown()
     {
-        if (_remainingTime > 10f || _remainingTime <= 0f)
-        {
-            return;
-        }
+        _countdownText.gameObject.SetActive(_remainingTime > 0f && _remainingTime <= 10f);
+        if (_remainingTime > 10f || _remainingTime <= 0f) return;
 
         var hns = GameManagerCreator.Instance.HideAndSeekManagerPrefab;
 
@@ -395,11 +395,9 @@ public sealed class WraithSiege : AbstractGameMode
         {
             _finalAlert = true;
 
-            HudManager.Instance.SetAlertOverlay(true);
+            HudManager.Instance.StartReactorFlash();
 
             SoundManager.Instance.PlaySound(hns.FinalHideAlertSFX, false);
-
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF4D4D><b>FINAL 10 SECONDS</b></color>"));
         }
 
         var second = Mathf.CeilToInt(_remainingTime);
@@ -408,6 +406,7 @@ public sealed class WraithSiege : AbstractGameMode
             return;
 
         _lastCountdownSecond = second;
+        _countdownText.text = $"FINAL {second} {(second == 1 ? "SECOND" : "SECONDS")}";
 
         var ratio = _remainingTime / 10f;
 
@@ -479,7 +478,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         if (_remainingTime <= 10f && _remainingTime > 0f)
         {
-            _warningText.text = "<color=#58E8BE><b>HOLD THE LINE</b></color>\n" + $"<color=#FFFFFF>STOP THE FINAL PUSH  •  " + $"{Mathf.CeilToInt(_remainingTime)}s</color>";
+            _warningText.text = "<color=#58E8BE><b>HOLD THE LINE</b></color>\n" + "<color=#FFFFFF>STOP THE FINAL PUSH  •  " + $"{Mathf.CeilToInt(_remainingTime)}s</color>";
 
             return;
         }
@@ -491,10 +490,7 @@ public sealed class WraithSiege : AbstractGameMode
     {
         base.OnPlayerDeath(player, assignGhostRole);
 
-        if (!AmongUsClient.Instance.AmHost || player.Data.Disconnected || Ended)
-        {
-            return;
-        }
+        if (!AmongUsClient.Instance.AmHost || player.Data.Disconnected || Ended) return;
 
         if (IsWraith(player))
         {
@@ -503,10 +499,7 @@ public sealed class WraithSiege : AbstractGameMode
             return;
         }
 
-        if (AliveRevivers == 0 && Tickets > 0 && !_lastStandPending)
-        {
-            Coroutines.Start(CoLastStandRevive());
-        }
+        if (AliveRevivers == 0 && Tickets > 0 && !_lastStandPending) Coroutines.Start(CoLastStandRevive());
     }
 
     public override void CheckGameEnd(out bool runOriginal, LogicGameFlowNormal instance)
@@ -541,10 +534,7 @@ public sealed class WraithSiege : AbstractGameMode
             return;
         }
 
-        if (ConnectedWraiths == 0 || _remainingTime <= 0f || (NpcPool <= 0 && _activeNpcs.Count == 0))
-        {
-            FinishGame(false);
-        }
+        if (ConnectedWraiths == 0 || _remainingTime <= 0f || (NpcPool <= 0 && _activeNpcs.Count == 0)) FinishGame(false);
     }
 
     private void FinishGame(bool wraithsWon)
@@ -555,18 +545,14 @@ public sealed class WraithSiege : AbstractGameMode
         Ended = true;
         _wraithsWon = wraithsWon;
 
-        HudManager.Instance.SetAlertOverlay(false);
+        HudManager.Instance.StopReactorFlash();
 
         var winners = CalculateWinners();
 
         if (wraithsWon)
-        {
             CustomGameOver.Trigger<WraithSiegeWraithGameOver>(winners);
-        }
         else
-        {
             CustomGameOver.Trigger<WraithSiegeReviverGameOver>(winners);
-        }
     }
 
     private IEnumerator CoRespawnWraith(byte playerId)
@@ -578,10 +564,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         var player = GameData.Instance.GetPlayerById(playerId)?.Object;
 
-        if (!player || !player.Data.IsDead || player.Data.Disconnected)
-        {
-            yield break;
-        }
+        if (!player || !player.Data.IsDead || player.Data.Disconnected) yield break;
 
         Utils.HandleRevive(PlayerControl.LocalPlayer, playerId, RoleTypes.Impostor, _wraithSpawn.x, _wraithSpawn.y);
     }
@@ -616,10 +599,7 @@ public sealed class WraithSiege : AbstractGameMode
 
     public bool StartDelivery(WraithSiegeNpc npc)
     {
-        if (!AmongUsClient.Instance.AmHost || !npc.Active || _deliverySlots.ContainsKey(npc.NpcId))
-        {
-            return false;
-        }
+        if (!AmongUsClient.Instance.AmHost || !npc.Active || _deliverySlots.ContainsKey(npc.NpcId)) return false;
 
         var capacity = (int)OptionGroupSingleton<WraithSiegeOptions>.Instance.FlagCapacity;
 
@@ -642,24 +622,15 @@ public sealed class WraithSiege : AbstractGameMode
 
     private IEnumerator CoDelivery(int npcId)
     {
-        while (!Ended && _activeNpcs.TryGetValue(npcId, out var npc) && npc.Active && !npc.AtDeliverySlot)
-        {
-            yield return null;
-        }
+        while (!Ended && _activeNpcs.TryGetValue(npcId, out var npc) && npc.Active && !npc.AtDeliverySlot) yield return null;
 
-        if (Ended || !_activeNpcs.ContainsKey(npcId))
-        {
-            yield break;
-        }
+        if (Ended || !_activeNpcs.ContainsKey(npcId)) yield break;
 
         var time = OptionGroupSingleton<WraithSiegeOptions>.Instance.DeliveryTime;
 
         while (time > 0f)
         {
-            if (Ended || !_activeNpcs.TryGetValue(npcId, out var npc) || !npc.Active)
-            {
-                yield break;
-            }
+            if (Ended || !_activeNpcs.TryGetValue(npcId, out var npc) || !npc.Active) yield break;
 
             time -= Time.deltaTime;
             yield return null;
@@ -678,10 +649,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         foreach (var npc in _activeNpcs.Values)
         {
-            if (!npc || !npc.Active)
-            {
-                continue;
-            }
+            if (!npc || !npc.Active) continue;
 
             var distance = ((Vector2)npc.Visual.transform.position - player.GetTruePosition()).sqrMagnitude;
 
@@ -709,10 +677,7 @@ public sealed class WraithSiege : AbstractGameMode
         {
             var target = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
 
-            if (!target || IsWraith(target) || !target.Data.IsDead || target.Data.Disconnected)
-            {
-                continue;
-            }
+            if (!target || IsWraith(target) || !target.Data.IsDead || target.Data.Disconnected) continue;
 
             var distance = ((Vector2)body.transform.position - player.GetTruePosition()).sqrMagnitude;
 
@@ -743,10 +708,8 @@ public sealed class WraithSiege : AbstractGameMode
     private void Reset()
     {
         foreach (var npc in _activeNpcs.Values.ToArray())
-        {
             if (npc)
                 npc.Dispose();
-        }
 
         _activeNpcs.Clear();
         _deliverySlots.Clear();
@@ -761,7 +724,10 @@ public sealed class WraithSiege : AbstractGameMode
             Object.Destroy(_flagZone);
 
         if (_flagObject)
+        {
+            Object.Destroy(_flagObject.GetComponent<SpriteRenderer>().sharedMaterial);
             Object.Destroy(_flagObject);
+        }
 
         if (_flagArrow)
             Object.Destroy(_flagArrow.gameObject);
@@ -771,6 +737,9 @@ public sealed class WraithSiege : AbstractGameMode
 
         if (_warningText)
             Object.Destroy(_warningText.gameObject);
+
+        if (_countdownText)
+            Object.Destroy(_countdownText.gameObject);
 
         if (_ticketIcon)
             Object.Destroy(_ticketIcon.gameObject);
@@ -784,6 +753,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         _hudText = null;
         _warningText = null;
+        _countdownText = null;
         _energyText = null;
 
         _ticketIcon = null;
@@ -816,10 +786,7 @@ public sealed class WraithSiege : AbstractGameMode
     [MethodRpc((uint)CustomRPC.WraithSiegeSyncState)]
     public static void RpcSyncState(PlayerControl source, float time, int tickets, int deliveries, int npcPool, float energy, byte layoutIndex)
     {
-        if (!source.IsHost() || CustomGameModeManager.ActiveMode is not WraithSiege mode)
-        {
-            return;
-        }
+        if (!source.IsHost() || CustomGameModeManager.ActiveMode is not WraithSiege mode) return;
 
         mode._remainingTime = Mathf.Max(0f, time);
         mode.Tickets = tickets;
@@ -834,27 +801,15 @@ public sealed class WraithSiege : AbstractGameMode
     [MethodRpc((uint)CustomRPC.WraithSiegeRequestSummon)]
     public static void RpcRequestSummon(PlayerControl source, byte laneValue)
     {
-        if (!AmongUsClient.Instance.AmHost || CustomGameModeManager.ActiveMode is not WraithSiege mode || mode.Ended || !mode.IsWraith(source) || source.Data.IsDead || source.Data.Disconnected || laneValue > (byte)WraithLane.Bottom)
-        {
-            return;
-        }
+        if (!AmongUsClient.Instance.AmHost || CustomGameModeManager.ActiveMode is not WraithSiege mode || mode.Ended || !mode.IsWraith(source) || source.Data.IsDead || source.Data.Disconnected || laneValue > (byte)WraithLane.Bottom) return;
 
         var options = OptionGroupSingleton<WraithSiegeOptions>.Instance;
 
-        if (mode._nextSummonAt.TryGetValue(source.PlayerId, out var nextSummon) && Time.time < nextSummon)
-        {
-            return;
-        }
+        if (mode._nextSummonAt.TryGetValue(source.PlayerId, out var nextSummon) && Time.time < nextSummon) return;
 
-        if (mode.GetActiveNpcCount(source.PlayerId) >= (int)options.MaxActiveNpcsPerWraith)
-        {
-            return;
-        }
+        if (mode.GetActiveNpcCount(source.PlayerId) >= (int)options.MaxActiveNpcsPerWraith) return;
 
-        if (mode.NpcPool <= 0 || mode.WraithEnergy < options.SummonCost)
-        {
-            return;
-        }
+        if (mode.NpcPool <= 0 || mode.WraithEnergy < options.SummonCost) return;
 
         mode._nextSummonAt[source.PlayerId] = Time.time + options.SummonCooldown;
 
@@ -870,10 +825,7 @@ public sealed class WraithSiege : AbstractGameMode
     [MethodRpc((uint)CustomRPC.WraithSiegeSpawnNpc)]
     public static void RpcSpawnNpc(PlayerControl source, byte ownerId, int npcId, byte laneValue, float energy, int npcPool)
     {
-        if (!source.IsHost() || CustomGameModeManager.ActiveMode is not WraithSiege mode || mode._activeNpcs.ContainsKey(npcId))
-        {
-            return;
-        }
+        if (!source.IsHost() || CustomGameModeManager.ActiveMode is not WraithSiege mode || mode._activeNpcs.ContainsKey(npcId)) return;
 
         var owner = GameData.Instance.GetPlayerById(ownerId)?.Object;
 
@@ -900,19 +852,13 @@ public sealed class WraithSiege : AbstractGameMode
 
         npc.Initialize(npcId, owner, lane, route);
 
-        if (owner.AmOwner)
-        {
-            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#9B6CFF>{lane} Wraith deployed.</color>"));
-        }
+        if (owner.AmOwner) Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#9B6CFF>{lane} Wraith deployed.</color>"));
     }
 
     [MethodRpc((uint)CustomRPC.WraithSiegeBeginDelivery)]
     public static void RpcBeginDelivery(PlayerControl source, int npcId, int slot)
     {
-        if (!source.IsHost() || CustomGameModeManager.ActiveMode is not WraithSiege mode || !mode._activeNpcs.TryGetValue(npcId, out var npc))
-        {
-            return;
-        }
+        if (!source.IsHost() || CustomGameModeManager.ActiveMode is not WraithSiege mode || !mode._activeNpcs.TryGetValue(npcId, out var npc)) return;
 
         mode._deliverySlots[npcId] = slot;
 
@@ -922,10 +868,7 @@ public sealed class WraithSiege : AbstractGameMode
     [MethodRpc((uint)CustomRPC.WraithSiegeResolveNpc)]
     public static void RpcResolveNpc(PlayerControl source, int npcId, bool delivered)
     {
-        if (!source.IsHost() || CustomGameModeManager.ActiveMode is not WraithSiege mode || !mode._activeNpcs.TryGetValue(npcId, out var npc))
-        {
-            return;
-        }
+        if (!source.IsHost() || CustomGameModeManager.ActiveMode is not WraithSiege mode || !mode._activeNpcs.TryGetValue(npcId, out var npc)) return;
 
         mode._deliverySlots.Remove(npcId);
         mode._activeNpcs.Remove(npcId);
@@ -945,17 +888,11 @@ public sealed class WraithSiege : AbstractGameMode
     [MethodRpc((uint)CustomRPC.WraithSiegeRequestBanish)]
     public static void RpcRequestBanish(PlayerControl source, int npcId)
     {
-        if (!AmongUsClient.Instance.AmHost || CustomGameModeManager.ActiveMode is not WraithSiege mode || mode.Ended || mode.IsWraith(source) || source.Data.IsDead || source.Data.Disconnected || !mode._activeNpcs.TryGetValue(npcId, out var npc))
-        {
-            return;
-        }
+        if (!AmongUsClient.Instance.AmHost || CustomGameModeManager.ActiveMode is not WraithSiege mode || mode.Ended || mode.IsWraith(source) || source.Data.IsDead || source.Data.Disconnected || !mode._activeNpcs.TryGetValue(npcId, out var npc)) return;
 
         var range = OptionGroupSingleton<WraithSiegeOptions>.Instance.BanishRange;
 
-        if (Vector2.Distance(source.GetTruePosition(), npc.Visual.transform.position) > range)
-        {
-            return;
-        }
+        if (Vector2.Distance(source.GetTruePosition(), npc.Visual.transform.position) > range) return;
 
         RpcResolveNpc(PlayerControl.LocalPlayer, npcId, false);
     }
@@ -963,10 +900,7 @@ public sealed class WraithSiege : AbstractGameMode
     [MethodRpc((uint)CustomRPC.WraithSiegeRequestRevive)]
     public static void RpcRequestRevive(PlayerControl source, byte targetId)
     {
-        if (!AmongUsClient.Instance.AmHost || CustomGameModeManager.ActiveMode is not WraithSiege mode || mode.Ended || mode.IsWraith(source) || source.Data.IsDead || source.Data.Disconnected || mode.Tickets <= 0)
-        {
-            return;
-        }
+        if (!AmongUsClient.Instance.AmHost || CustomGameModeManager.ActiveMode is not WraithSiege mode || mode.Ended || mode.IsWraith(source) || source.Data.IsDead || source.Data.Disconnected || mode.Tickets <= 0) return;
 
         var target = GameData.Instance.GetPlayerById(targetId)?.Object;
 
@@ -1000,7 +934,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         var team = GameData.Instance.AllPlayers.ToArray().Where(player => !player.Disconnected && player.Role.IsImpostor == isWraith).OrderBy(player => player.PlayerId == PlayerControl.LocalPlayer.PlayerId ? 0 : 1).ToArray();
 
-        SoundManager.Instance.PlaySound(intro.IntroStinger, false, 1f, null);
+        SoundManager.Instance.PlaySound(intro.IntroStinger, false);
 
         intro.LogPlayerRoleData();
 
@@ -1079,15 +1013,33 @@ public sealed class WraithSiege : AbstractGameMode
         Object.Destroy(intro.gameObject);
     }
 
-    public override bool CanReport(DeadBody body) => false;
+    public override bool CanReport(DeadBody body)
+    {
+        return false;
+    }
 
-    public override bool CanUseMapConsole(MapConsole console) => false;
+    public override bool CanUseMapConsole(MapConsole console)
+    {
+        return false;
+    }
 
-    public override bool CanUseSystemConsole(SystemConsole console) => false;
+    public override bool CanUseSystemConsole(SystemConsole console)
+    {
+        return false;
+    }
 
-    public override bool CanUseTasks(Console console) => false;
+    public override bool CanUseTasks(Console console)
+    {
+        return false;
+    }
 
-    public override bool ShouldShowSabotageMap(MapBehaviour map) => false;
+    public override bool ShouldShowSabotageMap(MapBehaviour map)
+    {
+        return false;
+    }
 
-    public override bool CanVent(Vent vent, NetworkedPlayerInfo playerInfo) => false;
+    public override bool CanVent(Vent vent, NetworkedPlayerInfo playerInfo)
+    {
+        return false;
+    }
 }

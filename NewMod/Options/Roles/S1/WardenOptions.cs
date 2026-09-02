@@ -11,12 +11,12 @@ public class WardenOptions : AbstractOptionGroup<WardenRole>
 {
     public override string GroupName => "Warden";
 
-    [ModdedNumberOption("Seal Cooldown", min: 10f, max: 60f, suffixType: MiraNumberSuffixes.Seconds)]
+    [ModdedNumberOption("Seal Cooldown", 10f, 60f, suffixType: MiraNumberSuffixes.Seconds)]
     public float SealCooldown { get; set; } = 30f;
 
-    [ModdedNumberOption("Seal Duration", min: 5f, max: 15f, suffixType: MiraNumberSuffixes.Seconds)]
+    [ModdedNumberOption("Seal Duration", 5f, 15f, suffixType: MiraNumberSuffixes.Seconds)]
     public float SealDuration { get; set; } = 8f;
 
-    [ModdedNumberOption("Residual Mark Duration", min: 5f, max: 30f, suffixType: MiraNumberSuffixes.Seconds)]
+    [ModdedNumberOption("Residual Mark Duration", 5f, 30f, suffixType: MiraNumberSuffixes.Seconds)]
     public float ResidualMarkDuration { get; set; } = 15f;
 }

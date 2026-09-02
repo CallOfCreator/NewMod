@@ -13,21 +13,23 @@ namespace NewMod.Roles.ImpostorRoles;
 public class PulseBlade : ImpostorRole, INewModRole
 {
     public string RoleName => "PulseBlade";
-    public string RoleDescription => "Dash. Strike. Clean.";
-    public string RoleLongDescription => "Dash to eliminate a target with precision. Victim’s body disappears temporarily";
+    public string RoleDescription => "Dash-kill targets and hide their bodies briefly.";
+    public string RoleLongDescription => "Strike a nearby target and briefly hide their body.\nLand enough Strikes and reach the player threshold to win alone.";
     public Color RoleColor => new(1f, 0.25f, 0.25f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public NewModFaction Faction => NewModFaction.Apex;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        AffectedByLightOnAirship = false,
-        CanUseSabotage = false,
-        CanUseVent = false,
-        UseVanillaKillButton = false,
-        TasksCountForProgress = false,
-        Icon = NewModAsset.StrikeIcon
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = false,
+            CanUseSabotage = false,
+            CanUseVent = false,
+            UseVanillaKillButton = false,
+            TasksCountForProgress = false,
+            MaxRoleCount = 1,
+            Icon = NewModAsset.StrikeIcon
+        };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()

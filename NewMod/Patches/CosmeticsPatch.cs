@@ -24,6 +24,12 @@ public static class NewModCosmeticTabsPatch
     private static int VisorPage;
     private static int NameplatePage;
 
+    [HarmonyPrepare]
+    public static bool Prepare()
+    {
+        return NewMod.CorsacCosmeticsEnabled;
+    }
+
     [HarmonyPatch(typeof(HatsTab), nameof(HatsTab.OnEnable))]
     [HarmonyPrefix]
     public static bool HatsOnEnable(HatsTab __instance)
@@ -220,10 +226,8 @@ public static class NewModCosmeticTabsPatch
             chip.SelectionHighlight.gameObject.SetActive(false);
             tab.ColorChips.Add(chip);
 
-            if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode()) || (hat.ProductId == ogNewModHatId && !PreseasonAchievementsTab.ThreeInARow.Unlocked))
-            {
-                chip.SetUnavailable();
-            }
+            if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode()) || (hat.ProductId == ogNewModHatId && !PreseasonAchievementsTab.ThreeInARow.Unlocked)) chip.SetUnavailable();
+            if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode()) || (hat.ProductId == ogNewModHatId && !PreseasonAchievementsTab.ThreeInARow.Unlocked)) chip.SetUnavailable();
         }
 
         tab.currentHatIsEquipped = true;

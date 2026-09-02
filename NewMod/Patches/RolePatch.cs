@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
+using MiraAPI.GameModes;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
@@ -22,8 +23,8 @@ public static class SelectRolePatch
     [HarmonyPriority(Priority.Last)]
     public static void Postfix(RoleManager __instance)
     {
-        if (!AmongUsClient.Instance.AmHost) return;
-        if (GameManager.Instance.IsHideAndSeek()) return;
+        if (!AmongUsClient.Instance.AmHost || !CustomGameModeManager.IsClassic())
+            return;
 
         Coroutines.Start(CoAdjustNeutrals());
     }
@@ -141,13 +142,7 @@ public static class SelectRolePatch
             var chance = r.GetChance().Value;
             if (chance <= 0) continue;
 
-            candidates.Add(new Candidate
-            {
-                Role = r,
-                Left = left,
-                Weight = chance,
-                RoleType = roleType
-            });
+            candidates.Add(new Candidate { Role = r, Left = left, Weight = chance, RoleType = roleType });
         }
 
         Logger<NewMod>.Instance.LogMessage($"Built neutral candidate list: {candidates.Count}");

@@ -20,21 +20,23 @@ public class Shade : ImpostorRole, INewModRole
 {
     public static readonly Dictionary<byte, int> ShadeKills = new();
     public string RoleName => "Shade";
-    public string RoleDescription => "Lurk. Fade. Kill unseen.";
-    public string RoleLongDescription => "Deploy a shadow field that grants invisibility and lethal power within its darkness.";
+    public string RoleDescription => "Kill inside your shadow zones.";
+    public string RoleLongDescription => "Deploy a shadow zone that hides you and enables kills inside it.\nReach the required shadow kills to win.";
     public Color RoleColor => new(0.45f, 0f, 0.8f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Entropy;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        AffectedByLightOnAirship = true,
-        CanUseSabotage = false,
-        CanUseVent = false,
-        UseVanillaKillButton = true,
-        TasksCountForProgress = false,
-        Icon = NewModAsset.DeployZoneIcon
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = true,
+            CanUseSabotage = false,
+            CanUseVent = false,
+            UseVanillaKillButton = true,
+            TasksCountForProgress = false,
+            MaxRoleCount = 1,
+            Icon = NewModAsset.DeployZoneIcon
+        };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()

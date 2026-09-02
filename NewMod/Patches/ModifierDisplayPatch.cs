@@ -1,4 +1,3 @@
-using System.Reflection;
 using HarmonyLib;
 using MiraAPI.Modifiers.ModifierDisplay;
 using NewMod.Modifiers;
@@ -7,25 +6,25 @@ using TMPro;
 
 namespace NewMod.Patches;
 
-[HarmonyPatch]
+[HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
 public static class ModifierDisplayPatch
 {
-    public static FieldInfo DescriptionTextField = AccessTools.Field(typeof(ModifierUiComponent), "desc");
-
-    public static MethodBase TargetMethod()
+    public static void Postfix()
     {
-        return AccessTools.Method(typeof(ModifierUiComponent), "FixedUpdate");
-    }
+        var display = ModifierDisplayComponent.Instance;
+        if (!display || !display.IsOpen)
+            return;
 
-    public static void Postfix(ModifierUiComponent __instance)
-    {
-        var modifier = __instance.Modifier;
-        if (modifier == null) return;
-        if (!ModifierDisplayComponent.Instance.IsOpen) return;
+        // Use the game's HUD hook; do not detour Mira's managed FixedUpdate.
+        foreach (var entry in display.Modifiers)
+        {
+            var component = entry.Value;
+            if (entry.Key is not INewModModifier modifier || !component || !component.gameObject.activeInHierarchy)
+                continue;
 
-        var descText = DescriptionTextField.GetValue(__instance) as TextMeshPro;
-        if (descText == null) return;
-
-        if (modifier is INewModModifier newModModifier) descText.text += $"\n\n Faction: {Utils.GetModifierFactionDisplay(newModModifier)}";
+            var description = component.transform.GetChild(0).GetChild(0).GetComponent<TextMeshPro>();
+            if (description)
+                description.text = $"{entry.Key.GetDescription()}\n\nFaction: {Utils.GetModifierFactionDisplay(modifier)}";
+        }
     }
 }

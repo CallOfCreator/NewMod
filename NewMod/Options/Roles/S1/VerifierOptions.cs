@@ -12,8 +12,8 @@ public class VerifierOptions : AbstractOptionGroup<VerifierRole>
     public override string GroupName => "Verifier Settings";
 
     [ModdedNumberOption("Unknown Result Chance", 0f, 70f, 5f, MiraNumberSuffixes.Percent)]
-    public float UnknownChance { get; set; } = 25f;
+    public float UnknownChance { get; set; } = 15f;
 
-    [ModdedNumberOption("Near Body Radius", 1f, 8f, 0.5f, MiraNumberSuffixes.None)]
+    [ModdedNumberOption("Near Body Radius", 1f, 8f, 0.5f)]
     public float NearBodyRadius { get; set; } = 3f;
 }

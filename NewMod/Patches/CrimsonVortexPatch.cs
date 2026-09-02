@@ -10,18 +10,15 @@ public static class CrismonVortexPhysicsAwakePatch
     [HarmonyPostfix]
     public static void Postfix(PlayerPhysics __instance)
     {
-        if (!__instance.GetComponent<CrismonVortexPhysics>())
-        {
-            __instance.gameObject.AddComponent<CrismonVortexPhysics>();
-        }
+        if (!__instance.GetComponent<CrismonVortexPhysics>()) __instance.gameObject.AddComponent<CrismonVortexPhysics>();
     }
 }
 
 [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.SetNormalizedVelocity))]
-public static class CrismonVortexVelocityPatch
+public static class CrismonVortexFixedUpdatePatch
 {
     [HarmonyPostfix]
-    public static void Postfix(PlayerPhysics __instance)
+    public static void Postfix(PlayerPhysics __instance, Vector2 direction)
     {
         if (!__instance.AmOwner)
             return;
@@ -39,10 +36,7 @@ public static class CrimsonVortexEscapeHudPatch
     [HarmonyPostfix]
     public static void Postfix(HudManager __instance)
     {
-        if (!__instance.GetComponent<CrimsonVortexEscapeHud>())
-        {
-            __instance.gameObject.AddComponent<CrimsonVortexEscapeHud>();
-        }
+        if (!__instance.GetComponent<CrimsonVortexEscapeHud>()) __instance.gameObject.AddComponent<CrimsonVortexEscapeHud>();
     }
 }
 
@@ -52,11 +46,11 @@ public static class CrimsonVortexUseButtonPatch
     [HarmonyPrefix]
     public static bool Prefix()
     {
-        if (!Input.GetKeyDown(KeyCode.Space))
-            return true;
-
         var vortex = PlayerControl.LocalPlayer.GetComponent<CrismonVortexPhysics>();
 
-        return !vortex || !vortex.ShouldConsumeSpace();
+        if (!vortex || !vortex.ShouldConsumeEscapeInput())
+            return true;
+
+        return Application.platform != RuntimePlatform.Android && !Input.GetKeyDown(KeyCode.Space);
     }
 }

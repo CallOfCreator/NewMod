@@ -11,26 +11,26 @@ namespace NewMod.GeneralEvents;
 [RegisterInIl2Cpp]
 public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
 {
-    private Transform _ui;
-    private TextMeshPro _titleText;
-    private TextMeshPro _descText;
-    private SpriteRenderer _logo;
-    private SpriteRenderer _background;
     private Animator _animator;
-
-    private IEnumerator _showCoro;
-    private IEnumerator _hideCoro;
-
-    private Vector3 _uiPosition;
+    private SpriteRenderer _background;
     private Vector3 _backgroundScale;
-    private Vector3 _logoScale;
-    private Vector3 _logoRotation;
-    private Vector3 _titlePosition;
+    private Color _descColor;
     private Vector3 _descPosition;
+    private TextMeshPro _descText;
+    private IEnumerator _hideCoro;
+    private SpriteRenderer _logo;
 
     private Color _logoColor;
+    private Vector3 _logoRotation;
+    private Vector3 _logoScale;
+
+    private IEnumerator _showCoro;
     private Color _titleColor;
-    private Color _descColor;
+    private Vector3 _titlePosition;
+    private TextMeshPro _titleText;
+    private Transform _ui;
+
+    private Vector3 _uiPosition;
 
     public void Awake()
     {
@@ -42,6 +42,7 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
         _logo = transform.Find("UI/GE_Logo").GetComponent<SpriteRenderer>();
 
         _animator.enabled = false;
+        _background.transform.localPosition = new Vector3(0f, 0f, 0.1f);
 
         _uiPosition = _ui.localPosition;
         _backgroundScale = _background.transform.localScale;
@@ -55,6 +56,11 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
         _descColor = _descText.color;
 
         gameObject.SetActive(false);
+    }
+
+    public void Update()
+    {
+        GeneralEventManager.CurrentEvent?.Tick();
     }
 
     [HideFromIl2Cpp]
@@ -138,6 +144,10 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
             yield return null;
         }
 
+        backgroundColor.a = targetBackgroundAlpha;
+        _background.color = backgroundColor;
+        _ui.localPosition = _uiPosition;
+
         for (var time = 0f; time < 0.12f; time += Time.deltaTime)
         {
             var progress = Mathf.SmoothStep(0f, 1f, time / 0.12f);
@@ -207,6 +217,16 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
             yield return null;
         }
 
+        _background.transform.localScale = _backgroundScale;
+        _ui.localScale = Vector3.one;
+        _logo.transform.localScale = _logoScale;
+        _logo.transform.localEulerAngles = _logoRotation;
+        _logo.color = _logoColor;
+        titleColor.a = 1f;
+        _titleText.color = titleColor;
+        _titleText.transform.localPosition = _titlePosition;
+        _descText.color = _descColor;
+        _descText.transform.localPosition = _descPosition;
         _showCoro = null;
     }
 
@@ -271,7 +291,7 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
     {
         var go = Instantiate(NewModAsset.GeneralEventHud.LoadAsset(), HudManager.Instance.transform);
 
-        go.transform.localPosition = new Vector3(0.1018f, 2.1127f, 0f);
+        go.transform.localPosition = new Vector3(0.1018f, 2.1127f, -20f);
         go.transform.localScale = Vector3.one;
 
         return go.AddComponent<GeneralEventHud>();

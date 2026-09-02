@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using AmongUs.GameOptions;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -41,8 +42,8 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     private static bool _judgmentResolved;
 
     public string RoleName => "Arbitrator";
-    public string RoleDescription => "Accuse. Defend. Manipulate.";
-    public string RoleLongDescription => "Secretly pass judgment during meetings.\n" + "Accuse a player and gain a Judgment Token if they are ejected, or Defend them and gain one if they survive despite receiving enough votes.\n" + "Use Leverage between meetings to learn whether someone voted with or against you.";
+    public string RoleDescription => "Predict meeting outcomes to earn Judgment Tokens.";
+    public string RoleLongDescription => "Accuse someone you expect to be ejected, or Defend someone you expect to survive.\nCorrect judgments earn tokens; Leverage checks how someone voted.";
 
     public Color RoleColor => new Color32(215, 176, 82, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
@@ -64,7 +65,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
             DefaultRoleCount = 1,
             CanModifyChance = true,
             ShowInFreeplay = true,
-            GhostRole = AmongUs.GameOptions.RoleTypes.Crewmate,
+            GhostRole = RoleTypes.Crewmate,
             RoleHintType = RoleHintType.RoleTab
         };
 
@@ -217,10 +218,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         foreach (var vote in evt.Votes)
             LastVotes[vote.Voter] = vote.Suspect;
 
-        if (!AmongUsClient.Instance.AmHost || _judgmentResolved || _hostOwner == byte.MaxValue || _hostTarget == byte.MaxValue)
-        {
-            return;
-        }
+        if (!AmongUsClient.Instance.AmHost || _judgmentResolved || _hostOwner == byte.MaxValue || _hostTarget == byte.MaxValue) return;
 
         _judgmentResolved = true;
 
@@ -232,10 +230,8 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         var votesOnTarget = 0;
 
         foreach (var vote in evt.Votes)
-        {
             if (vote.Suspect == _hostTarget)
                 votesOnTarget++;
-        }
 
         var exiled = MeetingHud.Instance.exiledPlayer;
 
@@ -255,10 +251,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 
         RpcResolveJudgment(arbitrator, success, tokens);
 
-        if (success && tokens >= OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin)
-        {
-            Coroutines.Start(CoTriggerWin(arbitrator.PlayerId));
-        }
+        if (success && tokens >= OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin) Coroutines.Start(CoTriggerWin(arbitrator.PlayerId));
     }
 
     public static void OnMeetingAbilityClicked()
@@ -297,13 +290,9 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         var required = (int)OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin;
 
         if (success)
-        {
             Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD166>Judgment upheld.</color>\nJudgment Tokens: {tokens}/{required}"));
-        }
         else
-        {
             Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#B7B7B7>Judgment failed.</color>\nJudgment Tokens: {tokens}/{required}"));
-        }
     }
 
     private static IEnumerator CoTriggerWin(byte playerId)
@@ -311,10 +300,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         while (MeetingHud.Instance || ExileController.Instance)
             yield return null;
 
-        if (!AmongUsClient.Instance.AmHost || !GameManager.Instance.ShouldCheckForGameEnd)
-        {
-            yield break;
-        }
+        if (!AmongUsClient.Instance.AmHost || !GameManager.Instance.ShouldCheckForGameEnd) yield break;
 
         var winner = Utils.PlayerById(playerId);
 

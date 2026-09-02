@@ -10,6 +10,7 @@ using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
@@ -17,8 +18,9 @@ using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
 
-public class StrikeButton : CustomActionButton
+public class StrikeButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Aggression;
     public override string Name => "Strike";
     public override float Cooldown => OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeCooldown;
     public override int MaxUses => (int)OptionGroupSingleton<PulseBladeOptions>.Instance.MaxStrikeUses;
@@ -39,12 +41,17 @@ public class StrikeButton : CustomActionButton
         var target = PlayerControl.AllPlayerControls.ToArray().Where(p => p != player && !p.Data.IsDead && !p.Data.Disconnected && !p.inVent).OrderBy(p => Vector2.Distance(player.GetTruePosition(), p.GetTruePosition())).FirstOrDefault(p => Vector2.Distance(player.GetTruePosition(), p.GetTruePosition()) <= OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeRange);
 
         if (target)
+        {
             RpcPulseStrike(player, target);
+        }
     }
 
     [MethodRpc((uint)CustomRPC.Dash)]
     public static void RpcPulseStrike(PlayerControl source, PlayerControl target)
     {
+        if (source.Data.Role is not PulseBlade || source.Data.IsDead || target.Data.IsDead || target.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeRange)
+            return;
+
         Coroutines.Start(DoPulseStrike(source, target));
     }
 
@@ -53,8 +60,12 @@ public class StrikeButton : CustomActionButton
         var originalSpeed = killer.MyPhysics.Speed;
         var dashSpeed = OptionGroupSingleton<PulseBladeOptions>.Instance.DashSpeed;
 
-        killer.moveable = false;
-        killer.MyPhysics.inputHandler.enabled = false;
+        if (killer.AmOwner)
+        {
+            killer.moveable = false;
+            killer.MyPhysics.inputHandler.enabled = false;
+        }
+
         killer.MyPhysics.Speed = dashSpeed;
 
         while (Vector2.Distance(killer.GetTruePosition(), target.GetTruePosition()) > 0.1f)
@@ -70,12 +81,16 @@ public class StrikeButton : CustomActionButton
 
         killer.MyPhysics.SetNormalizedVelocity(Vector2.zero);
         killer.MyPhysics.Speed = originalSpeed;
-        killer.MyPhysics.inputHandler.enabled = true;
-        killer.moveable = true;
+        if (killer.AmOwner)
+        {
+            killer.MyPhysics.inputHandler.enabled = true;
+            killer.moveable = true;
+        }
 
         SoundManager.Instance.PlaySound(NewModAsset.StrikeSound.LoadAsset(), false);
 
-        killer.RpcCustomMurder(target, true, false, true, false, false, false);
+        if (AmongUsClient.Instance.AmHost && !target.Data.IsDead)
+            killer.RpcCustomMurder(target, true, false, true, false, false, false);
     }
 
     [RegisterEvent]

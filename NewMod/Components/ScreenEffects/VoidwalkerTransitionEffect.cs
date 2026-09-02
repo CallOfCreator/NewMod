@@ -43,18 +43,6 @@ public class VoidwalkerTransitionEffect(IntPtr ptr) : MonoBehaviour(ptr)
         _mat = null;
     }
 
-    public void SetEnter(float value)
-    {
-        exitMode = false;
-        progress = Mathf.Clamp01(value);
-    }
-
-    public void SetExit(float value)
-    {
-        exitMode = true;
-        progress = Mathf.Clamp01(value);
-    }
-
     public void OnRenderImage(RenderTexture src, RenderTexture dst)
     {
         if (!_mat)
@@ -77,5 +65,17 @@ public class VoidwalkerTransitionEffect(IntPtr ptr) : MonoBehaviour(ptr)
         _mat.SetFloat("_FlashStrength", flashStrength);
 
         Graphics.Blit(src, dst, _mat);
+    }
+
+    public void SetEnter(float value)
+    {
+        exitMode = false;
+        progress = Mathf.Clamp01(value);
+    }
+
+    public void SetExit(float value)
+    {
+        exitMode = true;
+        progress = Mathf.Clamp01(value);
     }
 }

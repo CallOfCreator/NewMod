@@ -17,30 +17,64 @@
     <ItemGroup>
         <PackageReference Include="AmongUs.GameLibs.Steam" Version="2026.8.18" PrivateAssets="all"/>
         <PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" PrivateAssets="all"/>
-        <PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.0.1" PrivateAssets="all" ExcludeAssets="runtime">
+            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.735"/>
+        <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34" PrivateAssets="all"/>
+        <PackageReference Include="dev.xaine.AmongUsPatchAnalyzer" Version="2026.6.5" PrivateAssets="all"/>
     </ItemGroup>
 
     <ItemGroup>
         <EmbeddedResource Include="Resources\**\*.*"/>
+        <Compile Remove="Tests\**\*.cs" />
     </ItemGroup>
 
     <ItemGroup>
         <Reference Include="CorsacCosmetics">
-            <HintPath>NewMod/Resources/CorsacCosmetics.dll</HintPath>
+            <HintPath>Resources/CorsacCosmetics.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="Reactor">
-            <HintPath>NewMod/Resources/Reactor.dll</HintPath>
+            <HintPath>Resources/Reactor.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="MiraAPI">
-            <HintPath>NewMod/Resources/MiraAPI.dll</HintPath>
+            <HintPath>Resources/MiraAPI.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="AchievementsAPI">
-            <HintPath>NewMod/Resources/AchievementsAPI.dll</HintPath>
+            <HintPath>Resources/AchievementsAPI.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="ReactUI">
+            <HintPath>Resources/ReactUI.dll</HintPath>
             <Private>false</Private>
         </Reference>
     </ItemGroup>
+    <Target Name="MergeReactUI" AfterTargets="Build">
+        <ItemGroup>
+            <MergeInput Include="$(TargetPath)"/>
+            <MergeInput Include="$(MSBuildProjectDirectory)/Resources/ReactUI.dll"/>
+            <ILRepackSearchDir Include="@(ReferencePath->'%(RootDir)%(Directory)')"/>
+        </ItemGroup>
+
+        <MakeDir Directories="$(TargetDir)ilrepack_tmp"/>
+
+        <ILRepack
+                InputAssemblies="@(MergeInput)"
+                LibraryPath="@(ILRepackSearchDir)"
+                TargetKind="SameAsPrimaryAssembly"
+                OutputFile="$(TargetDir)ilrepack_tmp/$(TargetFileName)"
+                Internalize="true"
+                RenameInternalized="true"/>
+
+        <Delete Files="$(TargetPath)"/>
+
+        <Move
+                SourceFiles="$(TargetDir)ilrepack_tmp/$(TargetFileName)"
+                DestinationFiles="$(TargetPath)"/>
+
+        <RemoveDir Directories="$(TargetDir)ilrepack_tmp"/>
+    </Target>
 </Project>

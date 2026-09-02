@@ -11,12 +11,7 @@ public class NewModLocalSettings(ConfigFile config) : LocalSettingsTab(config)
 {
     public override string TabName => "NewMod";
 
-    public override LocalSettingTabAppearance TabAppearance { get; } = new()
-    {
-        TabButtonColor = Color.cyan,
-        TabButtonHoverColor = Color.magenta,
-        TabIcon = NewModAsset.NMIcon
-    };
+    public override LocalSettingTabAppearance TabAppearance { get; } = new() { TabButtonColor = Color.cyan, TabButtonHoverColor = Color.magenta, TabIcon = NewModAsset.NMIcon };
 
     [LocalToggleSetting("Enable Custom Cursor", "Enable the custom cursor from the birthday update")]
     public ConfigEntry<bool> EnableCustomCursor { get; } = config.Bind("Features", "Cursor", true, "Enable the custom cursor from the birthday update");

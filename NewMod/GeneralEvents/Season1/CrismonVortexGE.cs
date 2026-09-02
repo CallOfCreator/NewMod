@@ -18,11 +18,11 @@ public class CrismonVortexGE : IGeneralEvent
     public static Vector2 VortexPosition { get; private set; }
     public static float StartedAt { get; private set; }
 
-    public string Title => "Crismon Vortex";
+    public string Title => "Crimson Vortex";
     public string Description => "ESCAPE THE SINGULARITY!";
     public LoadableAsset<Sprite> Icon => NewModAsset.CrismonIcon;
     public Color AccentColor => new(0.9f, 0.03f, 0.05f);
-    public int OccurrenceChance => 90;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.CrimsonVortexWeight;
 
     public float Duration => OptionGroupSingleton<GEOptions>.Instance.CrimsonDuration;
 
@@ -80,10 +80,7 @@ public class CrismonVortexGE : IGeneralEvent
         PositionReady = true;
         StartedAt = Time.time;
 
-        if (!Camera.main.GetComponent<CrimsonVortexEffect>())
-        {
-            Camera.main.gameObject.AddComponent<CrimsonVortexEffect>();
-        }
+        if (!Camera.main.GetComponent<CrimsonVortexEffect>()) Camera.main.gameObject.AddComponent<CrimsonVortexEffect>();
     }
 
     [MethodRpc((uint)CustomRPC.CrismonVortexEscape, LocalHandling = RpcLocalHandling.After)]

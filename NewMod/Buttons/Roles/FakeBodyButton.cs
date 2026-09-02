@@ -12,8 +12,10 @@ namespace NewMod.Buttons.Roles;
 /// <summary>
 ///     Defines a custom action button for the role.
 /// </summary>
-public class FakeBodyButton : CustomActionButton
+public class FakeBodyButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Control;
+
     /// <summary>
     ///     Gets the name displayed on the button.
     /// </summary>
@@ -55,7 +57,7 @@ public class FakeBodyButton : CustomActionButton
     /// <returns>True if the base conditions are met and there is a dead player, otherwise false.</returns>
     public override bool CanUse()
     {
-        return base.CanUse() && Utils.AnyDeadPlayer();
+        return base.CanUse();
     }
 
     /// <summary>

@@ -1,52 +1,59 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using AmongUs.GameOptions;
+using HarmonyLib;
+using MiraAPI;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameEnd;
+using MiraAPI.GameModes;
 using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.GameModes.WraithSiegeGamemode;
 using NewMod.Options.Roles.S1;
+using NewMod.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
+using TMPro;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace NewMod;
 
 internal static class NewModGameOver
 {
-    public static bool CaptureWinnerIds(NetworkedPlayerInfo[] winners, out byte[] winnerIds)
+    public static bool CaptureWinnerData(NetworkedPlayerInfo[] winners, out CachedPlayerData[] cachedWinners)
     {
-        if (winners.Length == 0)
-        {
-            winnerIds = [];
+        cachedWinners = [];
+        if (winners is not { Length: > 0 } || winners.Any(player => !player || !player.Role))
             return false;
-        }
 
-        winnerIds = winners.Select(player => player.PlayerId).Distinct().ToArray();
+        cachedWinners = winners.DistinctBy(player => player.PlayerId).Select(player => new CachedPlayerData(player)).ToArray();
         return true;
     }
 
-    public static bool CaptureWinners<TRole>(NetworkedPlayerInfo[] winners, out byte[] winnerIds) where TRole : RoleBehaviour, ICustomRole
+    public static bool CaptureWinners<TRole>(NetworkedPlayerInfo[] winners, out CachedPlayerData[] cachedWinners) where TRole : RoleBehaviour, ICustomRole
     {
-        if (winners.Length == 0 || winners[0].Role is not TRole)
-        {
-            winnerIds = [];
+        cachedWinners = [];
+        if (winners is not { Length: > 0 } || !winners[0] || winners[0].Role is not TRole)
             return false;
-        }
 
-        return CaptureWinnerIds(winners, out winnerIds);
+        return CaptureWinnerData(winners, out cachedWinners);
     }
 
-    public static bool SetWinners(byte[] winnerIds)
+    public static bool SetWinners(CachedPlayerData[] winners)
     {
         EndGameResult.CachedWinners.Clear();
 
-        foreach (var playerId in winnerIds)
-        {
-            var player = GameData.Instance.GetPlayerById(playerId);
-            if (player != null) EndGameResult.CachedWinners.Add(new CachedPlayerData(player));
-        }
+        foreach (var winner in winners)
+            EndGameResult.CachedWinners.Add(winner);
 
         return true;
     }
@@ -62,16 +69,16 @@ internal static class NewModGameOver
 
 public class EnergyThiefGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<EnergyThief>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<EnergyThief>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -82,16 +89,16 @@ public class EnergyThiefGameOver : CustomGameOver
 
 public class DoubleAgentGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<DoubleAgent>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<DoubleAgent>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -102,16 +109,16 @@ public class DoubleAgentGameOver : CustomGameOver
 
 public class PranksterGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<Prankster>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<Prankster>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -122,16 +129,16 @@ public class PranksterGameOver : CustomGameOver
 
 public class SpecialAgentGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<SpecialAgent>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<SpecialAgent>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -142,16 +149,16 @@ public class SpecialAgentGameOver : CustomGameOver
 
 public class OverloadGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<OverloadRole>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<OverloadRole>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -162,16 +169,16 @@ public class OverloadGameOver : CustomGameOver
 
 public class EgoistGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<EgoistRole>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<EgoistRole>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -182,16 +189,16 @@ public class EgoistGameOver : CustomGameOver
 
 public class InjectorGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<InjectorRole>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<InjectorRole>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -202,16 +209,16 @@ public class InjectorGameOver : CustomGameOver
 
 public class PulseBladeGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<PulseBlade>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<PulseBlade>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -222,16 +229,16 @@ public class PulseBladeGameOver : CustomGameOver
 
 public class TyrantGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<Tyrant>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<Tyrant>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -242,16 +249,16 @@ public class TyrantGameOver : CustomGameOver
 
 public class WraithCallerGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<WraithCaller>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<WraithCaller>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -262,16 +269,16 @@ public class WraithCallerGameOver : CustomGameOver
 
 public class ShadeGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return NewModGameOver.CaptureWinners<Shade>(winners, out _winnerIds);
+        return NewModGameOver.CaptureWinners<Shade>(winners, out _winners);
     }
 
     public override bool BeforeEndGameSetup(EndGameManager manager)
     {
-        return NewModGameOver.SetWinners(_winnerIds);
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -282,9 +289,16 @@ public class ShadeGameOver : CustomGameOver
 
 public class TerminatorGameOver : CustomGameOver
 {
+    private CachedPlayerData[] _winners = [];
+
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
-        return winners is [{ Role: TerminatorRole }];
+        return NewModGameOver.CaptureWinners<TerminatorRole>(winners, out _winners);
+    }
+
+    public override bool BeforeEndGameSetup(EndGameManager manager)
+    {
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager manager)
@@ -293,9 +307,32 @@ public class TerminatorGameOver : CustomGameOver
     }
 }
 
-public sealed class ArbitratorGameOver : CustomGameOver
+public class TerminatorDefeatedGameOver : CustomGameOver
 {
-    private byte[] _winnerIds = [];
+    private CachedPlayerData[] _winners = [];
+
+    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
+    {
+        return winners.Length > 0 && winners.All(player => player.Role is not TerminatorRole) && NewModGameOver.CaptureWinnerData(winners, out _winners);
+    }
+
+    public override bool BeforeEndGameSetup(EndGameManager manager)
+    {
+        return NewModGameOver.SetWinners(_winners);
+    }
+
+    public override void AfterEndGameSetup(EndGameManager manager)
+    {
+        var color = new Color32(117, 230, 165, 255);
+        manager.WinText.text = "Terminator Destroyed";
+        manager.WinText.color = color;
+        manager.BackgroundBar.material.SetColor(ShaderID.Color, color);
+    }
+}
+
+public class ArbitratorGameOver : CustomGameOver
+{
+    private CachedPlayerData[] _winners = [];
 
     public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
     {
@@ -304,21 +341,23 @@ public sealed class ArbitratorGameOver : CustomGameOver
 
         ArbitratorRole.JudgmentTokens.TryGetValue(winners[0].PlayerId, out var tokens);
 
-        if (tokens < OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin)
-        {
-            return false;
-        }
+        if (tokens < OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin) return false;
 
-        _winnerIds = [winners[0].PlayerId];
-        return true;
+        return NewModGameOver.CaptureWinnerData(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager) => NewModGameOver.SetWinners(_winnerIds);
+    public override bool BeforeEndGameSetup(EndGameManager manager)
+    {
+        return NewModGameOver.SetWinners(_winners);
+    }
 
-    public override void AfterEndGameSetup(EndGameManager manager) => NewModGameOver.SetPresentation<ArbitratorRole>(manager, "Judgment Has Been Passed\nArbitrator Wins!");
+    public override void AfterEndGameSetup(EndGameManager manager)
+    {
+        NewModGameOver.SetPresentation<ArbitratorRole>(manager, "Judgment Has Been Passed\nArbitrator Wins!");
+    }
 }
 
-public sealed class WraithSiegeWraithGameOver : CustomGameOver
+public class WraithSiegeWraithGameOver : CustomGameOver
 {
     private CachedPlayerData[] _winners = [];
 
@@ -360,7 +399,7 @@ public sealed class WraithSiegeWraithGameOver : CustomGameOver
     }
 }
 
-public sealed class WraithSiegeReviverGameOver : CustomGameOver
+public class WraithSiegeReviverGameOver : CustomGameOver
 {
     private CachedPlayerData[] _winners = [];
 
@@ -399,5 +438,265 @@ public sealed class WraithSiegeReviverGameOver : CustomGameOver
         subtitle.fontSize = 1.8f;
         subtitle.enableAutoSizing = false;
         subtitle.transform.localPosition = manager.WinText.transform.localPosition + new Vector3(00f, 1.8668f, -14f);
+    }
+}
+
+public class NomadGameOver : CustomGameOver
+{
+    private CachedPlayerData[] _winners = [];
+
+    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
+    {
+        return NewModGameOver.CaptureWinners<Nomad>(winners, out _winners);
+    }
+
+    public override bool BeforeEndGameSetup(EndGameManager manager)
+    {
+        return NewModGameOver.SetWinners(_winners);
+    }
+
+    public override void AfterEndGameSetup(EndGameManager manager)
+    {
+        NewModGameOver.SetPresentation<Nomad>(manager, "The Nomad Escaped the Pattern");
+    }
+}
+
+public class CollectorGameOver : CustomGameOver
+{
+    private CachedPlayerData[] _winners = [];
+
+    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
+    {
+        return NewModGameOver.CaptureWinners<Collector>(winners, out _winners);
+    }
+
+    public override bool BeforeEndGameSetup(EndGameManager manager)
+    {
+        return NewModGameOver.SetWinners(_winners);
+    }
+
+    public override void AfterEndGameSetup(EndGameManager manager)
+    {
+        NewModGameOver.SetPresentation<Collector>(manager, "The Collection Is Complete");
+    }
+}
+
+public class BountyGameOver : CustomGameOver
+{
+    private CachedPlayerData[] _winners = [];
+
+    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
+    {
+        return NewModGameOver.CaptureWinners<Bounty>(winners, out _winners);
+    }
+
+    public override bool BeforeEndGameSetup(EndGameManager manager)
+    {
+        return NewModGameOver.SetWinners(_winners);
+    }
+
+    public override void AfterEndGameSetup(EndGameManager manager)
+    {
+        NewModGameOver.SetPresentation<Bounty>(manager, "The Contract Was Cashed Out");
+    }
+}
+
+public class UsurperGameOver : CustomGameOver
+{
+    private CachedPlayerData[] _winners = [];
+
+    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
+    {
+        return NewModGameOver.CaptureWinners<Usurper>(winners, out _winners);
+    }
+
+    public override bool BeforeEndGameSetup(EndGameManager manager)
+    {
+        return NewModGameOver.SetWinners(_winners);
+    }
+
+    public override void AfterEndGameSetup(EndGameManager manager)
+    {
+        NewModGameOver.SetPresentation<Usurper>(manager, "The Usurper Stole the Ending");
+    }
+}
+
+public sealed record SummaryPlayer(byte Id, string Name, string Role, string RoleColor, string Faction, string Modifiers, int CompletedTasks, int TotalTasks, string Status);
+
+[HarmonyPatch]
+public static class MatchSummaryTracker
+{
+    private static readonly Dictionary<byte, SummaryPlayer> Players = [];
+    private static bool _tracking;
+    public static IReadOnlyList<SummaryPlayer> Snapshot { get; private set; } = [];
+
+    [RegisterEvent]
+    public static void OnRoundStart(RoundStartEvent evt)
+    {
+        if (evt.TriggeredByIntro)
+        {
+            Players.Clear();
+            Snapshot = [];
+            _tracking = true;
+        }
+
+        if (_tracking && GameData.Instance)
+            foreach (var player in GameData.Instance.AllPlayers)
+                Capture(player);
+    }
+
+    [RegisterEvent]
+    public static void OnTaskComplete(CompleteTaskEvent evt)
+    {
+        Capture(evt.Player?.Data);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(GameData), nameof(GameData.HandleDisconnect), typeof(PlayerControl), typeof(DisconnectReasons))]
+    public static void BeforeDisconnect([HarmonyArgument(0)] PlayerControl player)
+    {
+        if (player)
+            Capture(player.Data, true);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPriority(Priority.First)]
+    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameEnd))]
+    public static void BeforeEndGame()
+    {
+        if (!_tracking)
+            return;
+
+        if (GameData.Instance)
+            foreach (var player in GameData.Instance.AllPlayers)
+                Capture(player);
+        Snapshot = Players.Values.OrderBy(player => player.Id).ToArray();
+        _tracking = false;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameData), nameof(GameData.OnDisconnected))]
+    public static void OnDisconnected()
+    {
+        _tracking = false;
+    }
+
+    private static void Capture(NetworkedPlayerInfo player, bool disconnected = false)
+    {
+        if (!_tracking || !player)
+            return;
+
+        var character = player.Object;
+        if (character && character.notRealPlayer)
+            return;
+
+        var previous = Players.GetValueOrDefault(player.PlayerId);
+        if (previous?.Status == "Left")
+            return;
+        var role = player.Role;
+        var roleType = player.IsDead && player.RoleWhenAlive.HasValue ? player.RoleWhenAlive.Value : role ? role.Role : RoleTypes.Crewmate;
+        var roleName = roleType.ToString();
+        var roleColor = role && role.IsImpostor ? "FF4D4D" : "58E8BE";
+        var faction = string.Empty;
+        if (CustomRoleManager.GetCustomRoleBehaviour(roleType, out var custom))
+        {
+            roleName = custom.RoleName;
+            roleColor = ColorUtility.ToHtmlStringRGB(custom.RoleColor);
+            if (custom is INewModRole newModRole)
+                faction = newModRole.Faction.ToString();
+        }
+
+        var inSiege = CustomGameModeManager.ActiveMode is WraithSiege;
+        if (CustomGameModeManager.ActiveMode is WraithSiege siege && character)
+        {
+            var wraith = siege.IsWraith(character);
+            roleName = wraith ? "Wraith" : "Reviver";
+            roleColor = wraith ? "9B6CFF" : "58E8BE";
+            faction = "Wraith Siege";
+        }
+
+        var modifiers = previous?.Modifiers ?? string.Empty;
+        if (character && !player.IsDead)
+        {
+            var component = character.GetComponent<ModifierComponent>();
+            var names = new List<string>();
+            if (component)
+                foreach (var modifier in component.ActiveModifiers)
+                    if (!modifier.HideOnUi)
+                        names.Add(modifier.ModifierName);
+            modifiers = string.Join(", ", names);
+        }
+
+        var total = 0;
+        var completed = 0;
+        if (!inSiege && player.Tasks != null)
+            foreach (var task in player.Tasks)
+            {
+                if (task == null) continue;
+                total++;
+                if (task.Complete) completed++;
+            }
+
+        var status = disconnected || player.Disconnected ? "Left" : player.IsDead ? "Dead" : "Alive";
+        Players[player.PlayerId] = new SummaryPlayer(player.PlayerId, CleanText(player.PlayerName), CleanText(roleName), roleColor, CleanText(faction), CleanText(modifiers), completed, total, status);
+    }
+
+    [HarmonyPatch(typeof(EndGameManager), nameof(EndGameManager.Start))]
+    [HarmonyPostfix]
+    public static void ShowSummary(EndGameManager __instance)
+    {
+        if (Snapshot.Count == 0)
+            return;
+
+        var summary = Object.Instantiate(__instance.WinText, __instance.transform);
+        summary.gameObject.name = "NewModMatchSummary";
+        var translator = summary.GetComponent<TextTranslatorTMP>();
+        if (translator)
+        {
+            translator.enabled = false;
+            Object.Destroy(translator);
+        }
+
+        var aspect = summary.GetComponent<AspectPosition>();
+        if (aspect) aspect.enabled = false;
+
+        var camera = Camera.main;
+        var position = AspectPosition.ComputeWorldPosition(camera, AspectPosition.EdgeAlignments.LeftTop, new Vector3(0.2f, 0.2f, 0f));
+        position.z = __instance.WinText.transform.position.z;
+        summary.transform.position = position;
+        summary.transform.localScale = Vector3.one;
+        summary.transform.localRotation = Quaternion.identity;
+        summary.rectTransform.pivot = new Vector2(0f, 1f);
+        summary.rectTransform.sizeDelta = new Vector2(camera.orthographicSize * Mathf.Min(camera.aspect, Screen.safeArea.width / Screen.safeArea.height) * 0.9f - 0.4f, camera.orthographicSize * 2f - 1.6f);
+        summary.alignment = TextAlignmentOptions.TopLeft;
+        summary.color = Color.white;
+        summary.fontStyle = FontStyles.Normal;
+        summary.enableVertexGradient = false;
+        summary.margin = Vector4.zero;
+        summary.enableAutoSizing = true;
+        summary.fontSizeMin = 0.6f;
+        summary.fontSizeMax = 1.3f;
+        summary.fontSize = 1.3f;
+        summary.enableWordWrapping = false;
+        summary.overflowMode = TextOverflowModes.Overflow;
+
+        var text = new StringBuilder("End game summary:\n");
+        foreach (var player in Snapshot)
+        {
+            text.Append($"{player.Name} - <color=#{player.RoleColor}>{player.Role}</color>");
+            if (player.Modifiers.Length > 0)
+                text.Append($" ({player.Modifiers})");
+            if (player.TotalTasks > 0)
+                text.Append($" | Tasks: {player.CompletedTasks}/{player.TotalTasks}");
+            text.AppendLine($" | {player.Status}");
+        }
+
+        summary.text = text.ToString().TrimEnd();
+        summary.gameObject.SetActive(true);
+    }
+
+    public static string CleanText(string text)
+    {
+        return (text ?? string.Empty).Replace('<', '(').Replace('>', ')').Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ').Trim();
     }
 }

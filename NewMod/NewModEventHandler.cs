@@ -15,6 +15,7 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using NewMod.Utilities;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace NewMod;
@@ -61,12 +62,11 @@ public static class NewModEventHandler
     public static void ResetMatchState()
     {
         Utils.ResetKillTracking();
-        Utils.ResetDrainCount();
+        EnergyThief.ResetState();
         Utils.ResetMissionSuccessCount();
         Utils.ResetMissionFailureCount();
         Utils.ResetInjections();
         Utils.ResetStrikeCount();
-        Utils.waitingPlayers.Clear();
         Utils.savedPlayerRoles.Clear();
         Utils.MissionTimer.Clear();
         Utils.savedTasks.Clear();
@@ -74,19 +74,17 @@ public static class NewModEventHandler
         PranksterUtilities.ResetReportCount();
         WraithCallerUtilities.ClearAll();
         Shade.ShadeKills.Clear();
-        Revenant.ResetAllStates();
+        Revenant.Phases.Clear();
+        Revenant.PhaseExpiresAt.Clear();
+        Revenant.Bodies.Clear();
+        Revenant.PendingDoomTargets.Clear();
         NecromancerRole.RevivedPlayers.Clear();
         VerifierUtilities.Reset(true, false);
 
         CoroutinesHelper.bodiesCreated.Clear();
         CoroutinesHelper.drainCount.Clear();
-        PendingEffectManager.pendingEffects.Clear();
-        DoomAwakening.killedPlayers.Clear();
-
         StickyModifier.ResetState();
-        FearPulseArea.AffectedPlayers.Clear();
-        FearPulseArea._speedNotifShown.Clear();
-        FearPulseArea._visionNotifShown.Clear();
+        FearPulseArea.ResetState();
         AegisUtilities.ActiveOwners.Clear();
 
         foreach (var shield in ShieldArea._active.ToArray())
@@ -111,19 +109,47 @@ public static class NewModEventHandler
         GeneralEventManager.Reset();
     }
 
-    [RegisterEvent(-100)]
-    public static void OnRoundStart(RoundStartEvent evt)
+    [RegisterEvent]
+    public static void OnRoleAssigned(SetRoleEvent evt)
     {
-        if (!evt.TriggeredByIntro) return;
+        if (!evt.Player.AmOwner || evt.Player.Data.Role.IsImpostor)
+            return;
 
-        HudManager.Instance.Chat.enabled = false;
-        VisionaryUtilities.DeleteAllScreenshots();
+        PlayerTask header = null;
+        foreach (var task in evt.Player.myTasks)
+            if (task && task.name == "ImpostorRole")
+            {
+                header = task;
+                break;
+            }
+
+        if (!header)
+            return;
+
+        evt.Player.myTasks.Remove(header);
+        Object.Destroy(header.gameObject);
     }
 
-    [RegisterEvent(100)]
-    public static void OnGameEnd(GameEndEvent evt)
+    [RegisterEvent]
+    public static void OnRoundStart(RoundStartEvent evt)
     {
-        ResetMatchState();
+        if (!evt.TriggeredByIntro)
+            return;
+
+        if (!PlayerControl.LocalPlayer.Data.Role.IsImpostor)
+            for (var i = PlayerControl.LocalPlayer.myTasks.Count - 1; i >= 0; i--)
+            {
+                var task = PlayerControl.LocalPlayer.myTasks[i];
+                if (task && task.name == "ImpostorRole")
+                {
+                    PlayerControl.LocalPlayer.myTasks.RemoveAt(i);
+                    Object.Destroy(task.gameObject);
+                }
+            }
+
+        if (Application.platform == RuntimePlatform.Android)
+            return;
+
         VisionaryUtilities.DeleteAllScreenshots();
     }
 }

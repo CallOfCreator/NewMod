@@ -10,6 +10,32 @@ using UnityEngine.Events;
 namespace NewMod.Components;
 
 [RegisterInIl2Cpp]
+public class VerifyChoiceButton(IntPtr ptr) : MonoBehaviour(ptr)
+{
+    public VerifyMinigame Minigame;
+    public VerifierClaimType Claim;
+    public bool Expected;
+    public SpriteRenderer Renderer;
+    public Sprite NormalSprite;
+    public Sprite HoverSprite;
+
+    public void Select()
+    {
+        Minigame.Verify(Claim, Expected);
+    }
+
+    public void ShowHover()
+    {
+        Renderer.sprite = HoverSprite;
+    }
+
+    public void ShowNormal()
+    {
+        Renderer.sprite = NormalSprite;
+    }
+}
+
+[RegisterInIl2Cpp]
 public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
 {
     public PlayerControl Target;
@@ -18,6 +44,7 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
     public TextMeshPro VentText;
     public TextMeshPro AbilityText;
     public PassiveButton HelpIcon;
+    public PassiveButton CloseButton;
 
     public void Awake()
     {
@@ -26,12 +53,14 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
         VentText = transform.Find("UI/VentText").GetComponent<TextMeshPro>();
         AbilityText = transform.Find("UI/AbilityText").GetComponent<TextMeshPro>();
         HelpIcon = transform.Find("UI/HelpIcon").GetComponent<PassiveButton>();
+        CloseButton = transform.Find("UI/CloseButton").GetComponent<PassiveButton>();
 
+        HelpIcon.OnClick.RemoveAllListeners();
         HelpIcon.OnClick.AddListener((UnityAction)ShowPopup);
-    }
+        
+        CloseButton.OnClick.RemoveAllListeners();
+        CloseButton.OnClick.AddListener(((UnityAction)(() => Close())));
 
-    public void Start()
-    {
         Bind(TaskText, VerifierClaimType.DidTask);
         Bind(KillText, VerifierClaimType.NearBody);
         Bind(VentText, VerifierClaimType.EnteredVent);
@@ -65,6 +94,7 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
         AbilityText.text = "The player used an ability";
 
         Begin(null);
+        SetupInput(false, true);
     }
 
     public void ShowPopup()
@@ -81,44 +111,39 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
     [HideFromIl2Cpp]
     private void Bind(TextMeshPro text, VerifierClaimType claim)
     {
-        var confirm = text.transform.Find("ConfirmIcon").GetComponent<PassiveButton>();
-        var deny = text.transform.Find("DenyIcon").GetComponent<PassiveButton>();
-
-        var confirmRenderer = confirm.GetComponent<SpriteRenderer>();
-        var denyRenderer = deny.GetComponent<SpriteRenderer>();
-
-        var confirmSprite = confirmRenderer.sprite;
-        var denySprite = denyRenderer.sprite;
-        var confirmHover = NewModAsset.ConfirmIconHover.LoadAsset();
-        var denyHover = NewModAsset.DenyIconHover.LoadAsset();
-
-        confirm.activeSprites = null;
-        confirm.inactiveSprites = null;
-        deny.activeSprites = null;
-        deny.inactiveSprites = null;
-
-        confirmRenderer.enabled = true;
-        denyRenderer.enabled = true;
-
-        confirm.OnMouseOver.AddListener((UnityAction)(() => confirmRenderer.sprite = confirmHover));
-
-        confirm.OnMouseOut.AddListener((UnityAction)(() => confirmRenderer.sprite = confirmSprite));
-
-        deny.OnMouseOver.AddListener((UnityAction)(() => denyRenderer.sprite = denyHover));
-
-        deny.OnMouseOut.AddListener((UnityAction)(() => denyRenderer.sprite = denySprite));
-
-        confirm.OnClick.AddListener((UnityAction)(() => Verify(claim, true)));
-
-        deny.OnClick.AddListener((UnityAction)(() => Verify(claim, false)));
+        Bind(text.transform.Find("ConfirmIcon").GetComponent<PassiveButton>(), claim, true, NewModAsset.ConfirmIconHover.LoadAsset());
+        Bind(text.transform.Find("DenyIcon").GetComponent<PassiveButton>(), claim, false, NewModAsset.DenyIconHover.LoadAsset());
     }
 
     [HideFromIl2Cpp]
-    private void Verify(VerifierClaimType claim, bool expected)
+    private void Bind(PassiveButton button, VerifierClaimType claim, bool expected, Sprite hoverSprite)
+    {
+        var renderer = button.GetComponent<SpriteRenderer>();
+        var handler = button.gameObject.AddComponent<VerifyChoiceButton>();
+
+        handler.Minigame = this;
+        handler.Claim = claim;
+        handler.Expected = expected;
+        handler.Renderer = renderer;
+        handler.NormalSprite = renderer.sprite;
+        handler.HoverSprite = hoverSprite;
+
+        button.OnClick.RemoveAllListeners();
+        button.OnMouseOver.RemoveAllListeners();
+        button.OnMouseOut.RemoveAllListeners();
+
+        button.OnClick.AddListener((UnityAction)handler.Select);
+        button.OnMouseOver.AddListener((UnityAction)handler.ShowHover);
+        button.OnMouseOut.AddListener((UnityAction)handler.ShowNormal);
+    }
+
+    [HideFromIl2Cpp]
+    public void Verify(VerifierClaimType claim, bool expected)
     {
         if (VerifierUtilities.UsedThisMeeting)
             return;
 
+        var targetName = Target.Data.PlayerName;
         var result = VerifierUtilities.GetVerificationResult(Target, claim, expected);
 
         VerifierUtilities.UsedThisMeeting = true;
@@ -127,6 +152,6 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
 
         Close();
 
-        Coroutines.Start(VerifierUtilities.CoNotifyAfterDelay(0.3f, $"<color=#58E8BE>Verifier result</color>\n{Target.Data.PlayerName}: {result}"));
+        Coroutines.Start(VerifierUtilities.CoNotifyAfterDelay(0.3f, $"<color=#58E8BE>Verifier result</color>\n{targetName}: {result}"));
     }
 }

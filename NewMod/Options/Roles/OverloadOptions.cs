@@ -9,7 +9,5 @@ public class OverloadOptions : AbstractOptionGroup<OverloadRole>
     public override string GroupName => "The Overload";
 
     [ModdedNumberOption("Needed Charge", 1, 3)]
-    public float NeededCharge { get; set; } = 2f;
-
-    [ModdedNumberOption("Max Uses", 1, 2)] public float MaxUses { get; set; } = 1f;
+    public float NeededCharge { get; set; } = 3f;
 }

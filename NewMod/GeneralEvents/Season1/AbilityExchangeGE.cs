@@ -1,6 +1,9 @@
 ﻿using System.Linq;
-using HarmonyLib;
+using MiraAPI.Events;
+using MiraAPI.Events.Mira;
 using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using NewMod.Modifiers.S1;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Utilities;
@@ -18,12 +21,12 @@ public class AbilityExchangeGE : IGeneralEvent
     public string Description => "YOUR ABILITY HAS BEEN EXCHANGED!";
     public LoadableAsset<Sprite> Icon => NewModAsset.AbilityExchangeIcon;
     public Color AccentColor => new(0.55f, 0.24f, 1f);
-    public int OccurrenceChance => 8;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.AbilityExchangeWeight;
     public float Duration => 18f;
 
     public bool CanOccur()
     {
-        return Helpers.GetAlivePlayers().Count(player => Utils.RoleToButtonsMap.TryGetValue(player.Data.Role.GetType(), out var buttons) && buttons.Count > 0) >= 2;
+        return Helpers.GetAlivePlayers().Count(player => !player.HasModifier<InVoid>() && Utils.RoleToButtonsMap.TryGetValue(player.Data.Role.GetType(), out var buttons) && buttons.Count > 0) >= 2;
     }
 
     public void OnEventStart()
@@ -31,12 +34,13 @@ public class AbilityExchangeGE : IGeneralEvent
         Active = true;
         BorrowedButtonTypeName = null;
 
-        HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
+        if (!PlayerControl.LocalPlayer.HasModifier<InVoid>())
+            HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
 
         if (!AmongUsClient.Instance.AmHost)
             return;
 
-        var players = Helpers.GetAlivePlayers().Where(player => Utils.RoleToButtonsMap.TryGetValue(player.Data.Role.GetType(), out var buttons) && buttons.Count > 0).OrderBy(player => player.PlayerId).ToArray();
+        var players = Helpers.GetAlivePlayers().Where(player => !player.HasModifier<InVoid>() && Utils.RoleToButtonsMap.TryGetValue(player.Data.Role.GetType(), out var buttons) && buttons.Count > 0).OrderBy(player => player.PlayerId).ToArray();
 
         if (players.Length < 2)
             return;
@@ -56,62 +60,52 @@ public class AbilityExchangeGE : IGeneralEvent
         Active = false;
         BorrowedButtonTypeName = null;
 
-        HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
+        if (!PlayerControl.LocalPlayer.HasModifier<InVoid>())
+            HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
+    }
+
+    public void Tick()
+    {
+        if (!Active || BorrowedButtonTypeName == null || PlayerControl.LocalPlayer.HasModifier<InVoid>())
+            return;
+
+        foreach (var button in CustomButtonManager.Buttons)
+        {
+            if (!IsRoleButton(button.GetType()))
+                continue;
+
+            var borrowed = button.GetType().FullName == BorrowedButtonTypeName;
+            button.Button?.ToggleVisible(borrowed);
+
+            if (borrowed)
+                button.KeybindIcon?.SetActive(false);
+        }
+    }
+
+    [RegisterEvent]
+    public static void OnMiraButtonClick(MiraButtonClickEvent evt)
+    {
+        if (Active && BorrowedButtonTypeName != null && !PlayerControl.LocalPlayer.HasModifier<InVoid>() && IsRoleButton(evt.Button.GetType()) && evt.Button.GetType().FullName != BorrowedButtonTypeName)
+            evt.Cancel();
+    }
+
+    private static bool IsRoleButton(System.Type buttonType)
+    {
+        foreach (var buttonTypes in Utils.RoleToButtonsMap.Values)
+            if (buttonTypes.Contains(buttonType))
+                return true;
+
+        return false;
     }
 
     [MethodRpc((uint)CustomRPC.AbilityExchangeAssignment)]
     public static void RpcAssignAbility(PlayerControl source, byte playerId, string buttonTypeName)
     {
-        if (PlayerControl.LocalPlayer.PlayerId != playerId)
+        if (PlayerControl.LocalPlayer.PlayerId != playerId || PlayerControl.LocalPlayer.HasModifier<InVoid>())
             return;
 
         BorrowedButtonTypeName = buttonTypeName;
 
         HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
-    }
-}
-
-[HarmonyPatch(typeof(CustomActionButton), nameof(CustomActionButton.SetActive))]
-public static class AbilityExchangeButtonVisibilityPatch
-{
-    [HarmonyPrefix]
-    public static bool Prefix(CustomActionButton __instance, bool visible)
-    {
-        if (!AbilityExchangeGE.Active || !Utils.RoleToButtonsMap.Values.Any(buttons => buttons.Contains(__instance.GetType())))
-        {
-            return true;
-        }
-
-        __instance.Button?.ToggleVisible(visible && __instance.GetType().FullName == AbilityExchangeGE.BorrowedButtonTypeName);
-
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CustomActionButton), nameof(CustomActionButton.ClickHandler))]
-public static class AbilityExchangeButtonClickPatch
-{
-    [HarmonyPrefix]
-    public static bool Prefix(CustomActionButton __instance)
-    {
-        if (!AbilityExchangeGE.Active || !Utils.RoleToButtonsMap.Values.Any(buttons => buttons.Contains(__instance.GetType())))
-        {
-            return true;
-        }
-
-        return __instance.GetType().FullName == AbilityExchangeGE.BorrowedButtonTypeName;
-    }
-}
-
-[HarmonyPatch(typeof(CustomActionButton), nameof(CustomActionButton.FixedUpdateHandler))]
-public static class AbilityExchangeKeybindVisibilityPatch
-{
-    [HarmonyPostfix]
-    public static void Postfix(CustomActionButton __instance)
-    {
-        if (AbilityExchangeGE.Active && __instance.GetType().FullName == AbilityExchangeGE.BorrowedButtonTypeName)
-        {
-            __instance.KeybindIcon?.SetActive(false);
-        }
     }
 }

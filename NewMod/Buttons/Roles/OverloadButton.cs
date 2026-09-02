@@ -2,18 +2,21 @@ using System;
 using System.Reflection;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
 
+[MiraIgnore]
 /// <summary>
 ///     Defines a custom action button for the Overload role.
 ///     This button mimics another role's ability by adopting its appearance and functionality.
 /// </summary>
-public class OverloadButton : CustomActionButton
+public class OverloadButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Control;
     public CustomActionButton absorbed;
 
     /// <summary>
@@ -93,6 +96,9 @@ public class OverloadButton : CustomActionButton
     /// <param name="target">The button to absorb.</param>
     public void Absorb(CustomActionButton target)
     {
+        if (target == null || ReferenceEquals(target, this))
+            return;
+
         absorbed = target;
 
         absorbedText = target.Name;
@@ -142,7 +148,6 @@ public class OverloadButton : CustomActionButton
     /// <returns>True if usable.</returns>
     public override bool CanUse()
     {
-        absorbed?.FixedUpdateHandler(PlayerControl.LocalPlayer);
         return base.CanUse() && absorbed != null;
     }
 }

@@ -69,11 +69,6 @@ public class ShatteredGlassEffect(IntPtr ptr) : MonoBehaviour(ptr)
         _mat = null;
     }
 
-    public void SetImpact(Vector2 viewportPosition)
-    {
-        impactCenter = new Vector2(Mathf.Clamp01(viewportPosition.x), Mathf.Clamp01(viewportPosition.y));
-    }
-
     public void OnRenderImage(RenderTexture src, RenderTexture dst)
     {
         if (!_mat)
@@ -120,5 +115,10 @@ public class ShatteredGlassEffect(IntPtr ptr) : MonoBehaviour(ptr)
         _mat.SetFloat("_Alpha", alpha);
 
         Graphics.Blit(src, dst, _mat);
+    }
+
+    public void SetImpact(Vector2 viewportPosition)
+    {
+        impactCenter = new Vector2(Mathf.Clamp01(viewportPosition.x), Mathf.Clamp01(viewportPosition.y));
     }
 }

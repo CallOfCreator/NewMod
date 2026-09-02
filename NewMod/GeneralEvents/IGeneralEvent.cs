@@ -38,6 +38,14 @@ public interface IGeneralEvent
     void OnEventEnd();
 
     /// <summary>
+    ///     Called once per rendered frame while this event is active.
+    ///     Use this for local presentation state that must be reapplied after HUD updates.
+    /// </summary>
+    void Tick()
+    {
+    }
+
+    /// <summary>
     ///     Optional extra condition checked before this event can fire.
     ///     Return false to skip it (e.g. if a required role isn't in the game).
     ///     Defaults to true.

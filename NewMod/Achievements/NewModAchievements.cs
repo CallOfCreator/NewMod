@@ -48,4 +48,6 @@ public sealed class NewModAchievementsTab : AchievementsTab
         "As Verifier, receive a Confirmed or Denied result.",
         NewModAsset.VerifyIcon.LoadAsset(),
         rarity: 1);
-}*/
+}
+*/
+

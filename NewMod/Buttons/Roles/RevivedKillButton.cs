@@ -6,12 +6,14 @@ using MiraAPI.Networking;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
 using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
 
-public class RevivedKillButton : CustomActionButton<PlayerControl>
+public class RevivedKillButton : CustomActionButton<PlayerControl>, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Aggression;
     public override string Name => "KILL";
     public override float Cooldown => GameOptionsManager.Instance.CurrentGameOptions.GetFloat(FloatOptionNames.KillCooldown);
     public override int MaxUses => 0;
@@ -48,7 +50,8 @@ public class RevivedKillButton : CustomActionButton<PlayerControl>
 
     public override void SetOutline(bool active)
     {
-        Target.cosmetics.SetOutline(active, new Nullable<Color>(Palette.ImpostorRed));
+        if (Target && Target.cosmetics)
+            Target.cosmetics.SetOutline(active, new Nullable<Color>(Palette.ImpostorRed));
     }
 
     public override bool CanUse()

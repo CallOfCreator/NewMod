@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Il2CppSystem;
+using NewMod.Achievements;
 using NewMod.Buttons.Roles.S1;
 using NewMod.GameModes.WraithSiegeGamemode;
 using NewMod.GameModes.WraithSiegeGamemode.Buttons;
@@ -12,7 +13,6 @@ using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles.S1;
-using NewMod.Achievements;
 using TMPro;
 using UnityEngine;
 using Type = System.Type;
@@ -23,12 +23,12 @@ public class Preseason : ISeason
 {
     public string Name => "Preseason ALPHA";
 
-    public DateTime SeasonStartDate => new(2026, 08, 21, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonStartDate => new(2026, 08, 28, 18, 0, 0, 0, DateTimeKind.Utc);
 
-    public DateTime SeasonEndDate => new(2026, 08, 26, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonEndDate => new(2026, 09, 8, 18, 30, 0, 0, DateTimeKind.Utc);
 
     public Color SeasonMainColor => Color.blue;
-    
+
     public bool ContentExpires => true;
 
     public void HandleMainMenu(MainMenuManager menuManager)
@@ -61,9 +61,7 @@ public class Preseason : ISeason
             typeof(TerminatorRole),
             typeof(MirrorBladeRole),
             typeof(VerifierRole),
-            //typeof(Voidwalker),
-            //typeof(WardenRole),
-            // typeof(ArbitratorRole)
+            typeof(Voidwalker)
         ];
     }
 
@@ -73,10 +71,9 @@ public class Preseason : ISeason
         [
             typeof(FatefulModifier),
             typeof(LazyModifier),
-            // typeof(InVoid),
-            //typeof(JustLeftVoid),
-            //typeof(MarkedModifier),
-            typeof(MomentumModifier)
+            typeof(MomentumModifier),
+            typeof(InVoid),
+            typeof(JustLeftVoid)
         ];
     }
 
@@ -88,11 +85,8 @@ public class Preseason : ISeason
             typeof(MirrorBladeOptions),
             typeof(VerifierOptions),
             typeof(WraithSiegeOptions),
-            // typeof(VoidwalkerOptions),
+            typeof(VoidwalkerOptions),
             typeof(MomentumModifierOptions),
-            // typeof(MarkedModifierOptions),
-            //typeof(WardenOptions),
-            //typeof(ArbitratorOptions),
             typeof(GEOptions)
         ];
     }
@@ -103,14 +97,13 @@ public class Preseason : ISeason
         [
             typeof(MirrorReflectButton),
             typeof(ObjectiveButton),
+            typeof(TerminateButton),
+            typeof(EnterVoid),
             typeof(TopWraithLaneButton),
             typeof(MidWraithLaneButton),
             typeof(BottomWraithLaneButton),
             typeof(BanishWraithButton),
-            typeof(WraithSiegeReviveButton),
-            //typeof(InspectResidualButton),
-            // typeof(WardenSealButton),
-            // typeof(ArbitratorLeverageButton)
+            typeof(WraithSiegeReviveButton)
         ];
     }
 
@@ -126,15 +119,12 @@ public class Preseason : ISeason
     {
         return
         [
-            //typeof(NegativeRealityGE),
             typeof(CrismonVortexGE),
-            // typeof(AbilityExchangeGE),
             typeof(IdentityCrisisGE),
-            typeof(NoMansLandGE),
-            //typeof(RoleScrambleGE),
-            //typeof(SystemOverrideGE)
+            typeof(NoMansLandGE)
         ];
     }
+
     public IReadOnlyList<Type> GetSeasonAchievementTabTypes()
     {
         return

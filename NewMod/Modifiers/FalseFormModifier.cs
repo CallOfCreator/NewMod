@@ -17,6 +17,7 @@ public class FalseFormModifier : TimedModifier
 
     public override void OnActivate()
     {
+        timer = 0f;
         oldAppearance = new AppearanceBackup
         {
             PlayerName = Player.Data.PlayerName,
@@ -41,10 +42,14 @@ public class FalseFormModifier : TimedModifier
     {
         base.FixedUpdate();
 
+        if (!TimerActive || !Player || !Player.AmOwner || Player.Data == null || Player.Data.Disconnected)
+            return;
+
         timer += Time.fixedDeltaTime;
 
         if (timer >= OptionGroupSingleton<FalseFormModifierOptions>.Instance.FalseFormAppearanceTimer.Value)
         {
+            timer = 0f;
             Player.RpcSetName(Helpers.RandomString(5));
             Player.RpcSetColor((byte)Random.Range(0, Palette.PlayerColors.Count));
             Player.RpcSetHat(HatManager.Instance.AllHats[Random.Range(0, HatManager.Instance.allHats.Count)].ProductId);
@@ -55,7 +60,7 @@ public class FalseFormModifier : TimedModifier
 
     public override void OnDeactivate()
     {
-        if (OptionGroupSingleton<FalseFormModifierOptions>.Instance.RevertAppearance)
+        if (Player && Player.AmOwner && Player.Data != null && !Player.Data.Disconnected && oldAppearance != null && OptionGroupSingleton<FalseFormModifierOptions>.Instance.RevertAppearance)
         {
             Player.RpcSetName(oldAppearance.PlayerName);
             Player.RpcSetColor((byte)oldAppearance.ColorId);

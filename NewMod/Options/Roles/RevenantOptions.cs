@@ -5,22 +5,22 @@ using NewMod.Roles.ImpostorRoles;
 
 namespace NewMod.Options.Roles;
 
-public class RevenantOptions : AbstractOptionGroup<Revenant>
+public sealed class RevenantOptions : AbstractOptionGroup<Revenant>
 {
-    public override string GroupName => "Revenant";
+    public override string GroupName => "Revenant Settings";
 
-    [ModdedNumberOption("Feign Death Cooldown", 10, 40, suffixType: MiraNumberSuffixes.Seconds)]
-    public float FeignDeathCooldown { get; set; } = 20f;
+    [ModdedNumberOption("Feign Death Cooldown", 15f, 45f, 5f, MiraNumberSuffixes.Seconds)]
+    public float FeignDeathCooldown { get; set; } = 25f;
 
-    [ModdedNumberOption("Feign Death Max Uses", 1, 3)]
-    public float FeignDeathMaxUses { get; set; } = 2f;
+    [ModdedNumberOption("Feign Duration", 5f, 12f, 1f, MiraNumberSuffixes.Seconds)]
+    public float FeignDuration { get; set; } = 8f;
 
-    [ModdedNumberOption("Doom Awakening Cooldown", 10, 20, suffixType: MiraNumberSuffixes.Seconds)]
-    public float DoomAwakeningCooldown { get; set; } = 10f;
+    [ModdedNumberOption("Doom Duration", 4f, 10f, 1f, MiraNumberSuffixes.Seconds)]
+    public float DoomDuration { get; set; } = 7f;
 
-    [ModdedNumberOption("Doom Awakening Max Uses", 1, 1)]
-    public float DoomAwakeningMaxUses { get; set; } = 1f;
+    [ModdedNumberOption("Doom Speed Bonus", 10f, 40f, 5f, MiraNumberSuffixes.Percent)]
+    public float DoomSpeedBonus { get; set; } = 25f;
 
-    [ModdedNumberOption("Doom Awakening Duration", 10f, 30f)]
-    public float DoomAwakeningDuration { get; set; } = 20f;
+    [ModdedNumberOption("Doom Contact Radius", 0.45f, 0.9f, 0.05f)]
+    public float DoomContactRadius { get; set; } = 0.65f;
 }

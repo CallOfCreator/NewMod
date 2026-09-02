@@ -12,21 +12,23 @@ namespace NewMod.Roles.NeutralRoles;
 public class WraithCaller : ImpostorRole, INewModRole
 {
     public string RoleName => "Wraith Caller";
-    public string RoleDescription => "Summon. Lurk. Reap.";
-    public string RoleLongDescription => "Summon spectral NPCs that slip through walls and hunt down your marked target.";
+    public string RoleDescription => "Send Wraiths through walls to hunt targets.";
+    public string RoleLongDescription => "Summon spectral NPCs that slip through walls and hunt your target. Reach the required number of Wraith kills and stay alive to win.";
     public Color RoleColor => new(0.58f, 0.20f, 0.90f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Entropy;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        AffectedByLightOnAirship = false,
-        CanUseSabotage = false,
-        CanUseVent = false,
-        UseVanillaKillButton = false,
-        TasksCountForProgress = false,
-        Icon = NewModAsset.WraithIcon
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = false,
+            CanUseSabotage = false,
+            CanUseVent = false,
+            UseVanillaKillButton = false,
+            TasksCountForProgress = false,
+            MaxRoleCount = 1,
+            Icon = NewModAsset.WraithIcon
+        };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()
@@ -56,7 +58,7 @@ public class WraithCaller : ImpostorRole, INewModRole
         }
         else
         {
-            tab.AppendLine($"<size=65%><b><color=#{green}>Win condition armed. Survive to claim victory.</color></size></b>");
+            tab.AppendLine($"<size=65%><b><color=#{green}>Kill goal reached. You must be alive when victory is checked.</color></b></size>");
         }
 
         if (showWarn)

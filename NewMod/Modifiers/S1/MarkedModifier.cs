@@ -15,9 +15,9 @@ namespace NewMod.Modifiers.S1;
 public class MarkedModifier : GameModifier, INewModModifier
 {
     private readonly Dictionary<byte, float> _nearTimers = [];
-    private readonly HashSet<byte> _triggered = [];
     private readonly HashSet<byte> _nearby = [];
     private readonly List<byte> _toRemove = [];
+    private readonly HashSet<byte> _triggered = [];
 
     public override string ModifierName => "Marked";
     public override bool HideOnUi => false;
@@ -105,10 +105,8 @@ public class MarkedModifier : GameModifier, INewModModifier
         _toRemove.Clear();
 
         foreach (var pair in _nearTimers)
-        {
             if (!_nearby.Contains(pair.Key))
                 _toRemove.Add(pair.Key);
-        }
 
         foreach (var id in _toRemove)
             _nearTimers.Remove(id);
@@ -116,10 +114,8 @@ public class MarkedModifier : GameModifier, INewModModifier
         _toRemove.Clear();
 
         foreach (var id in _triggered)
-        {
             if (!_nearby.Contains(id))
                 _toRemove.Add(id);
-        }
 
         foreach (var id in _toRemove)
             _triggered.Remove(id);

@@ -13,6 +13,7 @@ public class SlashTray(IntPtr ptr) : MonoBehaviour(ptr)
     public Vector2 _dir;
     public float _speed;
     public int _kills;
+    private float _distance;
     public PlayerControl Owner { get; set; }
 
     public void Awake()
@@ -25,18 +26,25 @@ public class SlashTray(IntPtr ptr) : MonoBehaviour(ptr)
 
     public void Update()
     {
-        transform.position += (Vector3)(_dir * _speed * Time.deltaTime);
+        var step = _speed * Time.deltaTime;
+        transform.position += (Vector3)(_dir * step);
+        _distance += step;
+
+        if (_distance >= OptionGroupSingleton<EdgeveilOptions>.Instance.SlashRange)
+            Destroy(gameObject);
     }
 
     public void OnTriggerEnter2D(Collider2D other)
     {
-        NewMod.NewMod.Instance.Log.LogMessage($"Hit {other.name}");
+        if (!Owner.AmOwner)
+            return;
+
         var pc = other.GetComponentInParent<PlayerControl>();
         if (pc == null) return;
         if (pc == Owner) return;
         if (pc.Data.IsDead) return;
 
-        PlayerControl.LocalPlayer.RpcCustomMurder(pc, teleportMurderer: false);
+        Owner.RpcCustomMurder(pc, teleportMurderer: false);
 
         _kills++;
         if (_kills >= (int)OptionGroupSingleton<EdgeveilOptions>.Instance.PlayersToKill) Destroy(gameObject);

@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+﻿/*using HarmonyLib;
 using UnityEngine;
 
 namespace NewMod.Patches;
@@ -10,10 +10,7 @@ public static class FreeplayLaptopPatches
     [HarmonyPriority(Priority.Last)]
     public static void SystemConsoleCanUsePostfix(SystemConsole __instance, NetworkedPlayerInfo pc, ref bool canUse, ref bool couldUse, ref float __result)
     {
-        if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay || __instance.MinigamePrefab is not TaskAdderGame)
-        {
-            return;
-        }
+        if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay || __instance.MinigamePrefab is not TaskAdderGame) return;
 
         var player = pc.Object;
         var position = player.GetTruePosition();
@@ -23,10 +20,7 @@ public static class FreeplayLaptopPatches
 
         __result = float.MaxValue;
 
-        if (!canUse)
-        {
-            return;
-        }
+        if (!canUse) return;
 
         __result = Vector2.Distance(position, __instance.transform.position);
 
@@ -37,31 +31,20 @@ public static class FreeplayLaptopPatches
     [HarmonyPrefix]
     public static bool TaskAddButtonPrefix(TaskAddButton __instance)
     {
-        if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay || !__instance.Role)
-        {
-            return true;
-        }
+        if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay || !__instance.Role) return true;
 
         var player = PlayerControl.LocalPlayer;
 
-        if (player.Data.Role.Role == __instance.Role.Role)
-        {
-            return false;
-        }
+        if (player.Data.Role.Role == __instance.Role.Role) return false;
 
-        if (PlayerTask.DestroyTasksOfType<ImportantTextTask>(player) && !PlayerTask.PlayerHasTaskOfType<NormalPlayerTask>(player))
-        {
-            ShipStatus.Instance.Begin();
-        }
+        if (PlayerTask.DestroyTasksOfType<ImportantTextTask>(player) && !PlayerTask.PlayerHasTaskOfType<NormalPlayerTask>(player)) ShipStatus.Instance.Begin();
 
         player.RpcSetRole(__instance.Role.Role, true);
         player.transform.position = __instance.SafePositionWorld;
 
-        if (player.Data.Role is ImpostorGhostRole impostorGhostRole)
-        {
-            impostorGhostRole.WasManuallyPicked = true;
-        }
+        if (player.Data.Role is ImpostorGhostRole impostorGhostRole) impostorGhostRole.WasManuallyPicked = true;
 
         return false;
     }
-}
+}*/
+

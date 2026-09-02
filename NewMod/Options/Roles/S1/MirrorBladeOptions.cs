@@ -12,10 +12,10 @@ public class MirrorBladeOptions : AbstractOptionGroup<MirrorBladeRole>
     public override string GroupName => "MirrorBlade Settings";
 
     [ModdedNumberOption("Reflect Cooldown", 5f, 60f, suffixType: MiraNumberSuffixes.Seconds)]
-    public float ReflectCooldown { get; set; } = 25f;
+    public float ReflectCooldown { get; set; } = 30f;
 
-    [ModdedNumberOption("Max Reflect Uses", 1f, 4f, 1f, MiraNumberSuffixes.None)]
-    public float MaxReflectUses { get; set; } = 2f;
+    [ModdedNumberOption("Max Reflect Uses", 1f, 4f)]
+    public float MaxReflectUses { get; set; } = 1f;
 
     [ModdedNumberOption("Reflect Window", 2f, 15f, 1f, MiraNumberSuffixes.Seconds)]
     public float ReflectWindow { get; set; } = 6f;

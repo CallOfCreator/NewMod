@@ -66,11 +66,6 @@ public static class Utils
     }
 
     /// <summary>
-    ///     Tracks the number of drains performed by each Energy Thief, keyed by player ID.
-    /// </summary>
-    public static Dictionary<byte, int> EnergyThiefDrainCounts = new();
-
-    /// <summary>
     ///     Maps a victim player to its killer.
     /// </summary>
     public static Dictionary<byte, byte> PlayerKiller = new();
@@ -90,11 +85,6 @@ public static class Utils
     ///     Used to track injection progress for win condition.
     /// </summary>
     public static readonly HashSet<byte> InjectedPlayerIds = new();
-
-    /// <summary>
-    ///     Holds a set of players who are currently waiting for an event or action.
-    /// </summary>
-    public static HashSet<PlayerControl> waitingPlayers = new();
 
     /// <summary>
     ///     Maintains saved roles for players, keyed by their ID.
@@ -139,7 +129,7 @@ public static class Utils
         { typeof(TerminatorRole), new List<Type> { typeof(ObjectiveButton) } },
         { typeof(ArbitratorRole), new List<Type> { typeof(ArbitratorLeverageButton) } },
         { typeof(MirrorBladeRole), new List<Type> { typeof(MirrorReflectButton) } },
-        { typeof(Shade), new List<Type> { typeof(DeployShadow) } },
+        { typeof(Shade), new List<Type> { typeof(DeployShadow) } }
         // Verifier is excluded since it uses a meeting ability.
         // I hate this system, I gotta replace it
         // TODO: Add Launchpad roles and their associated buttons here
@@ -272,35 +262,6 @@ public static class Utils
     public static bool IsSabotage()
     {
         return IsActive(SystemTypes.LifeSupp) || IsActive(SystemTypes.Reactor) || IsActive(SystemTypes.Laboratory) || IsActive(SystemTypes.Electrical) || IsActive(SystemTypes.Comms) || IsActive(SystemTypes.MushroomMixupSabotage) || IsActive(SystemTypes.HeliSabotage);
-    }
-
-    /// <summary>
-    ///     Records a drain count for the specified player.
-    /// </summary>
-    /// <param name="energyThief">The player representing the energy thief.</param>
-    public static void RecordDrainCount(PlayerControl energyThief)
-    {
-        var playerId = energyThief.PlayerId;
-        EnergyThiefDrainCounts[playerId] = GetDrainCount(playerId) + 1;
-        NewMod.Instance.Log.LogInfo($"Player {playerId} drain count: {GetDrainCount(playerId)}");
-    }
-
-    /// <summary>
-    ///     Retrieves the drain count for a specific player.
-    /// </summary>
-    /// <param name="playerId">The ID of the player.</param>
-    /// <returns>The drain count for the player.</returns>
-    public static int GetDrainCount(byte playerId)
-    {
-        return EnergyThiefDrainCounts.TryGetValue(playerId, out var count) ? count : 0;
-    }
-
-    /// <summary>
-    ///     Resets all drain counts.
-    /// </summary>
-    public static void ResetDrainCount()
-    {
-        EnergyThiefDrainCounts.Clear();
     }
 
     /// <summary>
@@ -681,20 +642,15 @@ public static class Utils
             }
 
             if (target.Data.Role is ICustomRole role && RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
-            {
                 foreach (var buttonType in buttonTypes)
                 {
                     var button = CustomButtonManager.Buttons.FirstOrDefault(candidate => candidate.GetType() == buttonType);
                     if (button != null && button.Button)
                         button.Button.SetEnabled();
                 }
-            }
         }
 
-        if (!succeeded && AmongUsClient.Instance.AmHost && !target.Data.IsDead)
-        {
-            specialAgent.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
-        }
+        if (!succeeded && AmongUsClient.Instance.AmHost && !target.Data.IsDead) specialAgent.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
 
         if (SpecialAgent.AssignedPlayer == target)
             SpecialAgent.AssignedPlayer = null;
@@ -707,6 +663,7 @@ public static class Utils
             NewModFaction.Apex => $"<b><color=#FF5A5A>Apex</color></b>",
             NewModFaction.Entropy => $"<b><color=#EAAA3E>Entropy</color></b>",
             NewModFaction.Sentinel => $"<b><color=#3AA6FF>Sentinel</color></b>",
+            NewModFaction.Rift => $"<b><color=#301934>Rift</color></b>",
             _ => $"Unknown"
         };
     }
@@ -729,10 +686,7 @@ public static class Utils
         {
             var newTaskList = new Il2CppSystem.Collections.Generic.List<PlayerTask>();
 
-            foreach (var task in target.myTasks)
-            {
-                newTaskList.Add(task);
-            }
+            foreach (var task in target.myTasks) newTaskList.Add(task);
 
             savedTasks[target] = newTaskList;
         }
@@ -741,16 +695,14 @@ public static class Utils
         target.myTasks.Clear();
 
         // Add the mission message to the player's tasks
-        ImportantTextTask missionMessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
+        var missionMessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
         missionMessage.transform.SetParent(AmongUsClient.Instance.transform, false);
         missionMessage.Text = $"<color=red>Special Agent</color> has given you a mission!\n" + $"<b><color=blue>Mission:</color></b> {GetMission(source, target, mission, mostWantedId)}\n" + $"<i><color=green>Complete it or face the consequences!</color></i>";
 
         target.myTasks.Insert(0, missionMessage);
         // Disable the Role Player's Ability
         if (target.Data.Role is ICustomRole role)
-        {
             if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
-            {
                 foreach (var btnType in buttonTypes)
                 {
                     var btn = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == btnType);
@@ -758,8 +710,6 @@ public static class Utils
                     if (btn != null && btn.Button)
                         btn.Button.SetDisabled();
                 }
-            }
-        }
 
         Coroutines.Start(CoroutinesHelper.CoMissionTimer(source, target, 30f));
     }
@@ -780,74 +730,17 @@ public static class Utils
         HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
         SoundManager.Instance.PlaySound(clip, false, 1f, null);
         yield return new WaitForEndOfFrame();
-        ScreenCapture.CaptureScreenshot(filePath, 1);
+        var screenshot = ScreenCapture.CaptureScreenshotAsTexture();
+        File.WriteAllBytes(filePath, screenshot.EncodeToPNG());
+        Object.Destroy(screenshot);
         VisionaryUtilities.HasScreenshots = true;
-        NewMod.Instance.Log.LogInfo($"Capturing screenshot at {Path.GetFileName(filePath)}.");
+        NewMod.Instance.Log.LogInfo($"Saved screenshot: {Path.GetFileName(filePath)}.");
 
         yield return new WaitForEndOfFrame();
 
         SoundManager.Instance.StopSound(clip);
         HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
         VisionaryUtilities.IsCapturing = false;
-    }
-
-    /// <summary>
-    ///     Causes the player to feign death, creating a body. If unreported, the player is revived after 10 seconds.
-    /// </summary>
-    /// <param name="player">The player feigning death.</param>
-    /// <returns>An IEnumerator for coroutine control.</returns>
-    public static IEnumerator StartFeignDeath(PlayerControl player)
-    {
-        var clip = NewModAsset.FeignDeathSound.LoadAsset();
-
-        SavePlayerRole(player.PlayerId, player.Data.Role);
-
-        player.RpcCustomMurder(player, true, false, true, false, false, false);
-
-        SoundManager.Instance.PlaySound(clip, false);
-
-        yield return new WaitForSeconds(0.5f);
-
-        var body = player.GetNearestDeadBody(15f);
-
-        var info = new Revenant.FeignDeathInfo { Timer = 10f, DeadBody = body, Reported = false };
-        Revenant.FeignDeathStates[player.PlayerId] = info;
-
-        Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You are now feigning death.\nYou will be revived in 10 seconds if unreported.</color>"));
-
-        if (player.AmOwner) HudManager.Instance.SetHudActive(player, player.Data.Role, false);
-
-        var timer = 10f;
-        while (timer > 0)
-        {
-            timer -= Time.deltaTime;
-            info.Timer = timer;
-            yield return null;
-
-            if (info.Reported)
-            {
-                yield return CoroutinesHelper.CoNotify("<color=red>Your feign death has been reported. You remain dead.</color>");
-                SoundManager.Instance.StopSound(clip);
-                Revenant.FeignDeathStates.Remove(player.PlayerId);
-                yield break;
-            }
-        }
-
-        Revenant.HasUsedFeignDeath = true;
-        Revenant.StalkingStates[player.PlayerId] = true;
-
-        var roleHistory = GetPlayerRolesHistory(player.PlayerId);
-        var roleToRestore = roleHistory.Count > 0 ? roleHistory[^1].Role : (RoleTypes)RoleId.Get<Revenant>();
-
-        HandleRevive(player, player.PlayerId, roleToRestore, body.transform.position.x, body.transform.position.y);
-        yield return new WaitForSeconds(0.2f);
-        player.RpcShapeshift(GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected), false);
-        Coroutines.Start(CoroutinesHelper.CoNotify("<color=green>You have been revived in a new body!</color>"));
-        Revenant.FeignDeathStates.Remove(player.PlayerId);
-
-        if (player.AmOwner) HudManager.Instance.SetHudActive(player, player.Data.Role, true);
-
-        SoundManager.Instance.StopSound(clip);
     }
 
     /// <summary>

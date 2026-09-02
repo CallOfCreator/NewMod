@@ -65,10 +65,7 @@ public class StickyModifier : GameModifier
         {
             var target = Utils.PlayerById(linkedTargetId);
 
-            if (!target || !target.AmOwner || Player.Data == null || target.Data == null || Player.Data.IsDead || Player.Data.Disconnected || target.Data.IsDead || target.Data.Disconnected || Player.inVent || target.inVent || MeetingHud.Instance || !target.CanMove)
-            {
-                return;
-            }
+            if (!target || !target.AmOwner || Player.Data == null || target.Data == null || Player.Data.IsDead || Player.Data.Disconnected || target.Data.IsDead || target.Data.Disconnected || Player.inVent || target.inVent || MeetingHud.Instance || !target.CanMove) return;
 
             const float stopDistance = 0.65f;
 
@@ -104,10 +101,7 @@ public class StickyModifier : GameModifier
         if (!Player.AmOwner)
             return;
 
-        if (!Player.CanMove || Player.Data == null || Player.Data.IsDead || Player.Data.Disconnected || Player.inVent || MeetingHud.Instance)
-        {
-            return;
-        }
+        if (!Player.CanMove || Player.Data == null || Player.Data.IsDead || Player.Data.Disconnected || Player.inVent || MeetingHud.Instance) return;
 
         if (Time.time < _nextRequestAt)
             return;
@@ -158,10 +152,7 @@ public class StickyModifier : GameModifier
     [MethodRpc((uint)CustomRPC.StickyRequestLink)]
     public static void RpcRequestSticky(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || !source  || source.Data.Disconnected || source.inVent || ActiveLinks.ContainsKey(source.PlayerId))
-        {
-            return;
-        }
+        if (!AmongUsClient.Instance.AmHost || !source || source.Data.Disconnected || source.inVent || ActiveLinks.ContainsKey(source.PlayerId)) return;
 
         var range = OptionGroupSingleton<StickyModifierOptions>.Instance.StickyDistance.Value;
         var target = FindClosestTarget(source, range + 0.15f);
@@ -196,10 +187,7 @@ public class StickyModifier : GameModifier
         if (!source)
             return;
 
-        if (ActiveLinks.TryGetValue(source.PlayerId, out var currentTarget) && currentTarget == targetId)
-        {
-            ActiveLinks.Remove(source.PlayerId);
-        }
+        if (ActiveLinks.TryGetValue(source.PlayerId, out var currentTarget) && currentTarget == targetId) ActiveLinks.Remove(source.PlayerId);
 
         LinkedTargets.Remove(targetId);
 
@@ -218,15 +206,9 @@ public class StickyModifier : GameModifier
 
             var target = Utils.PlayerById(targetId);
 
-            if (source.Data.IsDead || source.Data.Disconnected || target.Data.IsDead || target.Data.Disconnected || source.inVent || target.inVent || MeetingHud.Instance)
-            {
-                break;
-            }
+            if (source.Data.IsDead || source.Data.Disconnected || target.Data.IsDead || target.Data.Disconnected || source.inVent || target.inVent || MeetingHud.Instance) break;
 
-            if (!ActiveLinks.TryGetValue(source.PlayerId, out var linkedId) || linkedId != targetId)
-            {
-                yield break;
-            }
+            if (!ActiveLinks.TryGetValue(source.PlayerId, out var linkedId) || linkedId != targetId) yield break;
 
             timer += Time.deltaTime;
             yield return null;
@@ -235,10 +217,7 @@ public class StickyModifier : GameModifier
         if (!AmongUsClient.Instance.AmHost)
             yield break;
 
-        if (ActiveLinks.TryGetValue(source.PlayerId, out var linkedTarget) && linkedTarget == targetId)
-        {
-            RpcEndSticky(source, targetId);
-        }
+        if (ActiveLinks.TryGetValue(source.PlayerId, out var linkedTarget) && linkedTarget == targetId) RpcEndSticky(source, targetId);
     }
 
     public static void ResetState()
@@ -250,7 +229,9 @@ public class StickyModifier : GameModifier
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (evt.TriggeredByIntro)
-            ResetState();
+        if (!evt.TriggeredByIntro || (Application.platform == RuntimePlatform.Android && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay))
+            return;
+
+        ResetState();
     }
 }

@@ -1,49 +1,37 @@
 using System;
 using System.Collections.Generic;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Meeting;
+using MiraAPI.Networking;
+using MiraAPI.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace NewMod.Utilities;
 
 public static class PranksterUtilities
 {
-    // The name assigned to the prankster clone body
     private const string PranksterBodyName = "PranksterCloneBody";
-
-    // Dictionary tracking how many times each player has reported a Prankster body
     private static readonly Dictionary<byte, int> ReportCounts = new();
 
-    /// <summary>
-    ///     Creates a "prankster clone" dead body at the local player's position.
-    /// </summary>
     [MethodRpc((uint)CustomRPC.FakeBody, LocalHandling = RpcLocalHandling.After)]
     public static void CreatePranksterDeadBody(PlayerControl player, byte parentId)
     {
-        var randPlayer = Utils.GetRandomPlayer(p => p.Data.IsDead);
-        if (randPlayer == null) NewMod.Instance.Log.LogError("[PranksterUtilities] CreatePranksterDeadBody: Failed to create dead body, random player is null.");
         var deadBody = Object.Instantiate(GameManager.Instance.GetDeadBody(player.Data.Role));
         deadBody.name = PranksterBodyName;
         deadBody.ParentId = parentId;
 
-        foreach (var renderer in deadBody.bodyRenderers) randPlayer.SetPlayerMaterialColors(renderer);
+        foreach (var renderer in deadBody.bodyRenderers) player.SetPlayerMaterialColors(renderer);
         deadBody.transform.position = player.GetTruePosition();
     }
 
-    /// <summary>
-    ///     Checks if the given DeadBody object is a prankster clone body.
-    /// </summary>
-    /// <param name="body">The DeadBody object to check.</param>
-    /// <returns>True if the body is a prankster clone body; otherwise, false.</returns>
     public static bool IsPranksterBody(DeadBody body)
     {
         return body.name.Equals(PranksterBodyName, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>
-    ///     Finds all prankster clone bodies currently in the game scene.
-    /// </summary>
-    /// <returns>A list of DeadBody objects representing all prankster clone bodies found.</returns>
     public static List<DeadBody> FindAllPranksterBodies()
     {
         var allDeadBodies = Object.FindObjectsOfType<DeadBody>();
@@ -56,28 +44,62 @@ public static class PranksterUtilities
         return pranksterBodies;
     }
 
-    /// <summary>
-    ///     Increments the report count for a specified player when they report a prankster body.
-    /// </summary>
-    /// <param name="playerId">The ID of the player reporting the body.</param>
-    public static void IncrementReportCount(byte playerId)
+    [RegisterEvent]
+    public static void OnReportBody(ReportBodyEvent evt)
     {
-        ReportCounts[playerId] = GetReportCount(playerId) + 1;
+        if (!evt.Reporter.AmOwner || !evt.Body || !IsPranksterBody(evt.Body))
+            return;
+
+        evt.Cancel();
+        var position = evt.Body.TruePosition;
+        RpcRequestFakeReport(evt.Reporter, evt.Body.ParentId, position.x, position.y);
     }
 
-    /// <summary>
-    ///     Clears all recorded report counts for prankster bodies.
-    /// </summary>
+    [MethodRpc((uint)CustomRPC.PranksterRequestFakeReport, LocalHandling = RpcLocalHandling.Before)]
+    public static void RpcRequestFakeReport(PlayerControl source, byte pranksterId, float x, float y)
+    {
+        if (!AmongUsClient.Instance.AmHost || !AmongUsClient.Instance.IsGameStarted || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance)
+            return;
+
+        var position = new Vector2(x, y);
+        foreach (var body in FindAllPranksterBodies())
+        {
+            if (body.Reported || body.ParentId != pranksterId || Vector2.Distance(body.TruePosition, position) > 0.05f)
+                continue;
+
+            if (Vector2.Distance(source.GetTruePosition(), body.TruePosition) > source.MaxReportDistance)
+                return;
+
+            source.RpcCustomMurder(source, teleportMurderer: false, showKillAnim: true);
+            RpcConfirmFakeReport(PlayerControl.LocalPlayer, pranksterId, x, y);
+            return;
+        }
+    }
+
+    [MethodRpc((uint)CustomRPC.PranksterConfirmFakeReport, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcConfirmFakeReport(PlayerControl host, byte pranksterId, float x, float y)
+    {
+        if (!host.IsHost())
+            return;
+
+        ReportCounts[pranksterId] = GetReportCount(pranksterId) + 1;
+        var position = new Vector2(x, y);
+
+        foreach (var body in FindAllPranksterBodies())
+        {
+            if (body.ParentId != pranksterId || Vector2.Distance(body.TruePosition, position) > 0.05f)
+                continue;
+
+            Object.Destroy(body.gameObject);
+            return;
+        }
+    }
+
     public static void ResetReportCount()
     {
         ReportCounts.Clear();
     }
 
-    /// <summary>
-    ///     Retrieves the number of times the specified player has reported a prankster body.
-    /// </summary>
-    /// <param name="playerId">The ID of the player.</param>
-    /// <returns>The report count for the player, or 0 if the player has not reported a prankster body.</returns>
     public static int GetReportCount(byte playerId)
     {
         return ReportCounts.TryGetValue(playerId, out var value) ? value : 0;

@@ -17,21 +17,23 @@ namespace NewMod.Roles.CrewmateRoles;
 public class Aegis : CrewmateRole, INewModRole
 {
     public string RoleName => "Aegis";
-    public string RoleDescription => "Project. Protect. Punish.";
-    public string RoleLongDescription => "Deploy a protective zone that reacts to hostile abilities.";
+    public string RoleDescription => "Place a ward that protects an area.";
+    public string RoleLongDescription => "Place a ward around you.\nIts setting can warn you, block hostile actions, or reveal a killer.";
     public Color RoleColor => new(0.227f, 0.651f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public NewModFaction Faction => NewModFaction.Sentinel;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        AffectedByLightOnAirship = true,
-        CanUseSabotage = false,
-        CanUseVent = false,
-        UseVanillaKillButton = false,
-        TasksCountForProgress = true,
-        Icon = NewModAsset.ShieldIcon
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = true,
+            CanUseSabotage = false,
+            CanUseVent = false,
+            UseVanillaKillButton = false,
+            TasksCountForProgress = true,
+            MaxRoleCount = 1,
+            Icon = NewModAsset.ShieldIcon
+        };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()
@@ -83,7 +85,6 @@ public class Aegis : CrewmateRole, INewModRole
         if (!block) return;
 
         evt.Cancel();
-        NewMod.Instance.Log.LogError("Role Ability Canceled");
 
         Coroutines.Start(CoroutinesHelper.CoNotify("<color=#3A9EFF>Aegis</color> blocks your ability here"));
     }
@@ -96,7 +97,6 @@ public class Aegis : CrewmateRole, INewModRole
         if (!ShieldArea.IsInsideOthersWard(evt.Target)) return;
 
         evt.Cancel();
-        NewMod.Instance.Log.LogError("Role Ability Canceled Before Murder");
 
         if (evt.Source.AmOwner)
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#3A9EFF>Aegis</color> blocks your kill here"));

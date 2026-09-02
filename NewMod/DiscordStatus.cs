@@ -26,11 +26,7 @@ public static class NewModDiscordPatch
 
         activity.Details = details;
         activity.State = $"Playing Among Us | NewMod v{NewMod.ModVersion}";
-        activity.Assets = new ActivityAssets
-        {
-            LargeImage = "nm",
-            SmallText = "Made with MiraAPI"
-        };
+        activity.Assets = new ActivityAssets { LargeImage = "nm", SmallText = "Made with MiraAPI" };
 
         try
         {

@@ -4,7 +4,9 @@ using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
 using NewMod.Components.ScreenEffects;
+using NewMod.Networking;
 using NewMod.Options.Roles;
+using Reactor.Networking.Rpc;
 using Reactor.Utilities;
 using UnityEngine;
 using BC = NewMod.Roles.CrewmateRoles.Beacon;
@@ -32,12 +34,13 @@ public static class BeaconShowMapPatch
         BC.pulseUntil = Time.time + settings.PulseDuration;
         BC.cooldownUntil = Time.time + settings.PulseCooldown;
 
-        opts.Mode = MapOptions.Modes.CountOverlay;
+        opts.Mode = settings.ShowOnMinimap ? MapOptions.Modes.CountOverlay : MapOptions.Modes.Normal;
         opts.ShowLivePlayerPosition = true;
         opts.IncludeDeadBodies = settings.IncludeDeadBodies;
         opts.AllowMovementWhileMapOpen = true;
 
         _armedPulseThisOpen = true;
+        Rpc<BeaconPulseRpc>.Instance.Send(new BeaconPulseRpc.Data(settings.PulseDuration));
     }
 
     public static void Postfix(MapBehaviour __instance, MapOptions opts)
@@ -91,12 +94,6 @@ public static class BeaconShowMapPatch
             yield return null;
         }
 
-        if (Time.time >= BC.pulseUntil)
-        {
-            Object.Destroy(Camera.main.GetComponent<DistorationWaveEffect>());
-            NewMod.Instance.Log.LogError("DESTROYED EFFECT");
-        }
-
         ClearMarkers();
         if (map && map.IsOpen)
             map.Show(new MapOptions { Mode = MapOptions.Modes.Normal });
@@ -125,12 +122,4 @@ public static class BeaconShowMapPatch
         }
     }
 
-    [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.Close))]
-    public static class BeaconCloseMapPatch
-    {
-        public static void Postfix()
-        {
-            ClearMarkers();
-        }
-    }
 }

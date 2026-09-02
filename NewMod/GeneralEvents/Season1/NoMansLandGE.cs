@@ -1,7 +1,10 @@
 ﻿using HarmonyLib;
 using MiraAPI.Events;
+using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Hud;
+using MiraAPI.Modifiers;
+using NewMod.Modifiers.S1;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
 
@@ -10,17 +13,21 @@ namespace NewMod.GeneralEvents.Season1;
 public class NoMansLandGE : IGeneralEvent
 {
     public static bool Active { get; private set; }
+    public static bool BlocksLocalPlayer => Active && !PlayerControl.LocalPlayer.HasModifier<InVoid>();
 
     public string Title => "No Man's Land";
     public string Description => "ALL COMBAT AND ABILITIES ARE OFFLINE!";
-    public LoadableAsset<Sprite> Icon => MiraAssets.Empty;
+    public LoadableAsset<Sprite> Icon => NewModAsset.NoMansLandIcon;
     public Color AccentColor => new(0.78f, 0.78f, 0.78f);
-    public int OccurrenceChance => 10;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.NoMansLandWeight;
     public float Duration => 20f;
 
     public void OnEventStart()
     {
         Active = true;
+
+        if (!BlocksLocalPlayer)
+            return;
 
         if (MapBehaviour.Instance)
             MapBehaviour.Instance.Close();
@@ -41,13 +48,30 @@ public class NoMansLandGE : IGeneralEvent
     {
         Active = false;
 
-        HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
+        if (!PlayerControl.LocalPlayer.HasModifier<InVoid>())
+            HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
+    }
+
+    public void Tick()
+    {
+        if (!BlocksLocalPlayer)
+            return;
+
+        foreach (var button in CustomButtonManager.Buttons)
+            button.Button?.SetDisabled();
+    }
+
+    [RegisterEvent]
+    public static void OnMiraButtonClick(MiraButtonClickEvent evt)
+    {
+        if (BlocksLocalPlayer)
+            evt.Cancel();
     }
 
     [RegisterEvent]
     public static void OnBeforeMurder(BeforeMurderEvent evt)
     {
-        if (Active)
+        if (Active && !evt.Source.HasModifier<InVoid>())
             evt.Cancel();
     }
 }
@@ -58,7 +82,7 @@ public static class NoMansLandUseTargetPatch
     [HarmonyPrefix]
     public static void Prefix(ref IUsable target)
     {
-        if (NoMansLandGE.Active)
+        if (NoMansLandGE.BlocksLocalPlayer)
             target = null;
     }
 }
@@ -69,7 +93,7 @@ public static class NoMansLandUsePatch
     [HarmonyPrefix]
     public static bool Prefix()
     {
-        return !NoMansLandGE.Active;
+        return !NoMansLandGE.BlocksLocalPlayer;
     }
 }
 
@@ -79,7 +103,7 @@ public static class NoMansLandReportStatePatch
     [HarmonyPrefix]
     public static void Prefix(ref bool isActive)
     {
-        if (NoMansLandGE.Active)
+        if (NoMansLandGE.BlocksLocalPlayer)
             isActive = false;
     }
 }
@@ -90,7 +114,7 @@ public static class NoMansLandReportPatch
     [HarmonyPrefix]
     public static bool Prefix()
     {
-        return !NoMansLandGE.Active;
+        return !NoMansLandGE.BlocksLocalPlayer;
     }
 }
 
@@ -98,9 +122,9 @@ public static class NoMansLandReportPatch
 public static class NoMansLandReportAuthorityPatch
 {
     [HarmonyPrefix]
-    public static bool Prefix()
+    public static bool Prefix(PlayerControl __instance)
     {
-        return !NoMansLandGE.Active;
+        return !NoMansLandGE.Active || __instance.HasModifier<InVoid>();
     }
 }
 
@@ -110,7 +134,7 @@ public static class NoMansLandKillTargetPatch
     [HarmonyPrefix]
     public static void Prefix(ref PlayerControl target)
     {
-        if (NoMansLandGE.Active)
+        if (NoMansLandGE.BlocksLocalPlayer)
             target = null;
     }
 }
@@ -121,32 +145,11 @@ public static class NoMansLandMurderPatch
     [HarmonyPrefix]
     public static bool Prefix(PlayerControl __instance)
     {
-        if (!NoMansLandGE.Active)
+        if (!NoMansLandGE.Active || __instance.HasModifier<InVoid>())
             return true;
 
         __instance.isKilling = false;
         return false;
-    }
-}
-
-[HarmonyPatch(typeof(CustomActionButton), nameof(CustomActionButton.ClickHandler))]
-public static class NoMansLandCustomButtonPatch
-{
-    [HarmonyPrefix]
-    public static bool Prefix()
-    {
-        return !NoMansLandGE.Active;
-    }
-}
-
-[HarmonyPatch(typeof(CustomActionButton), nameof(CustomActionButton.FixedUpdateHandler))]
-public static class NoMansLandCustomButtonStatePatch
-{
-    [HarmonyPostfix]
-    public static void Postfix(CustomActionButton __instance)
-    {
-        if (NoMansLandGE.Active)
-            __instance.Button?.SetDisabled();
     }
 }
 
@@ -156,7 +159,7 @@ public static class NoMansLandVentPatch
     [HarmonyPrefix]
     public static bool Prefix()
     {
-        return !NoMansLandGE.Active;
+        return !NoMansLandGE.BlocksLocalPlayer;
     }
 }
 
@@ -166,7 +169,7 @@ public static class NoMansLandSabotagePatch
     [HarmonyPrefix]
     public static bool Prefix()
     {
-        return !NoMansLandGE.Active;
+        return !NoMansLandGE.BlocksLocalPlayer;
     }
 }
 
@@ -176,7 +179,7 @@ public static class NoMansLandAbilityPatch
     [HarmonyPrefix]
     public static bool Prefix()
     {
-        return !NoMansLandGE.Active;
+        return !NoMansLandGE.BlocksLocalPlayer;
     }
 }
 
@@ -186,7 +189,7 @@ public static class NoMansLandSecondaryAbilityPatch
     [HarmonyPrefix]
     public static bool Prefix()
     {
-        return !NoMansLandGE.Active;
+        return !NoMansLandGE.BlocksLocalPlayer;
     }
 }
 
@@ -196,6 +199,6 @@ public static class NoMansLandMapPatch
     [HarmonyPrefix]
     public static bool Prefix(MapOptions options)
     {
-        return !NoMansLandGE.Active || options.Mode != MapOptions.Modes.Sabotage;
+        return !NoMansLandGE.BlocksLocalPlayer || options.Mode != MapOptions.Modes.Sabotage;
     }
 }

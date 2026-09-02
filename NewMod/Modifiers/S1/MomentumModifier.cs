@@ -10,8 +10,8 @@ namespace NewMod.Modifiers.S1;
 [MiraIgnore]
 public class MomentumModifier : GameModifier, INewModModifier
 {
-    private float _movingTime;
     private float _appliedMultiplier = 1f;
+    private float _movingTime;
 
     public override string ModifierName => "Momentum";
     public override bool HideOnUi => false;

@@ -14,6 +14,7 @@ public class DistorationWaveEffect(IntPtr ptr) : MonoBehaviour(ptr)
     public float falloff = 1f;
     public Vector2 center = new(0.5f, 0.5f);
     public Color tint = Color.white;
+    public float expiresAt;
     public Material _mat;
     private readonly Shader _shader = NewModAsset.DistorationWaveShader.LoadAsset();
 
@@ -25,6 +26,12 @@ public class DistorationWaveEffect(IntPtr ptr) : MonoBehaviour(ptr)
     public void OnDisable()
     {
         Destroy(_mat);
+    }
+
+    public void Update()
+    {
+        if (Time.time >= expiresAt)
+            Destroy(this);
     }
 
     public void OnRenderImage(RenderTexture src, RenderTexture dst)

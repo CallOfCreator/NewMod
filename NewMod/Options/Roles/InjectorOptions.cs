@@ -11,7 +11,7 @@ public class InjectorOptions : AbstractOptionGroup<InjectorRole>
     public override string GroupName => "Injector Settings";
 
     [ModdedNumberOption("Serum Cooldown", 5, 60, suffixType: MiraNumberSuffixes.Seconds)]
-    public float SerumCooldown { get; set; } = 20f;
+    public float SerumCooldown { get; set; } = 25f;
 
     [ModdedNumberOption("Max Serum Uses", 1, 10)]
     public float MaxSerumUses { get; set; } = 3f;
@@ -20,7 +20,7 @@ public class InjectorOptions : AbstractOptionGroup<InjectorRole>
     public float RequiredInjectCount { get; set; } = 3f;
 
     [ModdedNumberOption("Adrenaline Effect (+% Speed)", 10, 200, 5, MiraNumberSuffixes.Percent)]
-    public float AdrenalineSpeedBoost { get; set; } = 10f;
+    public float AdrenalineSpeedBoost { get; set; } = 25f;
 
     [ModdedNumberOption("Immobilize Duration", 1, 10, suffixType: MiraNumberSuffixes.Seconds)]
     public float ParalysisDuration { get; set; } = 4f;
@@ -32,20 +32,14 @@ public class InjectorOptions : AbstractOptionGroup<InjectorRole>
     public bool EnableBounceVariants { get; set; } = true;
 
     [ModdedNumberOption("Bounce Duration", 1, 10, suffixType: MiraNumberSuffixes.Seconds)]
-    public float BounceDuration { get; set; } = 10f;
+    public float BounceDuration { get; set; } = 6f;
 
-    public ModdedNumberOption BounceRotateEffect { get; } = new("Bounce Rotate Effect", 180f, 0f, 180f, 10f, MiraNumberSuffixes.None)
-    {
-        Visible = () => OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants
-    };
+    public ModdedNumberOption BounceRotateEffect { get; } = new("Bounce Rotate Effect", 180f, 0f, 180f, 10f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants };
 
-    public ModdedNumberOption BounceStretchScale { get; } = new("Bounce Stretch Scale", 1.5f, 1f, 1.5f, 0.01f, MiraNumberSuffixes.Multiplier)
-    {
-        Visible = () => OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants
-    };
+    public ModdedNumberOption BounceStretchScale { get; } = new("Bounce Stretch Scale", 1.5f, 1f, 1.5f, 0.01f, MiraNumberSuffixes.Multiplier) { Visible = () => OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants };
 
     [ModdedNumberOption("Repel Duration", 1, 10, suffixType: MiraNumberSuffixes.Seconds)]
-    public float RepelDuration { get; set; } = 10f;
+    public float RepelDuration { get; set; } = 6f;
 
     [ModdedNumberOption("Repel Range", 0.5f, 4f, 0.1f)]
     public float RepelRange { get; set; } = 2f;

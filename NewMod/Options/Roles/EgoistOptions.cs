@@ -9,5 +9,5 @@ public class EgoistRoleOptions : AbstractOptionGroup<EgoistRole>
 {
     public override string GroupName => "Egoist Settings";
 
-    public ModdedNumberOption MinimumVotesToWin { get; } = new("Minimum votes on Egoist to trigger win", 3, 1, 10, 1, MiraNumberSuffixes.None);
+    public ModdedNumberOption EgoRequired { get; } = new("Votes required to unlock Challenge", 4, 1, 10, 1, MiraNumberSuffixes.None);
 }

@@ -14,12 +14,11 @@ namespace NewMod.Modifiers.S1;
 [MiraIgnore]
 public class JustLeftVoid : TimedModifier
 {
+    public bool DidKill;
     public override string ModifierName => "Just Left Void";
     public override float Duration => 4f;
     public override bool HideOnUi => true;
     public override bool ShowInFreeplay => false;
-
-    public bool DidKill;
 
     public override void OnActivate()
     {
@@ -41,7 +40,7 @@ public class JustLeftVoid : TimedModifier
         if (!@event.Source.HasModifier<JustLeftVoid>() || !@event.Source.AmOwner)
             return;
 
-        @event.Source.GetModifier<JustLeftVoid>().DidKill = true;
+        @event.Source.GetModifier<JustLeftVoid>()!.DidKill = true;
 
         Logger<NewMod>.Warning(CustomButtonSingleton<EnterVoid>.Instance.Timer);
         CustomButtonSingleton<EnterVoid>.Instance.SetTimer(OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterVoidCooldown / 2f);

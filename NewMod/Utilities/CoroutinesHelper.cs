@@ -19,7 +19,8 @@ namespace NewMod.Utilities;
 public static class CoroutinesHelper
 {
     private static readonly Queue<string> Notifications = new();
-    private static bool _displayingNotification;
+    private static GameObject _notification;
+    private static HudManager _notificationHud;
 
     /// <summary>
     ///     Keeps track of the number of fake bodies created by each player, keyed by their PlayerId.
@@ -32,28 +33,40 @@ public static class CoroutinesHelper
     public static Dictionary<byte, int> drainCount = new();
 
     /// <summary>
-    ///   Displays a temporary notification on the screen using an overlay animation.
+    ///     Displays a temporary notification on the screen using an overlay animation.
     /// </summary>
     /// <param name="message">The message to display.</param>
     /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
     public static IEnumerator CoNotify(string message)
     {
-        Notifications.Enqueue(message);
-
-        if (_displayingNotification)
+        var hud = HudManager.Instance;
+        if (!hud || !hud.TaskCompleteOverlay)
             yield break;
 
-        _displayingNotification = true;
+        if (_notificationHud != hud)
+        {
+            Notifications.Clear();
+            _notification = null;
+            _notificationHud = hud;
+        }
 
-        while (Notifications.Count > 0)
+        Notifications.Enqueue(message);
+
+        if (_notification)
+            yield break;
+
+        while (hud && hud == _notificationHud && Notifications.Count > 0)
         {
             message = Notifications.Dequeue();
 
             if (Constants.ShouldPlaySfx())
-                SoundManager.Instance.PlaySound(HudManager.Instance.TaskCompleteSound, false);
+                SoundManager.Instance.PlaySound(hud.TaskCompleteSound, false);
 
-            var overlay = HudManager.Instance.TaskCompleteOverlay;
-            var obj = Object.Instantiate(overlay.gameObject, overlay.transform.parent);
+            var obj = Object.Instantiate(hud.TaskCompleteOverlay.gameObject, hud.transform);
+            _notification = obj;
+            obj.transform.localPosition = new Vector3(0f, -8f, Minigame.Depth - 20f);
+            obj.transform.SetAsLastSibling();
+            obj.SetActive(true);
             var textComponent = obj.GetComponentInChildren<TextMeshPro>(true);
             var translator = textComponent.GetComponent<TextTranslatorTMP>();
 
@@ -65,16 +78,19 @@ public static class CoroutinesHelper
 
             textComponent.text = message;
             textComponent.fontSize = Mathf.Clamp(3.5f - message.Length / 20f, 2f, 3.5f);
-            obj.SetActive(true);
+            for (var elapsed = 0f; elapsed < 2.75f; elapsed += Time.unscaledDeltaTime)
+            {
+                if (!hud || !obj || hud != _notificationHud)
+                    yield break;
 
-            yield return Effects.Slide2D(obj.transform, new Vector2(0f, -8f), Vector2.zero, 0.25f);
-            yield return new WaitForSeconds(2.25f);
-            yield return Effects.Slide2D(obj.transform, Vector2.zero, new Vector2(0f, 8f), 0.25f);
+                var y = elapsed < 0.25f ? Mathf.SmoothStep(-8f, 0f, elapsed / 0.25f) : elapsed < 2.5f ? 0f : Mathf.SmoothStep(0f, 8f, (elapsed - 2.5f) / 0.25f);
+                obj.transform.localPosition = new Vector3(0f, y, Minigame.Depth - 20f);
+                yield return null;
+            }
 
             Object.Destroy(obj);
+            _notification = null;
         }
-
-        _displayingNotification = false;
     }
 
     /// <summary>
@@ -125,17 +141,14 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    /// Allows a Prankster to create fake dead bodies by pressing F5, fulfilling a mission if enough bodies are created.
+    ///     Allows a Prankster to create fake dead bodies by pressing F5, fulfilling a mission if enough bodies are created.
     /// </summary>
     /// <param name="target">The player executing the prankster abilities.</param>
-    /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
+    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
     public static IEnumerator UsePranksterAbilities(PlayerControl specialAgent, PlayerControl target)
     {
         // Initialize dictionary entry for this player if missing
-        if (!bodiesCreated.ContainsKey(target.PlayerId))
-        {
-            bodiesCreated[target.PlayerId] = 0;
-        }
+        if (!bodiesCreated.ContainsKey(target.PlayerId)) bodiesCreated[target.PlayerId] = 0;
 
         while (true)
         {
@@ -152,10 +165,7 @@ public static class CoroutinesHelper
             {
                 PranksterUtilities.CreatePranksterDeadBody(target, target.PlayerId);
                 bodiesCreated[target.PlayerId]++;
-                if (target.AmOwner)
-                {
-                    Coroutines.Start(CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
-                }
+                if (target.AmOwner) Coroutines.Start(CoNotify($"<color=yellow>Bodies created: {bodiesCreated[target.PlayerId]}/2</color>"));
 
                 // Once enough bodies are created, succeed the mission
                 if (bodiesCreated[target.PlayerId] >= 2)
@@ -170,19 +180,16 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    /// Allows an Energy Thief to drain nearby players' energy by pressing F5, fulfilling a mission after enough drains.
+    ///     Allows an Energy Thief to drain nearby players' energy by pressing F5, fulfilling a mission after enough drains.
     /// </summary>
     /// <param name="target">The player executing the energy draining abilities.</param>
-    /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
+    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
     public static IEnumerator UseEnergyThiefAbilities(PlayerControl specialAgent, PlayerControl target)
     {
-        float drainRange = 3.5f;
+        var drainRange = 3.5f;
 
         // Initialize dictionary entry for this player if missing
-        if (!drainCount.ContainsKey(target.PlayerId))
-        {
-            drainCount[target.PlayerId] = 0;
-        }
+        if (!drainCount.ContainsKey(target.PlayerId)) drainCount[target.PlayerId] = 0;
 
         while (true)
         {
@@ -197,7 +204,7 @@ public static class CoroutinesHelper
             // Press F5 to drain energy from a nearby player
             if (Input.GetKeyDown(KeyCode.F5))
             {
-                var playersInRange = Helpers.GetClosestPlayers(target, drainRange, ignoreColliders: true, ignoreSource: true).Where(p => !p.Data.IsDead && !p.Data.Disconnected).ToList();
+                var playersInRange = Helpers.GetClosestPlayers(target, drainRange).Where(p => !p.Data.IsDead && !p.Data.Disconnected).ToList();
 
                 if (playersInRange.Count > 0)
                 {
@@ -207,15 +214,9 @@ public static class CoroutinesHelper
                     drainCount[target.PlayerId]++;
 
                     // Notify both the drainer and the drained player
-                    if (target.AmOwner)
-                    {
-                        Coroutines.Start(CoNotify($"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
-                    }
+                    if (target.AmOwner) Coroutines.Start(CoNotify($"<color=#00FA9A><b><i>You have drained energy from {victim.Data.PlayerName}!</i></b></color>"));
 
-                    if (victim.AmOwner)
-                    {
-                        Coroutines.Start(CoNotify("<color=#FF0000><b><i>Your energy has been drained!</i></b></color>"));
-                    }
+                    if (victim.AmOwner) Coroutines.Start(CoNotify("<color=#FF0000><b><i>Your energy has been drained!</i></b></color>"));
 
                     // After enough drains, succeed the mission
                     if (drainCount[target.PlayerId] >= 2)
@@ -226,10 +227,7 @@ public static class CoroutinesHelper
                 }
                 else
                 {
-                    if (target.AmOwner)
-                    {
-                        Coroutines.Start(CoNotify("<color=#FFA500><b><i>No players nearby to drain energy from.</i></b></color>"));
-                    }
+                    if (target.AmOwner) Coroutines.Start(CoNotify("<color=#FFA500><b><i>No players nearby to drain energy from.</i></b></color>"));
                 }
             }
 
@@ -238,20 +236,17 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    /// Allows a player to revive a dead player and then kill them again. F5 is used to initiate each action.
+    ///     Allows a player to revive a dead player and then kill them again. F5 is used to initiate each action.
     /// </summary>
     /// <param name="target">The player controlling the revive and kill actions.</param>
-    /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
+    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
     public static IEnumerator CoReviveAndKill(PlayerControl specialAgent, PlayerControl target)
     {
-        bool revived = false;
+        var revived = false;
         byte revivedParentId = 255;
 
         // Prompt the player to press F5 for the initial revive
-        if (target.AmOwner)
-        {
-            Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Press F5 to revive a dead player!</b></i></color>"));
-        }
+        if (target.AmOwner) Coroutines.Start(CoNotify("<color=#8A2BE2><i><b>Press F5 to revive a dead player!</b></i></color>"));
 
         while (true)
         {
@@ -303,12 +298,12 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    /// Handles logic for tracking and validating a "most wanted" target using an arrow indicator.
+    ///     Handles logic for tracking and validating a "most wanted" target using an arrow indicator.
     /// </summary>
-    /// <param name="arrow">An <see cref="ArrowBehaviour"/> used to point toward the target.</param>
+    /// <param name="arrow">An <see cref="ArrowBehaviour" /> used to point toward the target.</param>
     /// <param name="mostwantedTarget">The most wanted target player.</param>
     /// <param name="target">The player assigned to eliminate the most wanted target.</param>
-    /// <returns>An <see cref="IEnumerator"/> for coroutine control.</returns>
+    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
     public static IEnumerator CoHandleWantedTarget(PlayerControl specialAgent, ArrowBehaviour arrow, PlayerControl mostwantedTarget, PlayerControl target)
     {
         while (mostwantedTarget && mostwantedTarget.Data != null && !mostwantedTarget.Data.IsDead && !mostwantedTarget.Data.Disconnected)

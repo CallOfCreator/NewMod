@@ -11,15 +11,15 @@ public class ArbitratorOptions : AbstractOptionGroup<ArbitratorRole>
 {
     public override string GroupName => "Arbitrator";
 
-    [ModdedNumberOption("Judgment Tokens To Win", min: 2f, max: 5f, increment: 1f, suffixType: MiraNumberSuffixes.None)]
+    [ModdedNumberOption("Judgment Tokens To Win", 2f, 5f, 1f, MiraNumberSuffixes.None)]
     public float JudgmentTokensToWin { get; set; } = 3f;
 
-    [ModdedNumberOption("Defend Votes Required", min: 1f, max: 5f, increment: 1f, suffixType: MiraNumberSuffixes.None)]
+    [ModdedNumberOption("Defend Votes Required", 1f, 5f, 1f, MiraNumberSuffixes.None)]
     public float DefendVotesRequired { get; set; } = 2f;
 
-    [ModdedNumberOption("Leverage Cooldown", min: 5f, max: 60f, suffixType: MiraNumberSuffixes.Seconds)]
+    [ModdedNumberOption("Leverage Cooldown", 5f, 60f, suffixType: MiraNumberSuffixes.Seconds)]
     public float LeverageCooldown { get; set; } = 25f;
 
-    [ModdedNumberOption("Leverage Range", min: 0.5f, max: 3f, increment: 0.25f, suffixType: MiraNumberSuffixes.None)]
+    [ModdedNumberOption("Leverage Range", 0.5f, 3f, 0.25f, MiraNumberSuffixes.None)]
     public float LeverageRange { get; set; } = 1.5f;
 }

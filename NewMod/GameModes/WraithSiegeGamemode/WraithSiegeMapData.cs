@@ -30,6 +30,15 @@ public sealed class WraithSiegeMapDefinition(SystemTypes wraithBase, SystemTypes
 public static class WraithSiegeMapData
 {
     private const float SafeRadius = 0.34f;
+    private const float ExitProbeDistance = 0.9f;
+
+    private static readonly Vector2[] ExitDirections =
+    [
+        Vector2.up,
+        Vector2.down,
+        Vector2.left,
+        Vector2.right
+    ];
 
     private static readonly Dictionary<SystemTypes, Vector2> RoomPointCache = [];
 
@@ -39,7 +48,6 @@ public static class WraithSiegeMapData
     [
         new(SystemTypes.Reactor, SystemTypes.Nav, SystemTypes.Admin, [
             SystemTypes.Reactor,
-            SystemTypes.UpperEngine,
             SystemTypes.MedBay,
             SystemTypes.Cafeteria
         ], [
@@ -49,7 +57,6 @@ public static class WraithSiegeMapData
             SystemTypes.Storage
         ], [
             SystemTypes.Reactor,
-            SystemTypes.LowerEngine,
             SystemTypes.Storage
         ]),
 
@@ -67,17 +74,15 @@ public static class WraithSiegeMapData
             SystemTypes.Comms
         ]),
 
-        new(SystemTypes.LowerEngine, SystemTypes.Nav, SystemTypes.Cafeteria, [
-            SystemTypes.LowerEngine,
+        new(SystemTypes.Reactor, SystemTypes.Nav, SystemTypes.Cafeteria, [
             SystemTypes.Reactor,
-            SystemTypes.UpperEngine,
             SystemTypes.MedBay
         ], [
-            SystemTypes.LowerEngine,
+            SystemTypes.Reactor,
             SystemTypes.Storage,
             SystemTypes.Admin
         ], [
-            SystemTypes.LowerEngine,
+            SystemTypes.Reactor,
             SystemTypes.Storage,
             SystemTypes.Shields,
             SystemTypes.Weapons
@@ -86,24 +91,23 @@ public static class WraithSiegeMapData
 
     private static readonly WraithSiegeMapDefinition[] Mira =
     [
-        new(SystemTypes.Launchpad, SystemTypes.Greenhouse, SystemTypes.Office, [
-            SystemTypes.Launchpad,
+        new(SystemTypes.MedBay, SystemTypes.Greenhouse, SystemTypes.Office, [
             SystemTypes.MedBay,
             SystemTypes.LockerRoom,
             SystemTypes.Laboratory,
             SystemTypes.Greenhouse
         ], [
-            SystemTypes.Launchpad,
+            SystemTypes.MedBay,
             SystemTypes.LockerRoom,
             SystemTypes.Laboratory
         ], [
-            SystemTypes.Launchpad,
+            SystemTypes.MedBay,
             SystemTypes.LockerRoom,
             SystemTypes.Admin,
             SystemTypes.Balcony
         ]),
 
-        new(SystemTypes.Greenhouse, SystemTypes.Launchpad, SystemTypes.Cafeteria, [
+        new(SystemTypes.Greenhouse, SystemTypes.MedBay, SystemTypes.Cafeteria, [
             SystemTypes.Greenhouse,
             SystemTypes.Office,
             SystemTypes.Admin
@@ -284,7 +288,7 @@ public static class WraithSiegeMapData
         {
             var ship = ShipStatus.Instance;
 
-            if (ship is AirshipStatus)
+            if (GameOptionsManager.Instance.CurrentGameOptions.MapId == 4)
                 return Airship;
 
             return ship.Type switch
@@ -379,18 +383,16 @@ public static class WraithSiegeMapData
         var maxRadius = Mathf.Max(area.bounds.extents.x, area.bounds.extents.y);
 
         for (var radius = 0.35f; radius <= maxRadius; radius += 0.35f)
+        for (var i = 0; i < 20; i++)
         {
-            for (var i = 0; i < 20; i++)
-            {
-                var angle = i * Mathf.PI * 2f / 20f;
-                var candidate = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+            var angle = i * Mathf.PI * 2f / 20f;
+            var candidate = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
-                if (!IsSafePoint(candidate, area))
-                    continue;
+            if (!IsSafePoint(candidate, area))
+                continue;
 
-                RoomPointCache[roomId] = candidate;
-                return candidate;
-            }
+            RoomPointCache[roomId] = candidate;
+            return candidate;
         }
 
         var safeFallback = GetSafeNearby(room.transform.position, ship.InitialSpawnCenter);
@@ -405,15 +407,13 @@ public static class WraithSiegeMapData
             return preferred;
 
         for (var radius = 0.25f; radius <= 2.5f; radius += 0.25f)
+        for (var i = 0; i < 20; i++)
         {
-            for (var i = 0; i < 20; i++)
-            {
-                var angle = i * Mathf.PI * 2f / 20f;
-                var candidate = preferred + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+            var angle = i * Mathf.PI * 2f / 20f;
+            var candidate = preferred + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
-                if (IsSafePoint(candidate))
-                    return candidate;
-            }
+            if (IsSafePoint(candidate))
+                return candidate;
         }
 
         return fallback;
@@ -432,16 +432,16 @@ public static class WraithSiegeMapData
         if (IsSafePoint(desired, area))
             return desired;
 
-        for (var ring = 0.4f; ring <= 1.2f; ring += 0.2f)
-        {
-            for (var i = 0; i < 16; i++)
-            {
-                var angle = startAngle + i * 22.5f * Mathf.Deg2Rad;
-                var candidate = basePoint + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * ring;
+        var maxRadius = area ? Mathf.Max(area.bounds.extents.x, area.bounds.extents.y) : 2.5f;
 
-                if (IsSafePoint(candidate, area))
-                    return candidate;
-            }
+        for (var ring = 0.4f; ring <= maxRadius; ring += 0.2f)
+        for (var i = 0; i < 16; i++)
+        {
+            var angle = startAngle + i * 22.5f * Mathf.Deg2Rad;
+            var candidate = basePoint + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * ring;
+
+            if (IsSafePoint(candidate, area))
+                return candidate;
         }
 
         return basePoint;
@@ -449,7 +449,20 @@ public static class WraithSiegeMapData
 
     private static bool IsSafePoint(Vector2 point, Collider2D roomArea = null)
     {
-        if (roomArea && !roomArea.OverlapPoint(point))
+        if (!roomArea)
+        {
+            foreach (var room in ShipStatus.Instance.FastRooms.Values)
+                if (room.roomArea && room.roomArea.OverlapPoint(point))
+                {
+                    roomArea = room.roomArea;
+                    break;
+                }
+
+            if (!roomArea)
+                return false;
+        }
+
+        if (!roomArea.OverlapPoint(point))
             return false;
 
         if (HasSolidCollider(point, SafeRadius))
@@ -457,28 +470,27 @@ public static class WraithSiegeMapData
 
         var openDirections = 0;
 
-        if (!HasSolidCollider(point + Vector2.up * 0.55f, SafeRadius))
-            openDirections++;
+        foreach (var direction in ExitDirections)
+        {
+            var exit = point + direction * ExitProbeDistance;
 
-        if (!HasSolidCollider(point + Vector2.down * 0.55f, SafeRadius))
-            openDirections++;
+            if (PhysicsHelpers.AnythingBetween(point, point + direction * ExitProbeDistance, Constants.ShipAndAllObjectsMask, false))
+                continue;
 
-        if (!HasSolidCollider(point + Vector2.left * 0.55f, SafeRadius))
-            openDirections++;
+            if (HasSolidCollider(exit, SafeRadius))
+                continue;
 
-        if (!HasSolidCollider(point + Vector2.right * 0.55f, SafeRadius))
             openDirections++;
+        }
 
         return openDirections >= 2;
     }
 
     private static bool HasSolidCollider(Vector2 point, float radius)
     {
-        foreach (var collider in Physics2D.OverlapCircleAll(point, radius, Constants.ShipOnlyMask))
-        {
+        foreach (var collider in Physics2D.OverlapCircleAll(point, radius, Constants.ShipAndAllObjectsMask))
             if (collider && collider.enabled && !collider.isTrigger)
                 return true;
-        }
 
         return false;
     }

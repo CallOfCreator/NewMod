@@ -38,40 +38,36 @@ public sealed class Tyrant : ImpostorRole, INewModRole
     public static readonly HashSet<byte> PendingBetrayals = new();
     public int _kills;
 
-    public TeamIntroConfiguration TeamConfiguration => new()
-    {
-        IntroTeamDescription = RoleDescription,
-        IntroTeamColor = RoleColor
-    };
+    public TeamIntroConfiguration TeamConfiguration => new() { IntroTeamDescription = RoleDescription, IntroTeamColor = RoleColor };
 
     public static byte ChampionId => _championId;
     public string RoleName => "Tyrant";
-    public string RoleDescription => "Slow them. Bind them. End them";
+    public string RoleDescription => "Unlock control effects with each kill.";
 
-    public string RoleLongDescription =>
-        "You are the Tyrant. Each kill strengthens your control over the ship:\n";
+    public string RoleLongDescription => "Your first three kills trigger stronger control fields.\nYour fourth kill unlocks a Champion decision that determines your victory.";
 
     public Color RoleColor => new(0.78f, 0.10f, 0.16f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
     public NewModFaction Faction => NewModFaction.Apex;
 
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        MaxRoleCount = 1,
-        OptionsScreenshot = MiraAssets.Empty,
-        Icon = NewModAsset.CrownIcon,
-        CanGetKilled = true,
-        UseVanillaKillButton = true,
-        CanUseVent = true,
-        TasksCountForProgress = false,
-        CanUseSabotage = true,
-        DefaultChance = 25,
-        DefaultRoleCount = 1,
-        CanModifyChance = true,
-        GhostRole = RoleTypes.Crewmate,
-        RoleHintType = RoleHintType.RoleTab
-    };
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            MaxRoleCount = 1,
+            OptionsScreenshot = MiraAssets.Empty,
+            Icon = NewModAsset.CrownIcon,
+            CanGetKilled = true,
+            UseVanillaKillButton = true,
+            CanUseVent = true,
+            TasksCountForProgress = false,
+            CanUseSabotage = false,
+            DefaultChance = 25,
+            DefaultRoleCount = 1,
+            CanModifyChance = true,
+            GhostRole = RoleTypes.Crewmate,
+            RoleHintType = RoleHintType.RoleTab
+        };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()
@@ -80,10 +76,10 @@ public sealed class Tyrant : ImpostorRole, INewModRole
         var green = Palette.AcceptedGreen.ToHtmlStringRGBA();
         var kills = GetKillCount();
 
-        var firstKill = "* 1st Kill — Fear Pulse: nearby foes suffer reduced vision and speed for a short time.\n";
-        var secondKill = "* 2nd Kill — Zone of Suppression: a dome that disables buttons for those inside.\n";
-        var thirdKill = "* 3rd Kill — Intimidation Protocol: the next witness is frozen briefly.\n";
-        var fourthKill = "* 4th Kill — Apex Throne: designate a Champion who cannot oppose you.\n";
+        var firstKill = "1st Kill: Fear Pulse reduces nearby players' vision and speed briefly.\n";
+        var secondKill = "2nd Kill: Zone of Suppression disables abilities inside the dome.\n";
+        var thirdKill = "3rd Kill: Intimidation Protocol freezes the next witness briefly.\n";
+        var fourthKill = "4th Kill: Apex Throne lets you choose a Champion.\n";
 
         void AppendAbilityLine(int index, string text)
         {
@@ -157,6 +153,9 @@ public sealed class Tyrant : ImpostorRole, INewModRole
         if (evt.Source.Data.Role is not Tyrant tyrant) return;
 
         tyrant._kills++;
+
+        if (!evt.Source.AmOwner)
+            return;
 
         if (tyrant.GetKillCount() == 1)
         {

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using CorsacCosmetics.Cosmetics;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
@@ -77,15 +76,6 @@ public static class PlayerVoteArea_SetCosmetics_Patch
         else
         {
             __instance.NameText.text = baseName;
-        }
-    }
-
-    [HarmonyPatch(typeof(CosmeticsLoader), nameof(CosmeticsLoader.InstallCosmetics))]
-    public static class CorsacRegistrationPatch
-    {
-        public static void Prefix()
-        {
-            NewModCosmeticsRegistry.InjectToCorsac();
         }
     }
 }

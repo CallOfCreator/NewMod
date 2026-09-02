@@ -12,7 +12,6 @@ using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using MiraAPI.Utilities.Assets;
-using NewMod.Achievements;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -25,10 +24,6 @@ namespace NewMod.Roles.CrewmateRoles.S1;
 public class WardenRole : CrewmateRole, INewModRole
 {
     private const float AbilityRecentWindow = 4f;
-    public static bool SealActive { get; private set; }
-    public static SystemTypes SealedRoom { get; private set; }
-    public static byte SealOwnerId { get; private set; } = byte.MaxValue;
-    public static float SealEndsAt { get; private set; }
 
     private static float SealStartedAt;
     private static Vector2 SealOrigin;
@@ -41,9 +36,13 @@ public class WardenRole : CrewmateRole, INewModRole
     private static readonly Dictionary<byte, ( byte KillerId, bool EnteredAfterSeal, bool UsedAbilityRecently, bool ImpostorAligned, float PresenceTime )> KillSnapshots = [];
 
     private static readonly Dictionary<GameObject, string> ResidualMarks = [];
+    public static bool SealActive { get; private set; }
+    public static SystemTypes SealedRoom { get; private set; }
+    public static byte SealOwnerId { get; private set; } = byte.MaxValue;
+    public static float SealEndsAt { get; private set; }
 
     public string RoleName => "Warden";
-    public string RoleDescription => "Seal. Observe. Investigate.";
+    public string RoleDescription => "Seal a room and inspect traces left by violence.";
     public string RoleLongDescription => "Seal your current room to block venting and door sabotage.\n" + "Track movement across its boundary and inspect Residual Traces left behind by violence.";
 
     public Color RoleColor => new Color32(58, 166, 255, 255);
@@ -97,10 +96,8 @@ public class WardenRole : CrewmateRole, INewModRole
     public static PlainShipRoom GetRoom(Vector2 position)
     {
         foreach (var room in ShipStatus.Instance.AllRooms)
-        {
             if (room.roomArea && room.roomArea.OverlapPoint(position))
                 return room;
-        }
 
         return null;
     }
@@ -171,10 +168,7 @@ public class WardenRole : CrewmateRole, INewModRole
         InsideStates.Clear();
         EnteredAt.Clear();
 
-        if (PlayerControl.LocalPlayer.PlayerId == SealOwnerId && !PlayerControl.LocalPlayer.Data.IsDead)
-        {
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#B7B7B7>Seal expired.</color>"));
-        }
+        if (PlayerControl.LocalPlayer.PlayerId == SealOwnerId && !PlayerControl.LocalPlayer.Data.IsDead) Coroutines.Start(CoroutinesHelper.CoNotify("<color=#B7B7B7>Seal expired.</color>"));
     }
 
     private static void TrackRoomTransitions(bool showPulse)
@@ -233,7 +227,7 @@ public class WardenRole : CrewmateRole, INewModRole
             yield return null;
         }
 
-        Object.Destroy(go);
+        Destroy(go);
     }
 
     [RegisterEvent]
@@ -251,10 +245,7 @@ public class WardenRole : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnEnterVent(EnterVentEvent evt)
     {
-        if (SealActive && evt.Vent && IsInSealedRoom(evt.Vent.transform.position))
-        {
-            evt.Cancel();
-        }
+        if (SealActive && evt.Vent && IsInSealedRoom(evt.Vent.transform.position)) evt.Cancel();
     }
 
     [RegisterEvent]
@@ -267,10 +258,7 @@ public class WardenRole : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnMiraButtonClick(MiraButtonClickEvent evt)
     {
-        if (MeetingHud.Instance || ExileController.Instance || !evt.Button.CanClick())
-        {
-            return;
-        }
+        if (MeetingHud.Instance || ExileController.Instance || !evt.Button.CanClick()) return;
 
         RpcTrackAbilityUse(PlayerControl.LocalPlayer);
     }
@@ -298,10 +286,7 @@ public class WardenRole : CrewmateRole, INewModRole
 
         KillSnapshots.Remove(evt.Target.PlayerId);
 
-        if (!SealActive || !IsInSealedRoom(evt.Source.GetTruePosition()) || !IsInSealedRoom(evt.Target.GetTruePosition()))
-        {
-            return;
-        }
+        if (!SealActive || !IsInSealedRoom(evt.Source.GetTruePosition()) || !IsInSealedRoom(evt.Target.GetTruePosition())) return;
 
         var enteredAfterSeal = EnteredAt.TryGetValue(evt.Source.PlayerId, out var enteredAt);
 
@@ -317,10 +302,7 @@ public class WardenRole : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnAfterMurder(AfterMurderEvent evt)
     {
-        if (!AmongUsClient.Instance.AmHost || !KillSnapshots.TryGetValue(evt.Target.PlayerId, out var snapshot))
-        {
-            return;
-        }
+        if (!AmongUsClient.Instance.AmHost || !KillSnapshots.TryGetValue(evt.Target.PlayerId, out var snapshot)) return;
 
         KillSnapshots.Remove(evt.Target.PlayerId);
 
@@ -400,7 +382,7 @@ public class WardenRole : CrewmateRole, INewModRole
         if (!mark || !ResidualMarks.Remove(mark))
             yield break;
 
-        Object.Destroy(mark);
+        Destroy(mark);
     }
 
     public static GameObject GetNearestResidualMark(Vector2 position, float range)
@@ -431,7 +413,7 @@ public class WardenRole : CrewmateRole, INewModRole
             return;
 
         ResidualMarks.Remove(mark);
-        Object.Destroy(mark);
+        Destroy(mark);
 
         Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#3AA6FF>Residual Trace</color>\n{clue}"));
         //NewModAchievementsTab.TraceEvidence.Unlock();
@@ -453,10 +435,8 @@ public class WardenRole : CrewmateRole, INewModRole
         KillSnapshots.Clear();
 
         foreach (var pair in ResidualMarks)
-        {
             if (pair.Key)
-                Object.Destroy(pair.Key);
-        }
+                Destroy(pair.Key);
 
         ResidualMarks.Clear();
     }

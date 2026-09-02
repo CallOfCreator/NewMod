@@ -13,8 +13,8 @@ namespace NewMod.Roles.ImpostorRoles.S1;
 public class Voidwalker : ImpostorRole, INewModRole
 {
     public string RoleName => "Voidwalker";
-    public string RoleDescription => "Phase. Emerge. Strike.";
-    public string RoleLongDescription => "Enter the Void to become invisible and pass through closed doors.\nYou cannot kill while phased. After returning, you have 4 seconds to strike with a reduced cooldown.";
+    public string RoleDescription => "Phase through doors, then emerge for a fast kill.";
+    public string RoleLongDescription => "Enter the Void to become invisible and pass through closed doors. You cannot kill while phased. After returning, you have 4 seconds to strike with a reduced cooldown.";
 
     public CustomRoleConfiguration Configuration =>
         new(this)
@@ -26,6 +26,7 @@ public class Voidwalker : ImpostorRole, INewModRole
             CanUseVent = true,
             TasksCountForProgress = false,
             CanUseSabotage = true,
+            MaxRoleCount = 1,
             RoleHintType = RoleHintType.RoleTab
         };
 

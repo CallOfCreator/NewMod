@@ -13,8 +13,10 @@ namespace NewMod.Buttons.Roles;
 ///     The Final Ability button for Overload.
 ///     Unlocks after reaching the required absorbed charge count.
 /// </summary>
-public class FinalAbilityButton : CustomActionButton
+public class FinalAbilityButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Aggression;
+
     /// <summary>
     ///     The name displayed on the button (if any).
     /// </summary>

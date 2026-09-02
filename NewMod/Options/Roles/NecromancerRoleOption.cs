@@ -9,9 +9,9 @@ public class NecromancerOption : AbstractOptionGroup<NecromancerRole>
 {
     public override string GroupName => "Necromancer Role";
 
-    [ModdedNumberOption("ButtonCooldown", 5, 15, suffixType: MiraNumberSuffixes.Seconds)]
-    public float ButtonCooldown { get; set; } = 6f;
+    [ModdedNumberOption("Revive Cooldown", 15, 60, suffixType: MiraNumberSuffixes.Seconds)]
+    public float ButtonCooldown { get; set; } = 30f;
 
-    [ModdedNumberOption("AbilityUses", 1, 6)]
-    public float AbilityUses { get; set; } = 3f;
+    [ModdedNumberOption("Revive Uses", 1, 3)]
+    public float AbilityUses { get; set; } = 1f;
 }

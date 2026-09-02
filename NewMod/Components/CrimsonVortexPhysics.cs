@@ -1,9 +1,12 @@
 ﻿using System.Linq;
 using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using MiraAPI.Networking;
-using NewMod.GeneralEvents.Season1;
 using NewMod.Achievements;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Modifiers.S1;
 using NewMod.Options;
+using NewMod.Roles.NeutralRoles.S1;
 using NewMod.Seasons;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
@@ -13,19 +16,18 @@ namespace NewMod.Components;
 [RegisterInIl2Cpp]
 public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 {
-    private PlayerPhysics _physics;
-    private PlayerControl _player;
-
     private bool _collisionDisabled;
-    private bool _writingVelocity;
-    private bool _escaping;
-    private bool _escapedThisEntry;
     private bool _deathRequested;
 
     private float _escapeProgress;
+    private bool _escapedThisEntry;
+    private bool _escaping;
     private float _lastPressTime;
     private Vector2 _lastSafePosition;
     private bool _lastSafePositionReady;
+    private PlayerPhysics _physics;
+    private PlayerControl _player;
+    private bool _writingVelocity;
 
     public void Awake()
     {
@@ -39,7 +41,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         if (!_physics.AmOwner)
             return;
 
-        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead)
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
         {
             if (!CrismonVortexGE.Active && _physics.AmOwner && !_player.Data.IsDead && _player.CanMove && !_player.inVent)
             {
@@ -97,9 +99,23 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        var inputBlocked = HudManager.Instance.Chat.IsOpenOrOpening || Minigame.Instance || MapBehaviour.Instance && MapBehaviour.Instance.gameObject.activeSelf || MatchInfoGuide.Instance && MatchInfoGuide.Instance.IsActive;
+        var inputBlocked = HudManager.Instance.Chat.IsOpenOrOpening || Minigame.Instance || (MapBehaviour.Instance && MapBehaviour.Instance.gameObject.activeSelf) || (MatchInfoGuide.Instance && MatchInfoGuide.Instance.IsActive);
 
-        if (!inputBlocked && Input.GetKeyDown(KeyCode.Space))
+        var pressed = Input.GetKeyDown(KeyCode.Space);
+
+        if (Application.platform == RuntimePlatform.Android)
+            for (var touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
+            {
+                var touch = Input.GetTouch(touchIndex);
+
+                if (touch.phase != TouchPhase.Began)
+                    continue;
+
+                pressed = true;
+                break;
+            }
+
+        if (!inputBlocked && pressed)
         {
             _escapeProgress = Mathf.Clamp01(_escapeProgress + progressPerPress);
 
@@ -113,10 +129,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             _escapeProgress = Mathf.Max(0f, _escapeProgress - decayRate * Time.deltaTime);
         }
 
-        if (CrimsonVortexEscapeHud.Instance)
-        {
-            CrimsonVortexEscapeHud.Instance.SetProgress(_escapeProgress);
-        }
+        if (CrimsonVortexEscapeHud.Instance) CrimsonVortexEscapeHud.Instance.SetProgress(_escapeProgress);
 
         if (_escapeProgress >= 1f)
             CrismonVortexGE.RpcEscapeVortex(_player);
@@ -124,7 +137,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public void FixedUpdate()
     {
-        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead)
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
         {
             _escaping = false;
             _escapedThisEntry = false;
@@ -169,8 +182,9 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         if (AmongUsClient.Instance.AmHost && !_deathRequested && !_escaping && !_player.inVent && distance <= killRadius)
         {
             _deathRequested = true;
+            Collector.MarkEnvironmental(_player.PlayerId);
 
-            _player.RpcAdvancedCustomMurder(_player, MeetingCheck.OutsideMeeting, isIndirect: true, ignoreDefense: true, resetKillTimer: false, teleportMurderer: false, showKillAnim: false, playKillSound: false);
+            _player.RpcAdvancedCustomMurder(_player, MeetingCheck.OutsideMeeting, true, true, resetKillTimer: false, teleportMurderer: false, showKillAnim: false, playKillSound: false);
 
             return;
         }
@@ -186,12 +200,17 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         }
     }
 
+    public void OnDestroy()
+    {
+        if (_collisionDisabled)
+            _player.Collider.enabled = true;
+
+        if (_physics.AmOwner && CrimsonVortexEscapeHud.Instance) CrimsonVortexEscapeHud.Instance.ForceHide();
+    }
+
     public void ApplyVortex()
     {
-        if (_writingVelocity || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead)
-        {
-            return;
-        }
+        if (_writingVelocity || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return;
 
         if (_escaping)
             return;
@@ -265,10 +284,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var currentDirection = Vector2.zero;
 
-        if (!_player.isDummy)
-        {
-            currentDirection = _physics.GetVelocity() / Mathf.Max(_physics.TrueSpeed, 0.01f);
-        }
+        if (!_player.isDummy) currentDirection = _physics.GetVelocity() / Mathf.Max(_physics.TrueSpeed, 0.01f);
 
         var direction = currentDirection + inward * pull + tangent * orbit;
 
@@ -281,10 +297,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public bool CanAcceptEscape()
     {
-        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || !_player.CanMove || _player.inVent || _escaping || _escapedThisEntry)
-        {
-            return false;
-        }
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>() || !_player.CanMove || _player.inVent || _escaping || _escapedThisEntry) return false;
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
@@ -295,7 +308,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public void BeginEscape()
     {
-        if (_escaping || _escapedThisEntry)
+        if (_escaping || _escapedThisEntry || _player.HasModifier<InVoid>())
             return;
 
         _escaping = true;
@@ -308,10 +321,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var escapePosition = _lastSafePositionReady ? _lastSafePosition : ShipStatus.Instance.InitialSpawnCenter;
         _player.NetTransform.RpcSnapTo(escapePosition);
-        if (SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
-        {
-            PreseasonAchievementsTab.EventHorizonDenied.Unlock();
-        }
+        if (SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab))) PreseasonAchievementsTab.EventHorizonDenied.Unlock();
 
         if (_collisionDisabled)
         {
@@ -323,12 +333,9 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             CrimsonVortexEscapeHud.Instance.ShowSuccess();
     }
 
-    public bool ShouldConsumeSpace()
+    public bool ShouldConsumeEscapeInput()
     {
-        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead)
-        {
-            return false;
-        }
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return false;
 
         if (_escaping)
             return true;
@@ -338,16 +345,5 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
 
         return !_escapedThisEntry && distance <= options.CrimsonRadius * 0.75f && distance > killRadius;
-    }
-
-    public void OnDestroy()
-    {
-        if (_collisionDisabled)
-            _player.Collider.enabled = true;
-
-        if (_physics.AmOwner && CrimsonVortexEscapeHud.Instance)
-        {
-            CrimsonVortexEscapeHud.Instance.ForceHide();
-        }
     }
 }

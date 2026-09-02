@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
+using MiraAPI;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameEnd;
+using MiraAPI.GameModes;
 using MiraAPI.GameOptions;
+using NewMod.GeneralEvents;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
@@ -20,13 +23,19 @@ public static class CustomEndGame
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (evt.TriggeredByIntro) IsMatchReady = true;
+        if (!evt.TriggeredByIntro)
+            return;
+
+        NewModEventHandler.ResetMatchState();
+        IsMatchReady = true;
+        GeneralEventManager.StartCycle();
     }
 
     [RegisterEvent]
     public static void OnGameEnd(GameEndEvent evt)
     {
         IsMatchReady = false;
+        GeneralEventManager.Reset();
     }
 
     public static bool TryEndGame()
@@ -93,7 +102,7 @@ public static class CustomEndGame
             }
         }
 
-        var doubleAgent = alivePlayers.FirstOrDefault(player => player.Data.Role is DoubleAgent && player.AllTasksCompleted() && Utils.IsSabotage());
+        var doubleAgent = alivePlayers.FirstOrDefault(player => player.Data.Role is DoubleAgent && player.AllTasksCompleted() && Utils.IsSabotage() && !DoubleAgent.CounterfeitActive);
 
         if (doubleAgent)
         {
@@ -110,20 +119,12 @@ public static class CustomEndGame
             return true;
         }
 
-        var prankster = alivePlayers.FirstOrDefault(player => player.Data.Role is Prankster && PranksterUtilities.GetReportCount(player.PlayerId) >= 2);
+        var pranksterRequired = (int)OptionGroupSingleton<PranksterOptions>.Instance.ReportsRequiredToWin;
+        var prankster = alivePlayers.FirstOrDefault(player => player.Data.Role is Prankster && PranksterUtilities.GetReportCount(player.PlayerId) >= pranksterRequired);
 
         if (prankster)
         {
             CustomGameOver.Trigger<PranksterGameOver>([prankster.Data]);
-            return true;
-        }
-
-        var energyThiefRequired = (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.RequiredDrainCount;
-        var energyThief = alivePlayers.FirstOrDefault(player => player.Data.Role is EnergyThief && Utils.GetDrainCount(player.PlayerId) >= energyThiefRequired);
-
-        if (energyThief)
-        {
-            CustomGameOver.Trigger<EnergyThiefGameOver>([energyThief.Data]);
             return true;
         }
 
@@ -140,26 +141,16 @@ public static class CustomEndGame
     }
 }
 
-[HarmonyPatch(typeof(GameManager), nameof(GameManager.StartGame))]
-public static class GameStartPatch
-{
-    [HarmonyPrefix]
-    public static void Prefix()
-    {
-        CustomEndGame.IsMatchReady = false;
-        NewModEventHandler.ResetMatchState();
-    }
-}
-
 [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
 public static class CustomEndGameCheckPatch
 {
-    [HarmonyPostfix]
-    public static void Postfix()
+    [HarmonyPrefix]
+    [HarmonyAfter(MiraApiPlugin.Id)]
+    public static bool Prefix()
     {
-        if (!CustomEndGame.IsMatchReady || !AmongUsClient.Instance.AmHost || DestroyableSingleton<TutorialManager>.InstanceExists || MeetingHud.Instance || ExileController.Instance || !GameManager.Instance.ShouldCheckForGameEnd)
-            return;
+        if (!CustomEndGame.IsMatchReady || !AmongUsClient.Instance.AmHost || (CustomGameModeManager.ActiveMode != null && !CustomGameModeManager.IsClassic()) || DestroyableSingleton<TutorialManager>.InstanceExists || MeetingHud.Instance || ExileController.Instance || !GameManager.Instance.ShouldCheckForGameEnd)
+            return true;
 
-        CustomEndGame.TryEndGame();
+        return !CustomEndGame.TryEndGame();
     }
 }

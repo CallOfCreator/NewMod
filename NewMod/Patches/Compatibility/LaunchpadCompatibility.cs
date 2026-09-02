@@ -24,7 +24,7 @@ public static class LaunchpadCompatibility
 
         var player = playerField.GetValue(__instance) as PlayerControl;
 
-        if (player != null && Revenant.FeignDeathStates.ContainsKey(player.PlayerId))
+        if (player != null && Revenant.Phases.TryGetValue(player.PlayerId, out var phase) && phase == Revenant.Phase.Feigning)
         {
             NewMod.Instance.Log.LogInfo($"Blocked Launchpad hack death on Revenant {player.Data.PlayerName}");
             return false;
@@ -51,7 +51,7 @@ public static class LaunchpadHackTextPatch
         var player = __instance.GetType().GetField("Player", BindingFlags.Instance | BindingFlags.Public)?.GetValue(__instance) as PlayerControl;
         var hackedText = __instance.GetType().GetField("_hackedText", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(__instance) as TextMeshPro;
 
-        if (player != null && hackedText != null && Revenant.FeignDeathStates.ContainsKey(player.PlayerId))
+        if (player != null && hackedText != null && Revenant.Phases.TryGetValue(player.PlayerId, out var phase) && phase == Revenant.Phase.Feigning)
         {
             hackedText.SetText("");
             Debug.Log($"hackedText: {hackedText.text}");

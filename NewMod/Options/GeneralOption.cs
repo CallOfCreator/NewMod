@@ -13,7 +13,10 @@ public class GeneralOption : AbstractOptionGroup
     public bool AllowCams { get; set; } = false;
 
     [ModdedNumberOption("Total Neutrals", 0f, 10)]
-    public float TotalNeutrals { get; set; } = 3f;
+    public float TotalNeutrals { get; set; } = 1f;
+
+    [ModdedToggleOption("Enable Death Recap")]
+    public bool EnableDeathRecap { get; set; } = true;
 
     [ModdedToggleOption("Keep Crew Majority")]
     public bool KeepCrewMajority { get; set; } = true;
@@ -25,13 +28,6 @@ public class GeneralOption : AbstractOptionGroup
 
     [ModdedToggleOption("Anonymous Names in Meetings")]
     public bool EnableAnonymousNamesInMeetings { get; set; } = false;
-
-    public ModdedNumberOption SpawnChanceOfGlitchEffect { get; } = new("Spawn Chance of Glitch Effect", 0f, 0f, 100f, 10f, MiraNumberSuffixes.Percent);
-
-    public ModdedPlayerOption ChosenPlayer { get; } = new("Player who will receive the effect")
-    {
-        Visible = () => OptionGroupSingleton<GeneralOption>.Instance.SpawnChanceOfGlitchEffect.Value > 0f
-    };
 
     /*[ModdedToggleOption("Should spawn NPC after round start")]
     public bool SpawnNpcAfterRoundStart { get; set; } = false;*/

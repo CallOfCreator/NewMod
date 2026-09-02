@@ -74,7 +74,7 @@ public class ExplosiveModifier : TimedModifier
             if (player.Data.IsDead || player.Data.Disconnected)
                 continue;
 
-            murderer.RpcCustomMurder(player, didSucceed: true, createDeadBody: true, teleportMurderer: false, showKillAnim: false, playKillSound: true);
+            murderer.RpcCustomMurder(player, true, createDeadBody: true, teleportMurderer: false, showKillAnim: false, playKillSound: true);
 
             NewMod.Instance.Log.LogInfo($"{player.Data.PlayerName} has been killed by the explosion.");
         }

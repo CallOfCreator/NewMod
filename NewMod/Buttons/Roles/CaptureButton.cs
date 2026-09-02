@@ -6,6 +6,7 @@ using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
@@ -15,8 +16,10 @@ namespace NewMod.Buttons.Roles;
 /// <summary>
 ///     Defines a custom action button for the role.
 /// </summary>
-public class CaptureButton : CustomActionButton
+public class CaptureButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Intelligence;
+
     /// <summary>
     ///     The name shown on this button.
     /// </summary>

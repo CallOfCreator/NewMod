@@ -4,6 +4,7 @@ using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using NewMod.Utilities;
 using Reactor.Utilities;
@@ -12,8 +13,9 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public class ArbitratorLeverageButton : CustomActionButton
+public class ArbitratorLeverageButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Intelligence;
     private PlayerControl _target;
 
     public override string Name => "Leverage";
@@ -23,7 +25,10 @@ public class ArbitratorLeverageButton : CustomActionButton
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.LeverageButton;
 
-    public override bool Enabled(RoleBehaviour role) => role is ArbitratorRole;
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return role is ArbitratorRole;
+    }
 
     public override bool CanUse()
     {
@@ -40,10 +45,7 @@ public class ArbitratorLeverageButton : CustomActionButton
 
         foreach (var player in PlayerControl.AllPlayerControls)
         {
-            if (player == PlayerControl.LocalPlayer || player.Data.IsDead || player.Data.Disconnected || !ArbitratorRole.LastVotes.ContainsKey(player.PlayerId))
-            {
-                continue;
-            }
+            if (player == PlayerControl.LocalPlayer || player.Data.IsDead || player.Data.Disconnected || !ArbitratorRole.LastVotes.ContainsKey(player.PlayerId)) continue;
 
             var distance = Vector2.Distance(position, player.GetTruePosition());
 

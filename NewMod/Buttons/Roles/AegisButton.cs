@@ -4,6 +4,7 @@ using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using UnityEngine;
 
@@ -12,8 +13,10 @@ namespace NewMod.Buttons.Roles;
 /// <summary>
 ///     Custom action button for the Aegis role. Places a configurable shield zone.
 /// </summary>
-public class AegisButton : CustomActionButton
+public class AegisButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Protection;
+
     /// <summary>
     ///     Gets the display name for this button.
     /// </summary>

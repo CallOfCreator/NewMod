@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using MiraAPI.Networking;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Utilities;
@@ -26,6 +28,7 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
     public int NpcId;
     public bool isActive;
     public bool Reflected;
+    public bool ResolvingKill;
 
     [HideFromIl2Cpp]
     public void Initialize(PlayerControl owner, PlayerControl target, Vector2 start, int npcId)
@@ -104,7 +107,7 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
 
         while (isActive && !MeetingHud.Instance)
         {
-            if (Target.Data.IsDead || Target.Data.Disconnected)
+            if (Target.Data.IsDead || Target.Data.Disconnected || Target.HasModifier<InVoid>())
                 break;
 
             var npcPos = (Vector2)Visual.transform.position;
@@ -125,6 +128,7 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
                 }
 
                 var victim = Target;
+                ResolvingKill = true;
 
                 if (Reflected)
                     ReflectedBy.RpcCustomMurder(victim, true, false, true, false, false, false);
@@ -133,8 +137,7 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
 
                 yield return null;
 
-                if (!Reflected && victim.Data.IsDead)
-                    WraithCallerUtilities.AddKillNPC(Owner.PlayerId);
+                ResolvingKill = false;
 
                 break;
             }

@@ -2,7 +2,6 @@ using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
-using UnityEngine;
 
 namespace NewMod.Options;
 
@@ -37,9 +36,9 @@ public class ModifiersOptions : AbstractOptionGroup
     public ModdedNumberOption MomentumChance { get; } = new("Momentum Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.MomentumAmount > 0f };
     public ModdedNumberOption MarkedChance { get; } = new("Marked Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.MarkedAmount > 0f };
 
-    [ModdedNumberOption("Momentum Amount", min: 0, max: 5, increment: 1, suffixType: MiraNumberSuffixes.None)]
+    [ModdedNumberOption("Momentum Amount", 0, 5, 1, MiraNumberSuffixes.None)]
     public float MomentumAmount { get; set; } = 1f;
-    
-    [ModdedNumberOption("Marked Amount", min: 0, max: 5, increment: 1, suffixType: MiraNumberSuffixes.None)]
+
+    [ModdedNumberOption("Marked Amount", 0, 5, 1, MiraNumberSuffixes.None)]
     public float MarkedAmount { get; set; } = 1f;
 }

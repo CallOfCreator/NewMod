@@ -4,6 +4,7 @@ using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
+using NewMod.Roles.NeutralRoles;
 using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
@@ -11,8 +12,10 @@ namespace NewMod.Buttons.Roles;
 /// <summary>
 ///     Defines a custom action button for Edgeviel's Arc ability.
 /// </summary>
-public class ArcButton : CustomActionButton
+public class ArcButton : CustomActionButton, IEnergyAbility
 {
+    public EnergyCategory Category => EnergyCategory.Aggression;
+
     /// <summary>
     ///     The name displayed on the button.
     /// </summary>
@@ -46,7 +49,7 @@ public class ArcButton : CustomActionButton
     /// <summary>
     ///     The visual icon for this button, set to the Edgeveil Arc sprite asset.
     /// </summary>
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.SlashIcon;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.Slash;
 
     /// <summary>
     ///     Invoked when the Arc button is clicked.

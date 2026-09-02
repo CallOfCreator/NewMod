@@ -14,4 +14,7 @@ public class PranksterOptions : AbstractOptionGroup<Prankster>
 
     [ModdedNumberOption("Prank Max Uses", 1, 3)]
     public float PrankMaxUses { get; set; } = 2f;
+
+    [ModdedNumberOption("Reports Required To Win", 1, 3)]
+    public float ReportsRequiredToWin { get; set; } = 2f;
 }
