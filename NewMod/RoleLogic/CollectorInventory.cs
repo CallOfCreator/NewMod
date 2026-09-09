@@ -29,7 +29,7 @@ public sealed class CollectorInventory
         return _counts[(int)kind];
     }
 
-    public bool CanManifest => _counts[0] > 0 && _counts[1] > 0 && _counts[2] > 0 || _counts[0] >= 2 || _counts[1] >= 2 || _counts[2] >= 2;
+    public bool CanManifest => (_counts[0] > 0 && _counts[1] > 0 && _counts[2] > 0) || _counts[0] >= 2 || _counts[1] >= 2 || _counts[2] >= 2;
 
     public CollectorManifestResult Manifest()
     {

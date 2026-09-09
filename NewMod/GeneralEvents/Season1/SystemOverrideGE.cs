@@ -14,7 +14,7 @@ public class SystemOverrideGE : IGeneralEvent
     public string Description => "SHIP SYSTEMS ARE BEING OVERRIDDEN!";
     public LoadableAsset<Sprite> Icon => NewModAsset.SystemOverrideIcon;
     public Color AccentColor => new(1f, 0.16f, 0.2f);
-    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.SystemOverrideWeight;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<Options.GEOptions>.Instance.SystemOverrideFrequency.Value;
     public float Duration => 22f;
 
     public bool CanOccur()

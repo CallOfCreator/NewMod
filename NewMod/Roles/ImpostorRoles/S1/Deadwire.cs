@@ -56,9 +56,7 @@ public sealed class Deadwire : ImpostorRole, INewModRole
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
-        text.AppendLine(Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record)
-            ? $"<size=65%><color=#FF6B72>Captured:</color> {record.Category}</size>"
-            : "<size=65%><color=#9B9B9B>No category recorded.</color></size>");
+        text.AppendLine(Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record) ? $"<size=65%><color=#FF6B72>Captured:</color> {record.Category}</size>" : "<size=65%><color=#9B9B9B>No category recorded.</color></size>");
         return text;
     }
 
@@ -227,4 +225,3 @@ public sealed class Deadwire : ImpostorRole, INewModRole
         player.NetTransform.RpcSnapTo(player.GetTruePosition() + direction * distance);
     }
 }
-

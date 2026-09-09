@@ -7,7 +7,7 @@ using NewMod.Utilities;
 using Reactor.Utilities;
 using DeadwireRole = NewMod.Roles.ImpostorRoles.S1.Deadwire;
 
-namespace NewMod.Deadwire;
+namespace NewMod.Patches.Roles.Deadwire;
 
 public static class DeadwireButtonEvents
 {
@@ -56,4 +56,3 @@ public static class DeadwireButtonEvents
             DeadwireRole.RpcRequestCapture(evt.Source, (byte)EnergyCategory.Aggression);
     }
 }
-

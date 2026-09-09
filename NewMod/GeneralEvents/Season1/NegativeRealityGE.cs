@@ -12,7 +12,7 @@ public class NegativeRealityGE : IGeneralEvent
     public string Description => "REALITY INVERSION IMMINENT!";
     public LoadableAsset<Sprite> Icon => NewModAsset.NegativeRealityIcon;
     public Color AccentColor => new(0.55f, 0.2f, 1.0f);
-    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.NegativeRealityWeight;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<Options.GEOptions>.Instance.NegativeRealityFrequency.Value;
     public float Duration => 30f;
 
     public void OnEventStart()

@@ -57,9 +57,9 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
 
         HelpIcon.OnClick.RemoveAllListeners();
         HelpIcon.OnClick.AddListener((UnityAction)ShowPopup);
-        
+
         CloseButton.OnClick.RemoveAllListeners();
-        CloseButton.OnClick.AddListener(((UnityAction)(() => Close())));
+        CloseButton.OnClick.AddListener((UnityAction)(() => Close()));
 
         Bind(TaskText, VerifierClaimType.DidTask);
         Bind(KillText, VerifierClaimType.NearBody);

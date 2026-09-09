@@ -228,7 +228,7 @@ public static class NewModDebugPanel
         var glitch = camera.GetComponent<GlitchEffect>();
         var distortion = camera.GetComponent<DistorationWaveEffect>();
         var flux = camera.GetComponent<ShadowFluxEffect>();
-        var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Glitch", AddEffect<GlitchEffect>, false), ("Earthquake", AddEffect<EarthquakeEffect>, false), ("Pulse hue", AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", AddEffect<DistorationWaveEffect>, false), ("Shadow flux", AddEffect<ShadowFluxEffect>, false), ("Negative reality", AddEffect<NegativeRealityEffect>, false), ("Shattered glass", AddEffect<ShatteredGlassEffect>, false), ("Remove all", RemoveEffects, true))) };
+        var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Energy breach", PlayEnergyThiefBreak, false), ("Glitch", AddEffect<GlitchEffect>, false), ("Earthquake", AddEffect<EarthquakeEffect>, false), ("Pulse hue", AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", AddEffect<DistorationWaveEffect>, false), ("Shadow flux", AddEffect<ShadowFluxEffect>, false), ("Negative reality", AddEffect<NegativeRealityEffect>, false), ("Shattered glass", AddEffect<ShatteredGlassEffect>, false), ("Glitch V2", AddEffect<ScrDesyncEffect>, false), ("Remove all", RemoveEffects, true))) };
 
         if (glitch) sections.Add(Section("GLITCH", EffectSlider("Intensity", glitch.intensity, value => glitch.intensity = value, 0f, 1f), EffectSlider("Block size", glitch.blockSize, value => glitch.blockSize = value, 8f, 128f), EffectSlider("Colour split", glitch.colorSplit, value => glitch.colorSplit = value, 0f, 3f), EffectSlider("Speed", glitch.speed, value => glitch.speed = value, 0f, 10f)));
 
@@ -309,6 +309,16 @@ public static class NewModDebugPanel
     {
         if (!Camera.main.GetComponent<T>())
             Camera.main.gameObject.AddComponent<T>();
+    }
+
+    private static void PlayEnergyThiefBreak()
+    {
+        var effect = Camera.main.GetComponent<EnergyThiefBreakEffect>();
+
+        if (effect)
+            effect.Restart();
+        else
+            Camera.main.gameObject.AddComponent<EnergyThiefBreakEffect>();
     }
 
     private static void RemoveEffects()

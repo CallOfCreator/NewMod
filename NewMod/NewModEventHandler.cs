@@ -15,6 +15,7 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using NewMod.Utilities;
+using Twitch;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -144,6 +145,8 @@ public static class NewModEventHandler
                 {
                     PlayerControl.LocalPlayer.myTasks.RemoveAt(i);
                     Object.Destroy(task.gameObject);
+                    
+                    TwitchManager.Instance.TwitchPopup.Show();
                 }
             }
 

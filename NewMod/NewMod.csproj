@@ -27,7 +27,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Resources\**\*.*"/>
-        <Compile Remove="Tests\**\*.cs" />
+        <Compile Remove="Tests\**\*.cs"/>
     </ItemGroup>
 
     <ItemGroup>

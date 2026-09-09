@@ -67,9 +67,7 @@ public sealed class Bounty : CrewmateRole, INewModRole
 
         var target = Utils.PlayerById(contract.TargetId);
         text.AppendLine($"<size=65%>Contract: <color=#FFB14F>{target.Data.PlayerName}</color></size>");
-        text.AppendLine(contract.Phase == BountyPhase.Collection
-            ? $"<size=65%><color=#FFCF70>COLLECTION:</color> {Mathf.Max(0, Mathf.CeilToInt(CollectionExpiresAt[PlayerControl.LocalPlayer.PlayerId] - Time.time))}s</size>"
-            : "<size=65%>Stay close to advance the contract.</size>");
+        text.AppendLine(contract.Phase == BountyPhase.Collection ? $"<size=65%><color=#FFCF70>COLLECTION:</color> {Mathf.Max(0, Mathf.CeilToInt(CollectionExpiresAt[PlayerControl.LocalPlayer.PlayerId] - Time.time))}s</size>" : "<size=65%>Stay close to advance the contract.</size>");
         return text;
     }
 
@@ -205,6 +203,7 @@ public sealed class Bounty : CrewmateRole, INewModRole
                     RpcFailContract(PlayerControl.LocalPlayer, pair.Key);
                     AssignContract(pair.Key);
                 }
+
                 continue;
             }
 
@@ -319,6 +318,6 @@ public sealed class Bounty : CrewmateRole, INewModRole
     private static void HideCollectionArrow()
     {
         if (_collectionArrow)
-            Object.Destroy(_collectionArrow);
+            Destroy(_collectionArrow);
     }
 }

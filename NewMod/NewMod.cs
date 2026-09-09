@@ -153,7 +153,6 @@ public class NewMod : BasePlugin, IMiraPlugin
         var source = evt.Source;
         var target = evt.Target;
         Utils.RecordOnKill(source, target);
-        DeathRecap.Show(source, target);
 
         if (!source.AmOwner || source.Data.Role is not OverloadRole || target != OverloadRole.chosenPrey) return;
 

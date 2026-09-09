@@ -88,9 +88,9 @@ public class CrimsonVortexEffect(nint ptr) : MonoBehaviour(ptr)
 
         var center = _camera.WorldToViewportPoint(worldCenter);
 
-        var radius = options.CrimsonRadius / (_camera.orthographicSize * 2f);
+        var radius = options.CrimsonRadius.Value / (_camera.orthographicSize * 2f);
 
-        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
         var coreRadius = killRadius / (_camera.orthographicSize * 2f);
 
         _mat.SetFloat("_Amount", amount);

@@ -25,7 +25,7 @@ public sealed class SpecialistScanButton : CustomActionButton, IEnergyAbility
 
     public override bool CanUse()
     {
-        return base.CanUse() && Specialist.ScanStates[PlayerControl.LocalPlayer.PlayerId].Charges > 0;
+        return base.CanUse() && Specialist.ScanStates.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state) && state.Charges > 0;
     }
 
     protected override void OnClick()
@@ -33,4 +33,3 @@ public sealed class SpecialistScanButton : CustomActionButton, IEnergyAbility
         Specialist.Scan();
     }
 }
-

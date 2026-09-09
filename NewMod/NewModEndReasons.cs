@@ -16,6 +16,7 @@ using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.GameModes.WraithSiegeGamemode;
 using NewMod.Options.Roles.S1;
+using NewMod.RoleLogic;
 using NewMod.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
@@ -551,6 +552,12 @@ public static class MatchSummaryTracker
         Capture(evt.Player?.Data);
     }
 
+    [RegisterEvent]
+    public static void OnSetRole(SetRoleEvent evt)
+    {
+        Capture(evt.Player.Data);
+    }
+
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameData), nameof(GameData.HandleDisconnect), typeof(PlayerControl), typeof(DisconnectReasons))]
     public static void BeforeDisconnect([HarmonyArgument(0)] PlayerControl player)
@@ -566,10 +573,9 @@ public static class MatchSummaryTracker
     {
         if (!_tracking)
             return;
-
-        if (GameData.Instance)
-            foreach (var player in GameData.Instance.AllPlayers)
-                Capture(player);
+        
+        foreach (var player in GameData.Instance.AllPlayers)
+            Capture(player);
         Snapshot = Players.Values.OrderBy(player => player.Id).ToArray();
         _tracking = false;
     }
@@ -594,7 +600,7 @@ public static class MatchSummaryTracker
         if (previous?.Status == "Left")
             return;
         var role = player.Role;
-        var roleType = player.IsDead && player.RoleWhenAlive.HasValue ? player.RoleWhenAlive.Value : role ? role.Role : RoleTypes.Crewmate;
+        var roleType = role ? role.Role : RoleTypes.Crewmate;
         var roleName = roleType.ToString();
         var roleColor = role && role.IsImpostor ? "FF4D4D" : "58E8BE";
         var faction = string.Empty;
@@ -604,6 +610,14 @@ public static class MatchSummaryTracker
             roleColor = ColorUtility.ToHtmlStringRGB(custom.RoleColor);
             if (custom is INewModRole newModRole)
                 faction = newModRole.Faction.ToString();
+        }
+
+        if (previous != null)
+        {
+            var summaryRole = MatchSummaryRole.Select(new MatchSummaryRole(roleName, roleColor, faction), new MatchSummaryRole(previous.Role, previous.RoleColor, previous.Faction), player.IsDead);
+            roleName = summaryRole.Name;
+            roleColor = summaryRole.Color;
+            faction = summaryRole.Faction;
         }
 
         var inSiege = CustomGameModeManager.ActiveMode is WraithSiege;
@@ -653,7 +667,6 @@ public static class MatchSummaryTracker
         var translator = summary.GetComponent<TextTranslatorTMP>();
         if (translator)
         {
-            translator.enabled = false;
             Object.Destroy(translator);
         }
 
@@ -672,13 +685,10 @@ public static class MatchSummaryTracker
         summary.color = Color.white;
         summary.fontStyle = FontStyles.Normal;
         summary.enableVertexGradient = false;
-        summary.margin = Vector4.zero;
-        summary.enableAutoSizing = true;
         summary.fontSizeMin = 0.6f;
         summary.fontSizeMax = 1.3f;
         summary.fontSize = 1.3f;
         summary.enableWordWrapping = false;
-        summary.overflowMode = TextOverflowModes.Overflow;
 
         var text = new StringBuilder("End game summary:\n");
         foreach (var player in Snapshot)

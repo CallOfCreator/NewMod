@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
@@ -60,7 +59,8 @@ public sealed class Usurper : CrewmateRole, INewModRole
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
-        var state = States[PlayerControl.LocalPlayer.PlayerId];
+        if (!States.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state))
+            return text;
 
         if (state.Phase == UsurperCrownPhase.Claimed)
             text.AppendLine($"<size=65%>Claimed: <color=#D8844D>{Utils.PlayerById(state.TargetId).Data.PlayerName}</color></size>");
@@ -82,14 +82,7 @@ public sealed class Usurper : CrewmateRole, INewModRole
     {
         if (evt.TriggeredByIntro)
         {
-            foreach (var crown in CrownObjects.Values)
-                Object.Destroy(crown);
-
-            States.Clear();
-            CrownPositions.Clear();
-            CrownObjects.Clear();
-            ExiledPlayerId = byte.MaxValue;
-            ExilePosition = Vector2.zero;
+            Reset();
 
             foreach (var player in PlayerControl.AllPlayerControls)
                 if (player.Data.Role is Usurper)
@@ -103,6 +96,24 @@ public sealed class Usurper : CrewmateRole, INewModRole
 
         MarkClaimedDeath(ExiledPlayerId, ExilePosition);
         ExiledPlayerId = byte.MaxValue;
+    }
+
+    [RegisterEvent]
+    public static void OnSetRole(SetRoleEvent evt)
+    {
+        if (evt.Player.Data.Role is Usurper)
+        {
+            States[evt.Player.PlayerId] = new UsurperCrownState();
+            return;
+        }
+
+        States.Remove(evt.Player.PlayerId);
+    }
+
+    [RegisterEvent]
+    public static void OnGameEnd(GameEndEvent evt)
+    {
+        Reset();
     }
 
     [RegisterEvent]
@@ -147,12 +158,19 @@ public sealed class Usurper : CrewmateRole, INewModRole
     public static void HostFixedUpdate()
     {
         var range = OptionGroupSingleton<UsurperOptions>.Instance.CrownPickupRange;
-        foreach (var pair in CrownPositions.ToArray())
+        var crownOwnerId = byte.MaxValue;
+        foreach (var pair in CrownPositions)
         {
             var usurper = Utils.PlayerById(pair.Key);
             if (!usurper.Data.IsDead && !usurper.Data.Disconnected && Vector2.Distance(usurper.GetTruePosition(), pair.Value) <= range)
-                RpcTakeCrown(PlayerControl.LocalPlayer, pair.Key);
+            {
+                crownOwnerId = pair.Key;
+                break;
+            }
         }
+
+        if (crownOwnerId != byte.MaxValue)
+            RpcTakeCrown(PlayerControl.LocalPlayer, crownOwnerId);
     }
 
     public static void MarkClaimedDeath(byte targetId, Vector2 position)
@@ -205,7 +223,7 @@ public sealed class Usurper : CrewmateRole, INewModRole
             return;
 
         CrownPositions.Remove(usurperId);
-        Object.Destroy(CrownObjects[usurperId]);
+        Destroy(CrownObjects[usurperId]);
         CrownObjects.Remove(usurperId);
 
         Coroutines.Start(CoroutinesHelper.CoNotify("<color=#F0B26E>The Crown has been claimed.</color>"));
@@ -226,5 +244,16 @@ public sealed class Usurper : CrewmateRole, INewModRole
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#D8844D>Claim refunded:</color> your target disconnected."));
         }
     }
-}
 
+    private static void Reset()
+    {
+        foreach (var crown in CrownObjects.Values)
+            Destroy(crown);
+
+        States.Clear();
+        CrownPositions.Clear();
+        CrownObjects.Clear();
+        ExiledPlayerId = byte.MaxValue;
+        ExilePosition = Vector2.zero;
+    }
+}

@@ -22,9 +22,9 @@ public class CrismonVortexGE : IGeneralEvent
     public string Description => "ESCAPE THE SINGULARITY!";
     public LoadableAsset<Sprite> Icon => NewModAsset.CrismonIcon;
     public Color AccentColor => new(0.9f, 0.03f, 0.05f);
-    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.CrimsonVortexWeight;
+    public int OccurrenceChance => (int)OptionGroupSingleton<GEOptions>.Instance.CrimsonVortexFrequency.Value;
 
-    public float Duration => OptionGroupSingleton<GEOptions>.Instance.CrimsonDuration;
+    public float Duration => OptionGroupSingleton<GEOptions>.Instance.CrimsonDuration.Value;
 
     public bool CanOccur()
     {
@@ -35,7 +35,7 @@ public class CrismonVortexGE : IGeneralEvent
 
         var rooms = ShipStatus.Instance.AllRooms.Where(room => room.RoomId != SystemTypes.Hallway && room.roomArea).ToArray();
 
-        return rooms.Any(vortexRoom => rooms.Any(escapeRoom => escapeRoom != vortexRoom && Vector2.Distance(vortexRoom.roomArea.bounds.center, escapeRoom.roomArea.bounds.center) > options.CrimsonRadius + 1.5f));
+        return rooms.Any(vortexRoom => rooms.Any(escapeRoom => escapeRoom != vortexRoom && Vector2.Distance(vortexRoom.roomArea.bounds.center, escapeRoom.roomArea.bounds.center) > options.CrimsonRadius.Value + 1.5f));
     }
 
     public void OnEventStart()
@@ -50,7 +50,7 @@ public class CrismonVortexGE : IGeneralEvent
 
         var rooms = ShipStatus.Instance.AllRooms.Where(room => room.RoomId != SystemTypes.Hallway && room.roomArea).ToArray();
 
-        var validVortexRooms = rooms.Where(vortexRoom => rooms.Any(escapeRoom => escapeRoom != vortexRoom && Vector2.Distance(vortexRoom.roomArea.bounds.center, escapeRoom.roomArea.bounds.center) > options.CrimsonRadius + 1.5f)).ToArray();
+        var validVortexRooms = rooms.Where(vortexRoom => rooms.Any(escapeRoom => escapeRoom != vortexRoom && Vector2.Distance(vortexRoom.roomArea.bounds.center, escapeRoom.roomArea.bounds.center) > options.CrimsonRadius.Value + 1.5f)).ToArray();
 
         var room = validVortexRooms[Random.Range(0, validVortexRooms.Length)];
 

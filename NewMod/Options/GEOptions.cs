@@ -1,5 +1,5 @@
 ﻿using MiraAPI.GameOptions;
-using MiraAPI.GameOptions.Attributes;
+using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities;
 
@@ -26,48 +26,35 @@ public class GEOptions : AbstractOptionGroup
 
     public override MenuCategory ParentMenu => MenuCategory.Game;
 
-    [ModdedToggleOption("Enable General Events")]
-    public bool EnableGeneralEvents { get; set; } = true;
+    public ModdedToggleOption EnableGeneralEvents { get; } = new("Enable General Events", true);
 
-    [ModdedNumberOption("Minimum Event Interval", 10f, 120f, 5f, MiraNumberSuffixes.Seconds)]
-    public float MinimumInterval { get; set; } = 50f;
+    public ModdedNumberOption MinimumInterval { get; } = new("Minimum Time Between Events", 50f, 10f, 120f, 5f, MiraNumberSuffixes.Seconds) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Maximum Event Interval", 15f, 180f, 5f, MiraNumberSuffixes.Seconds)]
-    public float MaximumInterval { get; set; } = 80f;
+    public ModdedNumberOption MaximumInterval { get; } = new("Maximum Time Between Events", 80f, 15f, 180f, 5f, MiraNumberSuffixes.Seconds) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Event Trigger Chance", 0f, 100f, 5f, MiraNumberSuffixes.Percent)]
-    public float EventTriggerChance { get; set; } = 65f;
+    public ModdedNumberOption EventTriggerChance { get; } = new("Chance to Start an Event", 65f, 0f, 100f, 5f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Ability Exchange Weight", 0f, 100f, 5f)]
-    public float AbilityExchangeWeight { get; set; } = 15f;
+    public ModdedNumberOption AbilityExchangeFrequency { get; } = new("Ability Exchange Frequency", 15f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Crimson Vortex Weight", 0f, 100f, 5f)]
-    public float CrimsonVortexWeight { get; set; } = 15f;
+    public ModdedNumberOption CrimsonVortexFrequency { get; } = new("Crimson Vortex Frequency", 15f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Identity Crisis Weight", 0f, 100f, 5f)]
-    public float IdentityCrisisWeight { get; set; } = 25f;
+    public ModdedNumberOption IdentityCrisisFrequency { get; } = new("Identity Crisis Frequency", 25f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Negative Reality Weight", 0f, 100f, 5f)]
-    public float NegativeRealityWeight { get; set; } = 20f;
+    public ModdedNumberOption NegativeRealityFrequency { get; } = new("Negative Reality Frequency", 20f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("No Man's Land Weight", 0f, 100f, 5f)]
-    public float NoMansLandWeight { get; set; } = 10f;
+    public ModdedNumberOption NoMansLandFrequency { get; } = new("No Man's Land Frequency", 10f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Role Scramble Weight", 0f, 100f, 5f)]
-    public float RoleScrambleWeight { get; set; } = 0f;
+    public ModdedNumberOption RoleScrambleFrequency { get; } = new("Role Scramble Frequency", 0f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("System Override Weight", 0f, 100f, 5f)]
-    public float SystemOverrideWeight { get; set; } = 15f;
+    public ModdedNumberOption ScreenDesynchronizationFrequency { get; } = new("Screen Desynchronization Frequency", 15f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Crimson Vortex Duration", 10f, 60f, 5f, MiraNumberSuffixes.Seconds)]
-    public float CrimsonDuration { get; set; } = 30f;
+    public ModdedNumberOption SystemOverrideFrequency { get; } = new("System Override Frequency", 15f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedNumberOption("Crimson Vortex Radius", 2f, 20f, 0.5f)]
-    public float CrimsonRadius { get; set; } = 5f;
+    public ModdedNumberOption CrimsonDuration { get; } = new("Vortex Duration", 30f, 10f, 60f, 5f, MiraNumberSuffixes.Seconds) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedEnumOption("Crimson Vortex Intensity", typeof(VortexIntensity))]
-    public VortexIntensity CrimsonIntensity { get; set; } = VortexIntensity.Standard;
+    public ModdedNumberOption CrimsonRadius { get; } = new("Vortex Size", 5f, 2f, 20f, 0.5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
-    [ModdedEnumOption("Crimson Escape Difficulty", typeof(EscapeDifficulty))]
-    public EscapeDifficulty CrimsonEscapeDifficulty { get; set; } = EscapeDifficulty.Standard;
+    public ModdedEnumOption<VortexIntensity> CrimsonIntensity { get; } = new("Pull Strength", VortexIntensity.Standard) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
+
+    public ModdedEnumOption<EscapeDifficulty> CrimsonEscapeDifficulty { get; } = new("Escape Difficulty", EscapeDifficulty.Standard) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 }

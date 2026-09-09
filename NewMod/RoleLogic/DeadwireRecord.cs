@@ -13,12 +13,13 @@ public enum DeadwireResponse : byte
 
 public readonly record struct DeadwireRecord(byte ActorId, EnergyCategory Category)
 {
-    public DeadwireResponse Response => Category switch
-    {
-        EnergyCategory.Aggression => DeadwireResponse.RefreshKill,
-        EnergyCategory.Intelligence => DeadwireResponse.TrackActor,
-        EnergyCategory.Mobility => DeadwireResponse.Blink,
-        EnergyCategory.Control => DeadwireResponse.JamActor,
-        _ => DeadwireResponse.Barrier
-    };
+    public DeadwireResponse Response =>
+        Category switch
+        {
+            EnergyCategory.Aggression => DeadwireResponse.RefreshKill,
+            EnergyCategory.Intelligence => DeadwireResponse.TrackActor,
+            EnergyCategory.Mobility => DeadwireResponse.Blink,
+            EnergyCategory.Control => DeadwireResponse.JamActor,
+            _ => DeadwireResponse.Barrier
+        };
 }

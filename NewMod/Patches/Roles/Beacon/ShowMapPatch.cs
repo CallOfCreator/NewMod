@@ -121,5 +121,4 @@ public static class BeaconShowMapPatch
             if (__instance.BackgroundColor) __instance.BackgroundColor.SetColor(new Color(0.60f, 0.20f, 0.80f, 1f));
         }
     }
-
 }

@@ -40,10 +40,7 @@ public class StrikeButton : CustomActionButton, IEnergyAbility
 
         var target = PlayerControl.AllPlayerControls.ToArray().Where(p => p != player && !p.Data.IsDead && !p.Data.Disconnected && !p.inVent).OrderBy(p => Vector2.Distance(player.GetTruePosition(), p.GetTruePosition())).FirstOrDefault(p => Vector2.Distance(player.GetTruePosition(), p.GetTruePosition()) <= OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeRange);
 
-        if (target)
-        {
-            RpcPulseStrike(player, target);
-        }
+        if (target) RpcPulseStrike(player, target);
     }
 
     [MethodRpc((uint)CustomRPC.Dash)]

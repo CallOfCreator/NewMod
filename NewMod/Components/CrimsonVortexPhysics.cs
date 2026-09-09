@@ -64,23 +64,23 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
 
-        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
-        var escapeRadius = options.CrimsonRadius * 0.75f;
-        var progressPerPress = options.CrimsonEscapeDifficulty switch
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
+        var escapeRadius = options.CrimsonRadius.Value * 0.75f;
+        var progressPerPress = options.CrimsonEscapeDifficulty.Value switch
         {
             GEOptions.EscapeDifficulty.Easy => 0.12f,
             GEOptions.EscapeDifficulty.Standard => 0.09f,
             GEOptions.EscapeDifficulty.Hard => 0.07f,
             _ => 0.09f
         };
-        var decayDelay = options.CrimsonEscapeDifficulty switch
+        var decayDelay = options.CrimsonEscapeDifficulty.Value switch
         {
             GEOptions.EscapeDifficulty.Easy => 0.25f,
             GEOptions.EscapeDifficulty.Standard => 0.15f,
             GEOptions.EscapeDifficulty.Hard => 0.1f,
             _ => 0.15f
         };
-        var decayRate = options.CrimsonEscapeDifficulty switch
+        var decayRate = options.CrimsonEscapeDifficulty.Value switch
         {
             GEOptions.EscapeDifficulty.Easy => 0.35f,
             GEOptions.EscapeDifficulty.Standard => 0.55f,
@@ -156,12 +156,12 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
-        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
 
         if (distance > killRadius)
             _deathRequested = false;
 
-        if (distance >= options.CrimsonRadius)
+        if (distance >= options.CrimsonRadius.Value)
         {
             if (_physics.AmOwner && _player.CanMove && !_player.inVent)
             {
@@ -234,7 +234,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        if (distance >= options.CrimsonRadius)
+        if (distance >= options.CrimsonRadius.Value)
         {
             if (_collisionDisabled)
             {
@@ -269,10 +269,10 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         var inward = -outward;
         var tangent = new Vector2(-outward.y, outward.x);
 
-        var proximity = Mathf.Clamp01(1f - distance / options.CrimsonRadius);
+        var proximity = Mathf.Clamp01(1f - distance / options.CrimsonRadius.Value);
 
         var pullProgress = proximity * proximity;
-        var intensity = options.CrimsonIntensity switch
+        var intensity = options.CrimsonIntensity.Value switch
         {
             GEOptions.VortexIntensity.Gentle => 0.75f,
             GEOptions.VortexIntensity.Standard => 1f,
@@ -301,9 +301,9 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
-        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
 
-        return distance < options.CrimsonRadius && distance > killRadius;
+        return distance < options.CrimsonRadius.Value && distance > killRadius;
     }
 
     public void BeginEscape()
@@ -342,8 +342,8 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
-        var killRadius = Mathf.Clamp(options.CrimsonRadius * 0.12f, 0.45f, 0.9f);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
 
-        return !_escapedThisEntry && distance <= options.CrimsonRadius * 0.75f && distance > killRadius;
+        return !_escapedThisEntry && distance <= options.CrimsonRadius.Value * 0.75f && distance > killRadius;
     }
 }

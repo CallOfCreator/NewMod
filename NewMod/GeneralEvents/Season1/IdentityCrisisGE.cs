@@ -12,7 +12,7 @@ public class IdentityCrisisGE : IGeneralEvent
     public string Description => "IDENTITIES HAVE BEEN REASSIGNED!";
     public LoadableAsset<Sprite> Icon => NewModAsset.IdentityCrisisIcon;
     public Color AccentColor => new(0.18f, 0.78f, 1f);
-    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.IdentityCrisisWeight;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<Options.GEOptions>.Instance.IdentityCrisisFrequency.Value;
     public float Duration => 25f;
 
     public bool CanOccur()

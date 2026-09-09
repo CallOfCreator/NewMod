@@ -24,9 +24,13 @@ public sealed class SpecialistModeButton : CustomActionButton, IEnergyAbility
         return role is Specialist;
     }
 
+    public override bool CanUse()
+    {
+        return base.CanUse() && Specialist.ScanStates.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
+    }
+
     protected override void OnClick()
     {
         Specialist.CycleMode();
     }
 }
-

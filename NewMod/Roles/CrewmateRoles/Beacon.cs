@@ -94,7 +94,6 @@ public class Beacon : CrewmateRole, INewModRole
             charges = Mathf.Clamp(charges + delta, 0, (int)settings.MaxCharges);
             grantedFromTasks = earned;
             Helpers.CreateAndShowNotification($"+{delta} Beacon {(delta > 1 ? "charges" : "charge")} (tasks)", new Color(0.75f, 0.65f, 1f), spr: NewModAsset.RadarIcon.LoadAsset());
-
         }
     }
 

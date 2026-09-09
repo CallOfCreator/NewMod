@@ -152,6 +152,7 @@ public class S1 : ISeason
             typeof(IdentityCrisisGE),
             typeof(NoMansLandGE),
             typeof(RoleScrambleGE),
+            typeof(ScrDesyncEffectGE),
             typeof(SystemOverrideGE)
         ];
     }

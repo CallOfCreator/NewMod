@@ -9,7 +9,6 @@ using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
-using MiraAPI.Networking;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
@@ -96,15 +95,11 @@ public class TerminatorRole : CrewmateRole, INewModRole
     {
         var terminator = GetTerminator();
 
-        if (evt.TriggeredByIntro)
-        {
-            ResetState();
+        if (!evt.TriggeredByIntro) return;
+        ResetState();
 
-            if (terminator)
-                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#D96E20><b>WARNING:</b> The Terminator is aboard.</color>"));
-
-            return;
-        }
+        if (terminator)
+            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#D96E20><b>WARNING:</b> The Terminator is aboard.</color>"));
     }
 
     [RegisterEvent]

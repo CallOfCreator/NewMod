@@ -1,15 +1,14 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Roles;
-using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.RoleLogic;
 using NewMod.Utilities;
+using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles;
@@ -46,7 +45,9 @@ public class Specialist : CrewmateRole, INewModRole
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
-        var state = ScanStates[PlayerControl.LocalPlayer.PlayerId];
+        if (!ScanStates.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state))
+            return text;
+
         text.AppendLine($"<size=65%>Mode: <color=#00CCFF>{state.Mode}</color></size>");
         text.AppendLine($"<size=65%>Scans: <color=#00CCFF>{state.Charges}</color></size>");
         return text;
@@ -65,19 +66,37 @@ public class Specialist : CrewmateRole, INewModRole
     }
 
     [RegisterEvent]
+    public static void OnSetRole(SetRoleEvent evt)
+    {
+        if (evt.Player.Data.Role is Specialist)
+        {
+            ScanStates[evt.Player.PlayerId] = new SpecialistScanState();
+            return;
+        }
+
+        ScanStates.Remove(evt.Player.PlayerId);
+    }
+
+    [RegisterEvent]
+    public static void OnGameEnd(GameEndEvent evt)
+    {
+        ScanStates.Clear();
+    }
+
+    [RegisterEvent]
     public static void OnTaskComplete(CompleteTaskEvent evt)
     {
         if (!evt.Player.AmOwner || evt.Player.Data.Role is not Specialist)
             return;
 
         ScanStates[evt.Player.PlayerId].Earn();
-        Helpers.CreateAndShowNotification("Specialist scan ready.", new Color(0f, 0.8f, 1f));
+        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00CCFF>Specialist:</color> scan ready."));
     }
 
     public static void CycleMode()
     {
         var mode = ScanStates[PlayerControl.LocalPlayer.PlayerId].Cycle();
-        Helpers.CreateAndShowNotification($"Scan mode: {mode}", new Color(0f, 0.8f, 1f));
+        Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#00CCFF>Scan mode:</color> {mode}"));
     }
 
     public static void Scan()
@@ -91,22 +110,44 @@ public class Specialist : CrewmateRole, INewModRole
         {
             SpecialistScanMode.Presence => PresenceScan(specialist),
             SpecialistScanMode.Forensics => ForensicsScan(specialist),
-            _ => $"Vital scan: {Helpers.GetAlivePlayers().Count} players remain alive."
+            _ => VitalScan()
         };
 
-        Helpers.CreateAndShowNotification(result, new Color(0f, 0.8f, 1f));
+        Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#00CCFF>Specialist:</color> {result}"));
     }
 
     private static string PresenceScan(PlayerControl specialist)
     {
-        var nearby = Helpers.GetAlivePlayers().Count(player => player != specialist && Vector2.Distance(player.GetTruePosition(), specialist.GetTruePosition()) <= 5f);
+        var nearby = 0;
+        var position = specialist.GetTruePosition();
+        foreach (var player in PlayerControl.AllPlayerControls)
+            if (player != specialist && !player.Data.IsDead && !player.Data.Disconnected && Vector2.Distance(player.GetTruePosition(), position) <= 5f)
+                nearby++;
+
         return $"Presence scan: {nearby} living player{(nearby == 1 ? "" : "s")} nearby.";
     }
 
     private static string ForensicsScan(PlayerControl specialist)
     {
-        var body = Object.FindObjectsOfType<DeadBody>().OrderBy(deadBody => Vector2.Distance(specialist.GetTruePosition(), deadBody.TruePosition)).FirstOrDefault();
-        return body ? $"Forensics scan: nearest body is {Vector2.Distance(specialist.GetTruePosition(), body.TruePosition):0.0}m away." : "Forensics scan: no bodies detected.";
+        var nearestDistance = float.PositiveInfinity;
+        var position = specialist.GetTruePosition();
+        foreach (var body in FindObjectsOfType<DeadBody>())
+        {
+            var distance = Vector2.Distance(position, body.TruePosition);
+            if (distance < nearestDistance)
+                nearestDistance = distance;
+        }
+
+        return float.IsPositiveInfinity(nearestDistance) ? "Forensics scan: no bodies detected." : $"Forensics scan: nearest body is {nearestDistance:0.0}m away.";
+    }
+
+    private static string VitalScan()
+    {
+        var alive = 0;
+        foreach (var player in PlayerControl.AllPlayerControls)
+            if (!player.Data.IsDead && !player.Data.Disconnected)
+                alive++;
+
+        return $"Vital scan: {alive} players remain alive.";
     }
 }
-

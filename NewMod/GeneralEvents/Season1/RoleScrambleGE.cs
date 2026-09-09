@@ -13,7 +13,7 @@ public class RoleScrambleGE : IGeneralEvent
     public string Description => " ROLE ASSIGNMENTS HAVE BEEN CORRUPTED!";
     public LoadableAsset<Sprite> Icon => NewModAsset.RoleScrambleIcon;
     public Color AccentColor => new(0.95f, 0.62f, 0.12f);
-    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.RoleScrambleWeight;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<Options.GEOptions>.Instance.RoleScrambleFrequency.Value;
     public float Duration => 5f;
 
     public bool CanOccur()

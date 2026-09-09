@@ -142,6 +142,7 @@ public sealed class Collector : CrewmateRole, INewModRole
         var gameObject = new GameObject($"CollectorFragment_{fragmentId}");
         gameObject.transform.position = new Vector3(x, y, -1f);
 
+        //TODO: Replace this with fragment sprite
         var line = gameObject.AddComponent<LineRenderer>();
         line.useWorldSpace = false;
         line.loop = true;

@@ -5,6 +5,7 @@ using HarmonyLib;
 using MiraAPI.GameModes;
 using MiraAPI.Roles;
 using NewMod.GameModes.WraithSiegeGamemode;
+using NewMod.RoleLogic;
 using NewMod.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities;
@@ -40,28 +41,26 @@ public static class InfoChatPatch
         if (!PlayerControl.LocalPlayer || !PlayerControl.LocalPlayer.Data || __instance.quickChatMenu.IsOpen || __instance.quickChatMenu.CanSend)
             return true;
 
-        var text = __instance.freeChatField.Text.Trim();
-        var parts = text.Split((char[])null, 2, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 0)
+        if (!InfoChatCommand.TryParse(__instance.freeChatField.Text, out var parsed))
             return true;
 
-        var command = parts[0].ToLowerInvariant();
-        if (command is not ("/help" or "/roles" or "/role" or "/r" or "/gamemodes" or "/gamemode" or "/factions" or "/faction"))
-            return true;
-
-        var query = parts.Length > 1 ? string.Concat(parts[1].Where(character => !char.IsWhiteSpace(character))) : "";
+        var command = parsed.Name;
+        var query = parsed.Query;
         string reply;
 
         if (command == "/help")
         {
-            reply = "/roles lists NewMod roles. /r <name> explains one role. /factions explains role styles. /gamemodes lists game modes.";
+            reply = "<color=#D96BFF>NewMod commands</color>\n/roles: list roles\n/r <name>: explain a role\n/factions: explain factions\n/gamemodes: list game modes";
         }
         else if (command is "/role" or "/r" or "/roles")
         {
             var roles = CustomRoleManager.CustomMiraRoles.Where(role => role.GetType().Assembly == typeof(InfoChatPatch).Assembly).OrderBy(role => role.RoleName).ToArray();
             if (command == "/roles" && query.Length == 0)
             {
-                reply = string.Join(", ", roles.Select(role => role.RoleName));
+                var crewmates = string.Join(", ", roles.Where(role => role.Team == ModdedRoleTeams.Crewmate).Select(role => role.RoleName));
+                var impostors = string.Join(", ", roles.Where(role => role.Team == ModdedRoleTeams.Impostor).Select(role => role.RoleName));
+                var neutrals = string.Join(", ", roles.Where(role => role.Team == ModdedRoleTeams.Custom).Select(role => role.RoleName));
+                reply = $"<color=#58E8BE>Crewmate:</color> {crewmates}\n<color=#FF4B4B>Impostor:</color> {impostors}\n<color=#D96BFF>Neutral:</color> {neutrals}\nUse /r <name> for details.";
             }
             else if (command is "/role" or "/r" && query.Length > 0)
             {
@@ -73,7 +72,7 @@ public static class InfoChatPatch
                 else
                 {
                     var heading = $"<color=#{ColorUtility.ToHtmlStringRGB(role.RoleColor)}>{role.RoleName}</color> ({(role.Team == ModdedRoleTeams.Custom ? "Neutral" : role.Team.ToString())})" + (role is INewModRole newModRole ? $" | {Utils.GetFactionDisplay(newModRole)}" : "");
-                    reply = $"{heading}\n{role.RoleLongDescription}";
+                    reply = $"{heading}\n{role.RoleDescription}";
                 }
             }
             else

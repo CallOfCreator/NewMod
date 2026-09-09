@@ -19,7 +19,7 @@ public class NoMansLandGE : IGeneralEvent
     public string Description => "ALL COMBAT AND ABILITIES ARE OFFLINE!";
     public LoadableAsset<Sprite> Icon => NewModAsset.NoMansLandIcon;
     public Color AccentColor => new(0.78f, 0.78f, 0.78f);
-    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.NoMansLandWeight;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<Options.GEOptions>.Instance.NoMansLandFrequency.Value;
     public float Duration => 20f;
 
     public void OnEventStart()

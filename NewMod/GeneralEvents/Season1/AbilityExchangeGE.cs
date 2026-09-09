@@ -21,7 +21,7 @@ public class AbilityExchangeGE : IGeneralEvent
     public string Description => "YOUR ABILITY HAS BEEN EXCHANGED!";
     public LoadableAsset<Sprite> Icon => NewModAsset.AbilityExchangeIcon;
     public Color AccentColor => new(0.55f, 0.24f, 1f);
-    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<global::NewMod.Options.GEOptions>.Instance.AbilityExchangeWeight;
+    public int OccurrenceChance => (int)MiraAPI.GameOptions.OptionGroupSingleton<Options.GEOptions>.Instance.AbilityExchangeFrequency.Value;
     public float Duration => 18f;
 
     public bool CanOccur()

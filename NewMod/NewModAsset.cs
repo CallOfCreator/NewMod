@@ -102,6 +102,7 @@ public static class NewModAsset
 
     // Shaders
     public static LoadableAsset<Shader> GlitchShader { get; } = new LoadableBundleAsset<Shader>("GlitchFullScreen.shader", Bundle);
+    public static LoadableAsset<Shader> GlitchScreenV2 { get; } = new LoadableBundleAsset<Shader>("GlitchFullScreenV2.shader", Bundle);
     public static LoadableAsset<Shader> EarthquakeShader { get; } = new LoadableBundleAsset<Shader>("EarthquakeFullScreen.shader", Bundle);
     public static LoadableAsset<Shader> SlowPulseHueShader { get; } = new LoadableBundleAsset<Shader>("SlowPulseHue.shader", Bundle);
     public static LoadableAsset<Shader> DistorationWaveShader { get; } = new LoadableBundleAsset<Shader>("DistorationWave.shader", Bundle);
@@ -111,6 +112,7 @@ public static class NewModAsset
     public static LoadableAsset<Shader> VoidwalkerVoidShader { get; } = new LoadableBundleAsset<Shader>("VoidwalkerVoid.shader", Bundle);
     public static LoadableAsset<Shader> NegativeRealityShader { get; } = new LoadableBundleAsset<Shader>("NegativeReality.shader", Bundle);
     public static LoadableAsset<Shader> ShatteredGlassShader { get; } = new LoadableBundleAsset<Shader>("ShatteredGlass.shader", Bundle);
+    public static LoadableAsset<Shader> EnergyThiefBreak { get; } = new LoadableBundleAsset<Shader>("EnergyThiefBreak.shader", Bundle);
 
     // Textures
     public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
@@ -126,6 +128,7 @@ public static class NewModAsset
     public static LoadableResourceAsset SystemOverrideIcon { get; } = new("NewMod.Resources.GeneralEvents.SystemOverride.png");
     public static LoadableResourceAsset AbilityExchangeIcon { get; } = new("NewMod.Resources.GeneralEvents.AbilityExchange.png");
     public static LoadableResourceAsset NoMansLandIcon { get; } = new("NewMod.Resources.GeneralEvents.NoMansLand.png");
+    public static LoadableResourceAsset ScrDesyncIcon { get; } = new("NewMod.Resources.GeneralEvents.ScrDesyncIcon.png");
 
     //Cosmetics
     public static LoadableResourceAsset OG_NewModHat { get; } = new("NewMod.Resources.Cosmetics.Hats.og_newmod.png");

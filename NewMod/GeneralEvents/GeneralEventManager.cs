@@ -139,8 +139,8 @@ public static class GeneralEventManager
                 yield break;
             }
 
-            var minimum = options.MinimumInterval;
-            var maximum = Mathf.Max(minimum, options.MaximumInterval);
+            var minimum = options.MinimumInterval.Value;
+            var maximum = Mathf.Max(minimum, options.MaximumInterval.Value);
 
             yield return new WaitForSeconds(Random.Range(minimum, maximum));
 
@@ -155,7 +155,7 @@ public static class GeneralEventManager
 
             if (MeetingHud.Instance || ExileController.Instance || CurrentEvent != null) continue;
 
-            if (Random.Range(0f, 100f) >= options.EventTriggerChance)
+            if (Random.Range(0f, 100f) >= options.EventTriggerChance.Value)
                 continue;
 
             var candidate = PickEvent();
