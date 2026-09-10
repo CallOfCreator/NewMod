@@ -66,19 +66,19 @@ namespace NewMod.Components
             {
                 var pos = npc.GetTruePosition();
                 var current = RoomPathfinding.GetCurrentRoom(pos);
-                NewMod.Instance.Log.LogMessage($"[NPC] pos={pos} room={(current ? current.name : "none")}");
+                Message($"[NPC] pos={pos} room={(current ? current.name : "none")}");
 
                 var target = RoomPathfinding.PickRandomOtherRoom(current);
                 if (!target)
                 {
-                    NewMod.Instance.Log.LogWarning("[NPC] no target room, waiting");
+                    Warning("[NPC] no target room, waiting");
                     npc.MyPhysics.SetNormalizedVelocity(Vector2.zero);
                     yield return new WaitForSeconds(stopTime);
                     continue;
                 }
 
                 var path = RoomPathfinding.FindRoomPath(current, target);
-                NewMod.Instance.Log.LogMessage($"[NPC] target={target.name} pathLen={path?.Count ?? 0}");
+                Message($"[NPC] target={target.name} pathLen={path?.Count ?? 0}");
 
                 if (path == null || path.Count == 0)
                 {
@@ -94,7 +94,7 @@ namespace NewMod.Components
                     if (!RoomPathfinding.TryPickWaypointInside(room.roomArea, out var wp))
                         wp = (Vector2)room.roomArea.bounds.center;
 
-                    NewMod.Instance.Log.LogMessage($"[NPC] moving to room={room.name} wp={wp}");
+                    Message($"[NPC] moving to room={room.name} wp={wp}");
 
                     float timer = 0f;
                     while (isActive && !MeetingHud.Instance &&
@@ -107,7 +107,7 @@ namespace NewMod.Components
                         if (timer >= runTime)
                         {
                             npc.MyPhysics.SetNormalizedVelocity(Vector2.zero);
-                            NewMod.Instance.Log.LogMessage($"[NPC] burst stop {stopTime}s");
+                            Message($"[NPC] burst stop {stopTime}s");
                             yield return new WaitForSeconds(stopTime);
                             timer = 0f;
                         }
@@ -116,7 +116,7 @@ namespace NewMod.Components
                     }
 
                     npc.MyPhysics.SetNormalizedVelocity(Vector2.zero);
-                    NewMod.Instance.Log.LogMessage($"[NPC] arrived {room.name}, visiting {stopTime}s");
+                    Message($"[NPC] arrived {room.name}, visiting {stopTime}s");
                     yield return new WaitForSeconds(stopTime);
                 }
             }

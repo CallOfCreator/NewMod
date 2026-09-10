@@ -127,7 +127,7 @@ public class OverloadButton : CustomActionButton, IEnergyAbility
     /// </summary>
     protected override void OnClick()
     {
-        NewMod.Instance.Log.LogError("Overload invoking absorbed action...");
+        Error("Overload invoking absorbed action...");
         absorbedOnClick?.Invoke();
     }
 

@@ -734,7 +734,7 @@ public static class Utils
         File.WriteAllBytes(filePath, screenshot.EncodeToPNG());
         Object.Destroy(screenshot);
         VisionaryUtilities.HasScreenshots = true;
-        NewMod.Instance.Log.LogInfo($"Saved screenshot: {Path.GetFileName(filePath)}.");
+        Info($"Saved screenshot: {Path.GetFileName(filePath)}.");
 
         yield return new WaitForEndOfFrame();
 

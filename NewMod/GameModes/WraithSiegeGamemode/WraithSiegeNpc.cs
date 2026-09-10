@@ -24,6 +24,8 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     public bool Active;
     public bool Delivering;
     public bool AtDeliverySlot;
+    
+    public WraithStatus status;
 
     private Vector2 _deliveryPoint;
 
@@ -70,6 +72,8 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
         noShadow.hitOverride = Visual.Collider;
 
         Active = true;
+        
+        status = WraithStatus.NotStarted;
 
         Coroutines.Start(CoMove());
     }
@@ -77,9 +81,10 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     [HideFromIl2Cpp]
     public void BeginDelivery(Vector2 point)
     {
-        Delivering = true;
-        AtDeliverySlot = false;
+        //Delivering = true;
+        //AtDeliverySlot = false;
         _deliveryPoint = point;
+        status = WraithStatus.Delivering;
     }
 
     [HideFromIl2Cpp]
@@ -87,7 +92,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     {
         while (Active)
         {
-            if (Delivering)
+            if (status == WraithStatus.Delivering)
             {
                 var delta = _deliveryPoint - (Vector2)Visual.transform.position;
 
@@ -95,7 +100,8 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
                 {
                     Body.velocity = Vector2.zero;
                     UpdateAnimation(Vector2.zero);
-                    AtDeliverySlot = true;
+                    //AtDeliverySlot = true;
+                    status = WraithStatus.Done;
                 }
                 else
                 {
@@ -187,5 +193,12 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
             Destroy(Visual.gameObject);
 
         Destroy(gameObject);
+    }
+    
+    public enum WraithStatus
+    {
+        NotStarted,
+        Delivering,
+        Done
     }
 }

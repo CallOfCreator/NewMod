@@ -26,7 +26,7 @@ public static class LaunchpadCompatibility
 
         if (player != null && Revenant.Phases.TryGetValue(player.PlayerId, out var phase) && phase == Revenant.Phase.Feigning)
         {
-            NewMod.Instance.Log.LogInfo($"Blocked Launchpad hack death on Revenant {player.Data.PlayerName}");
+            Info($"Blocked Launchpad hack death on Revenant {player.Data.PlayerName}");
             return false;
         }
 
@@ -54,7 +54,7 @@ public static class LaunchpadHackTextPatch
         if (player != null && hackedText != null && Revenant.Phases.TryGetValue(player.PlayerId, out var phase) && phase == Revenant.Phase.Feigning)
         {
             hackedText.SetText("");
-            Debug.Log($"hackedText: {hackedText.text}");
+            Debug($"hackedText: {hackedText.text}");
         }
     }
 }

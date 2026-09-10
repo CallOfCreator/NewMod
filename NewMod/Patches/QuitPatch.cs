@@ -11,7 +11,7 @@ public static class QuitPatch
     public static bool Prefix(Application __instance)
     {
         VisionaryUtilities.DeleteAllScreenshots();
-        NewMod.Instance.Log.LogMessage("Deleted all Visionary's screenshots Successfully");
+        Message("Deleted all Visionary's screenshots Successfully");
         Process.GetCurrentProcess().Kill();
         return false;
     }

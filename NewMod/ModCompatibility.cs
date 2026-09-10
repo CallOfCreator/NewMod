@@ -1,33 +1,48 @@
 using System;
 using System.Reflection;
 using BepInEx.Unity.IL2CPP;
+using HarmonyLib;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using NewMod.Cosmetics;
+using NewMod.Patches.Compatibility;
+using UnityEngine;
 
 namespace NewMod;
 
 public static class ModCompatibility
 {
-    public const string LaunchpadReloaded_GUID = "dev.xtracube.launchpad";
+    public static bool CorsacCosmeticsEnabled => Application.platform != RuntimePlatform.Android && IL2CPPChainloader.Instance.Plugins.ContainsKey(NewMod.CorsacPluginId);
 
     public static bool IsLaunchpadLoaded()
     {
-        return IL2CPPChainloader.Instance.Plugins.ContainsKey(LaunchpadReloaded_GUID);
+        return IL2CPPChainloader.Instance.Plugins.ContainsKey(NewMod.LaunchpadReloadedId);
     }
-
+    
     public static bool LaunchpadLoaded(out Assembly asm)
     {
         asm = null;
-        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(LaunchpadReloaded_GUID, out var lp)) return false;
+        if (!IL2CPPChainloader.Instance.Plugins.TryGetValue(NewMod.LaunchpadReloadedId, out var lp)) return false;
         asm = lp.Instance.GetType().Assembly;
         return asm != null;
     }
 
     public static void Initialize()
     {
-        if (!IsLaunchpadLoaded()) return;
-
-        NewMod.Instance.Log.LogMessage("LaunchpadReloaded detected. Enabling compatibility...");
+        if (CorsacCosmeticsEnabled)
+        {
+            CorsacCosmeticsIntegration.Initialize(NewMod.Harmony);
+            
+            Message("CorsacCosmetics detected. Enabling comsmetics...");
+        }
+        
+        if (IsLaunchpadLoaded())
+        {
+            NewMod.Harmony.PatchAll(typeof(LaunchpadCompatibility));
+            NewMod.Harmony.PatchAll(typeof(LaunchpadHackTextPatch));
+            
+            Message("LaunchpadReloaded detected. Enabling compatibility...");
+        }
     }
 
     public static void DisableRole(string roleName, string pluginGuid)
@@ -50,7 +65,7 @@ public static class ModCompatibility
                 }
                 catch (Exception e)
                 {
-                    NewMod.Instance.Log.LogError($"Failed to disable role '{roleName}': {e.Message}");
+                    Error($"Failed to disable role '{roleName}': {e.Message}");
                 }
         }
     }

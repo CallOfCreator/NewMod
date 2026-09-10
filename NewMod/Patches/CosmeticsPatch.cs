@@ -27,7 +27,7 @@ public static class NewModCosmeticTabsPatch
     [HarmonyPrepare]
     public static bool Prepare()
     {
-        return NewMod.CorsacCosmeticsEnabled;
+        return ModCompatibility.CorsacCosmeticsEnabled;
     }
 
     [HarmonyPatch(typeof(HatsTab), nameof(HatsTab.OnEnable))]

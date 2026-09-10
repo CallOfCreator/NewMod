@@ -22,7 +22,7 @@ public static class StartGamePatch
             if (hitman && revenant)
             {
                 if (settings.Compatibility == CompatibilityOptions.ModPriority.PreferNewMod)
-                    ModCompatibility.DisableRole("Hitman", ModCompatibility.LaunchpadReloaded_GUID);
+                    ModCompatibility.DisableRole("Hitman", NewMod.LaunchpadReloadedId);
                 else
                     ModCompatibility.DisableRole("Revenant", NewMod.Id);
             }

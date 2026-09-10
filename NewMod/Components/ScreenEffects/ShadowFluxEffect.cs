@@ -21,7 +21,7 @@ public class ShadowFluxEffect(IntPtr ptr) : MonoBehaviour(ptr)
         var shader = NewModAsset.ShadowFluxShader.LoadAsset();
         var texture = NewModAsset.NoiseTex.LoadAsset();
 
-        if (shader == null) NewMod.Instance.Log.LogError("ShadowFluxEffect - Shader null");
+        if (shader == null) Error("ShadowFluxEffect - Shader null");
 
         _mat = new Material(shader) { hideFlags = HideFlags.DontSave };
         _mat.SetTexture("_NoiseTex", texture);

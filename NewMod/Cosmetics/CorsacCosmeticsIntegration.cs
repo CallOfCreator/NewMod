@@ -39,7 +39,7 @@ internal static class CorsacCosmeticsIntegration
         var prefix = AccessTools.Method(typeof(CorsacCosmeticsIntegration), nameof(InjectCosmetics));
         harmony.Patch(original, new HarmonyMethod(prefix));
 
-        NewMod.Instance.Log.LogMessage("Registered NewMod cosmetics through Corsac Cosmetics");
+        Message("Registered NewMod cosmetics through Corsac Cosmetics");
     }
 
     private static void InjectCosmetics()

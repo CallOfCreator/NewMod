@@ -53,7 +53,7 @@ namespace NewMod.Patches
             }
             catch (Exception ex)
             {
-                NewMod.Instance.Log.LogError($"Failed saving custom stats: {ex}");
+                Error($"Failed saving custom stats: {ex}");
             }
         }
         public static void LoadCustomStats()

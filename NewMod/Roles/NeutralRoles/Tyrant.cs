@@ -213,11 +213,11 @@ public sealed class Tyrant : ImpostorRole, INewModRole
             }
             else
             {
-                NewMod.Instance.Log.LogMessage("No Tyrant in this match skipping...");
+                Message("No Tyrant in this match skipping...");
             }
         }
 
-        NewMod.Instance.Log.LogMessage("NO CRASH");
+        Message("NO CRASH");
     }
 
     [RegisterEvent]

@@ -44,7 +44,7 @@ public static class NewModDiscordPatch
         }
         catch (Exception e)
         {
-            NewMod.Instance.Log.LogError($"Discord RPC activity update failed: {e.Message}\n{e.StackTrace}");
+            Error($"Discord RPC activity update failed: {e.Message}\n{e.StackTrace}");
         }
     }
 }
