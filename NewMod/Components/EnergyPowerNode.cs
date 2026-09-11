@@ -8,8 +8,11 @@ namespace NewMod.Components;
 public sealed class EnergyPowerNode(nint ptr) : MonoBehaviour(ptr)
 {
     public static EnergyPowerNode Instance;
+    public static int RenderQueue = 4000;
+    public static string SpriteShader = "Sprites/Default";
 
     public SpriteRenderer _renderer;
+    public Material _material;
     public ArrowBehaviour _arrow;
     public Vector3 _baseScale;
     public bool _overcharged;
@@ -40,6 +43,12 @@ public sealed class EnergyPowerNode(nint ptr) : MonoBehaviour(ptr)
         _renderer = gameObject.AddComponent<SpriteRenderer>();
         _overcharged = EnergyThief.BreachActive;
         _renderer.sprite = (_overcharged ? NewModAsset.PowerNodeOvercharged : NewModAsset.PowerNodeActive).LoadAsset();
+        _material = new Material(Shader.Find(SpriteShader))
+        {
+            hideFlags = HideFlags.DontSave,
+            renderQueue = RenderQueue
+        };
+        _renderer.sharedMaterial = _material;
         _renderer.maskInteraction = SpriteMaskInteraction.None;
         _renderer.color = Color.white;
         _renderer.sortingLayerID = HudManager.Instance.ShadowQuad.sortingLayerID;
@@ -87,6 +96,9 @@ public sealed class EnergyPowerNode(nint ptr) : MonoBehaviour(ptr)
 
     public void OnDestroy()
     {
+        if (_material)
+            Destroy(_material);
+
         if (_arrow)
             Destroy(_arrow.gameObject);
 
