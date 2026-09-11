@@ -1,13 +1,11 @@
 using MiraAPI.Modifiers;
 using NewMod.Modifiers.S1;
 using NewMod.RoleLogic;
-using Reactor.Utilities.Attributes;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class ScrDesyncEffect(nint ptr) : MonoBehaviour(ptr)
+public class ScrDesyncEffect : ScreenEffect
 {
     public float duration = 24f;
     public float blockSize = 48f;
@@ -27,21 +25,15 @@ public class ScrDesyncEffect(nint ptr) : MonoBehaviour(ptr)
     public Color coldTint = new(0.08f, 0.78f, 1f, 1f);
     public Color blackTint = new(0.008f, 0.002f, 0.012f, 1f);
 
-    private Material _material;
-    private float _startedAt;
+    public float _startedAt;
 
-    public void OnEnable()
+    public override void Initialize()
     {
-        _material = new Material(NewModAsset.GlitchScreenV2.LoadAsset()) { hideFlags = HideFlags.DontSave };
+        _mat = new Material(NewModAsset.GlitchScreenV2.LoadAsset()) { hideFlags = HideFlags.DontSave };
         _startedAt = Time.time;
     }
 
-    public void OnDisable()
-    {
-        Destroy(_material);
-    }
-
-    public void OnRenderImage(RenderTexture source, RenderTexture destination)
+    public override void Render(RenderTexture source, RenderTexture destination)
     {
         if (MeetingHud.Instance || ExileController.Instance || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {
@@ -57,24 +49,24 @@ public class ScrDesyncEffect(nint ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        _material.SetFloat("_Intensity", frame.Intensity);
-        _material.SetFloat("_BlockSize", blockSize);
-        _material.SetFloat("_ColorSplit", colorSplit);
-        _material.SetFloat("_Scanline", scanline);
-        _material.SetFloat("_Speed", speed);
-        _material.SetFloat("_Burst", frame.Burst);
-        _material.SetFloat("_TearStrength", tearStrength);
-        _material.SetFloat("_Datamosh", datamosh);
-        _material.SetFloat("_EdgeGlitch", edgeGlitch);
-        _material.SetFloat("_SyncFailure", syncFailure);
-        _material.SetFloat("_Blackout", blackout);
-        _material.SetFloat("_FlashStrength", flashStrength);
-        _material.SetFloat("_VerticalTear", verticalTear);
-        _material.SetFloat("_MicroJitter", microJitter);
-        _material.SetFloat("_FreezeStrength", freezeStrength);
-        _material.SetColor("_CorruptTint", corruptTint);
-        _material.SetColor("_ColdTint", coldTint);
-        _material.SetColor("_BlackTint", blackTint);
-        Graphics.Blit(source, destination, _material);
+        _mat.SetFloat("_Intensity", frame.Intensity);
+        _mat.SetFloat("_BlockSize", blockSize);
+        _mat.SetFloat("_ColorSplit", colorSplit);
+        _mat.SetFloat("_Scanline", scanline);
+        _mat.SetFloat("_Speed", speed);
+        _mat.SetFloat("_Burst", frame.Burst);
+        _mat.SetFloat("_TearStrength", tearStrength);
+        _mat.SetFloat("_Datamosh", datamosh);
+        _mat.SetFloat("_EdgeGlitch", edgeGlitch);
+        _mat.SetFloat("_SyncFailure", syncFailure);
+        _mat.SetFloat("_Blackout", blackout);
+        _mat.SetFloat("_FlashStrength", flashStrength);
+        _mat.SetFloat("_VerticalTear", verticalTear);
+        _mat.SetFloat("_MicroJitter", microJitter);
+        _mat.SetFloat("_FreezeStrength", freezeStrength);
+        _mat.SetColor("_CorruptTint", corruptTint);
+        _mat.SetColor("_ColdTint", coldTint);
+        _mat.SetColor("_BlackTint", blackTint);
+        Graphics.Blit(source, destination, _mat);
     }
 }

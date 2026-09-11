@@ -1,11 +1,8 @@
-﻿using System;
-using Reactor.Utilities.Attributes;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class ShatteredGlassEffect(IntPtr ptr) : MonoBehaviour(ptr)
+public class ShatteredGlassEffect : ScreenEffect
 {
     public float damageAmount = 1f;
 
@@ -44,16 +41,14 @@ public class ShatteredGlassEffect(IntPtr ptr) : MonoBehaviour(ptr)
     public float globalDesaturate = 0.1f;
     public float alpha = 1f;
 
-    private Material _mat;
-
-    public void OnEnable()
+    public override void Initialize()
     {
         var shader = NewModAsset.ShatteredGlassShader.LoadAsset();
         var texture = NewModAsset.ShatteredGlassTexture.LoadAsset();
 
         if (!shader || !texture)
         {
-            enabled = false;
+            Active = false;
             return;
         }
 
@@ -61,15 +56,7 @@ public class ShatteredGlassEffect(IntPtr ptr) : MonoBehaviour(ptr)
         _mat.SetTexture("_CrackTex", texture);
     }
 
-    public void OnDisable()
-    {
-        if (_mat)
-            Destroy(_mat);
-
-        _mat = null;
-    }
-
-    public void OnRenderImage(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture src, RenderTexture dst)
     {
         if (!_mat)
         {

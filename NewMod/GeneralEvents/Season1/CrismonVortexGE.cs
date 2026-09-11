@@ -67,10 +67,10 @@ public class CrismonVortexGE : IGeneralEvent
         if (CrimsonVortexEscapeHud.Instance)
             CrimsonVortexEscapeHud.Instance.ForceHide();
 
-        var effect = Camera.main.GetComponent<CrimsonVortexEffect>();
+        var effect = Camera.main.GetScreenEffect<CrimsonVortexEffect>();
 
-        if (effect)
-            Object.Destroy(effect);
+        if (effect != null && effect.Active)
+            effect.Remove();
     }
 
     [MethodRpc((uint)CustomRPC.CrismonVortexPosition, LocalHandling = RpcLocalHandling.Before)]
@@ -80,7 +80,7 @@ public class CrismonVortexGE : IGeneralEvent
         PositionReady = true;
         StartedAt = Time.time;
 
-        if (!Camera.main.GetComponent<CrimsonVortexEffect>()) Camera.main.gameObject.AddComponent<CrimsonVortexEffect>();
+        if (Camera.main.GetScreenEffect<CrimsonVortexEffect>() == null) Camera.main.AddScreenEffect<CrimsonVortexEffect>();
     }
 
     [MethodRpc((uint)CustomRPC.CrismonVortexEscape, LocalHandling = RpcLocalHandling.After)]

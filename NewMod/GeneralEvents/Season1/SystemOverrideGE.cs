@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components.ScreenEffects;
@@ -27,8 +27,8 @@ public class SystemOverrideGE : IGeneralEvent
         Active = true;
 
         var cam = Camera.main;
-        if (cam && !cam.GetComponent<SystemOverrideEffect>())
-            cam.gameObject.AddComponent<SystemOverrideEffect>();
+        if (cam && cam.GetScreenEffect<SystemOverrideEffect>() == null)
+            cam.AddScreenEffect<SystemOverrideEffect>();
 
         if (AmongUsClient.Instance.AmHost) Coroutines.Start(CoOverrideSystems());
     }
@@ -43,9 +43,9 @@ public class SystemOverrideGE : IGeneralEvent
         if (!cam)
             return;
 
-        var effect = cam.GetComponent<SystemOverrideEffect>();
-        if (effect)
-            Object.Destroy(effect);
+        var effect = cam.GetScreenEffect<SystemOverrideEffect>();
+        if (effect != null && effect.Active)
+            effect.Remove();
     }
 
     public IEnumerator CoOverrideSystems()

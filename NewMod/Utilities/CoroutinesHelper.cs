@@ -408,21 +408,7 @@ public static class CoroutinesHelper
     {
         yield return new WaitForSeconds(duration);
 
-        if (cam.TryGetComponent<EarthquakeEffect>(out var eq))
-            Object.Destroy(eq);
-        if (cam.TryGetComponent<GlitchEffect>(out var ge))
-            Object.Destroy(ge);
-        if (cam.TryGetComponent<SlowPulseHueEffect>(out var hue))
-            Object.Destroy(hue);
-        if (cam.TryGetComponent<DistorationWaveEffect>(out var dw))
-            Object.Destroy(dw);
-        if (cam.TryGetComponent<ShadowFluxEffect>(out var sf))
-            Object.Destroy(sf);
-        if (cam.TryGetComponent<CrimsonVortexEffect>(out var cv))
-            Object.Destroy(cv);
-        if (cam.TryGetComponent<NegativeRealityEffect>(out var nr))
-            Object.Destroy(nr);
-        if (cam.TryGetComponent<ShatteredGlassEffect>(out var sg))
-            Object.Destroy(sg);
+        if (cam && cam.TryGetComponent<ScreenEffectSystem>(out var effects))
+            effects.Clear();
     }
 }

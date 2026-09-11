@@ -1,4 +1,4 @@
-﻿using MiraAPI.Hud;
+using MiraAPI.Hud;
 using NewMod.Utilities;
 using UnityEngine;
 
@@ -9,8 +9,7 @@ public class MatchTab : IDebugTab
     public string Name => "MATCH";
     public bool ShouldShow => ShipStatus.Instance != null && PlayerControl.LocalPlayer;
 
-    private float _zoom;
-    private bool _forceSeasons;
+    public float _zoom;
 
     public void BuildGUI()
     {
@@ -78,15 +77,7 @@ public class MatchTab : IDebugTab
             GUILayout.Label("No active meeting");
         }
 
-        bool prevSeasons = _forceSeasons;
-
-        _forceSeasons = GUILayout.Toggle(_forceSeasons, "Force Seasons");
-
-        if (_forceSeasons != prevSeasons)
-        {
-            NewMod.ForceEnableAllSeasons.Value = _forceSeasons;
-        }
-        
-        GUILayout.Label($"Force all seasons: {(NewMod.ForceEnableAllSeasons.Value ? "ON" : "OFF")}");
+        if (GUILayout.Button($"Force all seasons: {(NewMod.ForceEnableAllSeasons.Value ? "ON" : "OFF")}"))
+            NewMod.ForceEnableAllSeasons.Value = !NewMod.ForceEnableAllSeasons.Value;
     }
 }

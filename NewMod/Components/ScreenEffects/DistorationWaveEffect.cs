@@ -1,11 +1,8 @@
-using System;
-using Reactor.Utilities.Attributes;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class DistorationWaveEffect(IntPtr ptr) : MonoBehaviour(ptr)
+public class DistorationWaveEffect : ScreenEffect
 {
     public float amplitude = 0.05f;
     public float frequency = 5f;
@@ -14,27 +11,21 @@ public class DistorationWaveEffect(IntPtr ptr) : MonoBehaviour(ptr)
     public float falloff = 1f;
     public Vector2 center = new(0.5f, 0.5f);
     public Color tint = Color.white;
-    public float expiresAt;
-    public Material _mat;
-    private readonly Shader _shader = NewModAsset.DistorationWaveShader.LoadAsset();
+    public float expiresAt = float.PositiveInfinity;
+    public Shader _shader = NewModAsset.DistorationWaveShader.LoadAsset();
 
-    public void OnEnable()
+    public override void Initialize()
     {
         _mat = new Material(_shader) { hideFlags = HideFlags.DontSave };
     }
 
-    public void OnDisable()
-    {
-        Destroy(_mat);
-    }
-
-    public void Update()
+    public override void Tick()
     {
         if (Time.time >= expiresAt)
-            Destroy(this);
+            Remove();
     }
 
-    public void OnRenderImage(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture src, RenderTexture dst)
     {
         _mat.SetFloat("_Amplitude", amplitude);
         _mat.SetFloat("_Frequency", frequency);

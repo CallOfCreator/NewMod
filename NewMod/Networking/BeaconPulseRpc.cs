@@ -33,7 +33,7 @@ public class BeaconPulseRpc : PlayerCustomRpc<NewMod, BeaconPulseRpc.Data>
         if (!cam)
             return;
 
-        var effect = cam.GetComponent<DistorationWaveEffect>() ?? cam.gameObject.AddComponent<DistorationWaveEffect>();
+        var effect = cam.GetScreenEffect<DistorationWaveEffect>() ?? cam.AddScreenEffect<DistorationWaveEffect>();
         effect.expiresAt = Time.time + data.Duration;
         Beacon.pulseUntil = Time.time + data.Duration;
 

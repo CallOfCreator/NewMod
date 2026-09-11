@@ -54,14 +54,14 @@ public class InVoid : BaseModifier
             }
             else if (cam)
             {
-                var oldTransition = cam.GetComponent<VoidwalkerTransitionEffect>();
+                var oldTransition = cam.GetScreenEffect<VoidwalkerTransitionEffect>();
 
-                if (oldTransition)
-                    Object.Destroy(oldTransition);
+                if (oldTransition != null && oldTransition.Active)
+                    oldTransition.Remove();
 
-                var voidEffect = cam.GetComponent<VoidwalkerVoidEffect>() ?? cam.gameObject.AddComponent<VoidwalkerVoidEffect>();
+                var voidEffect = cam.GetScreenEffect<VoidwalkerVoidEffect>() ?? cam.AddScreenEffect<VoidwalkerVoidEffect>();
 
-                var transition = cam.gameObject.AddComponent<VoidwalkerTransitionEffect>();
+                var transition = cam.AddScreenEffect<VoidwalkerTransitionEffect>();
 
                 voidEffect.amount = 0f;
                 transition.SetEnter(0f);
@@ -90,11 +90,11 @@ public class InVoid : BaseModifier
             else
             {
                 var cam = Camera.main;
-                var voidEffect = cam.GetComponent<VoidwalkerVoidEffect>();
+                var voidEffect = cam.GetScreenEffect<VoidwalkerVoidEffect>();
 
-                var transition = cam.GetComponent<VoidwalkerTransitionEffect>();
+                var transition = cam.GetScreenEffect<VoidwalkerTransitionEffect>();
 
-                if (!transition) transition = cam.gameObject.AddComponent<VoidwalkerTransitionEffect>();
+                if (transition == null || !transition.Active) transition = cam.AddScreenEffect<VoidwalkerTransitionEffect>();
 
                 transition.SetExit(0f);
 
@@ -128,10 +128,10 @@ public class InVoid : BaseModifier
 
             if (Application.platform == RuntimePlatform.Android)
                 HudManager.Instance.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f * easedProgress);
-            else if (voidEffect)
+            else if (voidEffect != null && voidEffect.Active)
                 voidEffect.amount = easedProgress;
 
-            if (transition)
+            if (transition != null && transition.Active)
                 transition.SetEnter(progress);
 
             yield return null;
@@ -142,11 +142,11 @@ public class InVoid : BaseModifier
 
         if (Application.platform == RuntimePlatform.Android)
             HudManager.Instance.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f);
-        else if (voidEffect)
+        else if (voidEffect != null && voidEffect.Active)
             voidEffect.amount = 1f;
 
-        if (transition)
-            Object.Destroy(transition);
+        if (transition != null && transition.Active)
+            transition.Remove();
     }
 
     private IEnumerator CoExitVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
@@ -164,10 +164,10 @@ public class InVoid : BaseModifier
 
             if (Application.platform == RuntimePlatform.Android)
                 HudManager.Instance.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f * easedProgress);
-            else if (voidEffect)
+            else if (voidEffect != null && voidEffect.Active)
                 voidEffect.amount = easedProgress;
 
-            if (transition)
+            if (transition != null && transition.Active)
                 transition.SetExit(progress);
 
             yield return null;
@@ -181,11 +181,11 @@ public class InVoid : BaseModifier
             fullScreen.transform.localPosition = new Vector3(0f, 0f, -500f);
         }
 
-        if (transition)
-            Object.Destroy(transition);
+        if (transition != null && transition.Active)
+            transition.Remove();
 
-        if (voidEffect)
-            Object.Destroy(voidEffect);
+        if (voidEffect != null && voidEffect.Active)
+            voidEffect.Remove();
     }
 
     [RegisterEvent]

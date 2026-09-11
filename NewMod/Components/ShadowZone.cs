@@ -39,7 +39,7 @@ public class ShadowZone(IntPtr ptr) : MonoBehaviour(ptr)
 
         if (timer >= duration)
         {
-            Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 0f));
+            Camera.main.GetScreenEffect<ShadowFluxEffect>()?.Remove();
 
             if (active && lp.PlayerId == shadeId)
             {
@@ -69,7 +69,7 @@ public class ShadowZone(IntPtr ptr) : MonoBehaviour(ptr)
 
         if (inside && !active)
         {
-            cam.gameObject.AddComponent<ShadowFluxEffect>();
+            cam.AddScreenEffect<ShadowFluxEffect>();
 
             if (lp.PlayerId == shadeId && lp.Data.Role is Shade)
             {
@@ -111,7 +111,7 @@ public class ShadowZone(IntPtr ptr) : MonoBehaviour(ptr)
         }
         else if (!inside && active)
         {
-            Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(cam, 0f));
+            cam.GetScreenEffect<ShadowFluxEffect>()?.Remove();
 
             if (lp.PlayerId == shadeId)
             {

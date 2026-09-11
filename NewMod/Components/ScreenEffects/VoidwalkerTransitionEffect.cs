@@ -1,11 +1,8 @@
-﻿using System;
-using Reactor.Utilities.Attributes;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class VoidwalkerTransitionEffect(IntPtr ptr) : MonoBehaviour(ptr)
+public class VoidwalkerTransitionEffect : ScreenEffect
 {
     public float progress;
     public bool exitMode;
@@ -20,30 +17,20 @@ public class VoidwalkerTransitionEffect(IntPtr ptr) : MonoBehaviour(ptr)
     public float glowStrength = 1.8f;
     public float flashStrength = 0.55f;
 
-    private Material _mat;
-
-    public void OnEnable()
+    public override void Initialize()
     {
         var shader = NewModAsset.VoidwalkerTransitionVoid.LoadAsset();
 
         if (!shader)
         {
-            enabled = false;
+            Active = false;
             return;
         }
 
         _mat = new Material(shader) { hideFlags = HideFlags.DontSave };
     }
 
-    public void OnDisable()
-    {
-        if (_mat)
-            Destroy(_mat);
-
-        _mat = null;
-    }
-
-    public void OnRenderImage(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture src, RenderTexture dst)
     {
         if (!_mat)
         {

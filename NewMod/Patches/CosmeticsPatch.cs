@@ -7,6 +7,7 @@ using HarmonyLib;
 using Innersloth.Assets;
 using MiraAPI.Utilities.Assets;
 using NewMod.Achievements;
+using NewMod.Cosmetics;
 using Reactor.Utilities;
 using Reactor.Utilities.Extensions;
 using TMPro;
@@ -20,9 +21,9 @@ namespace NewMod.Patches;
 [HarmonyPatch]
 public static class NewModCosmeticTabsPatch
 {
-    private static int HatPage;
-    private static int VisorPage;
-    private static int NameplatePage;
+    public static int HatPage;
+    public static int VisorPage;
+    public static int NameplatePage;
 
     [HarmonyPrepare]
     public static bool Prepare()
@@ -44,12 +45,12 @@ public static class NewModCosmeticTabsPatch
         SetupButtons(__instance, () =>
         {
             HatPage--;
-            if (HatPage < 0) HatPage = CosmeticsLoader.Instance.HatGroups.Count;
+            if (HatPage < 0) HatPage = CosmeticsCatalog.Instance.HatGroups.Count;
             GenerateHats(__instance);
         }, () =>
         {
             HatPage++;
-            if (HatPage > CosmeticsLoader.Instance.HatGroups.Count) HatPage = 0;
+            if (HatPage > CosmeticsCatalog.Instance.HatGroups.Count) HatPage = 0;
             GenerateHats(__instance);
         });
 
@@ -61,7 +62,7 @@ public static class NewModCosmeticTabsPatch
     [HarmonyPrefix]
     public static bool HatsClickEquip(HatsTab __instance)
     {
-        return __instance.GetCurrentProdID() != Names.Normalize("og_newmod", "hat", "newmod") || PreseasonAchievementsTab.ThreeInARow.Unlocked;
+        return __instance.GetCurrentProdID() != NewModCosmeticsRegistry.HatIds["og_newmod"] || PreseasonAchievementsTab.ThreeInARow.Unlocked;
     }
 
     [HarmonyPatch(typeof(VisorsTab), nameof(VisorsTab.OnEnable))]
@@ -78,12 +79,12 @@ public static class NewModCosmeticTabsPatch
         SetupButtons(__instance, () =>
         {
             VisorPage--;
-            if (VisorPage < 0) VisorPage = CosmeticsLoader.Instance.VisorGroups.Count;
+            if (VisorPage < 0) VisorPage = CosmeticsCatalog.Instance.VisorGroups.Count;
             GenerateVisors(__instance);
         }, () =>
         {
             VisorPage++;
-            if (VisorPage > CosmeticsLoader.Instance.VisorGroups.Count) VisorPage = 0;
+            if (VisorPage > CosmeticsCatalog.Instance.VisorGroups.Count) VisorPage = 0;
             GenerateVisors(__instance);
         });
 
@@ -101,12 +102,12 @@ public static class NewModCosmeticTabsPatch
         SetupButtons(__instance, () =>
         {
             NameplatePage--;
-            if (NameplatePage < 0) NameplatePage = CosmeticsLoader.Instance.NameplateGroups.Count;
+            if (NameplatePage < 0) NameplatePage = CosmeticsCatalog.Instance.NameplateGroups.Count;
             GenerateNameplates(__instance);
         }, () =>
         {
             NameplatePage++;
-            if (NameplatePage > CosmeticsLoader.Instance.NameplateGroups.Count) NameplatePage = 0;
+            if (NameplatePage > CosmeticsCatalog.Instance.NameplateGroups.Count) NameplatePage = 0;
             GenerateNameplates(__instance);
         });
 
@@ -121,14 +122,14 @@ public static class NewModCosmeticTabsPatch
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             NameplatePage--;
-            if (NameplatePage < 0) NameplatePage = CosmeticsLoader.Instance.NameplateGroups.Count;
+            if (NameplatePage < 0) NameplatePage = CosmeticsCatalog.Instance.NameplateGroups.Count;
             GenerateNameplates(__instance);
         }
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             NameplatePage++;
-            if (NameplatePage > CosmeticsLoader.Instance.NameplateGroups.Count) NameplatePage = 0;
+            if (NameplatePage > CosmeticsCatalog.Instance.NameplateGroups.Count) NameplatePage = 0;
             GenerateNameplates(__instance);
         }
     }
@@ -140,14 +141,14 @@ public static class NewModCosmeticTabsPatch
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             HatPage--;
-            if (HatPage < 0) HatPage = CosmeticsLoader.Instance.HatGroups.Count;
+            if (HatPage < 0) HatPage = CosmeticsCatalog.Instance.HatGroups.Count;
             GenerateHats(__instance);
         }
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             HatPage++;
-            if (HatPage > CosmeticsLoader.Instance.HatGroups.Count) HatPage = 0;
+            if (HatPage > CosmeticsCatalog.Instance.HatGroups.Count) HatPage = 0;
             GenerateHats(__instance);
         }
     }
@@ -159,14 +160,14 @@ public static class NewModCosmeticTabsPatch
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             VisorPage--;
-            if (VisorPage < 0) VisorPage = CosmeticsLoader.Instance.VisorGroups.Count;
+            if (VisorPage < 0) VisorPage = CosmeticsCatalog.Instance.VisorGroups.Count;
             GenerateVisors(__instance);
         }
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             VisorPage++;
-            if (VisorPage > CosmeticsLoader.Instance.VisorGroups.Count) VisorPage = 0;
+            if (VisorPage > CosmeticsCatalog.Instance.VisorGroups.Count) VisorPage = 0;
             GenerateVisors(__instance);
         }
     }
@@ -182,17 +183,15 @@ public static class NewModCosmeticTabsPatch
         var title = tab.transform.FindChild("Text").GetComponent<TextMeshPro>();
         title.GetComponent<TextTranslatorTMP>()?.DestroyImmediate();
 
-        var pageCount = CosmeticsLoader.Instance.HatGroups.Count + 1;
-        title.text = HatPage == 0 ? $"Hats ({HatPage + 1}/{pageCount})" : $"{CosmeticsLoader.Instance.HatGroups.GetGroupNameByIndex(HatPage - 1)} ({HatPage + 1}/{pageCount})";
-        var ogNewModHatId = Names.Normalize("og_newmod", "hat", "newmod");
+        var pageCount = CosmeticsCatalog.Instance.HatGroups.Count + 1;
+        title.text = HatPage == 0 ? $"Hats ({HatPage + 1}/{pageCount})" : $"{CosmeticsCatalog.Instance.HatGroups.GetGroupNameByIndex(HatPage - 1)} ({HatPage + 1}/{pageCount})";
+        var ogNewModHatId = NewModCosmeticsRegistry.HatIds["og_newmod"];
 
         var hats = HatManager.Instance.GetUnlockedHats().Where(h =>
         {
-            if (HatPage == 0) return !h.ProductId.StartsWith("corsac");
-            if (!h.ProductId.StartsWith("corsac")) return false;
-
-            var group = Names.GetGroup(h.ProductId);
-            return group == CosmeticsLoader.Instance.HatGroups.GetGroupIdByIndex(HatPage - 1);
+            var descriptor = CosmeticsCatalog.Instance.Get(h.ProductId);
+            if (HatPage == 0) return descriptor == null;
+            return descriptor != null && descriptor.GroupId == CosmeticsCatalog.Instance.HatGroups.GetGroupIdByIndex(HatPage - 1);
         }).ToArray();
 
         tab.currentHat = HatManager.Instance.GetHatById(DataManager.Player.Customization.Hat);
@@ -245,16 +244,14 @@ public static class NewModCosmeticTabsPatch
         var title = tab.transform.FindChild("Text").GetComponent<TextMeshPro>();
         title.GetComponent<TextTranslatorTMP>()?.DestroyImmediate();
 
-        var pageCount = CosmeticsLoader.Instance.VisorGroups.Count + 1;
-        title.text = VisorPage == 0 ? $"Visors ({VisorPage + 1}/{pageCount})" : $"{CosmeticsLoader.Instance.VisorGroups.GetGroupNameByIndex(VisorPage - 1)} ({VisorPage + 1}/{pageCount})";
+        var pageCount = CosmeticsCatalog.Instance.VisorGroups.Count + 1;
+        title.text = VisorPage == 0 ? $"Visors ({VisorPage + 1}/{pageCount})" : $"{CosmeticsCatalog.Instance.VisorGroups.GetGroupNameByIndex(VisorPage - 1)} ({VisorPage + 1}/{pageCount})";
 
         var visors = HatManager.Instance.GetUnlockedVisors().Where(v =>
         {
-            if (VisorPage == 0) return !v.ProductId.StartsWith("corsac");
-            if (!v.ProductId.StartsWith("corsac")) return false;
-
-            var group = Names.GetGroup(v.ProductId);
-            return group == CosmeticsLoader.Instance.VisorGroups.GetGroupIdByIndex(VisorPage - 1);
+            var descriptor = CosmeticsCatalog.Instance.Get(v.ProductId);
+            if (VisorPage == 0) return descriptor == null;
+            return descriptor != null && descriptor.GroupId == CosmeticsCatalog.Instance.VisorGroups.GetGroupIdByIndex(VisorPage - 1);
         }).ToArray();
 
         tab.visorId = DataManager.Player.Customization.Visor;
@@ -313,16 +310,14 @@ public static class NewModCosmeticTabsPatch
         var title = tab.transform.FindChild("Text").GetComponent<TextMeshPro>();
         title.GetComponent<TextTranslatorTMP>()?.DestroyImmediate();
 
-        var pageCount = CosmeticsLoader.Instance.NameplateGroups.Count + 1;
-        title.text = NameplatePage == 0 ? $"Nameplates ({NameplatePage + 1}/{pageCount})" : $"{CosmeticsLoader.Instance.NameplateGroups.GetGroupNameByIndex(NameplatePage - 1)} ({NameplatePage + 1}/{pageCount})";
+        var pageCount = CosmeticsCatalog.Instance.NameplateGroups.Count + 1;
+        title.text = NameplatePage == 0 ? $"Nameplates ({NameplatePage + 1}/{pageCount})" : $"{CosmeticsCatalog.Instance.NameplateGroups.GetGroupNameByIndex(NameplatePage - 1)} ({NameplatePage + 1}/{pageCount})";
 
         var plates = HatManager.Instance.GetUnlockedNamePlates().Where(p =>
         {
-            if (NameplatePage == 0) return !p.ProductId.StartsWith("corsac");
-            if (!p.ProductId.StartsWith("corsac")) return false;
-
-            var group = Names.GetGroup(p.ProductId);
-            return group == CosmeticsLoader.Instance.NameplateGroups.GetGroupIdByIndex(NameplatePage - 1);
+            var descriptor = CosmeticsCatalog.Instance.Get(p.ProductId);
+            if (NameplatePage == 0) return descriptor == null;
+            return descriptor != null && descriptor.GroupId == CosmeticsCatalog.Instance.NameplateGroups.GetGroupIdByIndex(NameplatePage - 1);
         }).ToArray();
 
         tab.plateId = DataManager.Player.Customization.NamePlate;

@@ -1,13 +1,10 @@
-using System;
-using Reactor.Utilities.Attributes;
 using MiraAPI.Modifiers;
 using NewMod.Modifiers.S1;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class NegativeRealityEffect(IntPtr ptr) : MonoBehaviour(ptr)
+public class NegativeRealityEffect : ScreenEffect
 {
     public float amount = 1f;
     public float invertStrength = 1f;
@@ -42,31 +39,20 @@ public class NegativeRealityEffect(IntPtr ptr) : MonoBehaviour(ptr)
     public float chromaticOffset = 0.0035f;
     public float scanlineStrength = 0.08f;
 
-    public Material _mat;
-
-    public void OnEnable()
+    public override void Initialize()
     {
         var shader = NewModAsset.NegativeRealityShader.LoadAsset();
 
         if (shader == null)
         {
-            enabled = false;
+            Active = false;
             return;
         }
 
         _mat = new Material(shader) { hideFlags = HideFlags.DontSave };
     }
 
-    public void OnDisable()
-    {
-        if (_mat != null)
-        {
-            Destroy(_mat);
-            _mat = null;
-        }
-    }
-
-    public void OnRenderImage(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture src, RenderTexture dst)
     {
         if (_mat == null || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {

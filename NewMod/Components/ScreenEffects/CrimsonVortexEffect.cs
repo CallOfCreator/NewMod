@@ -3,13 +3,11 @@ using MiraAPI.Modifiers;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options;
-using Reactor.Utilities.Attributes;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class CrimsonVortexEffect(nint ptr) : MonoBehaviour(ptr)
+public class CrimsonVortexEffect : ScreenEffect
 {
     public Color tint = new(0.85f, 0.015f, 0.025f, 1f);
     public Color hotTint = new(1f, 0.18f, 0.055f, 1f);
@@ -45,11 +43,10 @@ public class CrimsonVortexEffect(nint ptr) : MonoBehaviour(ptr)
     public float leadingEdgeStrength = 2.2f;
 
     public Camera _camera;
-    public Material _mat;
 
-    public void OnEnable()
+    public override void Initialize()
     {
-        _camera = GetComponent<Camera>();
+        _camera = Owner.GetComponent<Camera>();
 
         var shader = NewModAsset.CrismonVortexShader.LoadAsset();
 
@@ -57,7 +54,7 @@ public class CrimsonVortexEffect(nint ptr) : MonoBehaviour(ptr)
 
         if (!shader || !texture)
         {
-            enabled = false;
+            Active = false;
             return;
         }
 
@@ -66,15 +63,7 @@ public class CrimsonVortexEffect(nint ptr) : MonoBehaviour(ptr)
         _mat.SetTexture("_CrimsonTex", texture.texture);
     }
 
-    public void OnDisable()
-    {
-        if (_mat)
-            Destroy(_mat);
-
-        _mat = null;
-    }
-
-    public void OnRenderImage(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture src, RenderTexture dst)
     {
         if (!_mat || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {

@@ -9,10 +9,10 @@ public sealed class EnergyPowerNode(nint ptr) : MonoBehaviour(ptr)
 {
     public static EnergyPowerNode Instance;
 
-    private SpriteRenderer _renderer;
-    private ArrowBehaviour _arrow;
-    private Vector3 _baseScale;
-    private bool _overcharged;
+    public SpriteRenderer _renderer;
+    public ArrowBehaviour _arrow;
+    public Vector3 _baseScale;
+    public bool _overcharged;
 
     public static void Create()
     {
@@ -40,7 +40,7 @@ public sealed class EnergyPowerNode(nint ptr) : MonoBehaviour(ptr)
         _renderer = gameObject.AddComponent<SpriteRenderer>();
         _overcharged = EnergyThief.BreachActive;
         _renderer.sprite = (_overcharged ? NewModAsset.PowerNodeOvercharged : NewModAsset.PowerNodeActive).LoadAsset();
-        _renderer.sharedMaterial = DestroyableSingleton<HatManager>.Instance.DefaultShader;
+        _renderer.maskInteraction = SpriteMaskInteraction.None;
         _renderer.color = Color.white;
         _renderer.sortingLayerID = HudManager.Instance.ShadowQuad.sortingLayerID;
         _renderer.sortingOrder = HudManager.Instance.ShadowQuad.sortingOrder + 1;

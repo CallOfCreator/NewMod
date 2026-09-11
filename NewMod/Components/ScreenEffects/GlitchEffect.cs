@@ -1,31 +1,22 @@
-using System;
-using Reactor.Utilities.Attributes;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class GlitchEffect(IntPtr ptr) : MonoBehaviour(ptr)
+public class GlitchEffect : ScreenEffect
 {
     public float intensity = 0.45f;
     public float blockSize = 64f;
     public float colorSplit = 1.2f;
     public float scanline = 0.15f;
     public float speed = 4f;
-    public Material _mat;
-    private readonly Shader _shader = NewModAsset.GlitchShader.LoadAsset();
+    public Shader _shader = NewModAsset.GlitchShader.LoadAsset();
 
-    public void OnEnable()
+    public override void Initialize()
     {
         _mat = new Material(_shader) { hideFlags = HideFlags.DontSave };
     }
 
-    public void OnDisable()
-    {
-        Destroy(_mat);
-    }
-
-    public void OnRenderImage(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture src, RenderTexture dst)
     {
         _mat.SetFloat("_Intensity", intensity);
         _mat.SetFloat("_BlockSize", blockSize);

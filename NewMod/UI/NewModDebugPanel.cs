@@ -225,16 +225,16 @@ public static class NewModDebugPanel
     private static VNode EffectsPage()
     {
         var camera = Camera.main;
-        var glitch = camera.GetComponent<GlitchEffect>();
-        var distortion = camera.GetComponent<DistorationWaveEffect>();
-        var flux = camera.GetComponent<ShadowFluxEffect>();
+        var glitch = camera.GetScreenEffect<GlitchEffect>();
+        var distortion = camera.GetScreenEffect<DistorationWaveEffect>();
+        var flux = camera.GetScreenEffect<ShadowFluxEffect>();
         var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Energy breach", PlayEnergyThiefBreak, false), ("Glitch", AddEffect<GlitchEffect>, false), ("Earthquake", AddEffect<EarthquakeEffect>, false), ("Pulse hue", AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", AddEffect<DistorationWaveEffect>, false), ("Shadow flux", AddEffect<ShadowFluxEffect>, false), ("Negative reality", AddEffect<NegativeRealityEffect>, false), ("Shattered glass", AddEffect<ShatteredGlassEffect>, false), ("Glitch V2", AddEffect<ScrDesyncEffect>, false), ("Remove all", RemoveEffects, true))) };
 
-        if (glitch) sections.Add(Section("GLITCH", EffectSlider("Intensity", glitch.intensity, value => glitch.intensity = value, 0f, 1f), EffectSlider("Block size", glitch.blockSize, value => glitch.blockSize = value, 8f, 128f), EffectSlider("Colour split", glitch.colorSplit, value => glitch.colorSplit = value, 0f, 3f), EffectSlider("Speed", glitch.speed, value => glitch.speed = value, 0f, 10f)));
+        if (glitch != null && glitch.Active) sections.Add(Section("GLITCH", EffectSlider("Intensity", glitch.intensity, value => glitch.intensity = value, 0f, 1f), EffectSlider("Block size", glitch.blockSize, value => glitch.blockSize = value, 8f, 128f), EffectSlider("Colour split", glitch.colorSplit, value => glitch.colorSplit = value, 0f, 3f), EffectSlider("Speed", glitch.speed, value => glitch.speed = value, 0f, 10f)));
 
-        if (distortion) sections.Add(Section("DISTORTION WAVE", EffectSlider("Amplitude", distortion.amplitude, value => distortion.amplitude = value, 0f, 0.25f), EffectSlider("Frequency", distortion.frequency, value => distortion.frequency = value, 0f, 12f), EffectSlider("Speed", distortion.speed, value => distortion.speed = value, 0f, 5f), EffectSlider("Radius", distortion.radius, value => distortion.radius = value, 0f, 1f), EffectSlider("Falloff", distortion.falloff, value => distortion.falloff = value, 0f, 5f)));
+        if (distortion != null && distortion.Active) sections.Add(Section("DISTORTION WAVE", EffectSlider("Amplitude", distortion.amplitude, value => distortion.amplitude = value, 0f, 0.25f), EffectSlider("Frequency", distortion.frequency, value => distortion.frequency = value, 0f, 12f), EffectSlider("Speed", distortion.speed, value => distortion.speed = value, 0f, 5f), EffectSlider("Radius", distortion.radius, value => distortion.radius = value, 0f, 1f), EffectSlider("Falloff", distortion.falloff, value => distortion.falloff = value, 0f, 5f)));
 
-        if (flux) sections.Add(Section("SHADOW FLUX", EffectSlider("Noise scale", flux.noiseScale, value => flux.noiseScale = value, 0f, 5f), EffectSlider("Speed", flux.speed, value => flux.speed = value, 0f, 3f), EffectSlider("Edge width", flux.edgeWidth, value => flux.edgeWidth = value, 0f, 1f), EffectSlider("Threshold", flux.threshold, value => flux.threshold = value, 0f, 1f), EffectSlider("Opacity", flux.opacity, value => flux.opacity = value, 0f, 1f), EffectSlider("Darkness", flux.darkness, value => flux.darkness = value, 0f, 1f)));
+        if (flux != null && flux.Active) sections.Add(Section("SHADOW FLUX", EffectSlider("Noise scale", flux.noiseScale, value => flux.noiseScale = value, 0f, 5f), EffectSlider("Speed", flux.speed, value => flux.speed = value, 0f, 3f), EffectSlider("Edge width", flux.edgeWidth, value => flux.edgeWidth = value, 0f, 1f), EffectSlider("Threshold", flux.threshold, value => flux.threshold = value, 0f, 1f), EffectSlider("Opacity", flux.opacity, value => flux.opacity = value, 0f, 1f), EffectSlider("Darkness", flux.darkness, value => flux.darkness = value, 0f, 1f)));
 
         return Div(ClassName("nm-debug-stack"), sections);
     }
@@ -305,20 +305,19 @@ public static class NewModDebugPanel
             meeting.CmdCastVote(PlayerControl.LocalPlayer.PlayerId, target.PlayerId);
     }
 
-    private static void AddEffect<T>() where T : MonoBehaviour
+    private static void AddEffect<T>() where T : ScreenEffect, new()
     {
-        if (!Camera.main.GetComponent<T>())
-            Camera.main.gameObject.AddComponent<T>();
+        Camera.main.AddScreenEffect<T>();
     }
 
     private static void PlayEnergyThiefBreak()
     {
-        var effect = Camera.main.GetComponent<EnergyThiefBreakEffect>();
+        var effect = Camera.main.GetScreenEffect<EnergyThiefBreakEffect>();
 
-        if (effect)
+        if (effect != null && effect.Active)
             effect.Restart();
         else
-            Camera.main.gameObject.AddComponent<EnergyThiefBreakEffect>();
+            Camera.main.AddScreenEffect<EnergyThiefBreakEffect>();
     }
 
     private static void RemoveEffects()

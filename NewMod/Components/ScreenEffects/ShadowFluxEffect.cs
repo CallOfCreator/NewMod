@@ -1,11 +1,8 @@
-using System;
-using Reactor.Utilities.Attributes;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class ShadowFluxEffect(IntPtr ptr) : MonoBehaviour(ptr)
+public class ShadowFluxEffect : ScreenEffect
 {
     public float noiseScale = 2f;
     public float speed = 0.3f;
@@ -14,9 +11,8 @@ public class ShadowFluxEffect(IntPtr ptr) : MonoBehaviour(ptr)
     public float opacity = 0.75f;
     public float darkness = 0.8f;
     public Color tint = Color.white;
-    public Material _mat;
 
-    public void OnEnable()
+    public override void Initialize()
     {
         var shader = NewModAsset.ShadowFluxShader.LoadAsset();
         var texture = NewModAsset.NoiseTex.LoadAsset();
@@ -27,12 +23,7 @@ public class ShadowFluxEffect(IntPtr ptr) : MonoBehaviour(ptr)
         _mat.SetTexture("_NoiseTex", texture);
     }
 
-    public void OnDisable()
-    {
-        Destroy(_mat);
-    }
-
-    public void OnRenderImage(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture src, RenderTexture dst)
     {
         _mat.SetFloat("_NoiseScale", noiseScale);
         _mat.SetFloat("_Speed", speed);

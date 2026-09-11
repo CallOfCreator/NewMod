@@ -1,4 +1,4 @@
-﻿using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
@@ -13,9 +13,9 @@ public class EffectsTab : IDebugTab
     public void BuildGUI()
     {
         var camera = Camera.main;
-        var glitch = camera.GetComponent<GlitchEffect>();
-        var distortion = camera.GetComponent<DistorationWaveEffect>();
-        var flux = camera.GetComponent<ShadowFluxEffect>();
+        var glitch = camera.GetScreenEffect<GlitchEffect>();
+        var distortion = camera.GetScreenEffect<DistorationWaveEffect>();
+        var flux = camera.GetScreenEffect<ShadowFluxEffect>();
         
         GUILayout.Label("EFFECTS");
 
@@ -30,7 +30,7 @@ public class EffectsTab : IDebugTab
         if (GUILayout.Button("Glitch V2")) AddEffect<ScrDesyncEffect>();
         if (GUILayout.Button("Remove All")) RemoveEffects();
 
-        if (glitch)
+        if (glitch != null && glitch.Active)
         {
             GUILayout.Label("GLITCH");
             
@@ -64,7 +64,7 @@ public class EffectsTab : IDebugTab
             GUILayout.EndHorizontal();
         }
         
-        if (distortion)
+        if (distortion != null && distortion.Active)
         {
             GUILayout.Label("DISTORTION WAVE");
             
@@ -105,7 +105,7 @@ public class EffectsTab : IDebugTab
             GUILayout.EndHorizontal();
         }
         
-        if (flux)
+        if (flux != null && flux.Active)
         {
             GUILayout.Label("SHADOW FLUX");
             
@@ -154,20 +154,19 @@ public class EffectsTab : IDebugTab
         }
     }
     
-    private static void AddEffect<T>() where T : MonoBehaviour
+    private static void AddEffect<T>() where T : ScreenEffect, new()
     {
-        if (!Camera.main.GetComponent<T>())
-            Camera.main.gameObject.AddComponent<T>();
+        Camera.main.AddScreenEffect<T>();
     }
 
     private static void PlayEnergyThiefBreak()
     {
-        var effect = Camera.main.GetComponent<EnergyThiefBreakEffect>();
+        var effect = Camera.main.GetScreenEffect<EnergyThiefBreakEffect>();
 
-        if (effect)
+        if (effect != null && effect.Active)
             effect.Restart();
         else
-            Camera.main.gameObject.AddComponent<EnergyThiefBreakEffect>();
+            Camera.main.AddScreenEffect<EnergyThiefBreakEffect>();
     }
 
     private static void RemoveEffects()

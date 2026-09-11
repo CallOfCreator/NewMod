@@ -17,11 +17,11 @@ public class ScrDesyncEffectGE : IGeneralEvent
 
     public void OnEventStart()
     {
-        Camera.main.gameObject.AddComponent<ScrDesyncEffect>().duration = Duration;
+        Camera.main.AddScreenEffect<ScrDesyncEffect>().duration = Duration;
     }
 
     public void OnEventEnd()
     {
-        Object.Destroy(Camera.main.GetComponent<ScrDesyncEffect>());
+        Camera.main.GetScreenEffect<ScrDesyncEffect>()?.Remove();
     }
 }

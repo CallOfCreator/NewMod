@@ -67,7 +67,7 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
             new Vector3(24.3133f, 14.628f, 0.0146f),
             new Vector3(7.6678f, -9.9008f, -0.0099f)
         ],
-        [(ShipStatus.MapType)6] = []
+        [(ShipStatus.MapType)6] = [] //Submerged later
     };
 
     public static readonly Vector3[] AirshipPositions =

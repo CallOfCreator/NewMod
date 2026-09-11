@@ -1,4 +1,4 @@
-using CorsacCosmetics.Cosmetics;
+using CorsacCosmetics.Cosmetics.Sources;
 using CorsacCosmetics.Cosmetics.Hats;
 using CorsacCosmetics.Cosmetics.Nameplates;
 using CorsacCosmetics.Cosmetics.Visors;
@@ -9,8 +9,13 @@ namespace NewMod.Cosmetics;
 
 internal static class CorsacCosmeticsIntegration
 {
+    public static bool Initialized;
+
     public static void Initialize(Harmony harmony)
     {
+        if (Initialized)
+            return;
+
         harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.OnEnable)), HarmonyPatchType.All, MiraApiPlugin.Id);
         harmony.Unpatch(AccessTools.Method(typeof(VisorsTab), nameof(VisorsTab.OnEnable)), HarmonyPatchType.All, MiraApiPlugin.Id);
         harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.Update)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
@@ -32,18 +37,13 @@ internal static class CorsacCosmeticsIntegration
         NewModCosmeticsRegistry.RegisterVisor("malicious_look", NewModAsset.MaliciousLook.LoadAsset(), new VisorMetadata { Name = "Malicious Look" });
         NewModCosmeticsRegistry.RegisterVisor("cotton_memories", NewModAsset.CottonMemoriesVisor.LoadAsset(), new VisorMetadata { Name = "Cotton Memories Visor" });
 
-        NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new NameplateMetadata { Name = "NM Rave" });
-        NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new NameplateMetadata { Name = "Sunny Sky" });
+        NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new NamePlateMetadata { Name = "NM Rave" });
+        NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new NamePlateMetadata { Name = "Sunny Sky" });
 
-        var original = AccessTools.Method(typeof(CosmeticsLoader), nameof(CosmeticsLoader.InstallCosmetics));
-        var prefix = AccessTools.Method(typeof(CorsacCosmeticsIntegration), nameof(InjectCosmetics));
-        harmony.Patch(original, new HarmonyMethod(prefix));
+        SourceRegistry.Instance.RegisterSource(new NewModCosmeticSource());
+        Initialized = true;
 
         Message("Registered NewMod cosmetics through Corsac Cosmetics");
     }
 
-    private static void InjectCosmetics()
-    {
-        NewModCosmeticsRegistry.InjectToCorsac();
-    }
 }

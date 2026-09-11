@@ -1,7 +1,5 @@
 using MiraAPI.Utilities.Assets;
 using NewMod.Components.ScreenEffects;
-using NewMod.Utilities;
-using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.GeneralEvents.Season1;
@@ -17,11 +15,11 @@ public class NegativeRealityGE : IGeneralEvent
 
     public void OnEventStart()
     {
-        Camera.main.gameObject.AddComponent<NegativeRealityEffect>();
+        Camera.main.AddScreenEffect<NegativeRealityEffect>();
     }
 
     public void OnEventEnd()
     {
-        Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 0f));
+        Camera.main.GetScreenEffect<NegativeRealityEffect>()?.Remove();
     }
 }

@@ -1,22 +1,20 @@
 ﻿using NewMod.GeneralEvents.Season1;
-using Reactor.Utilities.Attributes;
 using MiraAPI.Modifiers;
 using NewMod.Modifiers.S1;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
 
-[RegisterInIl2Cpp]
-public class SystemOverrideEffect(nint ptr) : MonoBehaviour(ptr)
+public class SystemOverrideEffect : ScreenEffect
 {
     public float _startedAt;
 
-    public void OnEnable()
+    public override void Initialize()
     {
         _startedAt = Time.time;
     }
 
-    public void OnRenderImage(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture src, RenderTexture dst)
     {
         if (!SystemOverrideGE.Active || MeetingHud.Instance || ExileController.Instance || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {
