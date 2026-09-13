@@ -152,7 +152,7 @@ public static class NewModEventHandler
                 {
                     PlayerControl.LocalPlayer.myTasks.RemoveAt(i);
                     Object.Destroy(task.gameObject);
-                    
+
                     TwitchManager.Instance.TwitchPopup.Show();
                 }
             }
@@ -162,7 +162,7 @@ public static class NewModEventHandler
 
         VisionaryUtilities.DeleteAllScreenshots();
     }
-    
+
     [RegisterEvent]
     public static void OnBeforeMurder(BeforeMurderEvent evt)
     {

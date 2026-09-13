@@ -43,11 +43,7 @@ public sealed class EnergyPowerNode(nint ptr) : MonoBehaviour(ptr)
         _renderer = gameObject.AddComponent<SpriteRenderer>();
         _overcharged = EnergyThief.BreachActive;
         _renderer.sprite = (_overcharged ? NewModAsset.PowerNodeOvercharged : NewModAsset.PowerNodeActive).LoadAsset();
-        _material = new Material(Shader.Find(SpriteShader))
-        {
-            hideFlags = HideFlags.DontSave,
-            renderQueue = RenderQueue
-        };
+        _material = new Material(Shader.Find(SpriteShader)) { hideFlags = HideFlags.DontSave, renderQueue = RenderQueue };
         _renderer.sharedMaterial = _material;
         _renderer.maskInteraction = SpriteMaskInteraction.None;
         _renderer.color = Color.white;

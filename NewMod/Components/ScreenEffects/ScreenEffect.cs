@@ -8,8 +8,14 @@ public abstract class ScreenEffect
     public Material _mat;
     public bool Active = true;
 
-    public virtual void Initialize() { }
-    public virtual void Tick() { }
+    public virtual void Initialize()
+    {
+    }
+
+    public virtual void Tick()
+    {
+    }
+
     public abstract void Render(RenderTexture source, RenderTexture destination);
 
     public void Remove()

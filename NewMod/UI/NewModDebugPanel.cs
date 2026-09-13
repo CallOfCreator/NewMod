@@ -7,6 +7,7 @@ using MiraAPI.Hud;
 using MiraAPI.Networking;
 using MiraAPI.Roles;
 using NewMod.Components.ScreenEffects;
+using NewMod.Debugging;
 using NewMod.GeneralEvents;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
@@ -83,7 +84,7 @@ public static class NewModDebugPanel
 
     private static VNode Navigation()
     {
-        return Div(ClassName("nm-debug-tabs"), Tab("PLAYER", Page.Player), Tab("MATCH", Page.Match), Tab("ENERGY", Page.EnergyThief), Tab("EVENTS", Page.Events), Tab("EFFECTS", Page.Effects));
+        return Div(ClassName("nm-debug-tabs"), Tab("PLAYER", Page.Player), Tab("MATCH", Page.Match), Tab("ENERGY", Page.EnergyThief), Tab("EVENTS", Page.Events), Tab("EFFECTS", Page.Effects), Tab("PATH", Page.Pathfinding));
     }
 
     private static VNode Tab(string label, Page page)
@@ -106,6 +107,7 @@ public static class NewModDebugPanel
             Page.EnergyThief => EnergyThiefPage(),
             Page.Events => EventsPage(),
             Page.Effects => EffectsPage(),
+            Page.Pathfinding => PathfindingPage(),
             _ => Div()
         };
     }
@@ -222,6 +224,15 @@ public static class NewModDebugPanel
         }, true))));
     }
 
+    public static VNode PathfindingPage()
+    {
+        if (!ShipStatus.Instance || !PlayerControl.LocalPlayer)
+            return Section("PATHFINDING", Text("Start a match or Freeplay to test routes."));
+
+        var preview = PathfindingPreview.Current;
+        return Div(ClassName("nm-debug-stack"), Section("PATHFINDING", Text(preview ? preview.StartText : "Start: not set"), Text(preview ? preview.GoalText : "Goal: not set"), MutatingActions(("Mark start here", PathfindingPreview.MarkStart, false), ("Mark goal here", PathfindingPreview.MarkGoal, false), ("Find path", PathfindingPreview.FindPath, false), ("Send NPC", PathfindingPreview.SendNpc, false), ("Tour map and return", PathfindingPreview.TourMap, false), ("Stop NPC", PathfindingPreview.StopNpc, false), ("Inspect ladders / ziplines", PathfindingPreview.InspectTraversals, false), ("Copy traversal report", PathfindingPreview.CopyTraversalReport, false), ("Test nearest ladder", PathfindingPreview.TestNearestLadder, false), ("Test nearest zipline", PathfindingPreview.TestNearestZipline, false), ("Clear preview", PathfindingPreview.Clear, false)), Text(preview ? preview.StatusText : "Mark a start, move to a destination, then mark the goal."), Text(preview ? preview.TraversalReport : ""), Text("Green: start | Pink: goal | Cyan: route. Crossings require using the ladder, zipline or decon door.")));
+    }
+
     private static VNode EffectsPage()
     {
         var camera = Camera.main;
@@ -331,6 +342,7 @@ public static class NewModDebugPanel
         Match,
         EnergyThief,
         Events,
-        Effects
+        Effects,
+        Pathfinding
     }
 }

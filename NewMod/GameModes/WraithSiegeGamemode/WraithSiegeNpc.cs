@@ -24,7 +24,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     public bool Active;
     public bool Delivering;
     public bool AtDeliverySlot;
-    
+
     public WraithStatus status;
 
     private Vector2 _deliveryPoint;
@@ -72,7 +72,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
         noShadow.hitOverride = Visual.Collider;
 
         Active = true;
-        
+
         status = WraithStatus.NotStarted;
 
         Coroutines.Start(CoMove());
@@ -194,7 +194,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
 
         Destroy(gameObject);
     }
-    
+
     public enum WraithStatus
     {
         NotStarted,

@@ -37,7 +37,7 @@ public class BeaconPulseRpc : PlayerCustomRpc<NewMod, BeaconPulseRpc.Data>
         effect.expiresAt = Time.time + data.Duration;
         Beacon.pulseUntil = Time.time + data.Duration;
 
-        Logger<NewMod>.Instance.LogMessage($"Beacon pulse triggered by {sender.Data.PlayerName} for {data.Duration}s");
+        Instance.LogMessage($"Beacon pulse triggered by {sender.Data.PlayerName} for {data.Duration}s");
     }
 
     public readonly record struct Data(float Duration);

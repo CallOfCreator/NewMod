@@ -41,8 +41,8 @@ public static class SelectRolePatch
 
         var allPlayers = allInfos.Select(p => p.Object).ToList();
 
-        Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: START --------------");
-        Logger<NewMod>.Instance.LogMessage($"Players={allPlayers.Count}, TotalNeutrals={opts.TotalNeutrals} target={target}, KeepCrewMajority={opts.KeepCrewMajority}, PreferVariety={opts.PreferVariety}");
+        Instance.LogMessage("-------------- NEUTRAL ADJUST: START --------------");
+        Instance.LogMessage($"Players={allPlayers.Count}, TotalNeutrals={opts.TotalNeutrals} target={target}, KeepCrewMajority={opts.KeepCrewMajority}, PreferVariety={opts.PreferVariety}");
 
         var neutrals = allPlayers.Where(pc =>
         {
@@ -66,23 +66,23 @@ public static class SelectRolePatch
             var maxAllowed = Math.Max(0, (int)Math.Floor((crewCount - 1) / 2.0));
             var before = target;
             target = Math.Min(target, maxAllowed);
-            Logger<NewMod>.Instance.LogMessage($"KeepCrewMajority applied -> crewCount={crewCount}, maxNeutrals={maxAllowed}, adjustedTarget={target} (was {before})");
+            Instance.LogMessage($"KeepCrewMajority applied -> crewCount={crewCount}, maxNeutrals={maxAllowed}, adjustedTarget={target} (was {before})");
         }
 
         var have = neutrals.Count;
-        Logger<NewMod>.Instance.LogMessage($"Currently neutrals={have}");
+        Instance.LogMessage($"Currently neutrals={have}");
 
         if (have == target)
         {
-            Logger<NewMod>.Instance.LogMessage("No change needed.");
-            Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END (no-op) --------------");
+            Instance.LogMessage("No change needed.");
+            Instance.LogMessage("-------------- NEUTRAL ADJUST: END (no-op) --------------");
             yield break;
         }
 
         if (have > target)
         {
             var remove = have - target;
-            Logger<NewMod>.Instance.LogMessage($"Too many neutrals, demoting {remove}");
+            Instance.LogMessage($"Too many neutrals, demoting {remove}");
 
             neutrals.Shuffle();
             for (var i = 0; i < remove && i < neutrals.Count; i++)
@@ -90,16 +90,16 @@ public static class SelectRolePatch
                 var pc = neutrals[i];
                 if (pc == null) continue;
 
-                Logger<NewMod>.Instance.LogMessage($"→ Demoting {pc.Data.PlayerName} to Crewmate");
+                Instance.LogMessage($"→ Demoting {pc.Data.PlayerName} to Crewmate");
                 pc.RpcSetRole(RoleTypes.Crewmate, true);
             }
 
-            Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END (demotions) --------------");
+            Instance.LogMessage("-------------- NEUTRAL ADJUST: END (demotions) --------------");
             yield break;
         }
 
         var need = target - have;
-        Logger<NewMod>.Instance.LogMessage($"Need to assign {need} more neutrals.");
+        Instance.LogMessage($"Need to assign {need} more neutrals.");
 
         var crewElig = allPlayers.Where(pc =>
         {
@@ -115,11 +115,11 @@ public static class SelectRolePatch
             return true;
         }).ToList();
 
-        Logger<NewMod>.Instance.LogMessage($"Crew eligible for neutral conversion: {crewElig.Count}");
+        Instance.LogMessage($"Crew eligible for neutral conversion: {crewElig.Count}");
         if (crewElig.Count == 0)
         {
-            Logger<NewMod>.Instance.LogMessage("No eligible crew found, aborting.");
-            Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END (no candidates) --------------");
+            Instance.LogMessage("No eligible crew found, aborting.");
+            Instance.LogMessage("-------------- NEUTRAL ADJUST: END (no candidates) --------------");
             yield break;
         }
 
@@ -145,11 +145,11 @@ public static class SelectRolePatch
             candidates.Add(new Candidate { Role = r, Left = left, Weight = chance, RoleType = roleType });
         }
 
-        Logger<NewMod>.Instance.LogMessage($"Built neutral candidate list: {candidates.Count}");
+        Instance.LogMessage($"Built neutral candidate list: {candidates.Count}");
         if (candidates.Count == 0)
         {
-            Logger<NewMod>.Instance.LogMessage("No candidates available, exiting.");
-            Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END --------------");
+            Instance.LogMessage("No candidates available, exiting.");
+            Instance.LogMessage("-------------- NEUTRAL ADJUST: END --------------");
             yield break;
         }
 
@@ -201,7 +201,7 @@ public static class SelectRolePatch
             }
         }
 
-        Logger<NewMod>.Instance.LogMessage($"Assigning {picks.Count} neutrals...");
+        Instance.LogMessage($"Assigning {picks.Count} neutrals...");
 
         foreach (var role in picks)
         {
@@ -215,8 +215,8 @@ public static class SelectRolePatch
             pc.RpcSetRole(rt, true);
         }
 
-        Logger<NewMod>.Instance.LogMessage("Neutral assignment complete.");
-        Logger<NewMod>.Instance.LogMessage("-------------- NEUTRAL ADJUST: END --------------");
+        Instance.LogMessage("Neutral assignment complete.");
+        Instance.LogMessage("-------------- NEUTRAL ADJUST: END --------------");
     }
 
     public struct Candidate

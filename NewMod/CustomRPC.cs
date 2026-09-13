@@ -106,5 +106,6 @@ public enum CustomRPC
     EgoistRequestChallenge,
     EgoistConfirmChallenge,
     EgoistSetEgo,
-    EgoistResolveChallenge
+    EgoistResolveChallenge,
+    PathfindingOpenDoor
 }

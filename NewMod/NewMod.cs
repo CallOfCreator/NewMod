@@ -46,12 +46,12 @@ public class NewMod : BasePlugin, IMiraPlugin
 {
     public const string Id = "com.callofcreator.newmod";
     public const string ModVersion = "1.3.0";
-    
+
     public const string CorsacPluginId = "CorsacCosmetics";
     public const string LaunchpadReloadedId = "dev.xtracube.launchpad";
-    
+
     public const string NewModBackendAPI = "";
-    
+
     public static BasePlugin Instance;
     public static Minigame Minigame;
     public static Harmony Harmony { get; } = new(Id);
@@ -70,27 +70,24 @@ public class NewMod : BasePlugin, IMiraPlugin
     {
         Instance = this;
 
-        if (Application.platform != RuntimePlatform.Android)
+        if (Application.platform != RuntimePlatform.Android && ShouldReactUIDebug)
         {
-            if (ShouldReactUIDebug)
-            {
-                ReactUIBootstrap.Initialize();
-                NewModDebugStyles.Register();
-                NewModDebugPanel.Mount();
-                ReactUIBehaviour.OnUpdate += NewModDebugPanel.Tick;
-                AddComponent<DebugWindow>();
-            }
-            else
-            {
-                DebugMode.Initialize(this);
-            }
+            ReactUIBootstrap.Initialize();
+            NewModDebugStyles.Register();
+            NewModDebugPanel.Mount();
+            ReactUIBehaviour.OnUpdate += NewModDebugPanel.Tick;
+            AddComponent<DebugWindow>();
+        }
+        else
+        {
+            DebugMode.Initialize(this);
         }
 
         ReactorCredits.Register("NewMod", ModVersion + " ALPHA Build 2", true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
 
         NewModEventHandler.RegisterEventsLogs();
-        
+
         ModCompatibility.Initialize();
 
         ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");

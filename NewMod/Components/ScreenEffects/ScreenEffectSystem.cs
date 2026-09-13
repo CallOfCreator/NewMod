@@ -73,7 +73,7 @@ public class ScreenEffectSystem(nint ptr) : MonoBehaviour(ptr)
         var descriptor = source.descriptor;
         descriptor.depthBufferBits = 0;
         descriptor.msaaSamples = 1;
-        
+
         try
         {
             for (var i = 0; i < Effects.Count; i++)

@@ -42,7 +42,7 @@ public class JustLeftVoid : TimedModifier
 
         @event.Source.GetModifier<JustLeftVoid>()!.DidKill = true;
 
-        Logger<NewMod>.Warning(CustomButtonSingleton<EnterVoid>.Instance.Timer);
+        Warning(CustomButtonSingleton<EnterVoid>.Instance.Timer);
         CustomButtonSingleton<EnterVoid>.Instance.SetTimer(OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterVoidCooldown / 2f);
     }
 }

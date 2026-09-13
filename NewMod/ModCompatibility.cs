@@ -18,7 +18,7 @@ public static class ModCompatibility
     {
         return IL2CPPChainloader.Instance.Plugins.ContainsKey(NewMod.LaunchpadReloadedId);
     }
-    
+
     public static bool LaunchpadLoaded(out Assembly asm)
     {
         asm = null;
@@ -32,15 +32,15 @@ public static class ModCompatibility
         if (CorsacCosmeticsEnabled)
         {
             CorsacCosmeticsIntegration.Initialize(NewMod.Harmony);
-            
+
             Message("CorsacCosmetics detected. Enabling comsmetics...");
         }
-        
+
         if (IsLaunchpadLoaded())
         {
             NewMod.Harmony.PatchAll(typeof(LaunchpadCompatibility));
             NewMod.Harmony.PatchAll(typeof(LaunchpadHackTextPatch));
-            
+
             Message("LaunchpadReloaded detected. Enabling compatibility...");
         }
     }

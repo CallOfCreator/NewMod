@@ -14,5 +14,6 @@ public static class DebugMode
         DebugWindow.Instance.Tabs.Add(new EnergyTab());
         DebugWindow.Instance.Tabs.Add(new EventsTab());
         DebugWindow.Instance.Tabs.Add(new EffectsTab());
+        DebugWindow.Instance.Tabs.Add(new PathfindingTab());
     }
 }

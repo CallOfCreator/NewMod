@@ -45,5 +45,4 @@ internal static class CorsacCosmeticsIntegration
 
         Message("Registered NewMod cosmetics through Corsac Cosmetics");
     }
-
 }

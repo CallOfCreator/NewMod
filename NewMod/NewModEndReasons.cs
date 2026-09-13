@@ -573,7 +573,7 @@ public static class MatchSummaryTracker
     {
         if (!_tracking)
             return;
-        
+
         foreach (var player in GameData.Instance.AllPlayers)
             Capture(player);
         Snapshot = Players.Values.OrderBy(player => player.Id).ToArray();
@@ -665,10 +665,7 @@ public static class MatchSummaryTracker
         var summary = Object.Instantiate(__instance.WinText, __instance.transform);
         summary.gameObject.name = "NewModMatchSummary";
         var translator = summary.GetComponent<TextTranslatorTMP>();
-        if (translator)
-        {
-            Object.Destroy(translator);
-        }
+        if (translator) Object.Destroy(translator);
 
         var aspect = summary.GetComponent<AspectPosition>();
         if (aspect) aspect.enabled = false;
