@@ -24,7 +24,6 @@ public static class SeasonManager
 
     public static readonly List<ISeason> ActiveSeasons =
     [
-        new Preseason(),
         new S1()
     ];
 

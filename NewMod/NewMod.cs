@@ -83,7 +83,7 @@ public class NewMod : BasePlugin, IMiraPlugin
             DebugMode.Initialize(this);
         }
 
-        ReactorCredits.Register("NewMod", ModVersion + " ALPHA Build 2", true, ReactorCredits.AlwaysShow);
+        ReactorCredits.Register("NewMod", ModVersion + " DEV BUILD", true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
 
         NewModEventHandler.RegisterEventsLogs();

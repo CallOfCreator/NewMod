@@ -29,7 +29,7 @@ public sealed class DebugWindow(nint ptr) : MonoBehaviour(ptr)
         if (Input.GetKeyDown(ToggleKey))
             NewModDebugPanel.SetOpen(!NewModDebugPanel.IsOpen);
 
-        if (!NewModDebugPanel.CameraControlsOpen)
+        if (!NewModDebugPanel.CameraControlsOpen || !DestroyableSingleton<TutorialManager>.InstanceExists || !ShipStatus.Instance)
             return;
 
         var scroll = Input.mouseScrollDelta.y;

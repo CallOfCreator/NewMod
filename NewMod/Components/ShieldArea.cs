@@ -1,13 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using MiraAPI.GameOptions;
-using MiraAPI.Roles;
-using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
-using static NewMod.Options.Roles.AegisOptions;
 
 namespace NewMod.Components;
 
@@ -17,90 +12,71 @@ public class ShieldArea(IntPtr ptr) : MonoBehaviour(ptr)
     public static readonly List<ShieldArea> _active = new();
     public byte ownerId;
     public float radius;
-    public float duration;
-    private float _t;
+    public float expiresAt;
+    public Mesh mesh;
 
-    public static AegisMode Mode => OptionGroupSingleton<AegisOptions>.Instance.Behavior;
-
-    public void Awake()
+    public void Init(byte owner, float range, float duration)
     {
-        if (!_active.Contains(this)) _active.Add(this);
+        ownerId = owner;
+        radius = range;
+        expiresAt = Time.time + duration;
+        _active.Add(this);
+        transform.position += new Vector3(0f, 0f, -1f);
+
+        var vertices = new Vector3[25 * 49];
+        var colors = new Color[vertices.Length];
+        var triangles = new int[24 * 48 * 6];
+        var light = new Vector3(-0.4f, 0.65f, -0.65f).normalized;
+        for (var ring = 0; ring <= 24; ring++)
+        {
+            var angle = ring * Mathf.PI / 48f;
+            var distance = Mathf.Sin(angle);
+            var depth = Mathf.Cos(angle);
+            for (var segment = 0; segment <= 48; segment++)
+            {
+                var azimuth = segment * Mathf.PI / 24f;
+                var normal = new Vector3(distance * Mathf.Cos(azimuth), distance * Mathf.Sin(azimuth), -depth);
+                var index = ring * 49 + segment;
+                vertices[index] = new Vector3(normal.x, normal.y, normal.z * 0.45f) * radius;
+                var highlight = Mathf.Pow(Mathf.Max(0f, Vector3.Dot(normal, light)), 32f);
+                colors[index] = Color.Lerp(new Color(0.23f, 0.65f, 1f, 0.04f + Mathf.Pow(distance, 10f) * 0.5f), new Color(0.85f, 0.97f, 1f, 0.6f), highlight);
+                if (ring == 24 || segment == 48)
+                    continue;
+                var triangle = (ring * 48 + segment) * 6;
+                triangles[triangle] = index;
+                triangles[triangle + 1] = index + 49;
+                triangles[triangle + 2] = index + 1;
+                triangles[triangle + 3] = index + 1;
+                triangles[triangle + 4] = index + 49;
+                triangles[triangle + 5] = index + 50;
+            }
+        }
+
+        mesh = new Mesh();
+        mesh.vertices = vertices;
+        mesh.colors = colors;
+        mesh.triangles = triangles;
+        mesh.RecalculateBounds();
+        gameObject.AddComponent<MeshFilter>().mesh = mesh;
+        var renderer = gameObject.AddComponent<MeshRenderer>();
+        renderer.sharedMaterial = Utils.GetCircleMat();
+        renderer.sortingOrder = 2;
     }
 
     public void Update()
     {
-        _t += Time.deltaTime;
-        if (_t >= duration) Destroy(gameObject);
+        if (Time.time >= expiresAt || MeetingHud.Instance)
+            Destroy(gameObject);
+    }
+
+    public bool Contains(Vector2 position)
+    {
+        return Time.time < expiresAt && Vector2.Distance(position, transform.position) <= radius;
     }
 
     public void OnDestroy()
     {
         _active.Remove(this);
-    }
-
-    public static IEnumerable<ShieldArea> AreasAt(Vector2 pos)
-    {
-        return _active.Where(a => a && a.Contains(pos));
-    }
-
-    public static IEnumerable<ShieldArea> AreasOwnedBy(byte id)
-    {
-        return _active.Where(a => a && a.ownerId == id);
-    }
-
-    public void Init(byte ownerId, float radius, float duration)
-    {
-        this.ownerId = ownerId;
-        this.radius = Mathf.Max(0.1f, radius);
-        this.duration = Mathf.Max(0.1f, duration);
-
-        var lp = PlayerControl.LocalPlayer;
-        var shouldSee = false;
-
-        if (lp.PlayerId == ownerId)
-            shouldSee = true;
-        if (!shouldSee)
-            switch (OptionGroupSingleton<AegisOptions>.Instance.Visibility)
-            {
-                case WardVisibilityMode.AllPlayers:
-                    shouldSee = true;
-                    break;
-                case WardVisibilityMode.TeamOnly:
-                    var role = lp.Data.Role;
-                    var isCrew = role && role.TeamType == RoleTeamTypes.Crewmate;
-
-                    if (isCrew && CustomRoleManager.GetCustomRoleBehaviour(role.Role, out var customRole) && customRole != null) isCrew = customRole.Team == ModdedRoleTeams.Crewmate;
-                    shouldSee = isCrew;
-                    break;
-
-                case WardVisibilityMode.OwnerOnly:
-                    break;
-            }
-
-        if (shouldSee)
-            Utils.CreateCircle("AegisShieldVisual", (Vector2)transform.position, this.radius, new Color(0.227f, 0.651f, 1f, 0.35f), this.duration);
-    }
-
-    public bool Contains(Vector2 worldPos)
-    {
-        var center = (Vector2)transform.position;
-        return Vector2.Distance(worldPos, center) <= radius;
-    }
-
-    public static bool IsInsideAny(Vector2 pos)
-    {
-        return _active.Any(a => a && a.Contains(pos));
-    }
-
-    public static bool IsInsideOthersWard(PlayerControl player)
-    {
-        if (!player) return false;
-        var pos = player.GetTruePosition();
-        return _active.Any(a => a && a.ownerId != player.PlayerId && a.Contains(pos));
-    }
-
-    public static bool IsInsideOthersWardAt(Vector2 pos, byte sourceId)
-    {
-        return _active.Any(a => a && a.ownerId != sourceId && a.Contains(pos));
+        Destroy(mesh);
     }
 }

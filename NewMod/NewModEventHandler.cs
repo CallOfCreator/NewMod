@@ -93,7 +93,6 @@ public static class NewModEventHandler
         CoroutinesHelper.drainCount.Clear();
         StickyModifier.ResetState();
         FearPulseArea.ResetState();
-        AegisUtilities.ActiveOwners.Clear();
 
         foreach (var shield in ShieldArea._active.ToArray())
             if (shield)
@@ -108,11 +107,7 @@ public static class NewModEventHandler
         MirrorBladeRole._reflecting = false;
         SpecialAgent.AssignedPlayer = null;
 
-        Beacon.charges = 0;
-        Beacon.grantedFromTasks = 0;
-        Beacon.lastCompletedTasks = 0;
-        Beacon.cooldownUntil = 0f;
-        Beacon.pulseUntil = 0f;
+        Beacon.Reset();
 
         GeneralEventManager.Reset();
     }

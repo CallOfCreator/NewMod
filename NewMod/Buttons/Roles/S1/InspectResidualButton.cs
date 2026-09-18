@@ -12,7 +12,7 @@ namespace NewMod.Buttons.Roles.S1;
 public class InspectResidualButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Intelligence;
-    private const float InspectRange = 1.25f;
+    public const float InspectRange = 1.25f;
 
     public override string Name => "Inspect";
     public override float Cooldown => 0f;

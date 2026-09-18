@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using MiraAPI.Utilities;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -17,9 +19,11 @@ public class Specialist : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<byte, SpecialistScanState> ScanStates = [];
 
+    public static readonly List<(Vector2 Position, float Time)> Disturbances = new();
+
     public string RoleName => "Specialist";
-    public string RoleDescription => "Complete tasks to earn scans, then choose what field intel you need.";
-    public string RoleLongDescription => "Each completed task grants one scan. Cycle between Presence, Forensics, and Vital, then spend a charge to run the selected scan.";
+    public string RoleDescription => "Complete tasks to earn different kinds of scans.";
+    public string RoleLongDescription => "Each task gives you one scan, up to three. Choose what to check before scanning.\nPresence counts nearby players. Forensics checks for bodies.\nDisturbance tells you whether someone was killed nearby recently.";
     public Color RoleColor => new(0f, 0.8f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public NewModFaction Faction => NewModFaction.Sentinel;
@@ -48,8 +52,7 @@ public class Specialist : CrewmateRole, INewModRole
         if (!ScanStates.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state))
             return text;
 
-        text.AppendLine($"<size=65%>Mode: <color=#00CCFF>{state.Mode}</color></size>");
-        text.AppendLine($"<size=65%>Scans: <color=#00CCFF>{state.Charges}</color></size>");
+        text.Append($"\n<size=65%>{RoleColor.ToTextColor()}Mode: {state.Mode} | Scans: {state.Charges}/3</color>\nRange: 5 units | Disturbance history: 15s\nScanning takes 1.5s; stay still. <color=#FFCF70>Comms prevents scans.</color></size>");
         return text;
     }
 
@@ -60,6 +63,7 @@ public class Specialist : CrewmateRole, INewModRole
             return;
 
         ScanStates.Clear();
+        Disturbances.Clear();
         foreach (var player in PlayerControl.AllPlayerControls)
             if (player.Data.Role is Specialist)
                 ScanStates[player.PlayerId] = new SpecialistScanState();
@@ -81,6 +85,7 @@ public class Specialist : CrewmateRole, INewModRole
     public static void OnGameEnd(GameEndEvent evt)
     {
         ScanStates.Clear();
+        Disturbances.Clear();
     }
 
     [RegisterEvent]
@@ -103,51 +108,34 @@ public class Specialist : CrewmateRole, INewModRole
     {
         var specialist = PlayerControl.LocalPlayer;
         var state = ScanStates[specialist.PlayerId];
-        if (!state.TrySpend())
+        if (!state.Spend())
             return;
 
-        var result = state.Mode switch
+        var position = specialist.GetTruePosition();
+        string result;
+        switch (state.Mode)
         {
-            SpecialistScanMode.Presence => PresenceScan(specialist),
-            SpecialistScanMode.Forensics => ForensicsScan(specialist),
-            _ => VitalScan()
-        };
+            case SpecialistScanMode.Presence:
+                var nearby = Helpers.GetClosestPlayers(specialist, 5f).Count(player => !player.Data.IsDead && !player.Data.Disconnected && !player.inVent);
+                result = $"Presence: {nearby} living player(s) nearby.";
+                break;
+            case SpecialistScanMode.Forensics:
+                var bodies = Helpers.GetNearestDeadBodies(position, 5f, Helpers.CreateFilter(Constants.NotShipMask));
+                result = bodies.Count == 0 ? "Forensics: no bodies within 5 units." : bodies.Any(body => Vector2.Distance(position, body.TruePosition) <= 2f) ? "Forensics: a body is very close (within 2 units)." : "Forensics: a body is nearby (2-5 units).";
+                break;
+            default:
+                Disturbances.RemoveAll(entry => Time.time - entry.Time > 15f);
+                result = Disturbances.Any(entry => Vector2.Distance(position, entry.Position) <= 5f) ? "Disturbance: violence occurred nearby in the last 15s." : "Disturbance: no recent violence detected nearby.";
+                break;
+        }
 
         Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#00CCFF>Specialist:</color> {result}"));
     }
 
-    private static string PresenceScan(PlayerControl specialist)
+    [RegisterEvent]
+    public static void OnAfterMurder(AfterMurderEvent evt)
     {
-        var nearby = 0;
-        var position = specialist.GetTruePosition();
-        foreach (var player in PlayerControl.AllPlayerControls)
-            if (player != specialist && !player.Data.IsDead && !player.Data.Disconnected && Vector2.Distance(player.GetTruePosition(), position) <= 5f)
-                nearby++;
-
-        return $"Presence scan: {nearby} living player{(nearby == 1 ? "" : "s")} nearby.";
-    }
-
-    private static string ForensicsScan(PlayerControl specialist)
-    {
-        var nearestDistance = float.PositiveInfinity;
-        var position = specialist.GetTruePosition();
-        foreach (var body in FindObjectsOfType<DeadBody>())
-        {
-            var distance = Vector2.Distance(position, body.TruePosition);
-            if (distance < nearestDistance)
-                nearestDistance = distance;
-        }
-
-        return float.IsPositiveInfinity(nearestDistance) ? "Forensics scan: no bodies detected." : $"Forensics scan: nearest body is {nearestDistance:0.0}m away.";
-    }
-
-    private static string VitalScan()
-    {
-        var alive = 0;
-        foreach (var player in PlayerControl.AllPlayerControls)
-            if (!player.Data.IsDead && !player.Data.Disconnected)
-                alive++;
-
-        return $"Vital scan: {alive} players remain alive.";
+        Disturbances.RemoveAll(entry => Time.time - entry.Time > 15f);
+        Disturbances.Add((evt.Target.GetTruePosition(), Time.time));
     }
 }

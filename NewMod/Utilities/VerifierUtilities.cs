@@ -12,14 +12,13 @@ using MiraAPI.Events.Vanilla.Usables;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
 using NewMod.Achievements;
-using NewMod.Components;
+using NewMod.Components.Minigames;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Seasons;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace NewMod.Utilities;
 
@@ -46,13 +45,14 @@ public static class VerifierUtilities
 {
     public static readonly Dictionary<byte, VerifierFactFlags> RoundFacts = new();
 
+    public static readonly HashSet<byte> BodyObservations = new();
     public static bool SelectingPlayer;
     public static bool UsedThisMeeting;
 
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (!evt.TriggeredByIntro || (Application.platform == RuntimePlatform.Android && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay))
+        if (!evt.TriggeredByIntro)
             return;
 
         Reset(true);
@@ -91,19 +91,14 @@ public static class VerifierUtilities
     [RegisterEvent]
     public static void OnVanillaButtonClick(VanillaButtonClickEvent evt)
     {
-        var player = PlayerControl.LocalPlayer;
-
-        if (evt.IsCancelled || !player || MeetingHud.Instance || ExileController.Instance)
-            return;
-
-        PublishFact(player, VerifierClaimType.UsedAbility);
+        if (!evt.IsCancelled)
+            PublishFact(PlayerControl.LocalPlayer, VerifierClaimType.UsedAbility);
     }
 
     [RegisterEvent]
     public static void OnReportBody(ReportBodyEvent evt)
     {
-        if (AmongUsClient.Instance.AmHost)
-            RegisterNearBody();
+        RegisterNearBody();
     }
 
     [RegisterEvent]
@@ -170,12 +165,14 @@ public static class VerifierUtilities
     }
 
     [MethodRpc((uint)CustomRPC.VerifierRegisterNearBody)]
-    public static void RpcRegisterNearBody(PlayerControl host, byte playerId)
+    public static void RpcRegisterNearBody(PlayerControl source, byte playerId, bool nearby)
     {
-        if (!host || !host.IsHost())
+        if (!source.IsHost())
             return;
 
-        RegisterFact(playerId, VerifierClaimType.NearBody);
+        BodyObservations.Add(playerId);
+        if (nearby)
+            RegisterFact(playerId, VerifierClaimType.NearBody);
     }
 
     public static void RegisterFact(byte playerId, VerifierClaimType claimType)
@@ -198,13 +195,12 @@ public static class VerifierUtilities
 
         foreach (var player in PlayerControl.AllPlayerControls)
         {
-            if (!player || !player.Data || player.Data.IsDead || player.Data.Disconnected || (RoundFacts.TryGetValue(player.PlayerId, out var facts) && (facts & VerifierFactFlags.NearBody) != 0))
+            if (!player || !player.Data || player.Data.IsDead || player.Data.Disconnected)
                 continue;
 
             var bodies = Helpers.GetNearestDeadBodies(player.GetTruePosition(), radius, Helpers.CreateFilter(Constants.NotShipMask));
 
-            if (bodies != null && bodies.Count > 0)
-                RpcRegisterNearBody(PlayerControl.LocalPlayer, player.PlayerId);
+            RpcRegisterNearBody(PlayerControl.LocalPlayer, player.PlayerId, bodies.Count > 0);
         }
     }
 
@@ -254,7 +250,7 @@ public static class VerifierUtilities
 
     public static string GetVerificationResult(PlayerControl target, VerifierClaimType claim, bool expected)
     {
-        if (Random.Range(0f, 100f) < OptionGroupSingleton<VerifierOptions>.Instance.UnknownChance)
+        if (claim == VerifierClaimType.NearBody && !BodyObservations.Contains(target.PlayerId))
             return "<color=#B7B7B7>Unknown</color>";
 
         RoundFacts.TryGetValue(target.PlayerId, out var facts);
@@ -287,7 +283,10 @@ public static class VerifierUtilities
     public static void Reset(bool clearFacts = false, bool hideMeetingButton = true)
     {
         if (clearFacts)
+        {
             RoundFacts.Clear();
+            BodyObservations.Clear();
+        }
 
         SelectingPlayer = false;
         UsedThisMeeting = false;

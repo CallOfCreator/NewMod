@@ -72,7 +72,7 @@ public static class MainMenuPatch
         logoObject.transform.localScale = new Vector3(0.7f, 0.9f, 0.9f);
 
         LogoSprite = logoObject.AddComponent<SpriteRenderer>();
-        LogoSprite.sprite = SeasonManager.CurrentActiveSeasons.Any(season => season is Preseason) ? NewModAsset.NewModLogo.LoadAsset() : NewModAsset.NormalLogo.LoadAsset();
+        LogoSprite.sprite = NewModAsset.NewModLogo.LoadAsset();
 
         SeasonManager.InitializeSeasons(__instance);
         ModCompatibility.Initialize();

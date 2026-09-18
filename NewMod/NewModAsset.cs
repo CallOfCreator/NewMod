@@ -34,6 +34,12 @@ public static class NewModAsset
     public static LoadableResourceAsset InjectButton { get; } = new("NewMod.Resources.inject.png");
     public static LoadableResourceAsset DeadBodySprite { get; } = new("NewMod.Resources.deadbody.png");
     public static LoadableResourceAsset Camera { get; } = new("NewMod.Resources.cam.png");
+    public static LoadableResourceAsset CameraOff { get; } = new("NewMod.Resources.Camera.NonDirty.Cam_OFF.png", 1000f);
+    public static LoadableResourceAsset CameraOffOutline { get; } = new("NewMod.Resources.Camera.Dirty.Cam_OFF.png", 1000f);
+    public static LoadableResourceAsset CameraEnabled { get; } = new("NewMod.Resources.Camera.NonDirty.Cam_Enabled.png", 1000f);
+    public static LoadableResourceAsset CameraEnabledOutline { get; } = new("NewMod.Resources.Camera.Dirty.Cam_Enabled.png", 1000f);
+    public static LoadableResourceAsset CameraDisabled { get; } = new("NewMod.Resources.Camera.NonDirty.Cam_Disabled.png", 1000f);
+    public static LoadableResourceAsset CameraDisabledOutline { get; } = new("NewMod.Resources.Camera.Dirty.Cam_Disabled.png", 1000f);
     public static LoadableResourceAsset StrikeButton { get; } = new("NewMod.Resources.Strike.png");
     public static LoadableResourceAsset FinalButton { get; } = new("NewMod.Resources.final.png");
     public static LoadableResourceAsset CallWraith { get; } = new("NewMod.Resources.callwraith.png");
@@ -151,6 +157,7 @@ public static class NewModAsset
     //Minigames
     public static LoadableAsset<GameObject> VerifyMinigame { get; } = new LoadableBundleAsset<GameObject>("VerifyMinigame", Bundle);
     public static LoadableAsset<GameObject> WraithCallerMinigame { get; } = new LoadableBundleAsset<GameObject>("WraithCallerMinigame", Bundle);
+    public static LoadableAsset<GameObject> PhotoPanelMinigame { get; } = new LoadableBundleAsset<GameObject>("PhotoPanelMinigame", Bundle);
 
 
     // GameModes

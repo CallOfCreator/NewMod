@@ -23,7 +23,7 @@ public class S1 : ISeason
 {
     public string Name => "Season 1";
 
-    public DateTime SeasonStartDate => new(2026, 09, 24, 0, 0, 0, 0, DateTimeKind.Utc);
+    public DateTime SeasonStartDate => new(2026, 09, 18, 0, 0, 0, 0, DateTimeKind.Utc);
 
     public DateTime SeasonEndDate => new(2026, 10, 15, 0, 0, 0, 0, DateTimeKind.Utc);
     public Color SeasonMainColor => Color.blue;
@@ -128,9 +128,7 @@ public class S1 : ISeason
             typeof(HarvestButton),
             typeof(ManifestButton),
             typeof(CashOutButton),
-            typeof(ClaimButton),
-            typeof(SpecialistScanButton),
-            typeof(SpecialistModeButton)
+            typeof(ClaimButton)
         ];
     }
 

@@ -1,3 +1,4 @@
+using NewMod.Utilities;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
@@ -16,11 +17,10 @@ public class Beacon : CrewmateRole, INewModRole
     public static int charges;
     public static int grantedFromTasks;
     public static int lastCompletedTasks;
-    public static float cooldownUntil;
     public static float pulseUntil;
     public string RoleName => "Beacon";
-    public string RoleDescription => "Spend charges to scan the whole map.";
-    public string RoleLongDescription => "Open your map to spend a charge and reveal player positions.\nComplete tasks to restore limited charges.";
+    public string RoleDescription => "Check where players are on the map.";
+    public string RoleLongDescription => "Scan the map to see where living players are at that moment. Players in vents are hidden.\nThe markers stay in place and do not show names. Complete tasks to earn more scans.";
     public Color RoleColor => new(0.494f, 0.341f, 0.761f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public NewModFaction Faction => NewModFaction.Sentinel;
@@ -43,17 +43,7 @@ public class Beacon : CrewmateRole, INewModRole
         var tab = INewModRole.GetRoleTabText(this);
         var opts = OptionGroupSingleton<BeaconOptions>.Instance;
 
-        var pulseDur = opts.PulseDuration;
-        var cd = opts.PulseCooldown;
-        var taskPerCh = opts.TasksPerCharge;
-        var maxCharges = opts.MaxCharges;
-
-        tab.AppendLine($"<size=65%><color=#{ColorUtility.ToHtmlStringRGB(RoleColor)}>Recon Support</color></size>");
-        tab.AppendLine();
-        tab.AppendLine($"<size=65%>Charges: <b><color=#{ColorUtility.ToHtmlStringRGB(Color.cyan)}>{charges}</color></b> / {maxCharges}  (+1 per {taskPerCh} tasks)</size>");
-        tab.AppendLine($"<size=65%>Pulse Duration: <color=#{ColorUtility.ToHtmlStringRGB(Color.cyan)}>{pulseDur:F0}s</color> • Cooldown: <color=#{ColorUtility.ToHtmlStringRGB(Color.yellow)}>{cd:F0}s</color></size>");
-        tab.AppendLine();
-        tab.AppendLine("<size=65%><color=#FFD54F>Tip:</color> Use pulses after lights or suspected kills to catch rotations.</size>");
+        tab.Append($"\n<size=65%>{RoleColor.ToTextColor()}Charges: {charges}/{opts.MaxCharges:0} | +1 per {opts.TasksPerCharge:0} tasks</color>\nSnapshot: {opts.PulseDuration:0.#}s | Cooldown: {opts.PulseCooldown:0.#}s\nOpening the map does not spend a charge.\n<color=#FFCF70>Comms blocks scanning.</color> Markers show where players were when you scanned.</size>");
 
         return tab;
     }
@@ -61,20 +51,31 @@ public class Beacon : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (Application.platform == RuntimePlatform.Android && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay)
+        if (!evt.TriggeredByIntro)
             return;
 
+        Reset();
+    }
+
+    [RegisterEvent]
+    public static void OnSetRole(SetRoleEvent evt)
+    {
+        if (evt.Player.AmOwner && evt.Player.Data.Role is Beacon)
+            Reset();
+    }
+
+    public static void Reset()
+    {
         pulseUntil = 0f;
-        cooldownUntil = 0f;
         grantedFromTasks = 0;
         lastCompletedTasks = 0;
-        charges = (int)OptionGroupSingleton<BeaconOptions>.Instance.StartingCharges;
+        charges = Mathf.Min((int)OptionGroupSingleton<BeaconOptions>.Instance.StartingCharges, (int)OptionGroupSingleton<BeaconOptions>.Instance.MaxCharges);
     }
 
     [RegisterEvent]
     public static void OnTaskComplete(CompleteTaskEvent evt)
     {
-        if (PlayerControl.LocalPlayer.Data.Role is not Beacon) return;
+        if (!evt.Player.AmOwner || evt.Player.Data.Role is not Beacon) return;
         UpdateChargesFromTasks();
     }
 
@@ -86,13 +87,13 @@ public class Beacon : CrewmateRole, INewModRole
 
         lastCompletedTasks = completed;
         var per = (int)settings.TasksPerCharge;
-        var earned = Mathf.Min(completed / per, (int)settings.MaxCharges);
-        var delta = earned - grantedFromTasks;
+        var earned = completed / per;
+        var delta = Mathf.Min(earned - grantedFromTasks, (int)settings.MaxCharges - charges);
+        grantedFromTasks = earned;
 
         if (delta > 0)
         {
-            charges = Mathf.Clamp(charges + delta, 0, (int)settings.MaxCharges);
-            grantedFromTasks = earned;
+            charges += delta;
             Helpers.CreateAndShowNotification($"+{delta} Beacon {(delta > 1 ? "charges" : "charge")} (tasks)", new Color(0.75f, 0.65f, 1f), spr: NewModAsset.RadarIcon.LoadAsset());
         }
     }

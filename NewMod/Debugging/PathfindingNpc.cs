@@ -148,7 +148,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     public void Plan()
     {
         request?.Cancel();
-        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions(CellSize: retries > 0 ? 0.2f : 0.35f, WaitForDoors: true, UseVents: PlayerControl.LocalPlayer.Data.Role.CanVent), PlayerControl.LocalPlayer);
+        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions(retries > 0 ? 0.2f : 0.35f, WaitForDoors: true, UseVents: PlayerControl.LocalPlayer.Data.Role.CanVent), PlayerControl.LocalPlayer);
         path = null;
         SetWalking(false);
         preview.message = $"NPC finding route to {destinationName}...";
@@ -204,7 +204,9 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
                     Plan();
                 }
                 else if (!request.IsClear(visual.GetTruePosition()))
+                {
                     Finish("NPC stopped: current position is blocked; remaining tour stops were preserved.");
+                }
                 else if (touring && !returning)
                 {
                     skipped++;
@@ -212,7 +214,9 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
                     NextStop();
                 }
                 else
+                {
                     Finish($"NPC could not reach {destinationName}: {request.Status}.");
+                }
 
                 return;
             }
@@ -568,7 +572,10 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             var target = zipPhase == 3 ? (Vector2)zipline.transform.TransformPoint(landing.position) : path.Points[waypoint];
             var next = WalkTowards(target);
             if ((next - target).sqrMagnitude != 0f) return;
-            if (zipPhase == 3) zipPhase = 4;
+            if (zipPhase == 3)
+            {
+                zipPhase = 4;
+            }
             else
             {
                 SetWalking(false);
@@ -710,7 +717,10 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     public void PlayEffect(AudioClip clip, bool loop)
     {
         if (!clip || !Constants.ShouldPlaySfx()) return;
-        if (!loop) traversalAudio.PlayOneShot(clip);
+        if (!loop)
+        {
+            traversalAudio.PlayOneShot(clip);
+        }
         else
         {
             traversalAudio.clip = clip;

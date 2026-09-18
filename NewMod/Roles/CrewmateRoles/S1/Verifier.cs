@@ -1,3 +1,4 @@
+using NewMod.Utilities;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
@@ -8,13 +9,12 @@ using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles.S1;
 
-[MiraIgnore]
 public class VerifierRole : CrewmateRole, INewModRole
 {
     public string RoleName => "Verifier";
-    public string RoleDescription => "Check one recorded action each meeting.";
+    public string RoleDescription => "Check whether a player did what they claim.";
 
-    public string RoleLongDescription => "Once per meeting, verify whether a player did a task, entered a vent, was near a body, or used an ability. Only you see the result: Confirmed, Denied, or Unknown.";
+    public string RoleLongDescription => "Once per meeting, choose a player and check something they did last round.\nYou can check tasks, venting, ability use, or whether they were near a body when it was reported.\nOnly you see the result.";
 
     public Color RoleColor => new Color32(88, 232, 190, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
@@ -40,15 +40,7 @@ public class VerifierRole : CrewmateRole, INewModRole
     public StringBuilder SetTabText()
     {
         var tabText = INewModRole.GetRoleTabText(this);
-        var unknown = OptionGroupSingleton<VerifierOptions>.Instance.UnknownChance;
         var radius = OptionGroupSingleton<VerifierOptions>.Instance.NearBodyRadius;
-
-        tabText.AppendLine();
-        tabText.AppendLine("<size=65%>Meeting ability: <color=#58E8BE>once per meeting</color></size>");
-        tabText.AppendLine($"<size=65%>Unknown chance: <color=#FFD166>{unknown}%</color></size>");
-        tabText.AppendLine($"<size=65%>Near body radius: <color=#FFD166>{radius:F1}u</color></size>");
-        tabText.AppendLine("<size=65%><color=#58E8BE>Use discussion to bait claims, then verify the claim type.</color></size>");
-
-        return tabText;
+        return tabText.Append($"\n<size=65%>{RoleColor.ToTextColor()}One check per meeting.</color>\nChecks cover actions from the last round.\nBody proximity: within {radius:0.#} units at report time.\n<color=#FFCF70>Unknown</color> means no body proximity check was recorded.</size>");
     }
 }

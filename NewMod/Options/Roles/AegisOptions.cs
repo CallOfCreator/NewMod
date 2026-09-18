@@ -7,20 +7,6 @@ namespace NewMod.Options.Roles;
 
 public class AegisOptions : AbstractOptionGroup<Aegis>
 {
-    public enum AegisMode
-    {
-        BlockAndReveal,
-        Block,
-        WarnOnly
-    }
-
-    public enum WardVisibilityMode
-    {
-        OwnerOnly,
-        TeamOnly,
-        AllPlayers
-    }
-
     public override string GroupName => "Aegis Options";
 
     [ModdedNumberOption("Barrier Cooldown", 5f, 60f, suffixType: MiraNumberSuffixes.Seconds)]
@@ -34,10 +20,4 @@ public class AegisOptions : AbstractOptionGroup<Aegis>
 
     [ModdedNumberOption("Barrier Radius", 1f, 7f, suffixType: MiraNumberSuffixes.None)]
     public float Radius { get; set; } = 3f;
-
-    [ModdedEnumOption("Barrier Behavior", typeof(AegisMode))]
-    public AegisMode Behavior { get; set; } = AegisMode.Block;
-
-    [ModdedEnumOption("Ward Visibility", typeof(WardVisibilityMode))]
-    public WardVisibilityMode Visibility { get; set; } = WardVisibilityMode.AllPlayers;
 }

@@ -44,6 +44,6 @@ public class WardenSealButton : CustomActionButton, IEnergyAbility
         if (!room || room.RoomId == SystemTypes.Hallway)
             return;
 
-        WardenRole.RpcStartSeal(player, (byte)room.RoomId, OptionGroupSingleton<WardenOptions>.Instance.SealDuration);
+        WardenRole.RpcStartSeal(player, (byte)room.RoomId);
     }
 }

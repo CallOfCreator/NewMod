@@ -4,17 +4,18 @@ public enum SpecialistScanMode : byte
 {
     Presence,
     Forensics,
-    Vital
+    Disturbance
 }
 
-public sealed class SpecialistScanState
+public class SpecialistScanState
 {
-    public int Charges { get; private set; }
-    public SpecialistScanMode Mode { get; private set; }
+    public int Charges;
+    public SpecialistScanMode Mode;
 
     public void Earn()
     {
-        Charges++;
+        if (Charges < 3)
+            Charges++;
     }
 
     public SpecialistScanMode Cycle()
@@ -23,7 +24,7 @@ public sealed class SpecialistScanState
         return Mode;
     }
 
-    public bool TrySpend()
+    public bool Spend()
     {
         if (Charges == 0)
             return false;

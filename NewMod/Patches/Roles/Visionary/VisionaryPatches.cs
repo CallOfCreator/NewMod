@@ -1,56 +1,46 @@
-using System;
-using System.IO;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.Events.Vanilla.Usables;
-using MiraAPI.Utilities;
+using MiraAPI.Events.Vanilla.Meeting;
+using NewMod.Networking;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Utilities;
-using Reactor.Utilities;
+using UnityEngine;
 
 namespace NewMod.Patches.Roles.Visionary;
 
-public static class VisionaryVentEvents
+public static class VisionaryMeetingEvents
 {
     [RegisterEvent]
-    public static void OnEnterVent(EnterVentEvent evt)
+    public static void OnRoundStart(RoundStartEvent evt)
     {
-        var localPlayer = PlayerControl.LocalPlayer;
-        if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || evt.Player == localPlayer || !Helpers.CheckChance(20))
-            return;
-
-        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-        var filePath = Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-
-        Coroutines.Start(Utils.CaptureScreenshot(filePath));
+        if (evt.TriggeredByIntro)
+            VisionaryUtilities.DeleteAllScreenshots();
     }
 
     [RegisterEvent]
-    public static void OnExitVent(ExitVentEvent evt)
+    public static void OnMeetingStart(StartMeetingEvent evt)
     {
-        var localPlayer = PlayerControl.LocalPlayer;
-        if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || evt.Player == localPlayer || !Helpers.CheckChance(20))
+        VisionaryUtilities.MeetingNumber++;
+        VisionaryUtilities.BroadcastOwners.Clear();
+        Object.Destroy(VisionaryUtilities.PhotoPanel);
+        VisionaryUtilities.PhotoPanel = null;
+        if (PlayerControl.LocalPlayer.Data.Role is not TheVisionary || PlayerControl.LocalPlayer.Data.IsDead)
             return;
-
-        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-        var filePath = Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-
-        Coroutines.Start(Utils.CaptureScreenshot(filePath));
+        var button = evt.MeetingHud.MeetingAbilityButton;
+        button.Show();
+        button.SetInfiniteUses();
+        button.SetCoolDown(0f, 1f);
+        button.graphic.sprite = NewModAsset.ShowScreenshotButton.LoadAsset();
+        button.OverrideText("BROADCAST");
     }
-}
 
-public static class VisionaryMurderEvent
-{
     [RegisterEvent]
-    public static void OnBeforeMurder(BeforeMurderEvent evt)
+    public static void OnMeetingEnd(EndMeetingEvent evt)
     {
-        var localPlayer = PlayerControl.LocalPlayer;
-        if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || !Helpers.CheckChance(20))
-            return;
-
-        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-        var filePath = Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-
-        Coroutines.Start(Utils.CaptureScreenshot(filePath));
+        Object.Destroy(VisionaryUtilities.PhotoPanel);
+        VisionaryUtilities.PhotoPanel = null;
+        foreach (var key in System.Linq.Enumerable.ToArray(VisionaryPhotoRpc.Transfers.Keys))
+            if (key.Meeting >= 0)
+                VisionaryPhotoRpc.Transfers.Remove(key);
     }
 }

@@ -6,10 +6,9 @@ using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
 
-namespace NewMod.Buttons.Roles.S1;
+namespace NewMod.Buttons.Roles;
 
-[MiraIgnore]
-public sealed class SpecialistModeButton : CustomActionButton, IEnergyAbility
+public class SpecialistModeButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Intelligence;
     public bool CaptureOnClick => false;
@@ -17,7 +16,7 @@ public sealed class SpecialistModeButton : CustomActionButton, IEnergyAbility
     public override float Cooldown => 0f;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
-    public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.RadarIcon;
 
     public override bool Enabled(RoleBehaviour role)
     {
@@ -26,7 +25,7 @@ public sealed class SpecialistModeButton : CustomActionButton, IEnergyAbility
 
     public override bool CanUse()
     {
-        return base.CanUse() && Specialist.ScanStates.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
+        return base.CanUse() && !CustomButtonSingleton<SpecialistScanButton>.Instance.EffectActive && Specialist.ScanStates.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
     }
 
     protected override void OnClick()

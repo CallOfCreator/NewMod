@@ -60,12 +60,18 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        preview.request = new MapPathRequest(ShipStatus.Instance, preview.start, preview.goal,
-            new PathOptions(UseVents: PlayerControl.LocalPlayer.Data.Role.CanVent), PlayerControl.LocalPlayer);
+        preview.request = new MapPathRequest(ShipStatus.Instance, preview.start, preview.goal, new PathOptions(UseVents: PlayerControl.LocalPlayer.Data.Role.CanVent), PlayerControl.LocalPlayer);
     }
 
-    public static void SendNpc() => GetOrCreate().StartNpc(false);
-    public static void TourMap() => GetOrCreate().StartNpc(true);
+    public static void SendNpc()
+    {
+        GetOrCreate().StartNpc(false);
+    }
+
+    public static void TourMap()
+    {
+        GetOrCreate().StartNpc(true);
+    }
 
     public static void StopNpc()
     {
@@ -83,12 +89,14 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             message = tour ? "Mark the start first." : "Mark both the start and goal first.";
             return;
         }
+
         var probe = MapPathfinding.CreateRequest(start, tour ? start : goal);
         if (probe.Status == PathStatus.InvalidEndpoint)
         {
             message = "NPC start or goal is not on clear floor.";
             return;
         }
+
         probe.Cancel();
         StopNpc();
         StopSearch();
@@ -126,9 +134,20 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             GUIUtility.systemCopyBuffer = Current.traversalReport;
     }
 
-    public static void InspectTraversals() => GetOrCreate().ScanTraversals();
-    public static void TestNearestLadder() => GetOrCreate().ScanTraversals(PathTraversal.Ladder);
-    public static void TestNearestZipline() => GetOrCreate().ScanTraversals(PathTraversal.Zipline);
+    public static void InspectTraversals()
+    {
+        GetOrCreate().ScanTraversals();
+    }
+
+    public static void TestNearestLadder()
+    {
+        GetOrCreate().ScanTraversals(PathTraversal.Ladder);
+    }
+
+    public static void TestNearestZipline()
+    {
+        GetOrCreate().ScanTraversals(PathTraversal.Zipline);
+    }
 
     public void ClearTraversalLines()
     {
@@ -162,27 +181,31 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
                 if (landing)
                 {
                     report.AppendLine($"  Landing world={landing.position} local={landing.localPosition} zipline origin={zipline.transform.position}");
-                    DescribeTraversal(probe, report, console, from, zipline.transform.TransformPoint(landing.position),
-                        $"zipline active={zipline.isActiveAndEnabled}, destination active={console.destination && console.destination.isActiveAndEnabled}");
+                    DescribeTraversal(probe, report, console, from, zipline.transform.TransformPoint(landing.position), $"zipline active={zipline.isActiveAndEnabled}, destination active={console.destination && console.destination.isActiveAndEnabled}");
                 }
                 else
+                {
                     report.AppendLine("  Missing landing transform.");
+                }
             }
             else
+            {
                 report.AppendLine("  Missing zipline behaviour.");
+            }
+
             if (test == PathTraversal.Zipline && Vector2.Distance(position, from) < distance)
             {
                 distance = Vector2.Distance(position, from);
                 nearest = console;
             }
         }
+
         foreach (var ladder in ladders)
         {
             var from = (Vector2)ladder.transform.position;
             report.AppendLine($"Ladder {ladder.name} id={ladder.Id} top={ladder.IsTop} active={ladder.isActiveAndEnabled}");
             if (ladder.Destination)
-                DescribeTraversal(probe, report, ladder, from, ladder.Destination.transform.position,
-                    $"destination active={ladder.Destination.isActiveAndEnabled}");
+                DescribeTraversal(probe, report, ladder, from, ladder.Destination.transform.position, $"destination active={ladder.Destination.isActiveAndEnabled}");
             else
                 report.AppendLine("  Missing destination.");
             if (test == PathTraversal.Ladder && Vector2.Distance(position, from) < distance)
@@ -191,6 +214,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
                 nearest = ladder;
             }
         }
+
         traversalReport = report.ToString();
         Info(traversalReport);
         probe.Cancel();
@@ -199,6 +223,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             message = "Traversal scan complete. Green: connected | Yellow: isolated | Red: rejected. Details below and in the log.";
             return;
         }
+
         var selected = -1;
         for (var i = 0; i < probe.linkSources.Count; i++)
             if (probe.linkSources[i] == nearest)
@@ -206,11 +231,13 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
                 selected = i;
                 break;
             }
+
         if (selected < 0)
         {
             message = nearest ? $"Nearest {test} was rejected. See the scan report." : $"No {test} found on this map.";
             return;
         }
+
         start = probe.links[selected].Start;
         goal = probe.links[selected].End;
         hasStart = hasGoal = true;
@@ -229,21 +256,26 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
                 selected = i;
                 break;
             }
+
         var entryNeighbours = 0;
         var exitNeighbours = 0;
         if (selected >= 0 && probe.grid != null)
         {
             foreach (var edge in probe.grid.Edges(-3 - selected * 2))
-                if (edge.Node >= 0) entryNeighbours++;
+                if (edge.Node >= 0)
+                    entryNeighbours++;
             foreach (var edge in probe.grid.Edges(-4 - selected * 2))
-                if (edge.Node >= 0) exitNeighbours++;
+                if (edge.Node >= 0)
+                    exitNeighbours++;
         }
+
         report.AppendLine($"  {state}; included={selected >= 0}; walking neighbours entry={entryNeighbours}, exit={exitNeighbours}");
         if (selected >= 0)
         {
             report.AppendLine($"  Connected entry={probe.links[selected].Start}, exit={probe.links[selected].End}");
             report.AppendLine($"  Approach offsets entry={Vector2.Distance(from, probe.links[selected].Start):0.00}, exit={Vector2.Distance(to, probe.links[selected].End):0.00}");
         }
+
         report.AppendLine($"  Entry {DescribeEndpoint(probe, from)}");
         report.AppendLine($"  Exit  {DescribeEndpoint(probe, to)}");
         var color = selected < 0 ? Color.red : entryNeighbours == 0 || exitNeighbours == 0 ? Color.yellow : Color.green;
@@ -252,6 +284,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             from = probe.links[selected].Start;
             to = probe.links[selected].End;
         }
+
         var line = CreateLine("TraversalDebug", color);
         line.positionCount = 2;
         line.SetPosition(0, new Vector3(from.x, from.y, -5.1f));

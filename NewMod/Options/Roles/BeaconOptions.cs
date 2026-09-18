@@ -18,15 +18,9 @@ public class BeaconOptions : AbstractOptionGroup<Beacon>
     [ModdedNumberOption("Max Charges", 1f, 6f, suffixType: MiraNumberSuffixes.None)]
     public float MaxCharges { get; set; } = 2f;
 
-    [ModdedNumberOption("Pulse Duration", 1f, 30f, suffixType: MiraNumberSuffixes.Seconds)]
-    public float PulseDuration { get; set; } = 8f;
+    [ModdedNumberOption("Snapshot Display Duration", 1f, 10f, suffixType: MiraNumberSuffixes.Seconds)]
+    public float PulseDuration { get; set; } = 4f;
 
     [ModdedNumberOption("Pulse Cooldown", 0f, 60f, suffixType: MiraNumberSuffixes.Seconds)]
     public float PulseCooldown { get; set; } = 25f;
-
-    [ModdedToggleOption("Show Live Counts During Pulse")]
-    public bool ShowOnMinimap { get; set; } = true;
-
-    [ModdedToggleOption("Include Dead Bodies")]
-    public bool IncludeDeadBodies { get; set; } = false;
 }

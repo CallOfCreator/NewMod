@@ -1,43 +1,49 @@
-using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using MiraAPI.GameOptions;
+using MiraAPI.Utilities;
 using NewMod.Components;
 using NewMod.Options.Roles;
-using Reactor.Utilities;
-using Reactor.Utilities.Extensions;
+using NewMod.Roles.CrewmateRoles;
+using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
 using UnityEngine;
 
 namespace NewMod.Utilities;
 
 public static class AegisUtilities
 {
-    public static readonly HashSet<byte> ActiveOwners = new();
-
-    public static bool HasActiveShield()
+    [MethodRpc((uint)CustomRPC.AegisRequestWard, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcRequestWard(PlayerControl source)
     {
-        var lp = PlayerControl.LocalPlayer;
-        return lp && ActiveOwners.Contains(lp.PlayerId);
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Aegis || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ShieldArea._active.Any(area => area.ownerId == source.PlayerId))
+            return;
+        var position = source.GetTruePosition();
+        RpcPlaceWard(PlayerControl.LocalPlayer, source.PlayerId, position.x, position.y);
     }
 
-    public static void ActivateShield(PlayerControl owner, Vector2 position)
+    [MethodRpc((uint)CustomRPC.AegisPlaceWard, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcPlaceWard(PlayerControl source, byte ownerId, float x, float y)
     {
-        if (!owner) return;
-
-        var opts = OptionGroupSingleton<AegisOptions>.Instance;
-
-        var go = new GameObject("AegisShieldArea").DontDestroy();
-        go.transform.position = position;
-
-        var area = go.AddComponent<ShieldArea>();
-        area.Init(owner.PlayerId, opts.Radius, opts.DurationSeconds);
-
-        ActiveOwners.Add(owner.PlayerId);
-        Coroutines.Start(CoCleanupOwner(owner.PlayerId, opts.DurationSeconds));
+        if (!source.IsHost())
+            return;
+        var options = OptionGroupSingleton<AegisOptions>.Instance;
+        var go = new GameObject("AegisWard");
+        go.transform.SetParent(ShipStatus.Instance.transform, false);
+        go.transform.position = new Vector2(x, y);
+        go.AddComponent<ShieldArea>().Init(ownerId, options.Radius, options.DurationSeconds);
     }
 
-    private static IEnumerator CoCleanupOwner(byte ownerId, float duration)
+    [MethodRpc((uint)CustomRPC.AegisBreakWard, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcBreakWard(PlayerControl source, byte ownerId)
     {
-        yield return new WaitForSeconds(duration);
-        ActiveOwners.Remove(ownerId);
+        if (!source.IsHost())
+            return;
+
+        var area = ShieldArea._active.FirstOrDefault(ward => ward.ownerId == ownerId);
+        if (area)
+        {
+            ShieldArea._active.Remove(area);
+            Object.Destroy(area.gameObject);
+        }
     }
 }

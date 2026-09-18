@@ -102,14 +102,6 @@ public static class CustomEndGame
             }
         }
 
-        var doubleAgent = alivePlayers.FirstOrDefault(player => player.Data.Role is DoubleAgent && player.AllTasksCompleted() && Utils.IsSabotage() && !DoubleAgent.CounterfeitActive);
-
-        if (doubleAgent)
-        {
-            CustomGameOver.Trigger<DoubleAgentGameOver>([doubleAgent.Data]);
-            return true;
-        }
-
         var specialAgentRequired = OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
         var specialAgent = alivePlayers.FirstOrDefault(player => player.Data.Role is SpecialAgent && Utils.GetMissionSuccessCount(player.PlayerId) - Utils.GetMissionFailureCount(player.PlayerId) >= specialAgentRequired);
 

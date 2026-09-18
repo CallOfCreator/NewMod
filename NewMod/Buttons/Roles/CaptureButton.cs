@@ -1,5 +1,7 @@
-using System;
-using System.IO;
+using System.Collections;
+using System.Linq;
+using MiraAPI.Utilities;
+using Reactor.Utilities;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
@@ -8,7 +10,6 @@ using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
-using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
@@ -18,58 +19,119 @@ namespace NewMod.Buttons.Roles;
 /// </summary>
 public class CaptureButton : CustomActionButton, IEnergyAbility
 {
+    public GameObject PlacementPreview;
+    public Vector2 PlacementPosition;
+    public float PlacementAngle;
+
     public EnergyCategory Category => EnergyCategory.Intelligence;
 
-    /// <summary>
-    ///     The name shown on this button.
-    /// </summary>
-    public override string Name => "Capture";
+    public override string Name => "Place Camera";
 
-    /// <summary>
-    ///     The cooldown time before this button can be used again, based on <see cref="VisionaryOptions" />.
-    /// </summary>
     public override float Cooldown => OptionGroupSingleton<VisionaryOptions>.Instance.ScreenshotCooldown;
 
-    /// <summary>
-    ///     The duration of any effect triggered by this button; here, none.
-    /// </summary>
     public override float EffectDuration => 0;
 
-    /// <summary>
-    ///     The maximum number of screenshots the user can capture, based on <see cref="VisionaryOptions" />.
-    /// </summary>
     public override int MaxUses => (int)OptionGroupSingleton<VisionaryOptions>.Instance.MaxScreenshots;
 
-    /// <summary>
-    ///     The icon or sprite associated with this button, set to a camera sprite.
-    /// </summary>
     public override LoadableAsset<Sprite> Sprite => NewModAsset.Camera;
 
-    /// <summary>
-    ///     The location on-screen where this button appears.
-    /// </summary>
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
 
-    /// <summary>
-    ///     Default keybind for Visionary's Capture ability.
-    /// </summary>
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
-    /// <summary>
-    ///     Handles the button click, capturing a screenshot and saving it to a unique path.
-    /// </summary>
     protected override void OnClick()
     {
-        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
-        var path = Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-        Coroutines.Start(Utils.CaptureScreenshot(path));
+        VisionaryUtilities.RpcRequestCamera(PlayerControl.LocalPlayer, PlacementPosition.x, PlacementPosition.y, PlacementAngle);
     }
 
-    /// <summary>
-    ///     Determines whether this button is enabled for the given role.
-    /// </summary>
-    /// <param name="role">The current player's role.</param>
-    /// <returns>True if the role is <see cref="TheVisionary" />, otherwise false.</returns>
+    public override bool CanUse()
+    {
+        return base.CanUse() && !PlacementPreview;
+    }
+
+    public override void ClickHandler()
+    {
+        if (CanClick())
+            Coroutines.Start(PlaceCamera());
+    }
+
+    public IEnumerator PlaceCamera()
+    {
+        var player = PlayerControl.LocalPlayer;
+        var preview = new GameObject("CameraPlacement");
+        PlacementPreview = preview;
+        preview.transform.SetParent(ShipStatus.Instance.transform, false);
+        preview.layer = LayerMask.NameToLayer("UI");
+        preview.transform.localScale = Vector3.one * 0.5f;
+        var sprite = new GameObject("CameraSprite").AddComponent<SpriteRenderer>();
+        sprite.gameObject.layer = preview.layer;
+        sprite.transform.SetParent(preview.transform, false);
+        sprite.sprite = NewModAsset.CameraOff.LoadAsset();
+        sprite.transform.localPosition = Vector3.down * sprite.sprite.vertices.Min(vertex => vertex.y);
+        sprite.color = new Color(0.6f, 0.6f, 0.6f, 0.6f);
+        var arrow = preview.AddComponent<LineRenderer>();
+        arrow.sharedMaterial = Utils.GetCircleMat();
+        arrow.useWorldSpace = true;
+        arrow.positionCount = 5;
+        arrow.startWidth = arrow.endWidth = 0.04f;
+        var aiming = false;
+        var confirmed = false;
+        PlacementPosition = player.GetTruePosition();
+        preview.transform.position = new Vector3(PlacementPosition.x, PlacementPosition.y, PlacementPosition.y / 1000f);
+        PlacementAngle = player.cosmetics.FlipX ? 180f : 0f;
+        try
+        {
+            while (preview && player && !MeetingHud.Instance && (Input.GetMouseButton(0) || Input.touchCount > 0))
+                yield return null;
+            while (preview && player && player.Data.Role is TheVisionary && !player.Data.IsDead && player.CanMove && !player.inVent && !MeetingHud.Instance && ShipStatus.Instance)
+            {
+                if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
+                    break;
+                if (Input.touchCount > 1 || (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Canceled))
+                    break;
+                var touching = Input.touchCount == 1;
+                var pointer = touching ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
+                var point = (Vector2)Camera.main.ScreenToWorldPoint(pointer);
+                var pressed = touching ? Input.GetTouch(0).phase == TouchPhase.Began : Input.GetMouseButtonDown(0);
+                var released = touching ? Input.GetTouch(0).phase == TouchPhase.Ended : Input.GetMouseButtonUp(0);
+                if (!aiming)
+                    PlacementPosition = point;
+                var offset = PlacementPosition - player.GetTruePosition();
+                var valid = offset.magnitude <= OptionGroupSingleton<VisionaryOptions>.Instance.PlacementRange && !PhysicsHelpers.AnyNonTriggersBetween(player.GetTruePosition(), offset.normalized, offset.magnitude, Constants.ShipAndObjectsMask);
+                if (pressed && valid)
+                    aiming = true;
+                var aim = point - PlacementPosition;
+                if (aiming && aim.sqrMagnitude > 0.01f)
+                    PlacementAngle = Mathf.Atan2(aim.y, aim.x) * Mathf.Rad2Deg;
+                preview.transform.position = new Vector3(PlacementPosition.x, PlacementPosition.y, PlacementPosition.y / 1000f);
+                var radians = PlacementAngle * Mathf.Deg2Rad;
+                var direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
+                var tip = PlacementPosition + direction;
+                var side = new Vector2(-direction.y, direction.x) * 0.15f;
+                arrow.SetPositions(new Vector3[] { PlacementPosition, tip, tip - direction * 0.25f + side, tip, tip - direction * 0.25f - side });
+                var color = valid ? new Color(0.6f, 0.6f, 0.6f, 0.6f) : new Color(1f, 0.3f, 0.3f, 0.6f);
+                sprite.color = color;
+                arrow.startColor = arrow.endColor = color;
+                if (aiming && released)
+                {
+                    confirmed = valid;
+                    break;
+                }
+
+                yield return null;
+            }
+        }
+        finally
+        {
+            Object.Destroy(preview);
+            if (PlacementPreview == preview)
+                PlacementPreview = null;
+        }
+
+        if (confirmed)
+            base.ClickHandler();
+    }
+
     public override bool Enabled(RoleBehaviour role)
     {
         return role is TheVisionary;

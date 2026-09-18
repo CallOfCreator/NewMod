@@ -715,35 +715,6 @@ public static class Utils
     }
 
     /// <summary>
-    /// Captures a screenshot of the current game screen, hides the HUD, and then reactivates it.
-    /// </summary>
-    /// <param name="filePath">The path to save the screenshot file.</param>
-    /// <returns>An IEnumerator for coroutine control.</returns>
-    public static IEnumerator CaptureScreenshot(string filePath)
-    {
-        if (VisionaryUtilities.IsCapturing)
-            yield break;
-
-        VisionaryUtilities.IsCapturing = true;
-        var clip = NewModAsset.VisionarySound.LoadAsset();
-
-        HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, false);
-        SoundManager.Instance.PlaySound(clip, false, 1f, null);
-        yield return new WaitForEndOfFrame();
-        var screenshot = ScreenCapture.CaptureScreenshotAsTexture();
-        File.WriteAllBytes(filePath, screenshot.EncodeToPNG());
-        Object.Destroy(screenshot);
-        VisionaryUtilities.HasScreenshots = true;
-        Info($"Saved screenshot: {Path.GetFileName(filePath)}.");
-
-        yield return new WaitForEndOfFrame();
-
-        SoundManager.Instance.StopSound(clip);
-        HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, true);
-        VisionaryUtilities.IsCapturing = false;
-    }
-
-    /// <summary>
     ///     Gradually fades out the provided ghost object and then destroys it.
     /// </summary>
     /// <param name="ghost">The GameObject representing the ghost.</param>

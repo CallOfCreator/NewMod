@@ -14,11 +14,7 @@ public interface INewModRole : ICustomRole
 
     public static StringBuilder GetRoleTabText(ICustomRole role)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine($"{role.RoleColor.ToTextColor()}You are <b>{role.RoleName}</b></color>");
-        sb.AppendLine($"<size=65%>Faction: {Utils.GetFactionDisplay((INewModRole)role)}</size>");
-        sb.AppendLine($"<size=70%>{role.RoleLongDescription}</size>");
-        return sb;
+        return new StringBuilder($"{role.RoleColor.ToTextColor()}You are <b>{role.RoleName}</b></color>\n<size=65%>Faction: {Utils.GetFactionDisplay((INewModRole)role)}</size>\n<size=70%>{role.RoleLongDescription}</size>\n");
     }
 
     [HideFromIl2Cpp]

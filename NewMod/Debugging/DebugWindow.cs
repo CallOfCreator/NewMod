@@ -49,7 +49,7 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
         if (Input.GetKeyDown(ToggleKey))
             Enabled = !Enabled;
 
-        if (CameraControlsOpen) return;
+        if (!CameraControlsOpen || !DestroyableSingleton<TutorialManager>.InstanceExists || !ShipStatus.Instance) return;
 
         var scroll = Input.mouseScrollDelta.y;
 

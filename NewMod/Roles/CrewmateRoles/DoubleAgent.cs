@@ -1,9 +1,7 @@
 using System.Collections;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
-using MiraAPI.Networking;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
@@ -16,13 +14,15 @@ using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles;
 
-public class DoubleAgent : CrewmateRole, ICustomRole
+public class DoubleAgent : CrewmateRole, INewModRole
 {
     public static bool CounterfeitActive;
+    public static float CooldownUntil;
 
     public string RoleName => "Double Agent";
-    public string RoleDescription => "Create short counterfeit sabotages to bait Impostors.";
-    public string RoleLongDescription => "Use the sabotage map to start a convincing counterfeit that repairs itself quickly. Complete your tasks and survive a real sabotage to win.";
+    public string RoleDescription => "Sabotage Comms while playing for the crew.";
+    public string RoleLongDescription => "Use the sabotage map to briefly disable Communications. It repairs itself after a short time.\nYou still complete tasks and win with the crew.";
+    public NewModFaction Faction => NewModFaction.Sentinel;
     public Color RoleColor => Palette.ImpostorRed;
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Crewmate;
@@ -44,16 +44,20 @@ public class DoubleAgent : CrewmateRole, ICustomRole
             RoleHintType = RoleHintType.RoleTab
         };
 
-    public override bool DidWin(GameOverReason gameOverReason)
+    [Il2CppInterop.Runtime.Attributes.HideFromIl2Cpp]
+    public System.Text.StringBuilder SetTabText()
     {
-        return gameOverReason == CustomGameOver.GameOverReason<DoubleAgentGameOver>();
+        var options = OptionGroupSingleton<DoubleAgentOptions>.Instance;
+        return INewModRole.GetRoleTabText(this).Append($"\n<size=65%>{RoleColor.ToTextColor()}Sabotage: Communications only</color>\nDuration: {options.CounterfeitDuration:0.#}s | Cooldown: {options.CounterfeitCooldown:0.#}s\nRepairs itself. Cannot replace an active sabotage.\n<color=#FFCF70>You win with the crew.</color></size>");
     }
 
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
-        if (evt.TriggeredByIntro)
-            CounterfeitActive = false;
+        if (!evt.TriggeredByIntro)
+            return;
+        CounterfeitActive = false;
+        CooldownUntil = 0f;
     }
 
     [RegisterEvent]
@@ -64,7 +68,7 @@ public class DoubleAgent : CrewmateRole, ICustomRole
 
     public static void BeginCounterfeit(PlayerControl source, byte sabotageId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not DoubleAgent || source.Data.IsDead || CounterfeitActive)
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not DoubleAgent || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || CounterfeitActive || Time.time < CooldownUntil || (SystemTypes)sabotageId != SystemTypes.Comms)
             return;
 
         var sabotage = ShipStatus.Instance.Systems[SystemTypes.Sabotage].Cast<SabotageSystemType>();
@@ -72,69 +76,52 @@ public class DoubleAgent : CrewmateRole, ICustomRole
             return;
 
         var duration = OptionGroupSingleton<DoubleAgentOptions>.Instance.CounterfeitDuration;
-        RpcStartCounterfeit(PlayerControl.LocalPlayer, sabotageId, duration);
-        ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Sabotage, sabotageId);
-        Coroutines.Start(CoFinishCounterfeit(sabotageId, duration));
+        RpcStartCounterfeit(PlayerControl.LocalPlayer, duration);
+        ShipStatus.Instance.UpdateSystem(SystemTypes.Comms, source, 128);
+        Coroutines.Start(CoFinishCounterfeit(duration));
     }
 
     [MethodRpc((uint)CustomRPC.DoubleAgentStartCounterfeit, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcStartCounterfeit(PlayerControl host, byte sabotageId, float duration)
+    public static void RpcStartCounterfeit(PlayerControl source, float duration)
     {
-        if (!host.IsHost())
+        if (!source.IsHost())
             return;
 
         CounterfeitActive = true;
+        CooldownUntil = Time.time + OptionGroupSingleton<DoubleAgentOptions>.Instance.CounterfeitCooldown;
 
         if (PlayerControl.LocalPlayer.Data.Role is DoubleAgent)
             Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF4B4B>Counterfeit deployed.</color> It will collapse in {duration:0}s."));
     }
 
-    private static IEnumerator CoFinishCounterfeit(byte sabotageId, float duration)
+    public static IEnumerator CoFinishCounterfeit(float duration)
     {
-        yield return new WaitForSeconds(duration);
+        var ship = ShipStatus.Instance;
+        var endsAt = Time.time + duration;
+        while (ShipStatus.Instance == ship && CounterfeitActive && Time.time < endsAt && Utils.IsActive(SystemTypes.Comms))
+            yield return null;
 
-        if (CounterfeitActive)
-            RpcFinishCounterfeit(PlayerControl.LocalPlayer, sabotageId);
+        if (ShipStatus.Instance == ship && CounterfeitActive)
+            RpcFinishCounterfeit(PlayerControl.LocalPlayer);
     }
 
     [MethodRpc((uint)CustomRPC.DoubleAgentFinishCounterfeit, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcFinishCounterfeit(PlayerControl host, byte sabotageId)
+    public static void RpcFinishCounterfeit(PlayerControl source)
     {
-        if (!host.IsHost())
+        if (!source.IsHost())
             return;
 
-        var system = (SystemTypes)sabotageId;
-
-        if (AmongUsClient.Instance.AmHost)
-            switch (system)
+        if (AmongUsClient.Instance.AmHost && CounterfeitActive)
+        {
+            if (ShipStatus.Instance.Type is ShipStatus.MapType.Hq or ShipStatus.MapType.Fungle)
             {
-                case SystemTypes.Comms when ShipStatus.Instance.Type is ShipStatus.MapType.Hq or ShipStatus.MapType.Fungle:
-                    ShipStatus.Instance.RpcUpdateSystem(system, 16);
-                    ShipStatus.Instance.RpcUpdateSystem(system, 17);
-                    break;
-                case SystemTypes.Comms:
-                    ShipStatus.Instance.RpcUpdateSystem(system, 0);
-                    break;
-                case SystemTypes.HeliSabotage:
-                    ShipStatus.Instance.RpcUpdateSystem(system, 16);
-                    ShipStatus.Instance.RpcUpdateSystem(system, 17);
-                    break;
-                case SystemTypes.Reactor:
-                case SystemTypes.Laboratory:
-                case SystemTypes.LifeSupp:
-                    ShipStatus.Instance.RpcUpdateSystem(system, 16);
-                    break;
+                ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Comms, 16);
+                ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Comms, 17);
             }
-
-        if (system == SystemTypes.Electrical)
-        {
-            var lights = ShipStatus.Instance.Systems[SystemTypes.Electrical].Cast<SwitchSystem>();
-            lights.ActualSwitches = lights.ExpectedSwitches;
-        }
-        else if (system == SystemTypes.MushroomMixupSabotage)
-        {
-            var mushroom = ShipStatus.Instance.Systems[SystemTypes.MushroomMixupSabotage].Cast<MushroomMixupSabotageSystem>();
-            mushroom.currentSecondsUntilHeal = 0.1f;
+            else
+            {
+                ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Comms, 0);
+            }
         }
 
         CounterfeitActive = false;

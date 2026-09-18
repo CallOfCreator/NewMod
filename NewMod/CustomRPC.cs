@@ -107,5 +107,15 @@ public enum CustomRPC
     EgoistConfirmChallenge,
     EgoistSetEgo,
     EgoistResolveChallenge,
-    PathfindingOpenDoor
+    PathfindingOpenDoor,
+    AegisPlaceWard,
+    AegisBreakWard,
+    VisionaryRequestCamera,
+    VisionaryPlaceCamera,
+    VisionaryCameraReady,
+    VisionaryInteractCamera,
+    VisionaryResolveCamera,
+    VisionaryBroadcast,
+    VisionaryPhoto,
+    AegisRequestWard
 }
