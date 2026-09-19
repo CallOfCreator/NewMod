@@ -69,19 +69,6 @@ public static class CustomEndGame
             return true;
         }
 
-        var pulseBladeOptions = OptionGroupSingleton<PulseBladeOptions>.Instance;
-
-        if (alivePlayers.Length <= pulseBladeOptions.PlayersThreshold)
-        {
-            var pulseBlade = alivePlayers.FirstOrDefault(player => player.Data.Role is PulseBlade && Utils.GetStrikes(player.PlayerId) >= pulseBladeOptions.RequiredStrikes);
-
-            if (pulseBlade)
-            {
-                CustomGameOver.Trigger<PulseBladeGameOver>([pulseBlade.Data]);
-                return true;
-            }
-        }
-
         if (Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet)
         {
             var tyrant = alivePlayers.FirstOrDefault(player => player.Data.Role is Tyrant);

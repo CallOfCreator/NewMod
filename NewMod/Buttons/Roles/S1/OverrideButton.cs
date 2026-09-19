@@ -3,16 +3,17 @@ using MiraAPI.Keybinds;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
-using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
+using NewMod.RoleLogic;
+using NewMod.Utilities;
 using DeadwireRole = NewMod.Roles.ImpostorRoles.S1.Deadwire;
 
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class OverrideButton : CustomActionButton, IEnergyAbility
+public class OverrideButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
     public override string Name => "Override";
@@ -29,7 +30,17 @@ public sealed class OverrideButton : CustomActionButton, IEnergyAbility
 
     public override bool CanUse()
     {
-        return base.CanUse() && DeadwireRole.Records.ContainsKey(PlayerControl.LocalPlayer.PlayerId);
+        if (!base.CanUse() || !DeadwireRole.Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record))
+            return false;
+        if (record.Response is not (DeadwireResponse.TrackActor or DeadwireResponse.JamActor))
+            return true;
+        var actor = Utils.PlayerById(record.ActorId);
+        return actor && !actor.Data.IsDead && !actor.Data.Disconnected;
+    }
+
+    protected override void FixedUpdate(PlayerControl playerControl)
+    {
+        OverrideName(DeadwireRole.Records.TryGetValue(playerControl.PlayerId, out var record) ? record.Description : Name);
     }
 
     protected override void OnClick()

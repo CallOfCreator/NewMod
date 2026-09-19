@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
+using MiraAPI.Utilities;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
@@ -11,10 +12,10 @@ using DeadwireRole = NewMod.Roles.ImpostorRoles.S1.Deadwire;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class DeadlockButton : CustomActionButton, IEnergyAbility
+public class DeadlockButton : CustomActionButton<PlayerControl>, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
-    private PlayerControl _target;
+    public override float Distance => OptionGroupSingleton<DeadwireOptions>.Instance.DeadlockRange;
 
     public override string Name => "Deadlock";
     public override float InitialCooldown => 0f;
@@ -29,32 +30,19 @@ public sealed class DeadlockButton : CustomActionButton, IEnergyAbility
         return role is DeadwireRole;
     }
 
-    public override bool CanUse()
+    public override PlayerControl GetTarget()
     {
-        if (!base.CanUse() || DeadwireRole.Records.ContainsKey(PlayerControl.LocalPlayer.PlayerId))
-            return false;
+        return DeadwireRole.Records.ContainsKey(PlayerControl.LocalPlayer.PlayerId) ? null : PlayerControl.LocalPlayer.GetClosestPlayer(false, Distance, predicate: player => !player.inVent);
+    }
 
-        _target = null;
-        var distance = OptionGroupSingleton<DeadwireOptions>.Instance.DeadlockRange;
-
-        foreach (var player in PlayerControl.AllPlayerControls)
-        {
-            if (player == PlayerControl.LocalPlayer || player.Data.IsDead || player.Data.Disconnected || player.Data.Role is DeadwireRole)
-                continue;
-
-            var candidateDistance = Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), player.GetTruePosition());
-            if (candidateDistance >= distance)
-                continue;
-
-            distance = candidateDistance;
-            _target = player;
-        }
-
-        return _target;
+    public override void SetOutline(bool active)
+    {
+        if (Target)
+            Target.cosmetics.SetOutline(active, new Il2CppSystem.Nullable<Color>(Color.red));
     }
 
     protected override void OnClick()
     {
-        DeadwireRole.RpcRequestDeadlock(PlayerControl.LocalPlayer, _target);
+        DeadwireRole.RpcRequestDeadlock(PlayerControl.LocalPlayer, Target);
     }
 }

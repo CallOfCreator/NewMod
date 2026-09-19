@@ -6,7 +6,7 @@ using MiraAPI.Utilities;
 namespace NewMod.Options.Roles.S1;
 
 [MiraIgnore]
-public sealed class DeadwireOptions : AbstractOptionGroup<global::NewMod.Roles.ImpostorRoles.S1.Deadwire>
+public class DeadwireOptions : AbstractOptionGroup<global::NewMod.Roles.ImpostorRoles.S1.Deadwire>
 {
     public override string GroupName => "Deadwire Settings";
 
@@ -24,6 +24,12 @@ public sealed class DeadwireOptions : AbstractOptionGroup<global::NewMod.Roles.I
 
     [ModdedNumberOption("Override Cooldown", 3f, 15f, 1f, MiraNumberSuffixes.Seconds)]
     public float OverrideCooldown { get; set; } = 5f;
+
+    [ModdedNumberOption("Kill Cooldown Reduction", 1f, 15f, 1f, MiraNumberSuffixes.Seconds)]
+    public float KillCooldownReduction { get; set; } = 8f;
+
+    [ModdedNumberOption("Minimum Kill Delay", 2f, 10f, 1f, MiraNumberSuffixes.Seconds)]
+    public float MinimumKillDelay { get; set; } = 3f;
 
     [ModdedNumberOption("Tracking Duration", 3f, 12f, 1f, MiraNumberSuffixes.Seconds)]
     public float TrackingDuration { get; set; } = 6f;

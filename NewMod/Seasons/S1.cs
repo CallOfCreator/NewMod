@@ -77,7 +77,6 @@ public class S1 : ISeason
             typeof(FatefulModifier),
             typeof(LazyModifier),
             typeof(InVoid),
-            typeof(JustLeftVoid),
             typeof(MarkedModifier),
             typeof(MomentumModifier)
         ];

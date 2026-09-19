@@ -96,11 +96,6 @@ public static class Utils
     /// </summary>
     public static Dictionary<byte, TextMeshPro> MissionTimer = new();
 
-    /// <summary>
-    ///     A dictionary holding the strike kill counts for each player, indexed by their player ID.
-    /// </summary>
-    public static readonly Dictionary<byte, int> StrikeKills = new();
-
     public static Material _circleMat;
 
     /// <summary>
@@ -320,37 +315,6 @@ public static class Utils
     public static void ResetMissionFailureCount()
     {
         MissionFailureCount.Clear();
-    }
-
-    /// <summary>
-    ///     Resets the strike count for all players.
-    ///     Clears the stored strike kill counts for all players.
-    /// </summary>
-    public static void ResetStrikeCount()
-    {
-        StrikeKills.Clear();
-    }
-
-    /// <summary>
-    ///     Registers a strike kill for a specific player.
-    ///     Increments the strike kill count for the given killer player.
-    /// </summary>
-    /// <param name="killer">The player who made the strike kill.</param>
-    /// <param name="victim">The player who was struck (victim).</param>
-    public static void RegisterStrikeKill(PlayerControl killer, PlayerControl victim)
-    {
-        var playerId = killer.PlayerId;
-        StrikeKills[playerId] = StrikeKills.GetValueOrDefault(playerId) + 1;
-    }
-
-    /// <summary>
-    ///     Retrieves the total number of strike kills for a specific player.
-    /// </summary>
-    /// <param name="playerId">The unique ID of the player whose strike count is being queried.</param>
-    /// <returns>The number of strike kills for the specified player.</returns>
-    public static int GetStrikes(byte playerId)
-    {
-        return StrikeKills.GetValueOrDefault(playerId);
     }
 
     /// <summary>

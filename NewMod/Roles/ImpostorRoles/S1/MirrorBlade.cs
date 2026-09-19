@@ -4,6 +4,7 @@ using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameOptions;
 using MiraAPI.Networking;
 using MiraAPI.PluginLoading;
@@ -22,11 +23,11 @@ namespace NewMod.Roles.ImpostorRoles.S1;
 public class MirrorBladeRole : ImpostorRole, INewModRole
 {
     public static readonly HashSet<byte> ArmedReflections = new();
-    public static bool _reflecting;
+    public static bool Reflecting;
     public string RoleName => "MirrorBlade";
     public string RoleDescription => "Reflect the strike meant for you.";
 
-    public string RoleLongDescription => "Arm your mirror stance. The next murder targeting you is turned back on the attacker. A Wraith that reaches you is reflected and hunts its caller instead.";
+    public string RoleLongDescription => "Briefly reveal a mirror stance that reflects the next attack back at its attacker.\nYou cannot attack during the stance. An opponent can wait for it to end. Wraiths turn back on their caller.";
 
     public Color RoleColor => new Color32(192, 220, 255, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
@@ -57,7 +58,9 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
 
         tabText.AppendLine();
         tabText.AppendLine($"<size=65%>Reflect state: <color=#C0DCFF>{state}</color></size>");
-        tabText.AppendLine("<size=65%><color=#B7D8FF>Reflect a murder back at its attacker. Reflected Wraiths turn around and hunt their caller.</color></size>");
+        var options = OptionGroupSingleton<MirrorBladeOptions>.Instance;
+        tabText.AppendLine($"<size=65%>Parry: <color=#C0DCFF>{options.ReflectWindow:0.#}s</color> | Cooldown: <color=#C0DCFF>{options.ReflectCooldown:0.#}s</color></size>");
+        tabText.AppendLine("<size=65%>Your outline warns opponents. You cannot attack until the stance ends.</size>");
 
         return tabText;
     }
@@ -65,7 +68,13 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
     [RegisterEvent]
     public static void OnBeforeMurder(BeforeMurderEvent evt)
     {
-        if (_reflecting || !PlayerControl.LocalPlayer.IsHost())
+        if (!Reflecting && ArmedReflections.Contains(evt.Source.PlayerId))
+        {
+            evt.Cancel();
+            return;
+        }
+
+        if (Reflecting || !PlayerControl.LocalPlayer.IsHost())
             return;
 
         if (evt.Target.Data.Role is not MirrorBladeRole || !ArmedReflections.Remove(evt.Target.PlayerId))
@@ -73,13 +82,13 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
 
         evt.Cancel();
 
-        if (!evt.Source || evt.Source.Data.IsDead || evt.Source.Data.Disconnected)
+        if (evt.Source.Data.IsDead || evt.Source.Data.Disconnected)
             return;
 
         RpcReflectionTriggered(evt.Target, evt.Source.PlayerId, -1);
-        _reflecting = true;
+        Reflecting = true;
         evt.Target.RpcCustomMurder(evt.Source, true, false, true, false, false);
-        _reflecting = false;
+        Reflecting = false;
     }
 
     [RegisterEvent]
@@ -89,24 +98,25 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
             return;
 
         ArmedReflections.Clear();
-        _reflecting = false;
+        Reflecting = false;
     }
 
     [RegisterEvent]
     public static void OnGameEnd(GameEndEvent evt)
     {
         ArmedReflections.Clear();
-        _reflecting = false;
+        Reflecting = false;
     }
 
     [MethodRpc((uint)CustomRPC.MirrorBladeArm)]
     public static void RpcArmReflection(PlayerControl source)
     {
-        ArmedReflections.Add(source.PlayerId);
-        Coroutines.Start(CoDisarmReflection(source.PlayerId, OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectWindow));
+        if (source.Data.Role is not MirrorBladeRole || source.Data.IsDead || source.inVent || MeetingHud.Instance || !ArmedReflections.Add(source.PlayerId))
+            return;
+        Coroutines.Start(CoDisarmReflection(source, OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectWindow));
 
         if (source.AmOwner)
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#C0DCFF>Mirror stance armed.</color>"));
+            HudManager.Instance.KillButton.SetTarget(null);
     }
 
     [MethodRpc((uint)CustomRPC.MirrorBladeReflect)]
@@ -137,11 +147,25 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
         }
     }
 
-    private static IEnumerator CoDisarmReflection(byte playerId, float delay)
+    [RegisterEvent]
+    public static void OnMeetingStart(StartMeetingEvent evt)
     {
-        yield return new WaitForSeconds(delay);
+        ArmedReflections.Clear();
+    }
 
-        if (ArmedReflections.Remove(playerId) && PlayerControl.LocalPlayer.PlayerId == playerId)
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#AFC6D9>Mirror stance faded.</color>"));
+    public static IEnumerator CoDisarmReflection(PlayerControl player, float delay)
+    {
+        var end = Time.time + delay;
+        while (player && !player.Data.IsDead && !MeetingHud.Instance && ArmedReflections.Contains(player.PlayerId) && Time.time < end)
+        {
+            player.cosmetics.currentBodySprite.BodySprite.UpdateOutline(new Color32(192, 220, 255, 255));
+            yield return null;
+        }
+
+        if (player)
+        {
+            ArmedReflections.Remove(player.PlayerId);
+            player.cosmetics.currentBodySprite.BodySprite.UpdateOutline(null);
+        }
     }
 }

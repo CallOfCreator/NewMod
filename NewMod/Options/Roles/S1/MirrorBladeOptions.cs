@@ -14,9 +14,6 @@ public class MirrorBladeOptions : AbstractOptionGroup<MirrorBladeRole>
     [ModdedNumberOption("Reflect Cooldown", 5f, 60f, suffixType: MiraNumberSuffixes.Seconds)]
     public float ReflectCooldown { get; set; } = 30f;
 
-    [ModdedNumberOption("Max Reflect Uses", 1f, 4f)]
-    public float MaxReflectUses { get; set; } = 1f;
-
-    [ModdedNumberOption("Reflect Window", 2f, 15f, 1f, MiraNumberSuffixes.Seconds)]
-    public float ReflectWindow { get; set; } = 6f;
+    [ModdedNumberOption("Reflect Window", 0.5f, 3f, 0.25f, MiraNumberSuffixes.Seconds)]
+    public float ReflectWindow { get; set; } = 1.25f;
 }

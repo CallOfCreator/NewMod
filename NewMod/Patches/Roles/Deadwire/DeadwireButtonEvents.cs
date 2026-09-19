@@ -1,3 +1,4 @@
+using System.Collections;
 using AmongUs.GameOptions;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
@@ -22,7 +23,7 @@ public static class DeadwireButtonEvents
         }
 
         if (!evt.IsCancelled && evt.Button is IEnergyAbility { CaptureOnClick: true } ability && evt.Button.CanClick())
-            DeadwireRole.RpcRequestCapture(PlayerControl.LocalPlayer, (byte)ability.Category);
+            Coroutines.Start(CoCapture(evt, ability.Category));
     }
 
     [RegisterEvent]
@@ -45,8 +46,16 @@ public static class DeadwireButtonEvents
             _ => (EnergyCategory?)null
         };
 
-        if (!evt.IsCancelled && category.HasValue)
+        if (!evt.IsCancelled && category.HasValue && evt.Button.isActiveAndEnabled && evt.Button.CanInteract() && !evt.Button.IsOnCooldown)
             DeadwireRole.RpcRequestCapture(PlayerControl.LocalPlayer, (byte)category.Value);
+    }
+
+    public static IEnumerator CoCapture(MiraButtonClickEvent evt, EnergyCategory category)
+    {
+        var uses = evt.Button.UsesLeft;
+        yield return null;
+        if (!evt.IsCancelled && (evt.Button.EffectActive || evt.Button.Timer > 0f || evt.Button.UsesLeft < uses))
+            DeadwireRole.RpcRequestCapture(PlayerControl.LocalPlayer, (byte)category);
     }
 
     [RegisterEvent]

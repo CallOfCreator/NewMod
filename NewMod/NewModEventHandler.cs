@@ -74,7 +74,6 @@ public static class NewModEventHandler
         Utils.ResetMissionSuccessCount();
         Utils.ResetMissionFailureCount();
         Utils.ResetInjections();
-        Utils.ResetStrikeCount();
         Utils.savedPlayerRoles.Clear();
         Utils.MissionTimer.Clear();
         Utils.savedTasks.Clear();
@@ -104,7 +103,7 @@ public static class NewModEventHandler
         OverloadRole.ResetState();
         TerminatorRole.ResetState();
         MirrorBladeRole.ArmedReflections.Clear();
-        MirrorBladeRole._reflecting = false;
+        MirrorBladeRole.Reflecting = false;
         SpecialAgent.AssignedPlayer = null;
 
         Beacon.Reset();

@@ -117,5 +117,6 @@ public enum CustomRPC
     VisionaryResolveCamera,
     VisionaryBroadcast,
     VisionaryPhoto,
-    AegisRequestWard
+    AegisRequestWard,
+    EdgeveilArc
 }

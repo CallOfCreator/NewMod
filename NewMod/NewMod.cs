@@ -11,6 +11,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using NewMod.Buttons.Roles;
 using NewMod.Cosmetics;
@@ -65,6 +66,11 @@ public class NewMod : BasePlugin, IMiraPlugin
     }
 
     public string OptionsTitleText => "NewMod";
+
+    public NewMod()
+    {
+        MiraLocaleManager.Register("com.callofcreator.newmod");
+    }
 
     public override void Load()
     {

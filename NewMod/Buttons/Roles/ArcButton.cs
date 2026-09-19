@@ -2,58 +2,38 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using MiraAPI.Utilities;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
+using Reactor.Networking.Attributes;
+using Reactor.Utilities;
+using System.Collections;
 using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
 
-/// <summary>
-///     Defines a custom action button for Edgeviel's Arc ability.
-/// </summary>
 public class ArcButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Aggression;
 
-    /// <summary>
-    ///     The name displayed on the button.
-    /// </summary>
     public override string Name => "Arc";
 
-    /// <summary>
-    ///     Gets the cooldown time for this button, based on <see cref="EdgeveilOptions" />.
-    /// </summary>
     public override float Cooldown => OptionGroupSingleton<EdgeveilOptions>.Instance.SlashCooldown;
 
-    /// <summary>
-    ///     Gets the maximum number of uses for this button (0 = infinite).
-    /// </summary>
-    public override int MaxUses => (int)OptionGroupSingleton<EdgeveilOptions>.Instance.SlashMaxUses;
+    public override float EffectDuration => OptionGroupSingleton<EdgeveilOptions>.Instance.ChargeDuration;
 
-    /// <summary>
-    ///     Determines how long the effect lasts. For Arc, none.
-    /// </summary>
-    public override float EffectDuration => 0f;
-
-    /// <summary>
-    ///     Default keybind for Edgeveil's Arc ability.
-    /// </summary>
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
 
-    /// <summary>
-    ///     Defines where on the screen this button should appear.
-    /// </summary>
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
 
-    /// <summary>
-    ///     The visual icon for this button, set to the Edgeveil Arc sprite asset.
-    /// </summary>
     public override LoadableAsset<Sprite> Sprite => NewModAsset.Slash;
 
-    /// <summary>
-    ///     Invoked when the Arc button is clicked.
-    /// </summary>
+    protected override void FixedUpdate(PlayerControl playerControl)
+    {
+        OverrideName(EffectActive ? "Charging" : Name);
+    }
+
     protected override void OnClick()
     {
         var player = PlayerControl.LocalPlayer;
@@ -61,26 +41,51 @@ public class ArcButton : CustomActionButton, IEnergyAbility
         var flipLeft = player.cosmetics.currentBodySprite.BodySprite.flipX;
         var dir = flipLeft ? Vector2.left : Vector2.right;
 
-        var spawnOffset = 0.55f;
-        var spawnPos = player.GetTruePosition() + dir * spawnOffset;
-
-        var tray = SlashTray.CreateTray();
-        tray.transform.SetParent(ShipStatus.Instance.transform, true);
-        tray.transform.SetPositionAndRotation(new Vector3(spawnPos.x, spawnPos.y, player.transform.position.z), Quaternion.FromToRotation(Vector3.right, new Vector3(dir.x, dir.y, 0f)));
-
-        tray.Owner = player;
-        tray.SetMotion(dir, OptionGroupSingleton<EdgeveilOptions>.Instance.SlashSpeed);
-
-        var effectDuration = OptionGroupSingleton<EdgeveilOptions>.Instance.EffectDuration;
-
-        HudManager.Instance.PlayerCam.ShakeScreen(effectDuration, 2f);
+        RpcArc(player, dir);
     }
 
-    /// <summary>
-    ///     Determines whether this button is enabled for the role, returning true if the role is <see cref="EdgevielRole" />.
-    /// </summary>
-    /// <param name="role">The current player's role.</param>
-    /// <returns>True if the role is Edgeveil; otherwise false.</returns>
+    [MethodRpc((uint)CustomRPC.EdgeveilArc)]
+    public static void RpcArc(PlayerControl source, Vector2 direction)
+    {
+        if (source.Data.Role is not Edgeveil || source.Data.IsDead || source.inVent || MeetingHud.Instance)
+            return;
+        Coroutines.Start(CoArc(source, direction.normalized));
+    }
+
+    public static IEnumerator CoArc(PlayerControl source, Vector2 direction)
+    {
+        var options = OptionGroupSingleton<EdgeveilOptions>.Instance;
+        if (source.AmOwner)
+        {
+            source.moveable = false;
+            source.MyPhysics.body.velocity = Vector2.zero;
+        }
+
+        var end = Time.time + options.ChargeDuration;
+        while (source && !source.Data.IsDead && !MeetingHud.Instance && Time.time < end)
+        {
+            source.cosmetics.currentBodySprite.BodySprite.UpdateOutline(Color.red);
+            yield return null;
+        }
+
+        if (!source)
+            yield break;
+        source.cosmetics.currentBodySprite.BodySprite.UpdateOutline(null);
+        if (source.AmOwner && !MeetingHud.Instance && !ExileController.Instance)
+            source.moveable = true;
+        if (source.Data.IsDead || MeetingHud.Instance || ExileController.Instance)
+            yield break;
+
+        var tray = SlashTray.CreateTray();
+        var position = source.GetTruePosition();
+        tray.transform.SetPositionAndRotation(new Vector3(position.x, position.y, source.transform.position.z), Quaternion.identity);
+        var scale = tray.transform.localScale;
+        scale.x = Mathf.Abs(scale.x) * (direction.x < 0f ? -1f : 1f);
+        tray.transform.localScale = scale;
+        tray.Owner = source;
+        tray.SetMotion(direction, options.SlashSpeed);
+    }
+
     public override bool Enabled(RoleBehaviour role)
     {
         return role is Edgeveil;

@@ -22,7 +22,7 @@
         </PackageReference>
         <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.735"/>
         <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34" PrivateAssets="all"/>
-        <PackageReference Include="dev.xaine.AmongUsPatchAnalyzer" Version="2026.6.5" PrivateAssets="all"/>
+        <PackageReference Include="AllOfUs.MiraAPI" Version="0.5.0" PrivateAssets="all"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -37,10 +37,6 @@
         </Reference>
         <Reference Include="Reactor">
             <HintPath>Resources/Reactor.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="MiraAPI">
-            <HintPath>Resources/MiraAPI.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="AchievementsAPI">

@@ -4,6 +4,7 @@ using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.PluginLoading;
+using MiraAPI.Utilities;
 using NewMod.Components.ScreenEffects;
 using NewMod.GeneralEvents;
 using NewMod.GeneralEvents.Season1;
@@ -16,7 +17,7 @@ namespace NewMod.Modifiers.S1;
 [MiraIgnore]
 public class InVoid : BaseModifier
 {
-    private bool _voidActive;
+    public bool VoidActive;
 
     public override string ModifierName => "InVoid";
     public override bool ShowInFreeplay => true;
@@ -29,7 +30,7 @@ public class InVoid : BaseModifier
 
     public override void OnActivate()
     {
-        _voidActive = true;
+        VoidActive = true;
 
         if (GeneralEventManager.CurrentEvent is IdentityCrisisGE)
             Player.RawSetOutfit(Player.Data.DefaultOutfit, PlayerOutfitType.Default);
@@ -40,7 +41,6 @@ public class InVoid : BaseModifier
             SoundManager.Instance.PlaySoundImmediate(NewModAsset.EnterVoidSFX.LoadAsset(), false, 1f);
 
             HudManager.Instance.KillButton.Hide();
-            Player.killTimer = 240f;
 
             var cam = Camera.main;
 
@@ -79,7 +79,8 @@ public class InVoid : BaseModifier
 
     public override void OnDeactivate()
     {
-        _voidActive = false;
+        VoidActive = false;
+        Coroutines.Start(CoEmergenceCue());
 
         if (Player.AmOwner)
         {
@@ -106,20 +107,32 @@ public class InVoid : BaseModifier
             foreach (var door in ShipStatus.Instance.AllDoors)
                 door.gameObject.SetActive(true);
 
-            Player.RpcAddModifier<JustLeftVoid>();
         }
 
         if (!Player.AmOwner)
             Player.Visible = true;
     }
 
-    private IEnumerator CoEnterVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
+    public IEnumerator CoEmergenceCue()
+    {
+        var end = Time.time + OptionGroupSingleton<VoidwalkerOptions>.Instance.ExitTransitionDuration;
+        while (Player && !Player.Data.IsDead && !MeetingHud.Instance && Time.time < end)
+        {
+            Player.cosmetics.currentBodySprite.BodySprite.UpdateOutline(new Color(0.7f, 0.3f, 1f));
+            yield return null;
+        }
+
+        if (Player)
+            Player.cosmetics.currentBodySprite.BodySprite.UpdateOutline(null);
+    }
+
+    public IEnumerator CoEnterVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
     {
         var duration = OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterTransitionDuration;
 
         var timer = 0f;
 
-        while (_voidActive && timer < duration)
+        while (VoidActive && timer < duration)
         {
             timer += Time.unscaledDeltaTime;
             var progress = Mathf.Clamp01(timer / duration);
@@ -137,7 +150,7 @@ public class InVoid : BaseModifier
             yield return null;
         }
 
-        if (!_voidActive)
+        if (!VoidActive)
             yield break;
 
         if (Application.platform == RuntimePlatform.Android)
@@ -149,7 +162,7 @@ public class InVoid : BaseModifier
             transition.Remove();
     }
 
-    private IEnumerator CoExitVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
+    public IEnumerator CoExitVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
     {
         var duration = OptionGroupSingleton<VoidwalkerOptions>.Instance.ExitTransitionDuration;
 

@@ -7,6 +7,9 @@ using HarmonyLib;
 using MiraAPI.GameModes;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Modifiers;
+using NewMod.Modifiers.S1;
+using NewMod.Roles.ImpostorRoles.S1;
 using MiraAPI.Utilities;
 using NewMod.Options;
 using NewMod.Roles;
@@ -236,5 +239,16 @@ public static class CoSetRoleOverridePatch
     public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)] RoleTypes role, [HarmonyArgument(1)] bool canOverrideRole)
     {
         if (canOverrideRole) __instance.roleAssigned = false;
+    }
+}
+
+[HarmonyPatch(typeof(KillButton), nameof(KillButton.SetTarget))]
+public static class RoleKillTargetPatch
+{
+    public static void Prefix(ref PlayerControl target)
+    {
+        var player = PlayerControl.LocalPlayer;
+        if (player && (MirrorBladeRole.ArmedReflections.Contains(player.PlayerId) || player.HasModifier<InVoid>()))
+            target = null;
     }
 }

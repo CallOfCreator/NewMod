@@ -13,8 +13,8 @@ namespace NewMod.Roles.ImpostorRoles.S1;
 public class Voidwalker : ImpostorRole, INewModRole
 {
     public string RoleName => "Voidwalker";
-    public string RoleDescription => "Phase through doors, then emerge for a fast kill.";
-    public string RoleLongDescription => "Enter the Void to become invisible and pass through closed doors. You cannot kill while phased. After returning, you have 4 seconds to strike with a reduced cooldown.";
+    public string RoleDescription => "Slip through closed doors and choose where to reappear.";
+    public string RoleLongDescription => "Become invisible and pass through closed doors.\nYou cannot kill while phased. Once you return, you can attack as soon as your normal kill cooldown is ready.";
 
     public CustomRoleConfiguration Configuration =>
         new(this)
@@ -45,7 +45,7 @@ public class Voidwalker : ImpostorRole, INewModRole
 
         tabText.AppendLine("<size=65%><color=#C8A2FF>While in the Void:</color> Invisible  •  Pass through doors  •  Cannot kill</size>");
 
-        tabText.AppendLine("<size=65%><color=#E040FB>On Exit:</color> You have <color=#FFFFFF>4 seconds</color> to perform your empowered kill.</size>");
+        tabText.AppendLine("<size=65%>After returning: <color=#B388FF>No extra attack delay.</color> Your normal kill cooldown still applies.</size>");
 
         return tabText;
     }

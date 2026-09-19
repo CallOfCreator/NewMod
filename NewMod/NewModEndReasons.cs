@@ -208,26 +208,6 @@ public class InjectorGameOver : CustomGameOver
     }
 }
 
-public class PulseBladeGameOver : CustomGameOver
-{
-    private CachedPlayerData[] _winners = [];
-
-    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
-    {
-        return NewModGameOver.CaptureWinners<PulseBlade>(winners, out _winners);
-    }
-
-    public override bool BeforeEndGameSetup(EndGameManager manager)
-    {
-        return NewModGameOver.SetWinners(_winners);
-    }
-
-    public override void AfterEndGameSetup(EndGameManager manager)
-    {
-        NewModGameOver.SetPresentation<PulseBlade>(manager, "PulseBlade Victory");
-    }
-}
-
 public class TyrantGameOver : CustomGameOver
 {
     private CachedPlayerData[] _winners = [];
