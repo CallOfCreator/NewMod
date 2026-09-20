@@ -25,7 +25,7 @@ public sealed class PathfindingTab : IDebugTab
         if (GUILayout.Button("Test nearest zipline")) PathfindingPreview.TestNearestZipline();
         if (GUILayout.Button("Clear preview")) PathfindingPreview.Clear();
         GUILayout.Label(preview ? preview.StatusText : "Mark a start, move to a destination, then mark the goal.");
-        if (preview && preview.TraversalReport.Length > 0) GUILayout.Label(preview.TraversalReport);
+        if (preview && preview.traversalReport.Length > 0) GUILayout.Label(preview.traversalReport);
         GUILayout.Label("Green: start | Pink: goal | Cyan: route. Crossings require using the ladder, zipline or decon door.");
     }
 }

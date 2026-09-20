@@ -338,7 +338,8 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             var parent = platform.transform.parent;
             var left = (Vector2)parent.TransformPoint(platform.LeftUsePosition);
             var right = (Vector2)parent.TransformPoint(platform.RightUsePosition);
-            var fromLeft = Vector2.Distance(visual.GetTruePosition(), left) < Vector2.Distance(visual.GetTruePosition(), right);
+            var position = visual.GetTruePosition();
+            var fromLeft = Vector2.Distance(position, left) < Vector2.Distance(position, right);
             platformStart = parent.TransformPoint(fromLeft ? platform.LeftPosition : platform.RightPosition);
             platformEnd = parent.TransformPoint(fromLeft ? platform.RightPosition : platform.LeftPosition);
             platformExit = parent.TransformPoint(fromLeft ? platform.RightUsePosition : platform.LeftUsePosition);
@@ -374,22 +375,17 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        if (interaction.Type == PathTraversal.Zipline)
+        switch (interaction.Type)
         {
-            TraverseZipline();
-            return;
-        }
-
-        if (interaction.Type == PathTraversal.Vent)
-        {
-            TraverseVent();
-            return;
-        }
-
-        if (interaction.Type == PathTraversal.MovingPlatform)
-        {
-            TraversePlatform();
-            return;
+            case PathTraversal.Zipline:
+                TraverseZipline();
+                return;
+            case PathTraversal.Vent:
+                TraverseVent();
+                return;
+            case PathTraversal.MovingPlatform:
+                TraversePlatform();
+                return;
         }
 
         var position = visual.GetTruePosition();
@@ -443,8 +439,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         retries = 0;
         crossing = false;
         waypoint++;
-        visual.MyPhysics.Animations.PlayIdleAnimation();
-        visual.cosmetics.AnimateSkinIdle();
+        SetWalking(false);
     }
 
     public OpenableDoor FindClosedDoor(Vector2 from, Vector2 to)

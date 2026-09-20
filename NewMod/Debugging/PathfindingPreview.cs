@@ -28,7 +28,6 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
 
     public static PathfindingPreview Current => ShipStatus.Instance ? ShipStatus.Instance.GetComponent<PathfindingPreview>() : null;
     public string StatusText => request?.Status == PathStatus.Searching ? $"Searching: {request.ExpandedNodes} nodes" : message;
-    public string TraversalReport => traversalReport;
     public string StartText => hasStart ? $"Start: {start.x:0.00}, {start.y:0.00}" : "Start: not set";
     public string GoalText => hasGoal ? $"Goal: {goal.x:0.00}, {goal.y:0.00}" : "Goal: not set";
 
@@ -77,11 +76,12 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
 
     public static void StopNpc()
     {
-        if (!Current || !Current.npc)
+        var preview = Current;
+        if (!preview || !preview.npc)
             return;
-        Current.npc.Dispose();
-        Current.npc = null;
-        Current.message = "Debug NPC stopped.";
+        preview.npc.Dispose();
+        preview.npc = null;
+        preview.message = "Debug NPC stopped.";
     }
 
     public void StartNpc(bool tour)
@@ -132,8 +132,9 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
 
     public static void CopyTraversalReport()
     {
-        if (Current)
-            GUIUtility.systemCopyBuffer = Current.traversalReport;
+        var preview = Current;
+        if (preview)
+            GUIUtility.systemCopyBuffer = preview.traversalReport;
     }
 
     public static void InspectTraversals()
@@ -195,9 +196,10 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
                 report.AppendLine("  Missing zipline behaviour.");
             }
 
-            if (test == PathTraversal.Zipline && Vector2.Distance(position, from) < distance)
+            var candidateDistance = Vector2.Distance(position, from);
+            if (test == PathTraversal.Zipline && candidateDistance < distance)
             {
-                distance = Vector2.Distance(position, from);
+                distance = candidateDistance;
                 nearest = console;
             }
         }
@@ -210,9 +212,10 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
                 DescribeTraversal(probe, report, ladder, from, ladder.Destination.transform.position, $"destination active={ladder.Destination.isActiveAndEnabled}");
             else
                 report.AppendLine("  Missing destination.");
-            if (test == PathTraversal.Ladder && Vector2.Distance(position, from) < distance)
+            var candidateDistance = Vector2.Distance(position, from);
+            if (test == PathTraversal.Ladder && candidateDistance < distance)
             {
-                distance = Vector2.Distance(position, from);
+                distance = candidateDistance;
                 nearest = ladder;
             }
         }
@@ -226,13 +229,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        var selected = -1;
-        for (var i = 0; i < probe.linkSources.Count; i++)
-            if (probe.linkSources[i] == nearest)
-            {
-                selected = i;
-                break;
-            }
+        var selected = probe.linkSources.FindIndex(linkSource => linkSource == nearest);
 
         if (selected < 0)
         {
@@ -251,13 +248,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
     [HideFromIl2Cpp]
     public void DescribeTraversal(MapPathRequest probe, StringBuilder report, Component source, Vector2 from, Vector2 to, string state)
     {
-        var selected = -1;
-        for (var i = 0; i < probe.linkSources.Count; i++)
-            if (probe.linkSources[i] == source)
-            {
-                selected = i;
-                break;
-            }
+        var selected = probe.linkSources.FindIndex(linkSource => linkSource == source);
 
         var entryNeighbours = 0;
         var exitNeighbours = 0;
@@ -340,9 +331,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             _ => "Search cancelled."
         };
 
-        route.positionCount = result.Points.Length > 1 ? result.Points.Length : 0;
-        for (var i = 0; i < route.positionCount; i++)
-            route.SetPosition(i, new Vector3(result.Points[i].x, result.Points[i].y, -5f));
+        DrawPath(result);
         request = null;
     }
 
@@ -355,7 +344,8 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
 
     public static PathfindingPreview GetOrCreate()
     {
-        return Current ? Current : ShipStatus.Instance.gameObject.AddComponent<PathfindingPreview>();
+        var preview = Current;
+        return preview ? preview : ShipStatus.Instance.gameObject.AddComponent<PathfindingPreview>();
     }
 
     public LineRenderer CreateLine(string name, Color color)
