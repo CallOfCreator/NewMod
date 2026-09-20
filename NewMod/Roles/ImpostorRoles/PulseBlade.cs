@@ -1,5 +1,6 @@
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using NewMod.Options.Roles;
@@ -9,9 +10,9 @@ namespace NewMod.Roles.ImpostorRoles;
 
 public class PulseBlade : ImpostorRole, INewModRole
 {
-    public string RoleName => "PulseBlade";
-    public string RoleDescription => "Commit to a dash and catch someone in your path.";
-    public string RoleLongDescription => "Charge briefly, then dash in a fixed direction.\nHit an opponent to kill them, then recover before moving again. Win with the impostors.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.PulseBlade");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.PulseBlade.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.PulseBlade.TabDescription");
     public Color RoleColor => new(1f, 0.25f, 0.25f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public NewModFaction Faction => NewModFaction.Apex;
@@ -33,8 +34,8 @@ public class PulseBlade : ImpostorRole, INewModRole
     {
         var tabText = INewModRole.GetRoleTabText(this);
         var options = OptionGroupSingleton<PulseBladeOptions>.Instance;
-        tabText.AppendLine($"<size=65%>Charge: <color=#FF8080>{options.ChargeDuration:0.#}s</color> | Recovery: <color=#FF8080>{options.RecoveryDuration:0.#}s</color></size>");
-        tabText.AppendLine("<size=65%>Your direction locks when you press Strike. Walls stop the dash. Misses still use the cooldown.</size>");
+        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.PulseBlade.Tab.Timing"), options.ChargeDuration, options.RecoveryDuration));
+        tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.PulseBlade.Tab.DashRules"));
         return tabText;
     }
 }

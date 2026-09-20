@@ -1,3 +1,4 @@
+using MiraAPI.Translation;
 using MiraAPI.GameEnd;
 using MiraAPI.Roles;
 using UnityEngine;
@@ -8,9 +9,9 @@ public class InjectorRole : ImpostorRole, ICustomRole
 {
     public TeamIntroConfiguration TeamConfiguration => new() { IntroTeamDescription = RoleDescription, IntroTeamColor = RoleColor };
 
-    public string RoleName => "Injector";
-    public string RoleDescription => "Inject players with random disruptive serums.";
-    public string RoleLongDescription => "Inject different players with random movement effects.\nReach the required number of injections to win.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.TabDescription");
     public Color RoleColor => new(0.9f, 0.3f, 0.1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;

@@ -1,5 +1,6 @@
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
@@ -11,9 +12,9 @@ namespace NewMod.Roles.NeutralRoles;
 
 public class WraithCaller : ImpostorRole, INewModRole
 {
-    public string RoleName => "Wraith Caller";
-    public string RoleDescription => "Send Wraiths through walls to hunt targets.";
-    public string RoleLongDescription => "Summon spectral NPCs that slip through walls and hunt your target. Reach the required number of Wraith kills and stay alive to win.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.TabDescription");
     public Color RoleColor => new(0.58f, 0.20f, 0.90f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Entropy;
@@ -48,23 +49,23 @@ public class WraithCaller : ImpostorRole, INewModRole
 
         tab.AppendLine();
 
-        tab.AppendLine($"<size=70%>Sent: <b><color=#{cyan}>{sent}</color></b></size>");
-        tab.AppendLine($"<size=70%>Kills: <b><color=#{(kills >= required ? green : cyan)}>{kills}</color></b>/<color=#{yellow}>{required}</color></size>");
+        tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.Sent"), cyan, sent));
+        tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.Kills"), kills >= required ? green : cyan, kills, yellow, required));
 
         if (kills < required)
         {
             var left = required - kills;
-            tab.AppendLine($"<size=65%><color=#{yellow}>{left} more successful kill{(left == 1 ? "" : "s")} to win.</color></size>");
+            tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.KillsRemaining"), yellow, left, left == 1 ? "" : "s"));
         }
         else
         {
-            tab.AppendLine($"<size=65%><b><color=#{green}>Kill goal reached. You must be alive when victory is checked.</color></b></size>");
+            tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.GoalReached"), green));
         }
 
         if (showWarn)
         {
             tab.AppendLine();
-            tab.AppendLine($"<size=60%><color=#{yellow}>Tip:</color> Time your summons. Meetings cancel hunts.</size>");
+            tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.SummonTip"), yellow));
         }
 
         return tab;

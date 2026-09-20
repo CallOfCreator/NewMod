@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using AmongUs.GameOptions;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -41,10 +42,10 @@ public sealed class Tyrant : ImpostorRole, INewModRole
     public TeamIntroConfiguration TeamConfiguration => new() { IntroTeamDescription = RoleDescription, IntroTeamColor = RoleColor };
 
     public static byte ChampionId => _championId;
-    public string RoleName => "Tyrant";
-    public string RoleDescription => "Unlock control effects with each kill.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.IntroBlurb");
 
-    public string RoleLongDescription => "Your first three kills trigger stronger control fields.\nYour fourth kill unlocks a Champion decision that determines your victory.";
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.TabDescription");
 
     public Color RoleColor => new(0.78f, 0.10f, 0.16f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
@@ -76,10 +77,10 @@ public sealed class Tyrant : ImpostorRole, INewModRole
         var green = Palette.AcceptedGreen.ToHtmlStringRGBA();
         var kills = GetKillCount();
 
-        var firstKill = "1st Kill: Fear Pulse reduces nearby players' vision and speed briefly.\n";
-        var secondKill = "2nd Kill: Zone of Suppression disables abilities inside the dome.\n";
-        var thirdKill = "3rd Kill: Intimidation Protocol freezes the next witness briefly.\n";
-        var fourthKill = "4th Kill: Apex Throne lets you choose a Champion.\n";
+        var firstKill = MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.Tab.FirstKill");
+        var secondKill = MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.Tab.SecondKill");
+        var thirdKill = MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.Tab.ThirdKill");
+        var fourthKill = MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.Tab.FourthKill");
 
         void AppendAbilityLine(int index, string text)
         {
@@ -90,7 +91,7 @@ public sealed class Tyrant : ImpostorRole, INewModRole
             else if (kills == index)
             {
                 tabText.AppendLine($"<size=70%><color=#{green}><b><s>{text}</s></b></color></size>");
-                tabText.AppendLine($"<size=64%><color=#{green}>✓ Unlocked</color></size>");
+                tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.Tab.Unlocked"), green));
             }
             else if (index == kills + 1)
             {

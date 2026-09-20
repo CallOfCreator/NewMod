@@ -1,4 +1,5 @@
 using AmongUs.GameOptions;
+using MiraAPI.Translation;
 using MiraAPI.GameEnd;
 using MiraAPI.Roles;
 using MiraAPI.Utilities.Assets;
@@ -8,9 +9,9 @@ namespace NewMod.Roles.NeutralRoles;
 
 public class Prankster : CrewmateRole, ICustomRole
 {
-    public string RoleName => "Prankster";
-    public string RoleDescription => "Place deadly fake bodies.";
-    public string RoleLongDescription => "Place fake bodies that kill anyone who reports them.\nGet the required number of fake-body reports to win.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Prankster");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Prankster.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Prankster.TabDescription");
     public Color RoleColor => new(1f, 0.55f, 0f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;

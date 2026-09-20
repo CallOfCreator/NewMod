@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -24,10 +25,10 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
 {
     public static readonly HashSet<byte> ArmedReflections = new();
     public static bool Reflecting;
-    public string RoleName => "MirrorBlade";
-    public string RoleDescription => "Reflect the strike meant for you.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.IntroBlurb");
 
-    public string RoleLongDescription => "Briefly reveal a mirror stance that reflects the next attack back at its attacker.\nYou cannot attack during the stance. An opponent can wait for it to end. Wraiths turn back on their caller.";
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.TabDescription");
 
     public Color RoleColor => new Color32(192, 220, 255, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
@@ -54,13 +55,13 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
     public StringBuilder SetTabText()
     {
         var tabText = INewModRole.GetRoleTabText(this);
-        var state = ArmedReflections.Contains(PlayerControl.LocalPlayer.PlayerId) ? "armed" : "idle";
+        var state = ArmedReflections.Contains(PlayerControl.LocalPlayer.PlayerId) ? MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Armed") : MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Idle");
 
         tabText.AppendLine();
-        tabText.AppendLine($"<size=65%>Reflect state: <color=#C0DCFF>{state}</color></size>");
+        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.ReflectState"), state));
         var options = OptionGroupSingleton<MirrorBladeOptions>.Instance;
-        tabText.AppendLine($"<size=65%>Parry: <color=#C0DCFF>{options.ReflectWindow:0.#}s</color> | Cooldown: <color=#C0DCFF>{options.ReflectCooldown:0.#}s</color></size>");
-        tabText.AppendLine("<size=65%>Your outline warns opponents. You cannot attack until the stance ends.</size>");
+        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Timing"), options.ReflectWindow, options.ReflectCooldown));
+        tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.ParryRules"));
 
         return tabText;
     }

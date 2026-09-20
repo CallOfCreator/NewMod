@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MiraAPI.Translation;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using UnityEngine;
@@ -11,9 +12,9 @@ public class NecromancerRole : ImpostorRole, ICustomRole
 
     public TeamIntroConfiguration TeamConfiguration => new() { IntroTeamDescription = RoleDescription, IntroTeamColor = RoleColor };
 
-    public string RoleName => "Necromancer";
-    public string RoleDescription => "You can revive dead players who weren't killed by you";
-    public string RoleLongDescription => "Bring a dead player back to life. You cannot revive someone you killed yourself.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.NecromancerRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.NecromancerRole.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.NecromancerRole.TabDescription");
     public Color RoleColor => Palette.AcceptedGreen.FindAlternateColor();
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Impostor;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -88,9 +89,9 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
 
     private static bool _breachResolved;
 
-    public string RoleName => "Energy Thief";
-    public string RoleDescription => "Every power leaves something to steal.";
-    public string RoleLongDescription => "Siphon players to capture energy from their abilities. Gather the required energy and categories, then hold a Power Node during Grid Breach to win alone.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.TabDescription");
     public Color RoleColor => new(0.78f, 0.18f, 0.92f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Rift;
@@ -122,18 +123,18 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
         categories ??= [];
 
         var options = OptionGroupSingleton<EnergyThiefOptions>.Instance;
-        text.AppendLine($"<size=65%>Energy: <color=#D96BFF>{energy}</color>/{(int)options.EnergyRequired}</size>");
-        text.AppendLine($"<size=65%>Resonance: <color=#75E6FF>{categories.Count}</color>/{(int)options.CategoriesRequired} categories</size>");
+        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Energy"), energy, (int)options.EnergyRequired));
+        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Categories"), categories.Count, (int)options.CategoriesRequired));
 
         if (categories.Count > 0)
-            text.AppendLine($"<size=60%><color=#BEBEBE>{string.Join(" • ", categories)}</color></size>");
+            text.AppendLine($"<size=60%><color=#BEBEBE>{string.Join(" • ", categories.Select(category => MiraLocaleManager.Get($"NewMod.EnergyCategory.{category}")))}</color></size>");
 
         if (BreachActive && NodeOwnerId == playerId)
-            text.AppendLine($"<size=65%><color=#FF5CEA>GRID BREACH: {Mathf.Max(0f, BreachEndsAt - Time.time):F1}s</color></size>");
+            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.BreachCountdown"), Mathf.Max(0f, BreachEndsAt - Time.time)));
         else if (IsReady(playerId))
-            text.AppendLine("<size=65%><color=#75E6A5>Power Node located. Reach it and breach the grid.</color></size>");
+            text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.ObjectiveReady"));
         else if (TetherTargets.TryGetValue(playerId, out var targetId))
-            text.AppendLine($"<size=65%><color=#FFD166>Siphoning {Utils.PlayerById(targetId).Data.PlayerName}...</color></size>");
+            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Siphoning"), Utils.PlayerById(targetId).Data.PlayerName));
 
         return text;
     }

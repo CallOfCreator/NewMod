@@ -1,3 +1,4 @@
+using MiraAPI.Translation;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Roles;
@@ -14,7 +15,7 @@ public interface INewModRole : ICustomRole
 
     public static StringBuilder GetRoleTabText(ICustomRole role)
     {
-        return new StringBuilder($"{role.RoleColor.ToTextColor()}You are <b>{role.RoleName}</b></color>\n<size=65%>Faction: {Utils.GetFactionDisplay((INewModRole)role)}</size>\n<size=70%>{role.RoleLongDescription}</size>\n");
+        return new StringBuilder(string.Format(MiraLocaleManager.Get("NewMod.RoleTab.Header"), role.RoleColor.ToTextColor(), role.RoleName, Utils.GetFactionDisplay((INewModRole)role), role.RoleLongDescription));
     }
 
     [HideFromIl2Cpp]

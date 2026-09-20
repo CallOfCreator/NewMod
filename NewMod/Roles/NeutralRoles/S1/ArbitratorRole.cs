@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using AmongUs.GameOptions;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -41,9 +42,9 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     private static ArbitratorJudgmentMode _hostMode;
     private static bool _judgmentResolved;
 
-    public string RoleName => "Arbitrator";
-    public string RoleDescription => "Predict meeting outcomes to earn Judgment Tokens.";
-    public string RoleLongDescription => "Accuse someone you expect to be ejected, or Defend someone you expect to survive.\nCorrect judgments earn tokens; Leverage checks how someone voted.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.TabDescription");
 
     public Color RoleColor => new Color32(215, 176, 82, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
@@ -79,13 +80,13 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         var defendVotes = (int)OptionGroupSingleton<ArbitratorOptions>.Instance.DefendVotesRequired;
 
         tabText.AppendLine();
-        tabText.AppendLine($"<size=65%>Judgment Tokens: <color=#FFD166>{tokens}</color>/<color=#B7B7B7>{required}</color></size>");
+        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.JudgmentTokens"), tokens, required));
 
-        tabText.AppendLine("<size=65%><color=#FF6868>Accuse:</color> gain a token if your chosen player is ejected.</size>");
+        tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Accuse"));
 
-        tabText.AppendLine($"<size=65%><color=#66BFFF>Defend:</color> gain a token if they survive after receiving at least {defendVotes} votes.</size>");
+        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Defend"), defendVotes));
 
-        tabText.AppendLine("<size=65%><color=#FFD166>Leverage:</color> learn whether a nearby player voted with or against you last meeting.</size>");
+        tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Leverage"));
 
         return tabText;
     }

@@ -1,3 +1,4 @@
+using MiraAPI.Translation;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.GameOptions;
@@ -40,7 +41,7 @@ public class OverrideButton : CustomActionButton, IEnergyAbility
 
     protected override void FixedUpdate(PlayerControl playerControl)
     {
-        OverrideName(DeadwireRole.Records.TryGetValue(playerControl.PlayerId, out var record) ? record.Description : Name);
+        OverrideName(DeadwireRole.Records.TryGetValue(playerControl.PlayerId, out var record) ? MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{record.Response}") : Name);
     }
 
     protected override void OnClick()

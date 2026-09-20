@@ -24,6 +24,7 @@ using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.UI;
 using NewMod.Utilities;
+using PathfindingAPI;
 using Reactor;
 using Reactor.Networking;
 using Reactor.Networking.Attributes;
@@ -38,6 +39,7 @@ namespace NewMod;
 [BepInPlugin(Id, "NewMod", ModVersion)]
 [BepInDependency(ReactorPlugin.Id)]
 [BepInDependency(MiraApiPlugin.Id)]
+[BepInDependency(PathfindingPlugin.Id)]
 [BepInDependency(CorsacPluginId, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(LaunchpadReloadedId, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(AchievementsAPIPlugin.Id)]

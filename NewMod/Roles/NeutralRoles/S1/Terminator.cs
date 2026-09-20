@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -37,10 +38,10 @@ public class TerminatorRole : CrewmateRole, INewModRole
     public static Vector2 ObjectivePosition;
     public static GameObject ObjectiveMarker;
     public static TerminatorHuntState HuntState = new(1);
-    public string RoleName => "Terminator";
-    public string RoleDescription => "Survive meetings, reach the objective, then endure the hunt.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.IntroBlurb");
 
-    public string RoleLongDescription => "Your existence is publicly announced. Survive meetings to reveal your final objective. Reach it, then protect your armor until the countdown ends.";
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.TabDescription");
 
     public Color RoleColor => new Color32(217, 110, 32, 255);
     public NewModFaction Faction => NewModFaction.Entropy;
@@ -73,14 +74,14 @@ public class TerminatorRole : CrewmateRole, INewModRole
         var left = Mathf.Max(0, required - MeetingsSurvived);
 
         tabText.AppendLine();
-        tabText.AppendLine($"<size=65%>Meetings survived: <color=#FFD166>{MeetingsSurvived}</color>/<color=#B7B7B7>{required}</color></size>");
+        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsSurvived"), MeetingsSurvived, required));
 
         if (FinalCountdownActive)
-            tabText.AppendLine("<size=65%><color=#FF453A>Final sequence active. Survive until termination.</color></size>");
+            tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.HuntActive"));
         else if (ObjectiveSpawned)
-            tabText.AppendLine("<size=65%><color=#FF8C32>Final Objective active. Reach the marked zone and begin termination.</color></size>");
+            tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.ObjectiveActive"));
         else
-            tabText.AppendLine($"<size=65%><color=#FFD166>{left} meeting{(left == 1 ? "" : "s")} left before your Final Objective.</color></size>");
+            tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsRemaining"), left, left == 1 ? "" : "s"));
 
         return tabText;
     }

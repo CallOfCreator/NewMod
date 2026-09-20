@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameEnd;
@@ -19,9 +20,9 @@ public class OverloadRole : ImpostorRole, ICustomRole
     public static int AbsorbedAbilityCount;
     public static PlayerControl chosenPrey;
     public static List<CustomActionButton> CachedButtons = new();
-    public string RoleName => "Overload";
-    public string RoleDescription => "Hunt chosen prey to absorb their power.";
-    public string RoleLongDescription => "Choose prey and kill them yourself to gain a charge.\nReach the required charge and use OVERLOAD to win.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.OverloadRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.OverloadRole.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.OverloadRole.TabDescription");
     public Color RoleColor => new(0.6f, 0.1f, 0.3f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;

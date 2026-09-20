@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -34,9 +35,9 @@ public sealed class Usurper : CrewmateRole, INewModRole
     public static byte ExiledPlayerId = byte.MaxValue;
     public static Vector2 ExilePosition;
 
-    public string RoleName => "Usurper";
-    public string RoleDescription => "Secretly claim a player, take their Crown after death, then survive a meeting.";
-    public string RoleLongDescription => "Claim one player in secret. Their death leaves a visible Crown. Reach it first, take it without revealing your identity, and survive until the next meeting ends.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.TabDescription");
     public Color RoleColor => new(0.72f, 0.34f, 0.16f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Entropy;
@@ -63,11 +64,11 @@ public sealed class Usurper : CrewmateRole, INewModRole
             return text;
 
         if (state.Phase == UsurperCrownPhase.Claimed)
-            text.AppendLine($"<size=65%>Claimed: <color=#D8844D>{Utils.PlayerById(state.TargetId).Data.PlayerName}</color></size>");
+            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Claimed"), Utils.PlayerById(state.TargetId).Data.PlayerName));
         else if (state.Phase == UsurperCrownPhase.Available)
-            text.AppendLine("<size=65%><color=#F0B26E>The Crown is waiting.</color></size>");
+            text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.CrownWaiting"));
         else if (state.Phase == UsurperCrownPhase.Held)
-            text.AppendLine("<size=65%><color=#75E6A5>Survive the next meeting.</color></size>");
+            text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.SurvivalGoal"));
 
         return text;
     }

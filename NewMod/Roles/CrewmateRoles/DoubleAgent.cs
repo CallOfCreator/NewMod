@@ -1,4 +1,5 @@
 using System.Collections;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
@@ -19,9 +20,9 @@ public class DoubleAgent : CrewmateRole, INewModRole
     public static bool CounterfeitActive;
     public static float CooldownUntil;
 
-    public string RoleName => "Double Agent";
-    public string RoleDescription => "Sabotage Comms while playing for the crew.";
-    public string RoleLongDescription => "Use the sabotage map to briefly disable Communications. It repairs itself after a short time.\nYou still complete tasks and win with the crew.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.DoubleAgent");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.DoubleAgent.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.DoubleAgent.TabDescription");
     public NewModFaction Faction => NewModFaction.Sentinel;
     public Color RoleColor => Palette.ImpostorRed;
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
@@ -48,7 +49,7 @@ public class DoubleAgent : CrewmateRole, INewModRole
     public System.Text.StringBuilder SetTabText()
     {
         var options = OptionGroupSingleton<DoubleAgentOptions>.Instance;
-        return INewModRole.GetRoleTabText(this).Append($"\n<size=65%>{RoleColor.ToTextColor()}Sabotage: Communications only</color>\nDuration: {options.CounterfeitDuration:0.#}s | Cooldown: {options.CounterfeitCooldown:0.#}s\nRepairs itself. Cannot replace an active sabotage.\n<color=#FFCF70>You win with the crew.</color></size>");
+        return INewModRole.GetRoleTabText(this).Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.DoubleAgent.Tab.SabotageCommunicationsOnlyDurationS"), RoleColor.ToTextColor(), options.CounterfeitDuration, options.CounterfeitCooldown));
     }
 
     [RegisterEvent]

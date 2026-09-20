@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using NewMod.Pathfinding;
+using PathfindingAPI.Core;
+using PathfindingAPI.Navigation;
+using PathfindingAPI.Options;
 using NewMod.Utilities;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
@@ -60,7 +62,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        preview.request = new MapPathRequest(ShipStatus.Instance, preview.start, preview.goal, new PathOptions(UseVents: PlayerControl.LocalPlayer.Data.Role.CanVent), PlayerControl.LocalPlayer);
+        preview.request = new MapPathRequest(ShipStatus.Instance, preview.start, preview.goal, new PathOptions { UseVents = PlayerControl.LocalPlayer.Data.Role.CanVent }, PlayerControl.LocalPlayer);
     }
 
     public static void SendNpc()
@@ -333,7 +335,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             PathStatus.Found => $"{result.Points.Length} waypoints | {result.Length:0.0} units | {result.ExpandedNodes} nodes explored | {result.Crossings.Length} crossings",
             PathStatus.Unreachable => "No route found. Check doors or try a smaller grid spacing through the API.",
             PathStatus.InvalidEndpoint => "Start or goal overlaps a wall, or lies outside the map. Mark it in open floor space.",
-            PathStatus.MapChanged => "The map or doors changed during the search. Find path again.",
+            PathStatus.Obstructed => "The route became obstructed during the search. Find path again.",
             PathStatus.LimitReached => "Search limit reached. Try closer endpoints or increase the API node limit.",
             _ => "Search cancelled."
         };

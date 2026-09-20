@@ -1,3 +1,4 @@
+using MiraAPI.Translation;
 using MiraAPI.GameEnd;
 using MiraAPI.Roles;
 using MiraAPI.Utilities.Assets;
@@ -8,9 +9,9 @@ namespace NewMod.Roles.NeutralRoles;
 public class SpecialAgent : CrewmateRole, ICustomRole
 {
     public static PlayerControl AssignedPlayer { get; set; }
-    public string RoleName => "Special Agent";
-    public string RoleDescription => "Assign timed missions to other players.";
-    public string RoleLongDescription => "Assign missions that targets must complete before time runs out.\nEarn enough successful mission results to win.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.SpecialAgent");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.SpecialAgent.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.SpecialAgent.TabDescription");
     public Color RoleColor => Color.gray;
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;

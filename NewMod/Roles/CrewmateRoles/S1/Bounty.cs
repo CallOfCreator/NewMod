@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -34,9 +35,9 @@ public sealed class Bounty : CrewmateRole, INewModRole
 
     private static GameObject _collectionArrow;
 
-    public string RoleName => "Bounty";
-    public string RoleDescription => "Stay close to your contract, then collect before time runs out.";
-    public string RoleLongDescription => "Escort your target to fill the contract. Collection warns both players and gives the target your direction. Cash Out before the window closes.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.TabDescription");
     public Color RoleColor => new(0.96f, 0.58f, 0.16f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Apex;
@@ -61,13 +62,13 @@ public sealed class Bounty : CrewmateRole, INewModRole
         var text = INewModRole.GetRoleTabText(this);
         if (!Contracts.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var contract))
         {
-            text.AppendLine("<size=65%><color=#A4A4A4>Waiting for a contract.</color></size>");
+            text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.Waiting"));
             return text;
         }
 
         var target = Utils.PlayerById(contract.TargetId);
-        text.AppendLine($"<size=65%>Contract: <color=#FFB14F>{target.Data.PlayerName}</color></size>");
-        text.AppendLine(contract.Phase == BountyPhase.Collection ? $"<size=65%><color=#FFCF70>COLLECTION:</color> {Mathf.Max(0, Mathf.CeilToInt(CollectionExpiresAt[PlayerControl.LocalPlayer.PlayerId] - Time.time))}s</size>" : "<size=65%>Stay close to advance the contract.</size>");
+        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.Contract"), target.Data.PlayerName));
+        text.AppendLine(contract.Phase == BountyPhase.Collection ? string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.CollectionCountdown"), Mathf.Max(0, Mathf.CeilToInt(CollectionExpiresAt[PlayerControl.LocalPlayer.PlayerId] - Time.time))) : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.EscortInstructions"));
         return text;
     }
 

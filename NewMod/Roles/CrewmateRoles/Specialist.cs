@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
@@ -21,9 +22,9 @@ public class Specialist : CrewmateRole, INewModRole
 
     public static readonly List<(Vector2 Position, float Time)> Disturbances = new();
 
-    public string RoleName => "Specialist";
-    public string RoleDescription => "Complete tasks to earn different kinds of scans.";
-    public string RoleLongDescription => "Each task gives you one scan, up to three. Choose what to check before scanning.\nPresence counts nearby players. Forensics checks for bodies.\nDisturbance tells you whether someone was killed nearby recently.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Specialist");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Specialist.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Specialist.TabDescription");
     public Color RoleColor => new(0f, 0.8f, 1f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public NewModFaction Faction => NewModFaction.Sentinel;
@@ -52,7 +53,7 @@ public class Specialist : CrewmateRole, INewModRole
         if (!ScanStates.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state))
             return text;
 
-        text.Append($"\n<size=65%>{RoleColor.ToTextColor()}Mode: {state.Mode} | Scans: {state.Charges}/3</color>\nRange: 5 units | Disturbance history: 15s\nScanning takes 1.5s; stay still. <color=#FFCF70>Comms prevents scans.</color></size>");
+        text.Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Specialist.Tab.Details"), RoleColor.ToTextColor(), MiraLocaleManager.Get($"NewMod.Roles.CrewmateRoles.Specialist.Mode.{state.Mode}"), state.Charges));
         return text;
     }
 

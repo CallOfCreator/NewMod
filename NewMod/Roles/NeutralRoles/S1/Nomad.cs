@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -31,9 +32,9 @@ public sealed class Nomad : CrewmateRole, INewModRole
     private static readonly Dictionary<byte, HashSet<byte>> RouteRooms = [];
     private static readonly Dictionary<byte, Vector2> RouteEnds = [];
 
-    public string RoleName => "Nomad";
-    public string RoleDescription => "Complete room routes to arm Backtrack.";
-    public string RoleLongDescription => "Anchor a room, travel through unique rooms, then Wander home. Each completed route arms Backtrack, blocking one murder and returning you to the route's far end.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.TabDescription");
     public Color RoleColor => new(0.22f, 0.78f, 0.92f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Rift;
@@ -59,10 +60,10 @@ public sealed class Nomad : CrewmateRole, INewModRole
         var playerId = PlayerControl.LocalPlayer.PlayerId;
         Scores.TryGetValue(playerId, out var score);
 
-        text.AppendLine($"<size=65%>Routes: <color=#65D5EB>{score}</color>/{(int)OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal}</size>");
-        text.AppendLine(CanWander.Contains(playerId) ? "<size=65%><color=#75E6A5>Wander ready.</color></size>" : "<size=65%><color=#A4A4A4>Keep moving through new rooms.</color></size>");
+        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.Routes"), score, (int)OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal));
+        text.AppendLine(CanWander.Contains(playerId) ? MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.WanderReady") : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.RouteInstructions"));
         if (BacktrackPositions.ContainsKey(playerId))
-            text.AppendLine("<size=65%><color=#78E8FF>Backtrack armed: the next normal murder returns you to your route.</color></size>");
+            text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.BacktrackReady"));
         return text;
     }
 

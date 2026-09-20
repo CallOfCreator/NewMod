@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -36,9 +37,9 @@ public sealed class Collector : CrewmateRole, INewModRole
     public static bool ExilePending;
     public static Vector2 ExilePosition;
 
-    public string RoleName => "Collector";
-    public string RoleDescription => "Harvest Violence, Ability, and Fate fragments.";
-    public string RoleLongDescription => "Deaths leave three readable fragment types. Collect one of each and Manifest, then survive the next meeting. Duplicate fragments power Trace or Drift.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.TabDescription");
     public Color RoleColor => new(0.76f, 0.42f, 0.93f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Entropy;
@@ -61,7 +62,7 @@ public sealed class Collector : CrewmateRole, INewModRole
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
-        text.AppendLine(VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId) ? "<size=65%><color=#7EE49A>Manifest complete. Survive the next meeting.</color></size>" : "<size=65%>Recipe: <color=#F23D3D>Violence</color> + <color=#B833F0>Ability</color> + <color=#4F9DFF>Fate</color>.</size>");
+        text.AppendLine(VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId) ? MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.ManifestComplete") : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.Recipe"));
         return text;
     }
 

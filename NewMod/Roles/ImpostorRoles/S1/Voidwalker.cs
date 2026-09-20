@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
@@ -12,9 +13,9 @@ namespace NewMod.Roles.ImpostorRoles.S1;
 [MiraIgnore]
 public class Voidwalker : ImpostorRole, INewModRole
 {
-    public string RoleName => "Voidwalker";
-    public string RoleDescription => "Slip through closed doors and choose where to reappear.";
-    public string RoleLongDescription => "Become invisible and pass through closed doors.\nYou cannot kill while phased. Once you return, you can attack as soon as your normal kill cooldown is ready.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker.TabDescription");
 
     public CustomRoleConfiguration Configuration =>
         new(this)
@@ -41,11 +42,11 @@ public class Voidwalker : ImpostorRole, INewModRole
         var options = OptionGroupSingleton<VoidwalkerOptions>.Instance;
 
         tabText.AppendLine();
-        tabText.AppendLine($"<size=65%>Void Duration: <color=#B388FF>{options.VoidTime:0.#}s</color>  •  Cooldown: <color=#9575CD>{options.EnterVoidCooldown:0.#}s</color></size>");
+        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.Timing"), options.VoidTime, options.EnterVoidCooldown));
 
-        tabText.AppendLine("<size=65%><color=#C8A2FF>While in the Void:</color> Invisible  •  Pass through doors  •  Cannot kill</size>");
+        tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.PhasedRules"));
 
-        tabText.AppendLine("<size=65%>After returning: <color=#B388FF>No extra attack delay.</color> Your normal kill cooldown still applies.</size>");
+        tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.ReturnRules"));
 
         return tabText;
     }

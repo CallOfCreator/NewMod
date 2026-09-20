@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Il2CppInterop.Runtime.Attributes;
-using NewMod.Pathfinding;
+using PathfindingAPI.Core;
+using PathfindingAPI.Navigation;
+using PathfindingAPI.Options;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
 
@@ -148,7 +150,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     public void Plan()
     {
         request?.Cancel();
-        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions(retries > 0 ? 0.2f : 0.35f, WaitForDoors: true, UseVents: PlayerControl.LocalPlayer.Data.Role.CanVent), PlayerControl.LocalPlayer);
+        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = retries > 0 ? 0.2f : 0.35f, WaitForDoors = true, UseVents = PlayerControl.LocalPlayer.Data.Role.CanVent }, PlayerControl.LocalPlayer);
         path = null;
         SetWalking(false);
         preview.message = $"NPC finding route to {destinationName}...";
@@ -197,7 +199,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
                 return;
             if (request.Status != PathStatus.Found)
             {
-                if ((request.Status == PathStatus.MapChanged || request.Status == PathStatus.InvalidEndpoint) && retries++ < 8)
+                if ((request.Status == PathStatus.Obstructed || request.Status == PathStatus.InvalidEndpoint) && retries++ < 8)
                 {
                     RecoverPath();
                     recoveryWait = 0.25f;
@@ -656,7 +658,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             {
                 preview.message = "NPC waiting for the real platform; checking another route.";
                 if (platform.InUse && crossingTime < 5f) return;
-                platformAlternative ??= new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, request.options with { UseMovingPlatforms = false }, PlayerControl.LocalPlayer);
+                platformAlternative ??= new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = request.options.CellSize, WaitForDoors = request.options.WaitForDoors, UseVents = request.options.UseVents, UseMovingPlatforms = false }, PlayerControl.LocalPlayer);
                 platformAlternative.Step();
                 if (platformAlternative.Status == PathStatus.Found)
                 {

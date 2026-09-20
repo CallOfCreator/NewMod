@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis">Aegis</string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.IntroBlurb">Protect nearby players with a shield.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.MedDescription">Place a shield around you. It blocks the first kill
+        attempt against anyone inside, then breaks.[nl]The shield stays where you placed it until it breaks or runs out.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.TabDescription">Place a shield around you. It blocks the first kill
+        attempt against anyone inside, then breaks.[nl]The shield stays where you placed it until it breaks or runs out.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.WikiDescription">Place a shield around you. It blocks the first kill
+        attempt against anyone inside, then breaks.[nl]The shield stays where you placed it until it breaks or runs out.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon">Beacon</string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.IntroBlurb">Check where players are on the map.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.MedDescription">Scan the map to see where living players are at that
+        moment. Players in vents are hidden.[nl]The markers stay in place and do not show names. Complete tasks to earn
+        more scans.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.TabDescription">Scan the map to see where living players are at that
+        moment. Players in vents are hidden.[nl]The markers stay in place and do not show names. Complete tasks to earn
+        more scans.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.WikiDescription">Scan the map to see where living players are at
+        that moment. Players in vents are hidden.[nl]The markers stay in place and do not show names. Complete tasks to
+        earn more scans.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent">Double Agent</string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.IntroBlurb">Sabotage Comms while playing for the crew.</string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.MedDescription">Use the sabotage map to briefly disable
+        Communications. It repairs itself after a short time.[nl]You still complete tasks and win with the crew.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.TabDescription">Use the sabotage map to briefly disable
+        Communications. It repairs itself after a short time.[nl]You still complete tasks and win with the crew.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.WikiDescription">Use the sabotage map to briefly disable
+        Communications. It repairs itself after a short time.[nl]You still complete tasks and win with the crew.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist">Specialist</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.IntroBlurb">Complete tasks to earn different kinds of scans.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.MedDescription">Each task gives you one scan, up to three.
+        Choose what to check before scanning.[nl]Presence counts nearby players. Forensics checks for
+        bodies.[nl]Disturbance tells you whether someone was killed nearby recently.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.TabDescription">Each task gives you one scan, up to three.
+        Choose what to check before scanning.[nl]Presence counts nearby players. Forensics checks for
+        bodies.[nl]Disturbance tells you whether someone was killed nearby recently.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.WikiDescription">Each task gives you one scan, up to three.
+        Choose what to check before scanning.[nl]Presence counts nearby players. Forensics checks for
+        bodies.[nl]Disturbance tells you whether someone was killed nearby recently.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary">The Visionary</string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.IntroBlurb">Set up cameras and share photos in meetings.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.MedDescription">Place a camera and aim it. It takes one photo
+        after a short delay.[nl]Return to collect it, then choose a photo to show everyone in a meeting.[nl]Other
+        players can disable your camera before you collect it.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.TabDescription">Place a camera and aim it. It takes one photo
+        after a short delay.[nl]Return to collect it, then choose a photo to show everyone in a meeting.[nl]Other
+        players can disable your camera before you collect it.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.WikiDescription">Place a camera and aim it. It takes one photo
+        after a short delay.[nl]Return to collect it, then choose a photo to show everyone in a meeting.[nl]Other
+        players can disable your camera before you collect it.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil">Edgeveil</string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil.IntroBlurb">Launch a short lethal Arc in front of you.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil.MedDescription">Stand still to charge, then launch a slash in the
+        direction you face.[nl]Opponents can dodge it or take cover behind a wall. Misses still use the cooldown.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil.TabDescription">Stand still to charge, then launch a slash in the
+        direction you face.[nl]Opponents can dodge it or take cover behind a wall. Misses still use the cooldown.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil.WikiDescription">Stand still to charge, then launch a slash in the
+        direction you face.[nl]Opponents can dodge it or take cover behind a wall. Misses still use the cooldown.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole">Necromancer</string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.IntroBlurb">You can revive dead players who weren't killed
+        by you
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.MedDescription">Bring a dead player back to life. You
+        cannot revive someone you killed yourself.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.TabDescription">Bring a dead player back to life. You
+        cannot revive someone you killed yourself.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.WikiDescription">Bring a dead player back to life. You
+        cannot revive someone you killed yourself.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade">PulseBlade</string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.IntroBlurb">Commit to a dash and catch someone in your path.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.MedDescription">Charge briefly, then dash in a fixed
+        direction.[nl]Hit an opponent to kill them, then recover before moving again. Win with the impostors.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.TabDescription">Charge briefly, then dash in a fixed
+        direction.[nl]Hit an opponent to kill them, then recover before moving again. Win with the impostors.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.WikiDescription">Charge briefly, then dash in a fixed
+        direction.[nl]Hit an opponent to kill them, then recover before moving again. Win with the impostors.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant">Revenant</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.IntroBlurb">Feign death, revive, then kill by contact.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.MedDescription">Feign death once. If your body remains unreported,
+        return with Doom Awakening and attack the first eligible player you touch.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.TabDescription">Feign death once. If your body remains unreported,
+        return with Doom Awakening and attack the first eligible player you touch.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.WikiDescription">Feign death once. If your body remains
+        unreported, return with Doom Awakening and attack the first eligible player you touch.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EgoistRole">Egoist</string>
+    <string name="NewMod.Roles.NeutralRoles.EgoistRole.IntroBlurb">Turn votes against you into a public one-meeting
+        duel.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EgoistRole.MedDescription">Votes you survive build Ego. Once full, challenge
+        one player at the next meeting. Only you, the opponent, and Skip can receive votes. Eject the opponent to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EgoistRole.TabDescription">Votes you survive build Ego. Once full, challenge
+        one player at the next meeting. Only you, the opponent, and Skip can receive votes. Eject the opponent to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EgoistRole.WikiDescription">Votes you survive build Ego. Once full,
+        challenge one player at the next meeting. Only you, the opponent, and Skip can receive votes. Eject the opponent
+        to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief">Energy Thief</string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.IntroBlurb">Every power leaves something to steal.</string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.MedDescription">Siphon players to capture energy from their
+        abilities. Gather the required energy and categories, then hold a Power Node during Grid Breach to win alone.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.TabDescription">Siphon players to capture energy from their
+        abilities. Gather the required energy and categories, then hold a Power Node during Grid Breach to win alone.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.WikiDescription">Siphon players to capture energy from their
+        abilities. Gather the required energy and categories, then hold a Power Node during Grid Breach to win alone.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.InjectorRole">Injector</string>
+    <string name="NewMod.Roles.NeutralRoles.InjectorRole.IntroBlurb">Inject players with random disruptive serums.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.InjectorRole.MedDescription">Inject different players with random movement
+        effects.[nl]Reach the required number of injections to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.InjectorRole.TabDescription">Inject different players with random movement
+        effects.[nl]Reach the required number of injections to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.InjectorRole.WikiDescription">Inject different players with random movement
+        effects.[nl]Reach the required number of injections to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.OverloadRole">Overload</string>
+    <string name="NewMod.Roles.NeutralRoles.OverloadRole.IntroBlurb">Hunt chosen prey to absorb their power.</string>
+    <string name="NewMod.Roles.NeutralRoles.OverloadRole.MedDescription">Choose prey and kill them yourself to gain a
+        charge.[nl]Reach the required charge and use OVERLOAD to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.OverloadRole.TabDescription">Choose prey and kill them yourself to gain a
+        charge.[nl]Reach the required charge and use OVERLOAD to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.OverloadRole.WikiDescription">Choose prey and kill them yourself to gain a
+        charge.[nl]Reach the required charge and use OVERLOAD to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Prankster">Prankster</string>
+    <string name="NewMod.Roles.NeutralRoles.Prankster.IntroBlurb">Place deadly fake bodies.</string>
+    <string name="NewMod.Roles.NeutralRoles.Prankster.MedDescription">Place fake bodies that kill anyone who reports
+        them.[nl]Get the required number of fake-body reports to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Prankster.TabDescription">Place fake bodies that kill anyone who reports
+        them.[nl]Get the required number of fake-body reports to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Prankster.WikiDescription">Place fake bodies that kill anyone who reports
+        them.[nl]Get the required number of fake-body reports to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Shade">Shade</string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.IntroBlurb">Kill inside your shadow zones.</string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.MedDescription">Deploy a shadow zone that hides you and enables kills
+        inside it.[nl]Reach the required shadow kills to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.TabDescription">Deploy a shadow zone that hides you and enables kills
+        inside it.[nl]Reach the required shadow kills to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.WikiDescription">Deploy a shadow zone that hides you and enables kills
+        inside it.[nl]Reach the required shadow kills to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.SpecialAgent">Special Agent</string>
+    <string name="NewMod.Roles.NeutralRoles.SpecialAgent.IntroBlurb">Assign timed missions to other players.</string>
+    <string name="NewMod.Roles.NeutralRoles.SpecialAgent.MedDescription">Assign missions that targets must complete
+        before time runs out.[nl]Earn enough successful mission results to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.SpecialAgent.TabDescription">Assign missions that targets must complete
+        before time runs out.[nl]Earn enough successful mission results to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.SpecialAgent.WikiDescription">Assign missions that targets must complete
+        before time runs out.[nl]Earn enough successful mission results to win.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant">Tyrant</string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.IntroBlurb">Unlock control effects with each kill.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.MedDescription">Your first three kills trigger stronger control
+        fields.[nl]Your fourth kill unlocks a Champion decision that determines your victory.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.TabDescription">Your first three kills trigger stronger control
+        fields.[nl]Your fourth kill unlocks a Champion decision that determines your victory.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.WikiDescription">Your first three kills trigger stronger control
+        fields.[nl]Your fourth kill unlocks a Champion decision that determines your victory.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller">Wraith Caller</string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.IntroBlurb">Send Wraiths through walls to hunt targets.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.MedDescription">Summon spectral NPCs that slip through walls
+        and hunt your target. Reach the required number of Wraith kills and stay alive to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.TabDescription">Summon spectral NPCs that slip through walls
+        and hunt your target. Reach the required number of Wraith kills and stay alive to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.WikiDescription">Summon spectral NPCs that slip through walls
+        and hunt your target. Reach the required number of Wraith kills and stay alive to win.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty">Bounty</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty.IntroBlurb">Stay close to your contract, then collect before time
+        runs out.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty.MedDescription">Escort your target to fill the contract.
+        Collection warns both players and gives the target your direction. Cash Out before the window closes.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty.TabDescription">Escort your target to fill the contract.
+        Collection warns both players and gives the target your direction. Cash Out before the window closes.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty.WikiDescription">Escort your target to fill the contract.
+        Collection warns both players and gives the target your direction. Cash Out before the window closes.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.VerifierRole">Verifier</string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.VerifierRole.IntroBlurb">Check whether a player did what they claim.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.VerifierRole.MedDescription">Once per meeting, choose a player and check
+        something they did last round.[nl]You can check tasks, venting, ability use, or whether they were near a body
+        when it was reported.[nl]Only you see the result.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.VerifierRole.TabDescription">Once per meeting, choose a player and check
+        something they did last round.[nl]You can check tasks, venting, ability use, or whether they were near a body
+        when it was reported.[nl]Only you see the result.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.VerifierRole.WikiDescription">Once per meeting, choose a player and
+        check something they did last round.[nl]You can check tasks, venting, ability use, or whether they were near a
+        body when it was reported.[nl]Only you see the result.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole">Warden</string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.IntroBlurb">Watch a room and investigate kills inside it.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.MedDescription">Seal your room to block venting and door
+        sabotage. Players can still walk in, leave, and kill.[nl]You see a pulse when someone crosses the room
+        boundary.[nl]If someone is killed inside, inspect the trace for a clue about the attacker.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.TabDescription">Seal your room to block venting and door
+        sabotage. Players can still walk in, leave, and kill.[nl]You see a pulse when someone crosses the room
+        boundary.[nl]If someone is killed inside, inspect the trace for a clue about the attacker.
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.WikiDescription">Seal your room to block venting and door
+        sabotage. Players can still walk in, leave, and kill.[nl]You see a pulse when someone crosses the room
+        boundary.[nl]If someone is killed inside, inspect the trace for a clue about the attacker.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire">Deadwire</string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire.IntroBlurb">Mark a player and gain a power from their next
+        ability.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire.MedDescription">Secretly mark someone with Deadlock.[nl]If they
+        use an ability before the mark expires, gain one power based on its type. They are notified after capture. Use
+        Override to spend it. Records expire at meetings.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire.TabDescription">Secretly mark someone with Deadlock.[nl]If they
+        use an ability before the mark expires, gain one power based on its type. They are notified after capture. Use
+        Override to spend it. Records expire at meetings.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire.WikiDescription">Secretly mark someone with Deadlock.[nl]If
+        they use an ability before the mark expires, gain one power based on its type. They are notified after capture.
+        Use Override to spend it. Records expire at meetings.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole">MirrorBlade</string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.IntroBlurb">Reflect the strike meant for you.</string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.MedDescription">Briefly reveal a mirror stance that
+        reflects the next attack back at its attacker.[nl]You cannot attack during the stance. An opponent can wait for
+        it to end. Wraiths turn back on their caller.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.TabDescription">Briefly reveal a mirror stance that
+        reflects the next attack back at its attacker.[nl]You cannot attack during the stance. An opponent can wait for
+        it to end. Wraiths turn back on their caller.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.WikiDescription">Briefly reveal a mirror stance that
+        reflects the next attack back at its attacker.[nl]You cannot attack during the stance. An opponent can wait for
+        it to end. Wraiths turn back on their caller.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Voidwalker">Voidwalker</string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Voidwalker.IntroBlurb">Slip through closed doors and choose where to
+        reappear.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Voidwalker.MedDescription">Become invisible and pass through closed
+        doors.[nl]You cannot kill while phased. Once you return, you can attack as soon as your normal kill cooldown is
+        ready.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Voidwalker.TabDescription">Become invisible and pass through closed
+        doors.[nl]You cannot kill while phased. Once you return, you can attack as soon as your normal kill cooldown is
+        ready.
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Voidwalker.WikiDescription">Become invisible and pass through closed
+        doors.[nl]You cannot kill while phased. Once you return, you can attack as soon as your normal kill cooldown is
+        ready.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole">Arbitrator</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole.IntroBlurb">Predict meeting outcomes to earn Judgment
+        Tokens.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole.MedDescription">Accuse someone you expect to be ejected,
+        or Defend someone you expect to survive.[nl]Correct judgments earn tokens; Leverage checks how someone voted.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole.TabDescription">Accuse someone you expect to be ejected,
+        or Defend someone you expect to survive.[nl]Correct judgments earn tokens; Leverage checks how someone voted.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole.WikiDescription">Accuse someone you expect to be ejected,
+        or Defend someone you expect to survive.[nl]Correct judgments earn tokens; Leverage checks how someone voted.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Collector">Collector</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Collector.IntroBlurb">Harvest Violence, Ability, and Fate fragments.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Collector.MedDescription">Deaths leave three readable fragment types.
+        Collect one of each and Manifest, then survive the next meeting. Duplicate fragments power Trace or Drift.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Collector.TabDescription">Deaths leave three readable fragment types.
+        Collect one of each and Manifest, then survive the next meeting. Duplicate fragments power Trace or Drift.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Collector.WikiDescription">Deaths leave three readable fragment types.
+        Collect one of each and Manifest, then survive the next meeting. Duplicate fragments power Trace or Drift.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad">Nomad</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad.IntroBlurb">Complete room routes to arm Backtrack.</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad.MedDescription">Anchor a room, travel through unique rooms, then
+        Wander home. Each completed route arms Backtrack, blocking one murder and returning you to the route's far end.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad.TabDescription">Anchor a room, travel through unique rooms, then
+        Wander home. Each completed route arms Backtrack, blocking one murder and returning you to the route's far end.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad.WikiDescription">Anchor a room, travel through unique rooms, then
+        Wander home. Each completed route arms Backtrack, blocking one murder and returning you to the route's far end.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole">Terminator</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole.IntroBlurb">Survive meetings, reach the objective, then
+        endure the hunt.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole.MedDescription">Your existence is publicly announced.
+        Survive meetings to reveal your final objective. Reach it, then protect your armor until the countdown ends.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole.TabDescription">Your existence is publicly announced.
+        Survive meetings to reveal your final objective. Reach it, then protect your armor until the countdown ends.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole.WikiDescription">Your existence is publicly announced.
+        Survive meetings to reveal your final objective. Reach it, then protect your armor until the countdown ends.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Usurper">Usurper</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Usurper.IntroBlurb">Secretly claim a player, take their Crown after
+        death, then survive a meeting.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Usurper.MedDescription">Claim one player in secret. Their death leaves a
+        visible Crown. Reach it first, take it without revealing your identity, and survive until the next meeting ends.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Usurper.TabDescription">Claim one player in secret. Their death leaves a
+        visible Crown. Reach it first, take it without revealing your identity, and survive until the next meeting ends.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Usurper.WikiDescription">Claim one player in secret. Their death leaves a
+        visible Crown. Reach it first, take it without revealing your identity, and survive until the next meeting ends.
+    </string>
+    <string name="NewMod.RoleTab.Header">{0}You are &lt;b&gt;{1}&lt;/b&gt;&lt;/color&gt;[nl]&lt;size=65%&gt;Faction: {2}&lt;/size&gt;[nl]&lt;size=70%&gt;{3}&lt;/size&gt;[nl]</string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.Tab.Details">[nl]&lt;size=65%&gt;{0}Ward: {1:0.#}s | Radius: {2:0.#}&lt;/color&gt;[nl]Cooldown:
+        {3:0.#}s | Uses: {4:0}[nl]Blocks one kill attempt against anyone inside.[nl]&lt;color=#FFCF70&gt;The shield
+        breaks after blocking a kill.&lt;/color&gt; Other abilities still work.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.Tab.Details">[nl]&lt;size=65%&gt;{0}Charges: {1}/{2:0} | +1 per
+        {3:0} tasks&lt;/color&gt;[nl]Snapshot: {4:0.#}s | Cooldown: {5:0.#}s[nl]Opening the map does not spend a
+        charge.[nl]&lt;color=#FFCF70&gt;Comms blocks scanning.&lt;/color&gt; Markers show where players were when you
+        scanned.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.Tab.Details">[nl]&lt;size=65%&gt;{0}Mode: {1} | Scans: {2}/3&lt;/color&gt;[nl]Range:
+        5 units | Disturbance history: 15s[nl]Scanning takes 1.5s; stay still. &lt;color=#FFCF70&gt;Comms prevents
+        scans.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.Tab.Details">[nl]&lt;size=65%&gt;{0}Cameras: {1:0} | Capture
+        delay: {2:0.#}s&lt;/color&gt;[nl]Release to place. Right-click or Esc cancels.[nl]Return to collect the photo.
+        Other players can disable the camera.[nl]&lt;color=#FFCF70&gt;Comms ruins the shot.&lt;/color&gt; Show one photo
+        per meeting.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.Tab.Timing">&lt;size=65%&gt;Charge: &lt;color=#FF8080&gt;{0:0.#}s&lt;/color&gt;
+        | Recovery: &lt;color=#FF8080&gt;{1:0.#}s&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.Tab.DashRules">&lt;size=65%&gt;Your direction locks when you
+        press Strike. Walls stop the dash. Misses still use the cooldown.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.Tab.State">&lt;size=65%&gt;&lt;color=#B77ADB&gt;State:&lt;/color&gt;
+        {0}&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EgoistRole.Tab.Ego">&lt;size=65%&gt;Ego: &lt;color=#CC4D99&gt;{0}&lt;/color&gt;/{1}&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.EgoistRole.Tab.Opponent">&lt;size=65%&gt;Opponent: &lt;color=#CC4D99&gt;{0}&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.Energy">&lt;size=65%&gt;Energy: &lt;color=#D96BFF&gt;{0}&lt;/color&gt;/{1}&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.Categories">&lt;size=65%&gt;Resonance: &lt;color=#75E6FF&gt;{0}&lt;/color&gt;/{1}
+        categories&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.BreachCountdown">&lt;size=65%&gt;&lt;color=#FF5CEA&gt;GRID
+        BREACH: {0:F1}s&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.ObjectiveReady">&lt;size=65%&gt;&lt;color=#75E6A5&gt;Power
+        Node located. Reach it and breach the grid.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.Siphoning">&lt;size=65%&gt;&lt;color=#FFD166&gt;Siphoning
+        {0}...&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.Tab.Concealment">&lt;size=65%&gt;&lt;color=#{0}&gt;Within the dark you
+        are unseen.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.Tab.ActiveShadowZones">&lt;size=65%&gt;Active Shadow Zones: &lt;color=#{0}&gt;{1}&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.Tab.PlayersInsideZones">&lt;size=65%&gt;Players inside zones: &lt;color=#{0}&gt;{1}&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.Tab.InvisibleMode">Enter a shadow zone to become invisible.</string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.Tab.KillMode">Enter a shadow zone to gain the power to kill once.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.Tab.CombinedMode">Enter a shadow zone to become invisible and gain the
+        power to kill once.
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.Shade.Tab.DefaultMode">Enter a shadow zone to embrace the darkness.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.Tab.FirstKill">1st Kill: Fear Pulse reduces nearby players' vision
+        and speed briefly.[nl]
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.Tab.SecondKill">2nd Kill: Zone of Suppression disables abilities
+        inside the dome.[nl]
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.Tab.ThirdKill">3rd Kill: Intimidation Protocol freezes the next
+        witness briefly.[nl]
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.Tab.FourthKill">4th Kill: Apex Throne lets you choose a
+        Champion.[nl]
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.Tyrant.Tab.Unlocked">&lt;size=64%&gt;&lt;color=#{0}&gt;âœ“ Unlocked&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.Tab.Sent">&lt;size=70%&gt;Sent: &lt;b&gt;&lt;color=#{0}&gt;{1}&lt;/color&gt;&lt;/b&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.Tab.Kills">&lt;size=70%&gt;Kills: &lt;b&gt;&lt;color=#{0}&gt;{1}&lt;/color&gt;&lt;/b&gt;/&lt;color=#{2}&gt;{3}&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.Tab.KillsRemaining">&lt;size=65%&gt;&lt;color=#{0}&gt;{1} more
+        successful kill{2} to win.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.Tab.GoalReached">&lt;size=65%&gt;&lt;b&gt;&lt;color=#{0}&gt;Kill
+        goal reached. You must be alive when victory is checked.&lt;/color&gt;&lt;/b&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.WraithCaller.Tab.SummonTip">&lt;size=60%&gt;&lt;color=#{0}&gt;Tip:&lt;/color&gt;
+        Time your summons. Meetings cancel hunts.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty.Tab.Waiting">&lt;size=65%&gt;&lt;color=#A4A4A4&gt;Waiting for a
+        contract.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty.Tab.Contract">&lt;size=65%&gt;Contract: &lt;color=#FFB14F&gt;{0}&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty.Tab.CollectionCountdown">&lt;size=65%&gt;&lt;color=#FFCF70&gt;COLLECTION:&lt;/color&gt;
+        {0}s&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Bounty.Tab.EscortInstructions">&lt;size=65%&gt;Stay close to advance the
+        contract.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.VerifierRole.Tab.Details">[nl]&lt;size=65%&gt;{0}One check per meeting.&lt;/color&gt;[nl]Checks
+        cover actions from the last round.[nl]Body proximity: within {1:0.#} units at report time.[nl]&lt;color=#FFCF70&gt;Unknown&lt;/color&gt;
+        means no body proximity check was recorded.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.Tab.Details">[nl]&lt;size=65%&gt;{0}Seal: {1:0.#}s |
+        Cooldown: {2:0.#}s&lt;/color&gt;[nl]Blocks vents and door sabotage; walking and attacks remain possible.[nl]&lt;color=#FFCF70&gt;Clue:&lt;/color&gt;
+        {3}[nl]Choose a clue, then inspect a trace left by a kill.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.Captured">&lt;size=65%&gt;&lt;color=#FF6B72&gt;Captured:&lt;/color&gt;
+        {0}&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.NoCategoryRecorded">&lt;size=65%&gt;&lt;color=#9B9B9B&gt;No
+        category recorded.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.OffensiveRewards">&lt;size=65%&gt;&lt;color=#FF6B72&gt;Aggression:&lt;/color&gt;
+        Shorten kill cooldown. &lt;color=#FF6B72&gt;Intelligence:&lt;/color&gt; Track the marked player.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.UtilityRewards">&lt;size=65%&gt;&lt;color=#FF6B72&gt;Mobility:&lt;/color&gt;
+        Blink forward. &lt;color=#FF6B72&gt;Control:&lt;/color&gt; Jam the marked player. &lt;color=#FF6B72&gt;Protection:&lt;/color&gt;
+        Block one attack.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Armed">armed</string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Idle">idle</string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.ReflectState">&lt;size=65%&gt;Reflect state: &lt;color=#C0DCFF&gt;{0}&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Timing">&lt;size=65%&gt;Parry: &lt;color=#C0DCFF&gt;{0:0.#}s&lt;/color&gt;
+        | Cooldown: &lt;color=#C0DCFF&gt;{1:0.#}s&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.ParryRules">&lt;size=65%&gt;Your outline warns
+        opponents. You cannot attack until the stance ends.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.Timing">&lt;size=65%&gt;Void Duration: &lt;color=#B388FF&gt;{0:0.#}s&lt;/color&gt;
+        â€¢ Cooldown: &lt;color=#9575CD&gt;{1:0.#}s&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.PhasedRules">&lt;size=65%&gt;&lt;color=#C8A2FF&gt;While
+        in the Void:&lt;/color&gt; Invisible â€¢ Pass through doors â€¢ Cannot kill&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.ReturnRules">&lt;size=65%&gt;After returning: &lt;color=#B388FF&gt;No
+        extra attack delay.&lt;/color&gt; Your normal kill cooldown still applies.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.JudgmentTokens">&lt;size=65%&gt;Judgment Tokens: &lt;color=#FFD166&gt;{0}&lt;/color&gt;/&lt;color=#B7B7B7&gt;{1}&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Accuse">&lt;size=65%&gt;&lt;color=#FF6868&gt;Accuse:&lt;/color&gt;
+        gain a token if your chosen player is ejected.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Defend">&lt;size=65%&gt;&lt;color=#66BFFF&gt;Defend:&lt;/color&gt;
+        gain a token if they survive after receiving at least {0} votes.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Leverage">&lt;size=65%&gt;&lt;color=#FFD166&gt;Leverage:&lt;/color&gt;
+        learn whether a nearby player voted with or against you last meeting.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Collector.Tab.ManifestComplete">&lt;size=65%&gt;&lt;color=#7EE49A&gt;Manifest
+        complete. Survive the next meeting.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Collector.Tab.Recipe">&lt;size=65%&gt;Recipe: &lt;color=#F23D3D&gt;Violence&lt;/color&gt;
+        + &lt;color=#B833F0&gt;Ability&lt;/color&gt; + &lt;color=#4F9DFF&gt;Fate&lt;/color&gt;.&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad.Tab.Routes">&lt;size=65%&gt;Routes: &lt;color=#65D5EB&gt;{0}&lt;/color&gt;/{1}&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad.Tab.WanderReady">&lt;size=65%&gt;&lt;color=#75E6A5&gt;Wander ready.&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad.Tab.RouteInstructions">&lt;size=65%&gt;&lt;color=#A4A4A4&gt;Keep
+        moving through new rooms.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Nomad.Tab.BacktrackReady">&lt;size=65%&gt;&lt;color=#78E8FF&gt;Backtrack
+        armed: the next normal murder returns you to your route.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsSurvived">&lt;size=65%&gt;Meetings survived:
+        &lt;color=#FFD166&gt;{0}&lt;/color&gt;/&lt;color=#B7B7B7&gt;{1}&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.HuntActive">&lt;size=65%&gt;&lt;color=#FF453A&gt;Final
+        sequence active. Survive until termination.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.ObjectiveActive">&lt;size=65%&gt;&lt;color=#FF8C32&gt;Final
+        Objective active. Reach the marked zone and begin termination.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsRemaining">&lt;size=65%&gt;&lt;color=#FFD166&gt;{0}
+        meeting{1} left before your Final Objective.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Claimed">&lt;size=65%&gt;Claimed: &lt;color=#D8844D&gt;{0}&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Usurper.Tab.CrownWaiting">&lt;size=65%&gt;&lt;color=#F0B26E&gt;The Crown
+        is waiting.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.NeutralRoles.S1.Usurper.Tab.SurvivalGoal">&lt;size=65%&gt;&lt;color=#75E6A5&gt;Survive
+        the next meeting.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.Tab.SabotageCommunicationsOnlyDurationS">[nl]&lt;size=65%&gt;{0}Sabotage:
+        Communications only&lt;/color&gt;[nl]Duration: {1:0.#}s | Cooldown: {2:0.#}s[nl]Repairs itself. Cannot replace
+        an active sabotage.[nl]&lt;color=#FFCF70&gt;You win with the crew.&lt;/color&gt;&lt;/size&gt;
+    </string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.0">Entry timing</string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.1">Recent ability</string>
+    <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.2">Time inside</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.Mode.Presence">Presence</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.Mode.Forensics">Forensics</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.Mode.Disturbance">Disturbance</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Ready">Ready</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Feigning">Feigning death</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Revived">Revived</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.DoomActive">Doom Awakening active</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.DoomSpent">Doom Awakening spent</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.PermanentlyDead">Dead</string>
+    <string name="NewMod.EnergyCategory.Aggression">Aggression</string>
+    <string name="NewMod.EnergyCategory.Intelligence">Intelligence</string>
+    <string name="NewMod.EnergyCategory.Mobility">Mobility</string>
+    <string name="NewMod.EnergyCategory.Control">Control</string>
+    <string name="NewMod.EnergyCategory.Protection">Protection</string>
+    <string name="NewMod.Deadwire.Reward.ReduceKillCooldown">Kill Boost</string>
+    <string name="NewMod.Deadwire.Reward.TrackActor">Track</string>
+    <string name="NewMod.Deadwire.Reward.Blink">Blink</string>
+    <string name="NewMod.Deadwire.Reward.JamActor">Jam</string>
+    <string name="NewMod.Deadwire.Reward.Barrier">Shield</string>
+    <string name="NewMod.Faction.Apex">Apex</string>
+    <string name="NewMod.Faction.Entropy">Entropy</string>
+    <string name="NewMod.Faction.Sentinel">Sentinel</string>
+    <string name="NewMod.Faction.Rift">Rift</string>
+    <string name="NewMod.Faction.Unknown">Unknown</string>
+</resources>

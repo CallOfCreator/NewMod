@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -30,9 +31,9 @@ public class EgoistRole : CrewmateRole, INewModRole
     private const byte SkipVoteId = 253;
     private static bool _selecting;
 
-    public string RoleName => "Egoist";
-    public string RoleDescription => "Turn votes against you into a public one-meeting duel.";
-    public string RoleLongDescription => "Votes you survive build Ego. Once full, challenge one player at the next meeting. Only you, the opponent, and Skip can receive votes. Eject the opponent to win.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.TabDescription");
     public Color RoleColor => new(0.8f, 0.3f, 0.6f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup => RoleOptionsGroup.Neutral;
@@ -60,9 +61,9 @@ public class EgoistRole : CrewmateRole, INewModRole
         var text = INewModRole.GetRoleTabText(this);
         var state = States[PlayerControl.LocalPlayer.PlayerId];
         var required = (int)OptionGroupSingleton<EgoistRoleOptions>.Instance.EgoRequired;
-        text.AppendLine($"<size=65%>Ego: <color=#CC4D99>{state.Ego}</color>/{required}</size>");
+        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.Tab.Ego"), state.Ego, required));
         if (state.Active)
-            text.AppendLine($"<size=65%>Opponent: <color=#CC4D99>{Utils.PlayerById(state.OpponentId).Data.PlayerName}</color></size>");
+            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.Tab.Opponent"), Utils.PlayerById(state.OpponentId).Data.PlayerName));
         return text;
     }
 

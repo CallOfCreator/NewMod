@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -41,9 +42,9 @@ public class WardenRole : CrewmateRole, INewModRole
     public static byte SealOwnerId = byte.MaxValue;
     public static float SealEndsAt;
 
-    public string RoleName => "Warden";
-    public string RoleDescription => "Watch a room and investigate kills inside it.";
-    public string RoleLongDescription => "Seal your room to block venting and door sabotage. Players can still walk in, leave, and kill.\nYou see a pulse when someone crosses the room boundary.\nIf someone is killed inside, inspect the trace for a clue about the attacker.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.WardenRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.WardenRole.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.WardenRole.TabDescription");
 
     public Color RoleColor => new Color32(58, 166, 255, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
@@ -72,7 +73,7 @@ public class WardenRole : CrewmateRole, INewModRole
         var tabText = INewModRole.GetRoleTabText(this);
         var options = OptionGroupSingleton<WardenOptions>.Instance;
 
-        tabText.Append($"\n<size=65%>{RoleColor.ToTextColor()}Seal: {options.SealDuration:0.#}s | Cooldown: {options.SealCooldown:0.#}s</color>\nBlocks vents and door sabotage; walking and attacks remain possible.\n<color=#FFCF70>Clue:</color> {(ClueType == 0 ? "Entry timing" : ClueType == 1 ? "Recent ability" : "Time inside")}\nChoose a clue, then inspect a trace left by a kill.</size>");
+        tabText.Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.WardenRole.Tab.Details"), RoleColor.ToTextColor(), options.SealDuration, options.SealCooldown, MiraLocaleManager.Get($"NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.{ClueType}")));
 
         return tabText;
     }

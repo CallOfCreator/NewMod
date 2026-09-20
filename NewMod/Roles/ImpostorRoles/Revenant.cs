@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -36,9 +37,9 @@ public class Revenant : ImpostorRole, INewModRole
     public static readonly Dictionary<byte, DeadBody> Bodies = [];
     public static readonly Dictionary<byte, byte> PendingDoomTargets = [];
 
-    public string RoleName => "Revenant";
-    public string RoleDescription => "Feign death, revive, then kill by contact.";
-    public string RoleLongDescription => "Feign death once. If your body remains unreported, return with Doom Awakening and attack the first eligible player you touch.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Revenant");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Revenant.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Revenant.TabDescription");
     public Color RoleColor => new(0.36f, 0.08f, 0.52f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public NewModFaction Faction => NewModFaction.Apex;
@@ -62,7 +63,7 @@ public class Revenant : ImpostorRole, INewModRole
     {
         var text = INewModRole.GetRoleTabText(this);
         if (Phases.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var phase))
-            text.AppendLine($"<size=65%><color=#B77ADB>State:</color> {phase}</size>");
+            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Revenant.Tab.State"), MiraLocaleManager.Get($"NewMod.Roles.ImpostorRoles.Revenant.State.{phase}")));
         return text;
     }
 

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -31,9 +32,9 @@ public class Deadwire : ImpostorRole, INewModRole
     public static readonly Dictionary<byte, byte> MarkedPlayers = [];
     public static readonly Dictionary<byte, float> MarkExpiresAt = [];
 
-    public string RoleName => "Deadwire";
-    public string RoleDescription => "Mark a player and gain a power from their next ability.";
-    public string RoleLongDescription => "Secretly mark someone with Deadlock.\nIf they use an ability before the mark expires, gain one power based on its type. They are notified after capture. Use Override to spend it. Records expire at meetings.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.TabDescription");
     public Color RoleColor => new(0.92f, 0.12f, 0.2f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public NewModFaction Faction => NewModFaction.Apex;
@@ -56,9 +57,9 @@ public class Deadwire : ImpostorRole, INewModRole
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
-        text.AppendLine(Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record) ? $"<size=65%><color=#FF6B72>Captured:</color> {record.Description}</size>" : "<size=65%><color=#9B9B9B>No category recorded.</color></size>");
-        text.AppendLine("<size=65%><color=#FF6B72>Aggression:</color> Shorten kill cooldown. <color=#FF6B72>Intelligence:</color> Track the marked player.</size>");
-        text.AppendLine("<size=65%><color=#FF6B72>Mobility:</color> Blink forward. <color=#FF6B72>Control:</color> Jam the marked player. <color=#FF6B72>Protection:</color> Block one attack.</size>");
+        text.AppendLine(Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record) ? string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.Captured"), MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{record.Response}")) : MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.NoCategoryRecorded"));
+        text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.OffensiveRewards"));
+        text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.UtilityRewards"));
         return text;
     }
 
@@ -167,7 +168,7 @@ public class Deadwire : ImpostorRole, INewModRole
         MarkExpiresAt.Remove(deadwireId);
 
         if (PlayerControl.LocalPlayer.PlayerId == deadwireId)
-            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF6B72>Captured:</color> {Records[deadwireId].Description}"));
+            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF6B72>Captured:</color> {MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{Records[deadwireId].Response}")}"));
         if (PlayerControl.LocalPlayer.PlayerId == actorId)
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF6B72>Deadwire recorded your ability.</color> Your ability still works normally."));
     }

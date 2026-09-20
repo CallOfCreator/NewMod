@@ -106,7 +106,6 @@ public class InVoid : BaseModifier
 
             foreach (var door in ShipStatus.Instance.AllDoors)
                 door.gameObject.SetActive(true);
-
         }
 
         if (!Player.AmOwner)

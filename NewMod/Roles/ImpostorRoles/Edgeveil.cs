@@ -1,3 +1,4 @@
+using MiraAPI.Translation;
 using MiraAPI.Roles;
 using UnityEngine;
 
@@ -5,9 +6,9 @@ namespace NewMod.Roles.ImpostorRoles;
 
 public class Edgeveil : ImpostorRole, INewModRole
 {
-    public string RoleName => "Edgeveil";
-    public string RoleDescription => "Launch a short lethal Arc in front of you.";
-    public string RoleLongDescription => "Stand still to charge, then launch a slash in the direction you face.\nOpponents can dodge it or take cover behind a wall. Misses still use the cooldown.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Edgeveil");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Edgeveil.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Edgeveil.TabDescription");
     public Color RoleColor => new(0.90f, 0.20f, 0.35f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public NewModFaction Faction => NewModFaction.Apex;

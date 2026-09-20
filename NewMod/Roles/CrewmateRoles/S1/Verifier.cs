@@ -1,6 +1,7 @@
 using NewMod.Utilities;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
@@ -11,10 +12,10 @@ namespace NewMod.Roles.CrewmateRoles.S1;
 
 public class VerifierRole : CrewmateRole, INewModRole
 {
-    public string RoleName => "Verifier";
-    public string RoleDescription => "Check whether a player did what they claim.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.VerifierRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.VerifierRole.IntroBlurb");
 
-    public string RoleLongDescription => "Once per meeting, choose a player and check something they did last round.\nYou can check tasks, venting, ability use, or whether they were near a body when it was reported.\nOnly you see the result.";
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.VerifierRole.TabDescription");
 
     public Color RoleColor => new Color32(88, 232, 190, 255);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
@@ -41,6 +42,6 @@ public class VerifierRole : CrewmateRole, INewModRole
     {
         var tabText = INewModRole.GetRoleTabText(this);
         var radius = OptionGroupSingleton<VerifierOptions>.Instance.NearBodyRadius;
-        return tabText.Append($"\n<size=65%>{RoleColor.ToTextColor()}One check per meeting.</color>\nChecks cover actions from the last round.\nBody proximity: within {radius:0.#} units at report time.\n<color=#FFCF70>Unknown</color> means no body proximity check was recorded.</size>");
+        return tabText.Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.VerifierRole.Tab.Details"), RoleColor.ToTextColor(), radius));
     }
 }

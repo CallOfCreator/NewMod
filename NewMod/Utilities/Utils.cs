@@ -1,3 +1,4 @@
+using MiraAPI.Translation;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -443,7 +444,7 @@ public static class Utils
         {
             ModifierFaction.Crew => $"<b><color=#00B7C7>Crew</color></b>",
             ModifierFaction.Murder => $"<b><color=#FF4C4C>Murder</color></b>",
-            _ => $"Unknown"
+            _ => MiraLocaleManager.Get("NewMod.Faction.Unknown")
         };
     }
 
@@ -624,11 +625,11 @@ public static class Utils
     {
         return role.Faction switch
         {
-            NewModFaction.Apex => $"<b><color=#FF5A5A>Apex</color></b>",
-            NewModFaction.Entropy => $"<b><color=#EAAA3E>Entropy</color></b>",
-            NewModFaction.Sentinel => $"<b><color=#3AA6FF>Sentinel</color></b>",
-            NewModFaction.Rift => $"<b><color=#301934>Rift</color></b>",
-            _ => $"Unknown"
+            NewModFaction.Apex => $"<b><color=#FF5A5A>{MiraLocaleManager.Get("NewMod.Faction.Apex")}</color></b>",
+            NewModFaction.Entropy => $"<b><color=#EAAA3E>{MiraLocaleManager.Get("NewMod.Faction.Entropy")}</color></b>",
+            NewModFaction.Sentinel => $"<b><color=#3AA6FF>{MiraLocaleManager.Get("NewMod.Faction.Sentinel")}</color></b>",
+            NewModFaction.Rift => $"<b><color=#301934>{MiraLocaleManager.Get("NewMod.Faction.Rift")}</color></b>",
+            _ => MiraLocaleManager.Get("NewMod.Faction.Unknown")
         };
     }
 

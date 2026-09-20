@@ -1,6 +1,7 @@
 using NewMod.Utilities;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Player;
@@ -18,9 +19,9 @@ public class Beacon : CrewmateRole, INewModRole
     public static int grantedFromTasks;
     public static int lastCompletedTasks;
     public static float pulseUntil;
-    public string RoleName => "Beacon";
-    public string RoleDescription => "Check where players are on the map.";
-    public string RoleLongDescription => "Scan the map to see where living players are at that moment. Players in vents are hidden.\nThe markers stay in place and do not show names. Complete tasks to earn more scans.";
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.TabDescription");
     public Color RoleColor => new(0.494f, 0.341f, 0.761f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
     public NewModFaction Faction => NewModFaction.Sentinel;
@@ -43,7 +44,7 @@ public class Beacon : CrewmateRole, INewModRole
         var tab = INewModRole.GetRoleTabText(this);
         var opts = OptionGroupSingleton<BeaconOptions>.Instance;
 
-        tab.Append($"\n<size=65%>{RoleColor.ToTextColor()}Charges: {charges}/{opts.MaxCharges:0} | +1 per {opts.TasksPerCharge:0} tasks</color>\nSnapshot: {opts.PulseDuration:0.#}s | Cooldown: {opts.PulseCooldown:0.#}s\nOpening the map does not spend a charge.\n<color=#FFCF70>Comms blocks scanning.</color> Markers show where players were when you scanned.</size>");
+        tab.Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.Tab.Details"), RoleColor.ToTextColor(), charges, opts.MaxCharges, opts.TasksPerCharge, opts.PulseDuration, opts.PulseCooldown));
 
         return tab;
     }
