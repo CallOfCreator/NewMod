@@ -27,13 +27,14 @@ using Random = UnityEngine.Random;
 namespace NewMod.Roles.NeutralRoles.S1;
 
 [MiraIgnore]
-public sealed class Bounty : CrewmateRole, INewModRole
+public class Bounty : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<byte, BountyContractState> Contracts = [];
     public static readonly Dictionary<byte, float> CollectionExpiresAt = [];
+    public static readonly Dictionary<byte, float> CollectionStartsAt = [];
     public static readonly Dictionary<byte, byte> PendingCashOut = [];
 
-    private static GameObject _collectionArrow;
+    public static GameObject _collectionArrow;
 
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.IntroBlurb");
@@ -85,6 +86,7 @@ public sealed class Bounty : CrewmateRole, INewModRole
 
         Contracts.Clear();
         CollectionExpiresAt.Clear();
+        CollectionStartsAt.Clear();
         PendingCashOut.Clear();
         HideCollectionArrow();
 
@@ -113,6 +115,7 @@ public sealed class Bounty : CrewmateRole, INewModRole
             return;
 
         CollectionExpiresAt.Remove(evt.Player.PlayerId);
+        CollectionStartsAt.Remove(evt.Player.PlayerId);
         PendingCashOut.Remove(evt.Player.PlayerId);
         if (evt.Player.AmOwner)
             evt.Player.CancelPlayerTracking();
@@ -208,8 +211,14 @@ public sealed class Bounty : CrewmateRole, INewModRole
                 continue;
             }
 
-            if (Vector2.Distance(bounty.GetTruePosition(), target.GetTruePosition()) <= options.EscortRange && pair.Value.Advance(Time.fixedDeltaTime, options.EscortDuration))
-                RpcBeginCollection(PlayerControl.LocalPlayer, pair.Key, options.CollectionDuration);
+            if (Vector2.Distance(bounty.GetTruePosition(), target.GetTruePosition()) <= options.EscortRange &&
+                !PhysicsHelpers.AnythingBetween(bounty.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false))
+            {
+                if (pair.Value.Advance(Time.fixedDeltaTime, options.EscortDuration))
+                    RpcBeginCollection(PlayerControl.LocalPlayer, pair.Key, options.CollectionDuration);
+            }
+            else
+                pair.Value.LoseContact(Time.fixedDeltaTime, options.ContactGrace);
         }
     }
 
@@ -223,35 +232,36 @@ public sealed class Bounty : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.BountyAssignContract, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcAssignContract(PlayerControl host, byte bountyId, byte targetId)
+    public static void RpcAssignContract(PlayerControl source, byte bountyId, byte targetId)
     {
-        if (!host.IsHost())
+        if (!source.IsHost())
             return;
 
         Contracts[bountyId] = new BountyContractState(targetId);
         CollectionExpiresAt.Remove(bountyId);
+        CollectionStartsAt.Remove(bountyId);
         PendingCashOut.Remove(bountyId);
 
         if (PlayerControl.LocalPlayer.PlayerId == bountyId)
         {
-            var target = Utils.PlayerById(targetId);
             PlayerControl.LocalPlayer.CancelPlayerTracking();
-            PlayerControl.LocalPlayer.StartPlayerTracking(target, target.Data.DefaultOutfit.ColorId);
+            Coroutines.Start(CoTrackContract(Contracts[bountyId]));
         }
     }
 
     [MethodRpc((uint)CustomRPC.BountyBeginCollection, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcBeginCollection(PlayerControl host, byte bountyId, float duration)
+    public static void RpcBeginCollection(PlayerControl source, byte bountyId, float duration)
     {
-        if (!host.IsHost() || !Contracts.TryGetValue(bountyId, out var contract))
+        if (!source.IsHost() || !Contracts.TryGetValue(bountyId, out var contract))
             return;
 
         contract.BeginCollection();
-        CollectionExpiresAt[bountyId] = Time.time + duration;
+        CollectionStartsAt[bountyId] = Time.time + OptionGroupSingleton<BountyOptions>.Instance.HeadStart;
+        CollectionExpiresAt[bountyId] = CollectionStartsAt[bountyId] + duration;
         var local = PlayerControl.LocalPlayer;
 
         if (local.PlayerId == bountyId)
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FFB14F>Collection open:</color> Cash out before time expires."));
+            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FFB14F>Contract ready:</color> give your target a head start,\nthen catch them before time runs out."));
 
         if (local.PlayerId != contract.TargetId)
             return;
@@ -261,12 +271,13 @@ public sealed class Bounty : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.BountyFailContract, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcFailContract(PlayerControl host, byte bountyId)
+    public static void RpcFailContract(PlayerControl source, byte bountyId)
     {
-        if (!host.IsHost() || !Contracts.Remove(bountyId, out var contract))
+        if (!source.IsHost() || !Contracts.Remove(bountyId, out var contract))
             return;
 
         CollectionExpiresAt.Remove(bountyId);
+        CollectionStartsAt.Remove(bountyId);
         PendingCashOut.Remove(bountyId);
         var local = PlayerControl.LocalPlayer;
 
@@ -283,18 +294,38 @@ public sealed class Bounty : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.BountyRequestCashOut)]
     public static void RpcRequestCashOut(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Bounty || source.Data.IsDead || !Contracts.TryGetValue(source.PlayerId, out var contract) || contract.Phase != BountyPhase.Collection || Time.time >= CollectionExpiresAt[source.PlayerId])
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Bounty || source.Data.IsDead || !Contracts.TryGetValue(source.PlayerId, out var contract) || MeetingHud.Instance || ExileController.Instance ||
+            !contract.CanCollect(Time.time, CollectionStartsAt.GetValueOrDefault(source.PlayerId), CollectionExpiresAt.GetValueOrDefault(source.PlayerId)))
             return;
 
         var target = Utils.PlayerById(contract.TargetId);
-        if (target.Data.IsDead || target.Data.Disconnected || Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<BountyOptions>.Instance.CashOutRange)
+        if (target.Data.IsDead || target.Data.Disconnected || target.inVent ||
+            PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false) ||
+            Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<BountyOptions>.Instance.CashOutRange)
             return;
 
         PendingCashOut[source.PlayerId] = target.PlayerId;
         source.RpcCustomMurder(target, true, false, true, false);
     }
 
-    private static void ShowCollectionArrow(PlayerControl bounty)
+    public static IEnumerator CoTrackContract(BountyContractState contract)
+    {
+        var local = PlayerControl.LocalPlayer;
+        while (!local.Data.IsDead && Contracts.TryGetValue(local.PlayerId, out var current) && current == contract)
+        {
+            var target = Utils.PlayerById(contract.TargetId);
+            if (!target || target.Data.IsDead || target.Data.Disconnected) break;
+            if (!MeetingHud.Instance && !ExileController.Instance)
+                local.StartPlayerTracking(target, target.Data.DefaultOutfit.ColorId);
+            yield return new WaitForSeconds(0.5f);
+            if (!Contracts.TryGetValue(local.PlayerId, out current) || current != contract) yield break;
+            local.CancelPlayerTracking();
+            yield return new WaitForSeconds(OptionGroupSingleton<BountyOptions>.Instance.TrackingInterval);
+        }
+        local.CancelPlayerTracking();
+    }
+
+    public static void ShowCollectionArrow(PlayerControl bounty)
     {
         HideCollectionArrow();
         _collectionArrow = new GameObject("BountyCollectionArrow") { layer = 5 };
@@ -307,7 +338,7 @@ public sealed class Bounty : CrewmateRole, INewModRole
         Coroutines.Start(CoFollowBounty(arrow, bounty));
     }
 
-    private static IEnumerator CoFollowBounty(ArrowBehaviour arrow, PlayerControl bounty)
+    public static IEnumerator CoFollowBounty(ArrowBehaviour arrow, PlayerControl bounty)
     {
         while (_collectionArrow && !bounty.Data.Disconnected)
         {
@@ -316,7 +347,7 @@ public sealed class Bounty : CrewmateRole, INewModRole
         }
     }
 
-    private static void HideCollectionArrow()
+    public static void HideCollectionArrow()
     {
         if (_collectionArrow)
             Destroy(_collectionArrow);

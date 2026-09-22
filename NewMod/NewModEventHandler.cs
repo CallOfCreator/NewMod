@@ -73,7 +73,7 @@ public static class NewModEventHandler
         EnergyThief.ResetState();
         Utils.ResetMissionSuccessCount();
         Utils.ResetMissionFailureCount();
-        Utils.ResetInjections();
+        InjectorUtilities.Reset();
         Utils.savedPlayerRoles.Clear();
         Utils.MissionTimer.Clear();
         Utils.savedTasks.Clear();

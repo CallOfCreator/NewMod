@@ -69,7 +69,8 @@ public static class CustomEndGame
             return true;
         }
 
-        if (Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet)
+        if ((Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet) ||
+            (alivePlayers.Length == 1 && alivePlayers[0].Data.Role is Tyrant))
         {
             var tyrant = alivePlayers.FirstOrDefault(player => player.Data.Role is Tyrant);
 
@@ -107,8 +108,7 @@ public static class CustomEndGame
             return true;
         }
 
-        var injectorRequired = (int)OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
-        var injector = alivePlayers.FirstOrDefault(player => player.Data.Role is InjectorRole && Utils.GetInjectedCount() >= injectorRequired);
+        var injector = alivePlayers.FirstOrDefault(player => player.Data.Role is InjectorRole && InjectorUtilities.Submitted.Contains(player.PlayerId));
 
         if (injector)
         {

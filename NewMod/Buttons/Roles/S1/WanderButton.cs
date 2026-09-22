@@ -11,7 +11,7 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class WanderButton : CustomActionButton, IEnergyAbility
+public class WanderButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Mobility;
     public override string Name => "Wander";

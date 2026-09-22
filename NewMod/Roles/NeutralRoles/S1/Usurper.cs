@@ -25,12 +25,14 @@ using UnityEngine;
 namespace NewMod.Roles.NeutralRoles.S1;
 
 [MiraIgnore]
-public sealed class Usurper : CrewmateRole, INewModRole
+public class Usurper : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<byte, UsurperCrownState> States = [];
     public static readonly Dictionary<byte, Vector2> CrownPositions = [];
 
-    private static readonly Dictionary<byte, GameObject> CrownObjects = [];
+    public static readonly Dictionary<byte, GameObject> CrownObjects = [];
+
+    public static readonly Dictionary<byte, (byte Player, float Started)> Pickup = [];
 
     public static byte ExiledPlayerId = byte.MaxValue;
     public static Vector2 ExilePosition;
@@ -128,9 +130,9 @@ public sealed class Usurper : CrewmateRole, INewModRole
     }
 
     [RegisterEvent]
-    public static void OnMeetingEnd(EndMeetingEvent evt)
+    public static void OnMeetingResolved(RoundStartEvent evt)
     {
-        if (!AmongUsClient.Instance.AmHost)
+        if (evt.TriggeredByIntro || !GameManager.Instance.ShouldCheckForGameEnd || !AmongUsClient.Instance.AmHost)
             return;
 
         foreach (var pair in States)
@@ -156,22 +158,39 @@ public sealed class Usurper : CrewmateRole, INewModRole
                 RpcRefundClaim(PlayerControl.LocalPlayer, pair.Key, targetId);
     }
 
+    [RegisterEvent]
+    public static void OnMeetingStart(StartMeetingEvent evt) => Pickup.Clear();
+
     public static void HostFixedUpdate()
     {
-        var range = OptionGroupSingleton<UsurperOptions>.Instance.CrownPickupRange;
-        var crownOwnerId = byte.MaxValue;
+        var options = OptionGroupSingleton<UsurperOptions>.Instance;
         foreach (var pair in CrownPositions)
         {
-            var usurper = Utils.PlayerById(pair.Key);
-            if (!usurper.Data.IsDead && !usurper.Data.Disconnected && Vector2.Distance(usurper.GetTruePosition(), pair.Value) <= range)
+            PlayerControl candidate = null;
+            var contested = false;
+            foreach (var player in PlayerControl.AllPlayerControls)
             {
-                crownOwnerId = pair.Key;
+                if (player.Data.IsDead || player.Data.Disconnected || player.inVent ||
+                    Vector2.Distance(player.GetTruePosition(), pair.Value) > options.CrownPickupRange ||
+                    PhysicsHelpers.AnythingBetween(player.GetTruePosition(), pair.Value, Constants.ShipAndObjectsMask, false)) continue;
+                if (candidate) { contested = true; break; }
+                candidate = player;
+            }
+
+            if (!candidate || contested || !candidate.CanMove || candidate.MyPhysics.Velocity.sqrMagnitude > 0.01f)
+            {
+                Pickup.Remove(pair.Key);
+                continue;
+            }
+            if (!Pickup.TryGetValue(pair.Key, out var pickup) || pickup.Player != candidate.PlayerId)
+                Pickup[pair.Key] = (candidate.PlayerId, Time.time);
+            else if (Time.time - pickup.Started >= options.PickupDuration)
+            {
+                if (candidate.PlayerId == pair.Key) RpcTakeCrown(PlayerControl.LocalPlayer, pair.Key);
+                else RpcSecureCrown(PlayerControl.LocalPlayer, pair.Key);
                 break;
             }
         }
-
-        if (crownOwnerId != byte.MaxValue)
-            RpcTakeCrown(PlayerControl.LocalPlayer, crownOwnerId);
     }
 
     public static void MarkClaimedDeath(byte targetId, Vector2 position)
@@ -191,16 +210,16 @@ public sealed class Usurper : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.UsurperConfirmClaim, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcConfirmClaim(PlayerControl host, byte usurperId, byte targetId)
+    public static void RpcConfirmClaim(PlayerControl source, byte usurperId, byte targetId)
     {
-        if (host.IsHost())
+        if (source.IsHost())
             States[usurperId].Claim(targetId);
     }
 
     [MethodRpc((uint)CustomRPC.UsurperSpawnCrown, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcSpawnCrown(PlayerControl host, byte usurperId, byte targetId, float x, float y)
+    public static void RpcSpawnCrown(PlayerControl source, byte usurperId, byte targetId, float x, float y)
     {
-        if (!host.IsHost() || !States[usurperId].MakeCrownAvailable(targetId))
+        if (!source.IsHost() || !States[usurperId].MakeCrownAvailable(targetId))
             return;
 
         var position = new Vector2(x, y);
@@ -215,14 +234,16 @@ public sealed class Usurper : CrewmateRole, INewModRole
         renderer.sprite = NewModAsset.CrownIcon.LoadAsset();
         renderer.color = new Color(1f, 0.78f, 0.2f);
         CrownObjects[usurperId] = crown;
+        Coroutines.Start(CoroutinesHelper.CoNotify($"A crown has appeared.\nStand beside it alone for {OptionGroupSingleton<UsurperOptions>.Instance.PickupDuration:0} seconds\nto secure it."));
     }
 
     [MethodRpc((uint)CustomRPC.UsurperTakeCrown, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcTakeCrown(PlayerControl host, byte usurperId)
+    public static void RpcTakeCrown(PlayerControl source, byte usurperId)
     {
-        if (!host.IsHost() || !States[usurperId].TakeCrown())
+        if (!source.IsHost() || !States[usurperId].TakeCrown())
             return;
 
+        Pickup.Remove(usurperId);
         CrownPositions.Remove(usurperId);
         Destroy(CrownObjects[usurperId]);
         CrownObjects.Remove(usurperId);
@@ -233,9 +254,9 @@ public sealed class Usurper : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.UsurperRefundClaim, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcRefundClaim(PlayerControl host, byte usurperId, byte targetId)
+    public static void RpcRefundClaim(PlayerControl source, byte usurperId, byte targetId)
     {
-        if (!host.IsHost() || !States[usurperId].Refund(targetId))
+        if (!source.IsHost() || !States[usurperId].Refund(targetId))
             return;
 
         var usurper = Utils.PlayerById(usurperId);
@@ -246,11 +267,25 @@ public sealed class Usurper : CrewmateRole, INewModRole
         }
     }
 
-    private static void Reset()
+    [MethodRpc((uint)CustomRPC.UsurperSecureCrown)]
+    public static void RpcSecureCrown(PlayerControl source, byte usurperId)
+    {
+        if (!source.IsHost() || !CrownPositions.Remove(usurperId)) return;
+        Pickup.Remove(usurperId);
+        Destroy(CrownObjects[usurperId]);
+        CrownObjects.Remove(usurperId);
+        States[usurperId] = new UsurperCrownState();
+        if (PlayerControl.LocalPlayer.PlayerId == usurperId)
+            CustomButtonSingleton<ClaimButton>.Instance.SetUses(1);
+        Coroutines.Start(CoroutinesHelper.CoNotify("The unclaimed crown was secured.\nThe Usurper must choose a new claim."));
+    }
+
+    public static void Reset()
     {
         foreach (var crown in CrownObjects.Values)
             Destroy(crown);
 
+        Pickup.Clear();
         States.Clear();
         CrownPositions.Clear();
         CrownObjects.Clear();

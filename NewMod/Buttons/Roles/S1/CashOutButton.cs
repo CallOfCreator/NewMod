@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
@@ -12,7 +13,7 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class CashOutButton : CustomActionButton, IEnergyAbility
+public class CashOutButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Aggression;
     public override string Name => "Cash Out";
@@ -29,11 +30,12 @@ public sealed class CashOutButton : CustomActionButton, IEnergyAbility
     public override bool CanUse()
     {
         var bountyId = PlayerControl.LocalPlayer.PlayerId;
-        if (!base.CanUse() || !Bounty.Contracts.TryGetValue(bountyId, out var contract) || contract.Phase != RoleLogic.BountyPhase.Collection)
+        if (!base.CanUse() || !Bounty.Contracts.TryGetValue(bountyId, out var contract) || !contract.CanCollect(Time.time, Bounty.CollectionStartsAt.GetValueOrDefault(bountyId), Bounty.CollectionExpiresAt.GetValueOrDefault(bountyId)))
             return false;
 
         var target = Utils.PlayerById(contract.TargetId);
-        return !target.Data.IsDead && !target.Data.Disconnected && Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), target.GetTruePosition()) <= OptionGroupSingleton<BountyOptions>.Instance.CashOutRange;
+        return !target.Data.IsDead && !target.Data.Disconnected && !target.inVent &&
+            !PhysicsHelpers.AnythingBetween(PlayerControl.LocalPlayer.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false) && Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), target.GetTruePosition()) <= OptionGroupSingleton<BountyOptions>.Instance.CashOutRange;
     }
 
     protected override void OnClick()

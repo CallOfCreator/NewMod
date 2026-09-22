@@ -5,11 +5,11 @@ using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.Events.Vanilla.Meeting.Voting;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
-using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
@@ -23,13 +23,12 @@ using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles;
 
-[MiraIgnore]
 public class EgoistRole : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<byte, EgoistChallengeState> States = [];
 
-    private const byte SkipVoteId = 253;
-    private static bool _selecting;
+    public static bool _selecting;
+    public static byte PendingWinner = byte.MaxValue;
 
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.IntroBlurb");
@@ -76,13 +75,30 @@ public class EgoistRole : CrewmateRole, INewModRole
     public static void OnRoundStart(RoundStartEvent evt)
     {
         if (!evt.TriggeredByIntro)
+        {
+            if (AmongUsClient.Instance.AmHost && GameManager.Instance.ShouldCheckForGameEnd && PendingWinner != byte.MaxValue)
+            {
+                var winner = Utils.PlayerById(PendingWinner);
+                PendingWinner = byte.MaxValue;
+                if (winner && !winner.Data.IsDead && !winner.Data.Disconnected && winner.Data.Role is EgoistRole)
+                    CustomGameOver.Trigger<EgoistGameOver>([winner.Data]);
+            }
             return;
+        }
+        PendingWinner = byte.MaxValue;
 
         States.Clear();
         _selecting = false;
         foreach (var player in PlayerControl.AllPlayerControls)
             if (player.Data.Role is EgoistRole)
                 States[player.PlayerId] = new EgoistChallengeState();
+    }
+
+    [RegisterEvent]
+    public static void OnSetRole(SetRoleEvent evt)
+    {
+        if (evt.Player.Data.Role is EgoistRole) States[evt.Player.PlayerId] = new EgoistChallengeState();
+        else States.Remove(evt.Player.PlayerId);
     }
 
     [RegisterEvent]
@@ -100,7 +116,7 @@ public class EgoistRole : CrewmateRole, INewModRole
     public static void OnMeetingSelect(MeetingSelectEvent evt)
     {
         var local = PlayerControl.LocalPlayer;
-        if (_selecting && local.Data.Role is EgoistRole && !States[local.PlayerId].Active)
+        if (_selecting && !local.Data.IsDead && local.Data.Role is EgoistRole && !States[local.PlayerId].Active)
         {
             if (evt.TargetId < 0)
                 return;
@@ -121,21 +137,6 @@ public class EgoistRole : CrewmateRole, INewModRole
             return;
         }
 
-        if (!TryGetChallenge(out var egoistId, out var opponentId) || evt.TargetId < 0)
-            return;
-
-        if (evt.TargetId != egoistId && evt.TargetId != opponentId)
-            evt.AllowSelect = false;
-    }
-
-    [RegisterEvent]
-    public static void OnHandleVote(HandleVoteEvent evt)
-    {
-        if (!TryGetChallenge(out var egoistId, out var opponentId))
-            return;
-
-        if (evt.TargetId != egoistId && evt.TargetId != opponentId && evt.TargetId != SkipVoteId)
-            evt.Cancel();
     }
 
     [RegisterEvent]
@@ -157,7 +158,7 @@ public class EgoistRole : CrewmateRole, INewModRole
                 RpcResolveChallenge(PlayerControl.LocalPlayer, pair.Key, exiledId);
 
                 if (result == EgoistChallengeResult.Win)
-                    Coroutines.Start(CoTriggerWin(pair.Key));
+                    PendingWinner = pair.Key;
                 continue;
             }
 
@@ -166,7 +167,7 @@ public class EgoistRole : CrewmateRole, INewModRole
 
             var votes = 0;
             foreach (var vote in evt.Votes)
-                if (vote.Suspect == pair.Key)
+                if (vote.Suspect == pair.Key && vote.Voter != pair.Key)
                     votes++;
 
             if (votes == 0)
@@ -192,16 +193,16 @@ public class EgoistRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.EgoistRequestChallenge)]
     public static void RpcRequestChallenge(PlayerControl source, PlayerControl target)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not EgoistRole || source.Data.IsDead || target.Data.IsDead || target.Data.Disconnected || source == target || !States.TryGetValue(source.PlayerId, out var state) || state.Active || state.Ego < OptionGroupSingleton<EgoistRoleOptions>.Instance.EgoRequired)
+        if (!AmongUsClient.Instance.AmHost || !MeetingHud.Instance || MeetingHud.Instance.CurrentState is MeetingHud.MeetingStates.Results or MeetingHud.MeetingStates.Proceeding || source.Data.Role is not EgoistRole || source.Data.IsDead || target.Data.IsDead || target.Data.Disconnected || source == target || !States.TryGetValue(source.PlayerId, out var state) || state.Active || state.Ego < OptionGroupSingleton<EgoistRoleOptions>.Instance.EgoRequired)
             return;
 
         RpcConfirmChallenge(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId);
     }
 
     [MethodRpc((uint)CustomRPC.EgoistConfirmChallenge, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcConfirmChallenge(PlayerControl host, byte egoistId, byte opponentId)
+    public static void RpcConfirmChallenge(PlayerControl source, byte egoistId, byte opponentId)
     {
-        if (!host.IsHost() || !States[egoistId].Start(opponentId))
+        if (!source.IsHost() || !States[egoistId].Start(opponentId))
             return;
 
         var egoist = Utils.PlayerById(egoistId);
@@ -212,16 +213,16 @@ public class EgoistRole : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.EgoistSetEgo, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcSetEgo(PlayerControl host, byte egoistId, int ego)
+    public static void RpcSetEgo(PlayerControl source, byte egoistId, int ego)
     {
-        if (host.IsHost())
+        if (source.IsHost())
             States[egoistId].SetEgo(ego);
     }
 
     [MethodRpc((uint)CustomRPC.EgoistResolveChallenge, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcResolveChallenge(PlayerControl host, byte egoistId, byte exiledId)
+    public static void RpcResolveChallenge(PlayerControl source, byte egoistId, byte exiledId)
     {
-        if (!host.IsHost())
+        if (!source.IsHost())
             return;
 
         if (!AmongUsClient.Instance.AmHost)
@@ -250,7 +251,7 @@ public class EgoistRole : CrewmateRole, INewModRole
         button.OverrideText(state.Active ? "LOCKED" : _selecting ? "SELECT" : "CHALLENGE");
     }
 
-    private static IEnumerator CoSetupMeetingButton(MeetingHud hud)
+    public static IEnumerator CoSetupMeetingButton(MeetingHud hud)
     {
         while (hud && hud.CurrentState == MeetingHud.MeetingStates.Animating)
             yield return null;
@@ -260,29 +261,5 @@ public class EgoistRole : CrewmateRole, INewModRole
             UpdateMeetingButton();
     }
 
-    private static IEnumerator CoTriggerWin(byte egoistId)
-    {
-        while (MeetingHud.Instance || ExileController.Instance)
-            yield return null;
 
-        if (AmongUsClient.Instance.AmHost && GameManager.Instance.ShouldCheckForGameEnd)
-            CustomGameOver.Trigger<EgoistGameOver>([Utils.PlayerById(egoistId).Data]);
-    }
-
-    private static bool TryGetChallenge(out byte egoistId, out byte opponentId)
-    {
-        foreach (var pair in States)
-        {
-            if (!pair.Value.Active)
-                continue;
-
-            egoistId = pair.Key;
-            opponentId = pair.Value.OpponentId;
-            return true;
-        }
-
-        egoistId = byte.MaxValue;
-        opponentId = byte.MaxValue;
-        return false;
-    }
 }

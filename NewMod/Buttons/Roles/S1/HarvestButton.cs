@@ -11,10 +11,10 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class HarvestButton : CustomActionButton, IEnergyAbility
+public class HarvestButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
-    private uint _fragmentId;
+    public uint _fragmentId;
 
     public override string Name => "Harvest";
     public override float Cooldown => OptionGroupSingleton<CollectorOptions>.Instance.HarvestCooldown;

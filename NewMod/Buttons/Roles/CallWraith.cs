@@ -15,57 +15,24 @@ using MiraAPI.Keybinds;
 using Reactor.Utilities;
 
 namespace NewMod.Buttons.Roles;
-
-/// <summary>
-/// Defines the Call Wraith ability button for the Wraith Caller role.
-/// </summary>
 public class CallWraithButton : CustomActionButton, IEnergyAbility
 {
-    private static CustomPlayerMenu _activeMenu;
+    public static CustomPlayerMenu ActiveMenu;
 
     public EnergyCategory Category => EnergyCategory.Control;
     public bool CaptureOnClick => false;
-
-    /// <summary>
-    /// The name displayed on the button.
-    /// </summary>
     public override string Name => "Call Wraith";
-
-    /// <summary>
-    /// The cooldown time for the Call Wraith ability, as set in <see cref="WraithCallerOptions"/>.
-    /// </summary>
     public override float Cooldown => OptionGroupSingleton<WraithCallerOptions>.Instance.CallWraithCooldown;
-
-    /// <summary>
-    /// The maximum uses for the Call Wraith ability, as set in <see cref="WraithCallerOptions"/>.
-    /// </summary>
-    public override int MaxUses => (int)OptionGroupSingleton<WraithCallerOptions>.Instance.CallWraithMaxUses;
-
-    /// <summary>
-    /// Location on the screen for the Call Wraith button.
-    /// </summary>
+    public override bool CanUse()
+    {
+        var ownerId = PlayerControl.LocalPlayer.PlayerId;
+        return base.CanUse() && WraithCallerUtilities.Traces.Contains(ownerId) &&
+            !WraithCallerUtilities.ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner.PlayerId == ownerId);
+    }
     public override ButtonLocation Location => ButtonLocation.BottomRight;
-
-    /// <summary>
-    /// Default keybind for the Call Wraith ability.
-    /// </summary>
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-
-    /// <summary>
-    /// The duration of any effect triggered by this ability.
-    /// </summary>
     public override float EffectDuration => 0f;
-
-    /// <summary>
-    /// The icon for the Call Wraith button.
-    /// </summary>
     public override LoadableAsset<Sprite> Sprite => NewModAsset.CallWraith;
-
-    /// <summary>
-    /// Enables the button for the Wraith Caller role only.
-    /// </summary>
-    /// <param name="role">Current player's role</param>
-    /// <returns>True if role is Wraith Caller, otherwise false</returns>
     public override bool Enabled(RoleBehaviour role)
     {
         return role is Wraith;
@@ -82,7 +49,7 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
         CloseActiveMenu();
 
         var menu = CustomPlayerMenu.Create();
-        _activeMenu = menu;
+        ActiveMenu = menu;
         var allowedPlayers = new HashSet<byte>();
 
         foreach (var info in GameData.Instance.AllPlayers)
@@ -103,7 +70,6 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
 
             CloseActiveMenu();
 
-            DecreaseUses();
             ResetCooldownAndOrEffect();
 
             WraithCallerUtilities.RequestSummonNPC(PlayerControl.LocalPlayer, player);
@@ -131,10 +97,10 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
         CloseActiveMenu();
     }
 
-    private static void CloseActiveMenu()
+    public static void CloseActiveMenu()
     {
-        var menu = _activeMenu;
-        _activeMenu = null;
+        var menu = ActiveMenu;
+        ActiveMenu = null;
 
         if (menu)
             menu.ForceClose();

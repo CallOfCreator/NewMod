@@ -9,6 +9,9 @@ namespace NewMod.Options.Roles.S1;
 [MiraIgnore]
 public sealed class CollectorOptions : AbstractOptionGroup<Collector>
 {
+    [ModdedNumberOption("Duplicate Conversion Cost", 2f, 5f)]
+    public float ConversionCost { get; set; } = 3f;
+
     public override string GroupName => "Collector Settings";
 
     [ModdedNumberOption("Harvest Cooldown", 5f, 20f, 5f, MiraNumberSuffixes.Seconds)]

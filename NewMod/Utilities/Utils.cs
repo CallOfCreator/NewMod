@@ -11,6 +11,7 @@ using MiraAPI.Networking;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Buttons.Roles;
+using NewMod.Components;
 using NewMod.Buttons.Roles.S1;
 using NewMod.Modifiers;
 using NewMod.Options.Roles;
@@ -37,36 +38,6 @@ namespace NewMod.Utilities;
 public static class Utils
 {
     /// <summary>
-    ///     Represents the different types of serums that the Injector role can apply to players.
-    ///     Each serum causes a unique effect that alters gameplay.
-    /// </summary>
-    public enum SerumType
-    {
-        /// <summary>
-        ///     Grants the target a burst of speed for a limited duration.
-        /// </summary>
-        Adrenaline,
-
-        /// <summary>
-        ///     Immobilizes the target, preventing them from moving for a short time.
-        /// </summary>
-        Paralysis,
-
-        /// <summary>
-        ///     Causes nearby players to be gently pushed away from the target for several seconds,
-        ///     as if repelled by a magnetic force.
-        /// </summary>
-        RepelSerum,
-
-        /// <summary>
-        ///     Causes the target to bounce erratically for a few seconds.
-        /// </summary>
-        BounceSerum
-
-        // More Coming Soon!
-    }
-
-    /// <summary>
     ///     Maps a victim player to its killer.
     /// </summary>
     public static Dictionary<byte, byte> PlayerKiller = new();
@@ -80,12 +51,6 @@ public static class Utils
     ///     Stores the number of failed missions per player, keyed by their ID.
     /// </summary>
     public static Dictionary<byte, int> MissionFailureCount = new();
-
-    /// <summary>
-    ///     Stores the player IDs of all players who have been injected by the Injector role.
-    ///     Used to track injection progress for win condition.
-    /// </summary>
-    public static readonly HashSet<byte> InjectedPlayerIds = new();
 
     /// <summary>
     ///     Maintains saved roles for players, keyed by their ID.
@@ -318,33 +283,6 @@ public static class Utils
         MissionFailureCount.Clear();
     }
 
-    /// <summary>
-    ///     Registers a player as having been injected by the Injector.
-    ///     Adds the player's ID to the injected players tracking list.
-    /// </summary>
-    /// <param name="target">The player who was injected.</param>
-    public static void RegisterPlayerInjection(PlayerControl target)
-    {
-        InjectedPlayerIds.Add(target.PlayerId);
-    }
-
-    /// <summary>
-    ///     Gets the number of unique players that have been injected by the Injector.
-    ///     Used to evaluate the Injector's win condition.
-    /// </summary>
-    /// <returns>The total number of unique injected players.</returns>
-    public static int GetInjectedCount()
-    {
-        return InjectedPlayerIds.Count;
-    }
-
-    /// <summary>
-    ///     Clear's InjectedPlayerIds at end of the game
-    /// </summary>
-    public static void ResetInjections()
-    {
-        InjectedPlayerIds.Clear();
-    }
 // Inspired By: https://github.com/AU-Avengers/TOU-Mira/blob/dev/TownOfUs/Modules/ReviveUtilities.cs#L40
 
     [MethodRpc((uint)CustomRPC.HandleRevive)]
@@ -700,87 +638,6 @@ public static class Utils
         Object.Destroy(ghost);
     }
 
-    [MethodRpc((uint)CustomRPC.ApplySerum)]
-    /// <summary>
-    /// Handles applying serum effects to target players for the Injector role.
-    /// </summary>
-    public static void RpcApplySerum(PlayerControl source, PlayerControl target, SerumType serumType)
-    {
-        switch (serumType)
-        {
-            case SerumType.Adrenaline:
-            {
-                var boostPercent = OptionGroupSingleton<InjectorOptions>.Instance.AdrenalineSpeedBoost;
-                var multiplier = 1f + boostPercent / 100f;
-                var originalSpeed = target.MyPhysics.Speed;
-
-                target.MyPhysics.Speed *= multiplier;
-
-                Coroutines.Start(CoroutinesHelper.ResetSpeedAfterDelay(target, originalSpeed, 10f));
-                break;
-            }
-
-            case SerumType.Paralysis:
-            {
-                var duration = OptionGroupSingleton<InjectorOptions>.Instance.ParalysisDuration;
-
-                target.moveable = false;
-                target.MyPhysics.inputHandler.enabled = false;
-
-                Coroutines.Start(CoroutinesHelper.EnableMovementAfterDelay(target, duration));
-                break;
-            }
-            case SerumType.BounceSerum:
-            {
-                var bounceDuration = OptionGroupSingleton<InjectorOptions>.Instance.BounceDuration;
-                var h = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceHorizontal;
-                //float v = OptionGroupSingleton<InjectorOptions>.Instance.BounceForceVertical;
-                var maxRotate = OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect.Value;
-
-                //Vector2 force = new(Random.Range(-h, h), Random.Range(-v, v));
-
-                //target.MyPhysics.body.AddForce(force);
-
-                Effects.Bounce(target.transform, bounceDuration, h);
-
-                if (OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants)
-                {
-                    if (Helpers.CheckChance(OptionGroupSingleton<InjectorOptions>.Instance.BounceRotateEffect)) target.transform.Rotate(0, 0, Random.Range(-maxRotate, maxRotate));
-
-                    Coroutines.Start(CoroutinesHelper.ResetRotationAfterDelay(target, bounceDuration));
-                }
-            }
-                break;
-            case SerumType.RepelSerum:
-            {
-                var RepelDuration = OptionGroupSingleton<InjectorOptions>.Instance.RepelDuration;
-                var RepelRange = OptionGroupSingleton<InjectorOptions>.Instance.RepelRange;
-                var RepelForce = OptionGroupSingleton<InjectorOptions>.Instance.RepelForce;
-
-                foreach (var other in PlayerControl.AllPlayerControls)
-                {
-                    if (other == target || other.Data.IsDead || other.Data.Disconnected) continue;
-
-                    var dist = Vector2.Distance(other.GetTruePosition(), target.GetTruePosition());
-
-                    if (dist < RepelRange)
-                    {
-                        var dir = (other.GetTruePosition() - target.GetTruePosition()).normalized;
-                        other.MyPhysics.body.velocity += dir * RepelForce;
-                    }
-                }
-
-                Coroutines.Start(CoroutinesHelper.ResetRepelEffect(target, RepelDuration));
-            }
-                break;
-        }
-
-        RegisterPlayerInjection(target);
-
-        if (source.AmOwner)
-            Helpers.CreateAndShowNotification($"Injected {target.Data.PlayerName} with {serumType}", new Color(0.9f, 0.3f, 0.1f), spr: NewModAsset.InjectIcon.LoadAsset());
-    }
-
     /// <summary>
     ///     Tracks the camera on its current target for a given duration,
     ///     then restores its position to the original state.
@@ -862,56 +719,13 @@ public static class Utils
         return _circleMat;
     }
 
-    /// <summary>
-    ///     Creates a filled circle mesh in the scene at a given position.
-    /// </summary>
-    /// <param name="name">The name of the created GameObject.</param>
-    /// <param name="pos">The position where the circle will be created.</param>
-    /// <param name="radius">The radius of the circle.</param>
-    /// <param name="color">The color to apply to the circle material.</param>
-    /// <param name="duration">How long the circle should remain before being despawned.</param>
-    /// <param name="segments">Number of segments for the circle geometry. Minimum of 12.</param>
-    /// <returns>
-    ///     The created <see cref="GameObject" /> representing the circle.
-    /// </returns>
-    public static GameObject CreateCircle(string name, Vector3 pos, float radius, Color color, float duration, int segments = 64)
+    public static GameObject CreateSphere(string name, Vector3 position, float radius, Color color, float duration, bool filled = false)
     {
-        var go = new GameObject(name);
-        go.transform.position = pos;
-
-        HudManager.Instance.StartCoroutine(Effects.ScaleIn(go.transform, 0f, 1f, 0.5f));
-
-        var mf = go.AddComponent<MeshFilter>();
-        var mr = go.AddComponent<MeshRenderer>();
-
-        var mat = new Material(GetCircleMat()) { color = color };
-        mr.sharedMaterial = mat;
-
-        var visualRadius = radius;
-
-        segments = Mathf.Max(12, segments);
-        var verts = new Vector3[segments + 1];
-        var tris = new int[segments * 3];
-
-        verts[0] = Vector3.zero;
-        for (var i = 0; i < segments; i++)
-        {
-            var a = i / (float)segments * Mathf.PI * 2f;
-            verts[i + 1] = new Vector3(Mathf.Cos(a) * visualRadius, Mathf.Sin(a) * visualRadius, 0f);
-            tris[i * 3 + 0] = 0;
-            tris[i * 3 + 1] = i + 1;
-            tris[i * 3 + 2] = i == segments - 1 ? 1 : i + 2;
-        }
-
-        var mesh = new Mesh { name = $"{name}_Fill" };
-        mesh.SetVertices(verts);
-        mesh.SetTriangles(tris, 0, true);
-        mesh.RecalculateBounds();
-        mesh.RecalculateNormals();
-        mf.sharedMesh = mesh;
-
-        Coroutines.Start(CoroutinesHelper.DespawnCircle(go, duration));
-        return go;
+        var sphere = new GameObject(name);
+        sphere.transform.position = position;
+        sphere.AddComponent<AreaBubble>().Init(radius, color, filled ? 0.25f : 0.04f);
+        Object.Destroy(sphere, duration);
+        return sphere;
     }
 
     public static bool IsRoleActive(string roleName)

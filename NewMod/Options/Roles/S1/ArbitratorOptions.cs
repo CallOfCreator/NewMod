@@ -11,6 +11,9 @@ public class ArbitratorOptions : AbstractOptionGroup<ArbitratorRole>
 {
     public override string GroupName => "Arbitrator";
 
+    [ModdedNumberOption("Judgment Selection Window", 5f, 20f, 1f, MiraNumberSuffixes.Seconds)]
+    public float JudgmentWindow { get; set; } = 10f;
+
     [ModdedNumberOption("Judgment Tokens To Win", 2f, 5f, 1f, MiraNumberSuffixes.None)]
     public float JudgmentTokensToWin { get; set; } = 3f;
 

@@ -11,10 +11,10 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class AnchorButton : CustomActionButton, IEnergyAbility
+public class AnchorButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Mobility;
-    private byte _roomId;
+    public byte _roomId;
 
     public override string Name => "Anchor";
     public override float Cooldown => OptionGroupSingleton<NomadOptions>.Instance.AnchorCooldown;

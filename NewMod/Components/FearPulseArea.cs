@@ -13,20 +13,20 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
 {
     public static readonly HashSet<byte> AffectedPlayers = [];
 
-    private static readonly Dictionary<byte, int> ActivePulseCounts = [];
-    private static readonly Dictionary<byte, float> OriginalSpeeds = [];
+    public static readonly Dictionary<byte, int> ActivePulseCounts = [];
+    public static readonly Dictionary<byte, float> OriginalSpeeds = [];
 
     public byte ownerId;
 
-    private AudioClip _enterClip;
-    private AudioClip _heartbeatClip;
-    private byte _affectedPlayerId = byte.MaxValue;
-    private float _duration;
-    private float _elapsed;
-    private float _radius;
-    private bool _affectingLocalPlayer;
-    private bool _restored;
-    private float _speedMultiplier;
+    public AudioClip _enterClip;
+    public AudioClip _heartbeatClip;
+    public byte _affectedPlayerId = byte.MaxValue;
+    public float _duration;
+    public float _elapsed;
+    public float _radius;
+    public bool _affectingLocalPlayer;
+    public bool _restored;
+    public float _speedMultiplier;
 
     public void Update()
     {
@@ -35,7 +35,7 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
 
         _elapsed += Time.deltaTime;
 
-        if (_elapsed >= _duration)
+        if (_elapsed >= _duration || MeetingHud.Instance || ExileController.Instance)
         {
             RestoreAll();
             Destroy(gameObject);
@@ -63,22 +63,12 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
                 localPlayer.MyPhysics.Speed *= _speedMultiplier;
                 AffectedPlayers.Add(localPlayer.PlayerId);
 
-                var speedNotification = Helpers.CreateAndShowNotification("You have entered the Fear Pulse Area. Your speed is reduced!", Color.red, spr: NewModAsset.SpeedDebuff.LoadAsset());
+                var speedNotification = Helpers.CreateAndShowNotification("Intimidated: leave the area to restore your speed.", Color.red, spr: NewModAsset.SpeedDebuff.LoadAsset());
                 speedNotification.Text.SetOutlineThickness(0.36f);
-
-                var visionNotification = Helpers.CreateAndShowNotification("You have entered the Fear Pulse Area. Your vision is reduced!", new Color(1f, 0.8f, 0.2f), spr: NewModAsset.VisionDebuff.LoadAsset());
-                visionNotification.Text.SetOutlineThickness(0.36f);
-
-                if (localPlayer.lightSource && localPlayer.lightSource.lightChild)
-                    localPlayer.lightSource.lightChild.SetActive(false);
 
                 if (Constants.ShouldPlaySfx())
                     SoundManager.Instance.PlaySound(_enterClip, false);
 
-                var camera = Camera.main.GetComponent<FollowerCamera>();
-
-                if (camera)
-                    Coroutines.Start(Utils.CoShakeCamera(camera, 0.5f));
             }
         }
         else if (!inside && _affectingLocalPlayer)
@@ -138,12 +128,9 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
         if (!player.AmOwner)
             return;
 
-        if (player.lightSource && player.lightSource.lightChild)
-            player.lightSource.lightChild.SetActive(true);
-
         SoundManager.Instance.StopSound(_enterClip);
         SoundManager.Instance.StopSound(_heartbeatClip);
-        Helpers.CreateAndShowNotification("Your speed and vision are restored.", new Color(0.8f, 1f, 0.8f));
+        Helpers.CreateAndShowNotification("Your speed is restored.", new Color(0.8f, 1f, 0.8f));
     }
 
     public void RestoreAll()
@@ -165,8 +152,6 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
         {
             localPlayer.MyPhysics.Speed = originalSpeed;
 
-            if (localPlayer.lightSource && localPlayer.lightSource.lightChild)
-                localPlayer.lightSource.lightChild.SetActive(true);
         }
 
         ActivePulseCounts.Clear();

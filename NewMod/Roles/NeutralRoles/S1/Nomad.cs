@@ -21,16 +21,20 @@ using UnityEngine;
 namespace NewMod.Roles.NeutralRoles.S1;
 
 [MiraIgnore]
-public sealed class Nomad : CrewmateRole, INewModRole
+public class Nomad : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<byte, Vector2> Anchors = [];
     public static readonly Dictionary<byte, int> LastRooms = [];
     public static readonly HashSet<byte> CanWander = [];
     public static readonly Dictionary<byte, Vector2> BacktrackPositions = [];
 
-    private static readonly Dictionary<byte, int> Scores = [];
-    private static readonly Dictionary<byte, HashSet<byte>> RouteRooms = [];
-    private static readonly Dictionary<byte, Vector2> RouteEnds = [];
+    public static readonly Dictionary<byte, (byte Room, float Entered)> Visits = [];
+    public static readonly Dictionary<byte, float> ProtectionEnds = [];
+    public static readonly Dictionary<byte, float> NextWander = [];
+
+    public static readonly Dictionary<byte, int> Scores = [];
+    public static readonly Dictionary<byte, HashSet<byte>> RouteRooms = [];
+    public static readonly Dictionary<byte, Vector2> RouteEnds = [];
 
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.IntroBlurb");
@@ -57,12 +61,15 @@ public sealed class Nomad : CrewmateRole, INewModRole
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
+        text.AppendLine();
         var playerId = PlayerControl.LocalPlayer.PlayerId;
         Scores.TryGetValue(playerId, out var score);
 
         text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.Routes"), score, (int)OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal));
-        text.AppendLine(CanWander.Contains(playerId) ? MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.WanderReady") : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.RouteInstructions"));
-        if (BacktrackPositions.ContainsKey(playerId))
+        if (CanWander.Contains(playerId)) text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.WanderReady"));
+        var options = OptionGroupSingleton<NomadOptions>.Instance;
+        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.Journey"), RouteRooms.TryGetValue(playerId, out var rooms) ? rooms.Count : 0, options.RoomsPerRoute, options.VisitDuration));
+        if (BacktrackPositions.ContainsKey(playerId) && Time.time < ProtectionEnds.GetValueOrDefault(playerId))
             text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.BacktrackReady"));
         return text;
     }
@@ -77,6 +84,7 @@ public sealed class Nomad : CrewmateRole, INewModRole
         if (player.Data.IsDead || !Anchors.ContainsKey(player.PlayerId))
             return;
 
+        var options = OptionGroupSingleton<NomadOptions>.Instance;
         foreach (var room in ShipStatus.Instance.AllRooms)
         {
             if (room.RoomId == SystemTypes.Hallway || !room.roomArea.OverlapPoint(player.GetTruePosition()))
@@ -86,11 +94,17 @@ public sealed class Nomad : CrewmateRole, INewModRole
             if (!LastRooms.TryGetValue(player.PlayerId, out var lastRoom) || lastRoom != roomId)
             {
                 var position = player.GetTruePosition();
-                RpcConfirmRoom(PlayerControl.LocalPlayer, player.PlayerId, roomId, position.x, position.y);
+                if (!Visits.TryGetValue(player.PlayerId, out var visit) || visit.Room != roomId)
+                    Visits[player.PlayerId] = (roomId, Time.time);
+                else if (Time.time - visit.Entered >= options.VisitDuration &&
+                    Vector2.Distance(position, RouteEnds[player.PlayerId]) >= options.MinimumTravel)
+                    RpcConfirmRoom(PlayerControl.LocalPlayer, player.PlayerId, roomId, position.x, position.y);
             }
+            else Visits.Remove(player.PlayerId);
 
             return;
         }
+        Visits.Remove(player.PlayerId);
     }
 
     [RegisterEvent]
@@ -99,6 +113,9 @@ public sealed class Nomad : CrewmateRole, INewModRole
         if (!evt.TriggeredByIntro)
             return;
 
+        Visits.Clear();
+        ProtectionEnds.Clear();
+        NextWander.Clear();
         Anchors.Clear();
         LastRooms.Clear();
         CanWander.Clear();
@@ -130,14 +147,20 @@ public sealed class Nomad : CrewmateRole, INewModRole
         if (!AmongUsClient.Instance.AmHost || evt.IgnoreDefense || evt.Target.Data.Role is not Nomad || !BacktrackPositions.TryGetValue(evt.Target.PlayerId, out var position))
             return;
 
+        if (Time.time >= ProtectionEnds.GetValueOrDefault(evt.Target.PlayerId))
+        {
+            BacktrackPositions.Remove(evt.Target.PlayerId);
+            return;
+        }
+
         evt.Cancel();
         RpcConfirmBacktrack(PlayerControl.LocalPlayer, evt.Target.PlayerId, position.x, position.y);
     }
 
     [RegisterEvent]
-    public static void OnMeetingEnd(EndMeetingEvent evt)
+    public static void OnMeetingResolved(RoundStartEvent evt)
     {
-        if (!AmongUsClient.Instance.AmHost)
+        if (evt.TriggeredByIntro || !GameManager.Instance.ShouldCheckForGameEnd || !AmongUsClient.Instance.AmHost)
             return;
 
         foreach (var pair in Scores)
@@ -159,9 +182,9 @@ public sealed class Nomad : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.NomadConfirmAnchor, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcConfirmAnchor(PlayerControl host, byte playerId, byte roomId, float x, float y)
+    public static void RpcConfirmAnchor(PlayerControl source, byte playerId, byte roomId, float x, float y)
     {
-        if (!host.IsHost())
+        if (!source.IsHost())
             return;
 
         Anchors[playerId] = new Vector2(x, y);
@@ -172,20 +195,14 @@ public sealed class Nomad : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.NomadConfirmRoom, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcConfirmRoom(PlayerControl host, byte playerId, byte roomId, float x, float y)
+    public static void RpcConfirmRoom(PlayerControl source, byte playerId, byte roomId, float x, float y)
     {
-        if (!host.IsHost() || !RouteRooms.TryGetValue(playerId, out var rooms))
+        if (!source.IsHost() || !RouteRooms.TryGetValue(playerId, out var rooms))
             return;
 
         LastRooms[playerId] = roomId;
         if (!rooms.Add(roomId))
-        {
-            RouteRooms.Remove(playerId);
-            RouteEnds.Remove(playerId);
-            Anchors.Remove(playerId);
-            CanWander.Remove(playerId);
             return;
-        }
 
         RouteEnds[playerId] = new Vector2(x, y);
         if (rooms.Count >= OptionGroupSingleton<NomadOptions>.Instance.RoomsPerRoute)
@@ -195,20 +212,24 @@ public sealed class Nomad : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.NomadRequestWander)]
     public static void RpcRequestWander(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Nomad || source.Data.IsDead || !CanWander.Contains(source.PlayerId) || !Anchors.TryGetValue(source.PlayerId, out var anchor))
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Nomad || source.Data.IsDead || MeetingHud.Instance || ExileController.Instance || NextWander.GetValueOrDefault(source.PlayerId) > Time.time || !CanWander.Contains(source.PlayerId) || !Anchors.TryGetValue(source.PlayerId, out var anchor))
             return;
 
         RpcConfirmWander(PlayerControl.LocalPlayer, source.PlayerId, anchor.x, anchor.y);
     }
 
     [MethodRpc((uint)CustomRPC.NomadConfirmWander, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcConfirmWander(PlayerControl host, byte playerId, float x, float y)
+    public static void RpcConfirmWander(PlayerControl source, byte playerId, float x, float y)
     {
-        if (!host.IsHost() || !CanWander.Remove(playerId))
+        if (!source.IsHost() || !CanWander.Remove(playerId))
             return;
 
         Scores.TryGetValue(playerId, out var score);
         Scores[playerId] = score + 1;
+        if (Scores[playerId] >= OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal)
+            Coroutines.Start(CoroutinesHelper.CoNotify("A Nomad has finished their journeys.\nThe next meeting can decide their win."));
+        NextWander[playerId] = Time.time + OptionGroupSingleton<NomadOptions>.Instance.WanderCooldown;
+        ProtectionEnds[playerId] = Time.time + OptionGroupSingleton<NomadOptions>.Instance.BacktrackDuration;
         if (RouteEnds.TryGetValue(playerId, out var routeEnd))
             BacktrackPositions[playerId] = routeEnd;
 
@@ -223,9 +244,9 @@ public sealed class Nomad : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.NomadConfirmBacktrack, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcConfirmBacktrack(PlayerControl host, byte playerId, float x, float y)
+    public static void RpcConfirmBacktrack(PlayerControl source, byte playerId, float x, float y)
     {
-        if (!host.IsHost() || !BacktrackPositions.Remove(playerId))
+        if (!source.IsHost() || !BacktrackPositions.Remove(playerId))
             return;
 
         var player = Utils.PlayerById(playerId);

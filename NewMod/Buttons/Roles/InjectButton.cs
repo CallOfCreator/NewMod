@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Il2CppSystem;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
@@ -6,94 +7,59 @@ using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
+using NewMod.Utilities;
 using UnityEngine;
-using static NewMod.Utilities.Utils;
-using Enum = System.Enum;
-using Random = UnityEngine.Random;
 
 namespace NewMod.Buttons.Roles;
 
-/// <summary>
-///     Represents the serum injection button for the Injector role.
-///     Allows injecting a random serum into nearby players.
-/// </summary>
 public class InjectButton : CustomActionButton<PlayerControl>, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
-
-    /// <summary>
-    ///     The name displayed on the button (if any).
-    /// </summary>
     public override string Name => "Inject";
-
-    /// <summary>
-    ///     Cooldown time between uses, configured via <see cref="InjectorOptions" />.
-    /// </summary>
-    public override float Cooldown => OptionGroupSingleton<InjectorOptions>.Instance.SerumCooldown;
-
-    /// <summary>
-    ///     Maximum allowed injections, configured via <see cref="InjectorOptions" />.
-    /// </summary>
-    public override int MaxUses => (int)OptionGroupSingleton<InjectorOptions>.Instance.MaxSerumUses;
-
-    /// <summary>
-    ///     Effect duration — unused here since injection is instant.
-    /// </summary>
-    public override float EffectDuration => 0f;
-
-    /// <summary>
-    ///     Screen location of the button on the HUD.
-    /// </summary>
+    public override float Cooldown => 0.25f;
+    public override float Distance => OptionGroupSingleton<InjectorOptions>.Instance.InjectionRange;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
-
-    /// <summary>
-    ///     Default keybind for Injector's Inject ability.
-    /// </summary>
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-
-    /// <summary>
-    ///     Sprite/icon displayed on the button.
-    /// </summary>
     public override LoadableAsset<Sprite> Sprite => NewModAsset.InjectButton;
+    public override bool Enabled(RoleBehaviour role) => role is InjectorRole;
 
-    /// <summary>
-    ///     Returns the closest valid player target within range,
-    ///     used by the Injector to determine who can be injected.
-    /// </summary>
-    /// <returns>The nearest PlayerControl instance, or null if none is in range.</returns>
-    public override PlayerControl GetTarget()
+    public override void CreateButton(Transform parent)
     {
-        return PlayerControl.LocalPlayer.GetClosestPlayer(true, Distance);
+        base.CreateButton(parent);
+        Button.graphic.SetCooldownNormalizedUvs();
     }
 
-    /// <summary>
-    ///     Sets an outline around the target player to visually indicate interaction,
-    ///     such as highlighting a valid injection target for the Injector role.
-    /// </summary>
-    /// <param name="active">True to show the outline; false to hide it.</param>
+    public override PlayerControl GetTarget()
+    {
+        var player = PlayerControl.LocalPlayer;
+        if (InjectorUtilities.Experiments.TryGetValue(player.PlayerId, out var sample))
+        {
+            var target = Utils.PlayerById(sample.TargetId);
+            return target && !target.Data.IsDead && !target.Data.Disconnected && !target.inVent && Time.time >= sample.ReadyAt &&
+                Vector2.Distance(player.GetTruePosition(), target.GetTruePosition()) <= Distance &&
+                !PhysicsHelpers.AnythingBetween(player.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false) ? target : null;
+        }
+        if (Time.time < InjectorUtilities.NextInjection.GetValueOrDefault(player.PlayerId)) return null;
+        return player.GetClosestPlayer(false, Distance, predicate: target => !target.inVent &&
+            !InjectorUtilities.Samples.Contains((player.PlayerId, target.PlayerId)));
+    }
+
     public override void SetOutline(bool active)
     {
         Target?.cosmetics.SetOutline(active, new Nullable<Color>(Palette.AcceptedGreen));
     }
 
-    /// <summary>
-    ///     Determines whether this button is available for the current role.
-    /// </summary>
-    /// <param name="role">The current player's role.</param>
-    /// <returns>True only for the Injector role.</returns>
-    public override bool Enabled(RoleBehaviour role)
+    protected override void FixedUpdate(PlayerControl player)
     {
-        return role is InjectorRole;
+        OverrideName(InjectorUtilities.Experiments.ContainsKey(player.PlayerId) ? "Collect Sample" : Name);
     }
 
-    /// <summary>
-    ///     Called when the button is clicked. Applies a serum to the closest valid target.
-    /// </summary>
     protected override void OnClick()
     {
-        var values = (SerumType[])Enum.GetValues(typeof(SerumType));
-        var serum = values[Random.Range(0, values.Length)];
-
-        RpcApplySerum(PlayerControl.LocalPlayer, Target, serum);
+        var player = PlayerControl.LocalPlayer;
+        if (InjectorUtilities.Experiments.ContainsKey(player.PlayerId))
+            InjectorUtilities.RpcCollectSample(player);
+        else
+            InjectorUtilities.RpcApplySerum(player, Target, InjectorUtilities.SelectedSerum);
     }
 }

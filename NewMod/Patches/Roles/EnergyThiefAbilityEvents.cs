@@ -101,6 +101,11 @@ public static class NewModHostTickPatch
         if (EnergyThief.TetherTargets.Count > 0 || EnergyThief.BreachActive)
             EnergyThief.HostFixedUpdate();
 
+        if (InjectorUtilities.Experiments.Count > 0)
+            InjectorUtilities.HostFixedUpdate();
+
+        if (MeetingHud.Instance || ExileController.Instance) return;
+
         if (Bounty.Contracts.Count > 0)
             Bounty.HostFixedUpdate();
 

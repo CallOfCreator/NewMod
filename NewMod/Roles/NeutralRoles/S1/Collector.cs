@@ -5,6 +5,7 @@ using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
@@ -26,14 +27,14 @@ using FragmentKind = CollectorFragmentKind;
 using FragmentPower = CollectorManifestResult;
 
 [MiraIgnore]
-public sealed class Collector : CrewmateRole, INewModRole
+public class Collector : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<uint, FragmentRecord> Fragments = [];
     public static readonly Dictionary<byte, CollectorInventory> Inventories = [];
     public static readonly HashSet<byte> VictoryArmed = [];
     public static readonly HashSet<byte> EnvironmentalDeaths = [];
 
-    private static uint _nextFragmentId;
+    public static uint _nextFragmentId;
     public static bool ExilePending;
     public static Vector2 ExilePosition;
 
@@ -62,7 +63,10 @@ public sealed class Collector : CrewmateRole, INewModRole
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
-        text.AppendLine(VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId) ? MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.ManifestComplete") : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.Recipe"));
+        text.AppendLine();
+        if (VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId)) text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.ManifestComplete"));
+        if (Inventories.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var inventory))
+            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.Inventory"), inventory.Count(FragmentKind.Violence), inventory.Count(FragmentKind.Ability), inventory.Count(FragmentKind.Fate), OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost));
         return text;
     }
 
@@ -100,6 +104,17 @@ public sealed class Collector : CrewmateRole, INewModRole
     }
 
     [RegisterEvent]
+    public static void OnSetRole(SetRoleEvent evt)
+    {
+        if (evt.Player.Data.Role is Collector) Inventories[evt.Player.PlayerId] = new CollectorInventory();
+        else
+        {
+            Inventories.Remove(evt.Player.PlayerId);
+            VictoryArmed.Remove(evt.Player.PlayerId);
+        }
+    }
+
+    [RegisterEvent]
     public static void OnAfterMurder(AfterMurderEvent evt)
     {
         if (!AmongUsClient.Instance.AmHost || Inventories.Count == 0)
@@ -111,9 +126,9 @@ public sealed class Collector : CrewmateRole, INewModRole
     }
 
     [RegisterEvent]
-    public static void OnMeetingEnd(EndMeetingEvent evt)
+    public static void OnMeetingResolved(RoundStartEvent evt)
     {
-        if (!AmongUsClient.Instance.AmHost)
+        if (evt.TriggeredByIntro || !GameManager.Instance.ShouldCheckForGameEnd || !AmongUsClient.Instance.AmHost)
             return;
 
         foreach (var playerId in VictoryArmed)
@@ -134,16 +149,15 @@ public sealed class Collector : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.CollectorSpawnFragment, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcSpawnFragment(PlayerControl host, uint fragmentId, byte kindId, float x, float y)
+    public static void RpcSpawnFragment(PlayerControl source, uint fragmentId, byte kindId, float x, float y)
     {
-        if (!host.IsHost() || Fragments.ContainsKey(fragmentId))
+        if (!source.IsHost() || Fragments.ContainsKey(fragmentId))
             return;
 
         var kind = (FragmentKind)kindId;
         var gameObject = new GameObject($"CollectorFragment_{fragmentId}");
         gameObject.transform.position = new Vector3(x, y, -1f);
 
-        //TODO: Replace this with fragment sprite
         var line = gameObject.AddComponent<LineRenderer>();
         line.useWorldSpace = false;
         line.loop = true;
@@ -170,16 +184,17 @@ public sealed class Collector : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.CollectorRequestHarvest)]
     public static void RpcRequestHarvest(PlayerControl source, uint fragmentId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || !Fragments.TryGetValue(fragmentId, out var fragment) || Vector2.Distance(source.GetTruePosition(), fragment.Position) > OptionGroupSingleton<CollectorOptions>.Instance.HarvestRange)
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || !Fragments.TryGetValue(fragmentId, out var fragment) || Vector2.Distance(source.GetTruePosition(), fragment.Position) > OptionGroupSingleton<CollectorOptions>.Instance.HarvestRange)
             return;
 
+        if (PhysicsHelpers.AnythingBetween(source.GetTruePosition(), fragment.Position, Constants.ShipAndObjectsMask, false)) return;
         RpcConfirmHarvest(PlayerControl.LocalPlayer, source.PlayerId, fragmentId, (byte)fragment.Kind);
     }
 
     [MethodRpc((uint)CustomRPC.CollectorConfirmHarvest, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcConfirmHarvest(PlayerControl host, byte collectorId, uint fragmentId, byte kindId)
+    public static void RpcConfirmHarvest(PlayerControl source, byte collectorId, uint fragmentId, byte kindId)
     {
-        if (!host.IsHost() || !Fragments.Remove(fragmentId, out var fragment) || !Inventories.TryGetValue(collectorId, out var inventory))
+        if (!source.IsHost() || !Fragments.Remove(fragmentId, out var fragment) || !Inventories.TryGetValue(collectorId, out var inventory))
             return;
 
         Destroy(fragment.Object);
@@ -195,7 +210,7 @@ public sealed class Collector : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.CollectorRequestManifest)]
     public static void RpcRequestManifest(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || VictoryArmed.Contains(source.PlayerId) || !Inventories.TryGetValue(source.PlayerId, out var inventory))
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || VictoryArmed.Contains(source.PlayerId) || !Inventories.TryGetValue(source.PlayerId, out var inventory))
             return;
 
         if (!inventory.CanManifest)
@@ -205,9 +220,9 @@ public sealed class Collector : CrewmateRole, INewModRole
     }
 
     [MethodRpc((uint)CustomRPC.CollectorConfirmManifest, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcConfirmManifest(PlayerControl host, byte collectorId, byte result)
+    public static void RpcConfirmManifest(PlayerControl source, byte collectorId, byte result)
     {
-        if (!host.IsHost() || !Inventories.TryGetValue(collectorId, out var inventory))
+        if (!source.IsHost() || !Inventories.TryGetValue(collectorId, out var inventory))
             return;
 
         var power = (FragmentPower)result;
@@ -217,12 +232,32 @@ public sealed class Collector : CrewmateRole, INewModRole
         if (power == FragmentPower.Victory)
         {
             VictoryArmed.Add(collectorId);
+            Coroutines.Start(CoroutinesHelper.CoNotify("A Collector has completed their collection.\nFind them before the next meeting ends."));
             return;
         }
 
         var player = Utils.PlayerById(collectorId);
         if (player.AmOwner)
             Coroutines.Start(CoFragmentPower(player, power));
+    }
+
+    [MethodRpc((uint)CustomRPC.CollectorRequestConvert)]
+    public static void RpcRequestConvert(PlayerControl source)
+    {
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || source.Data.Disconnected ||
+            MeetingHud.Instance || ExileController.Instance || VictoryArmed.Contains(source.PlayerId) ||
+            !Inventories.TryGetValue(source.PlayerId, out var inventory) ||
+            !inventory.CanConvert((int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost)) return;
+        RpcConfirmConvert(PlayerControl.LocalPlayer, source.PlayerId);
+    }
+
+    [MethodRpc((uint)CustomRPC.CollectorConfirmConvert)]
+    public static void RpcConfirmConvert(PlayerControl source, byte ownerId)
+    {
+        if (!source.IsHost()) return;
+        Inventories[ownerId].Convert((int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost);
+        if (PlayerControl.LocalPlayer.PlayerId == ownerId)
+            Coroutines.Start(CoroutinesHelper.CoNotify("Duplicates converted into a missing fragment."));
     }
 
     public static IEnumerator CoFragmentPower(PlayerControl player, FragmentPower power)
@@ -260,7 +295,7 @@ public sealed class Collector : CrewmateRole, INewModRole
             line.startColor = line.endColor = start;
     }
 
-    private static IEnumerator CoRevealCollector(PlayerControl collector, float duration)
+    public static IEnumerator CoRevealCollector(PlayerControl collector, float duration)
     {
         var gameObject = new GameObject("CollectorHarvestReveal") { layer = 5 };
         var renderer = gameObject.AddComponent<SpriteRenderer>();
@@ -281,7 +316,7 @@ public sealed class Collector : CrewmateRole, INewModRole
         Destroy(gameObject);
     }
 
-    public sealed class FragmentRecord
+    public class FragmentRecord
     {
         public FragmentKind Kind;
         public GameObject Object;

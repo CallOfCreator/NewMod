@@ -10,7 +10,7 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class TerminateButton : CustomActionButton<PlayerControl>
+public class TerminateButton : CustomActionButton<PlayerControl>
 {
     public override string Name => "Terminate";
     public override float Cooldown => 0f;
@@ -21,7 +21,7 @@ public sealed class TerminateButton : CustomActionButton<PlayerControl>
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is not TerminatorRole;
+        return Button && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.Data && role is not TerminatorRole;
     }
 
     public override void SetActive(bool visible, RoleBehaviour role)

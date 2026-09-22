@@ -47,22 +47,8 @@ public class Shade : ImpostorRole, INewModRole
         var zonesActive = ShadowZone.zones.Count;
         var playersInZones = Helpers.GetAlivePlayers().Count(p => ShadowZone.IsInsideAny(p.GetTruePosition()));
 
-        var mode = OptionGroupSingleton<ShadeOptions>.Instance.Behavior;
-
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.Concealment"), ColorUtility.ToHtmlStringRGBA(Color.magenta)));
-        tabText.AppendLine("\n");
         tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.ActiveShadowZones"), ColorUtility.ToHtmlStringRGBA(Color.cyan), zonesActive));
         tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.PlayersInsideZones"), ColorUtility.ToHtmlStringRGBA(Color.gray), playersInZones));
-
-        var effectText = mode switch
-        {
-            ShadeOptions.ShadowMode.Invisible => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.InvisibleMode"),
-            ShadeOptions.ShadowMode.KillEnabled => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.KillMode"),
-            ShadeOptions.ShadowMode.Both => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.CombinedMode"),
-            _ => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.DefaultMode")
-        };
-
-        tabText.AppendLine($"\n<size=65%><color=#B39DDB>{effectText}</color></size>");
 
         return tabText;
     }
@@ -83,7 +69,8 @@ public class Shade : ImpostorRole, INewModRole
         if (killer.Data.Role is not Shade)
             return;
 
-        if (!ShadowZone.IsInsideAny(victim.GetTruePosition()))
+        if (!victim.Data.IsDead || !ShadowZone.zones.Any(zone => zone && zone.shadeId == killer.PlayerId &&
+            zone.Contains(killer.GetTruePosition()) && zone.Contains(victim.GetTruePosition())))
             return;
 
         var id = killer.PlayerId;
@@ -94,6 +81,15 @@ public class Shade : ImpostorRole, INewModRole
             var required = (int)OptionGroupSingleton<ShadeOptions>.Instance.RequiredKills;
             Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#8E44AD>Shadow Harvest</color>\nKills: {ShadeKills[id]}/{required}"));
         }
+    }
+
+    [RegisterEvent]
+    public static void BeforeMurder(BeforeMurderEvent evt)
+    {
+        if (evt.Source.Data.Role is not Shade) return;
+        if (!ShadowZone.zones.Any(zone => zone && zone.shadeId == evt.Source.PlayerId &&
+                zone.Contains(evt.Source.GetTruePosition()) && zone.Contains(evt.Target.GetTruePosition())))
+            evt.Cancel();
     }
 
     [RegisterEvent]

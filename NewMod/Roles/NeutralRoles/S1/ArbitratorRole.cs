@@ -13,6 +13,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using MiraAPI.Utilities.Assets;
+using MiraAPI.Utilities;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -32,15 +33,16 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<byte, byte> JudgmentTokens = [];
     public static readonly Dictionary<byte, byte> LastVotes = [];
+    public static readonly HashSet<byte> ScoredTargets = [];
 
-    private static ArbitratorJudgmentMode _localMode;
-    private static bool _localLocked;
-    private static byte _localTarget = byte.MaxValue;
+    public static byte PendingWinner = byte.MaxValue;
+    public static ArbitratorJudgmentMode _localMode;
+    public static bool _localLocked;
 
-    private static byte _hostOwner = byte.MaxValue;
-    private static byte _hostTarget = byte.MaxValue;
-    private static ArbitratorJudgmentMode _hostMode;
-    private static bool _judgmentResolved;
+    public static byte _hostOwner = byte.MaxValue;
+    public static byte _hostTarget = byte.MaxValue;
+    public static ArbitratorJudgmentMode _hostMode;
+    public static bool _judgmentResolved;
 
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.IntroBlurb");
@@ -82,11 +84,9 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         tabText.AppendLine();
         tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.JudgmentTokens"), tokens, required));
 
-        tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Accuse"));
 
         tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Defend"), defendVotes));
 
-        tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Leverage"));
 
         return tabText;
     }
@@ -96,6 +96,13 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     {
         if (evt.TriggeredByIntro)
             ResetState();
+        else if (AmongUsClient.Instance.AmHost && GameManager.Instance.ShouldCheckForGameEnd && PendingWinner != byte.MaxValue)
+        {
+            var winner = Utils.PlayerById(PendingWinner);
+            PendingWinner = byte.MaxValue;
+            if (winner && !winner.Data.IsDead && !winner.Data.Disconnected && winner.Data.Role is ArbitratorRole)
+                CustomGameOver.Trigger<ArbitratorGameOver>([winner.Data]);
+        }
     }
 
     [RegisterEvent]
@@ -109,7 +116,6 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     {
         _localMode = ArbitratorJudgmentMode.Accuse;
         _localLocked = false;
-        _localTarget = byte.MaxValue;
         _judgmentResolved = false;
 
         if (AmongUsClient.Instance.AmHost)
@@ -129,18 +135,20 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnMeetingSelect(MeetingSelectEvent evt)
     {
-        if (_localLocked || PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole)
-            return;
-
-        var target = Utils.PlayerById((byte)evt.TargetId);
-
-        if (!target || target == PlayerControl.LocalPlayer || target.Data.IsDead || target.Data.Disconnected)
+        if (_localLocked || PlayerControl.LocalPlayer.Data.IsDead || PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole ||
+            !IsJudgmentOpen())
             return;
 
         evt.AllowSelect = false;
+        var target = Utils.PlayerById((byte)evt.TargetId);
+
+        if (!target || target == PlayerControl.LocalPlayer || target.Data.IsDead || target.Data.Disconnected || ScoredTargets.Contains(target.PlayerId))
+        {
+            Coroutines.Start(CoroutinesHelper.CoNotify("Choose another living player.\nEach player can only score once."));
+            return;
+        }
 
         _localLocked = true;
-        _localTarget = target.PlayerId;
 
         RpcSetJudgment(PlayerControl.LocalPlayer, (byte)_localMode, target.PlayerId);
 
@@ -155,7 +163,6 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     public static void OnMeetingEnd(EndMeetingEvent evt)
     {
         _localLocked = false;
-        _localTarget = byte.MaxValue;
 
         if (AmongUsClient.Instance.AmHost)
         {
@@ -164,7 +171,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         }
     }
 
-    private static IEnumerator CoSetupMeetingButton(MeetingHud hud)
+    public static IEnumerator CoSetupMeetingButton(MeetingHud hud)
     {
         while (hud && hud.CurrentState == MeetingHud.MeetingStates.Animating)
             yield return null;
@@ -174,9 +181,19 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         if (!hud || PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole)
             yield break;
 
+        Coroutines.Start(CoroutinesHelper.CoNotify("Choose ACCUSE or DEFEND, then select a player now.\nAfter locking your judgment, vote normally."));
         UpdateMeetingButton();
+        while (hud && hud.CurrentState is not (MeetingHud.MeetingStates.Results or MeetingHud.MeetingStates.Proceeding))
+        {
+            UpdateMeetingButton();
+            yield return null;
+        }
+    }
 
-        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FFD166>Arbitrator:</color> toggle ACCUSE/DEFEND\nthen select a player. Select again afterward to cast your normal vote"));
+    public static bool IsJudgmentOpen()
+    {
+        return MeetingHud.Instance && MeetingHud.Instance.discussionTimer < Mathf.Max(GameOptionsManager.Instance.CurrentGameOptions.GetInt(Int32OptionNames.DiscussionTime), OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentWindow) &&
+            MeetingHud.Instance.CurrentState is MeetingHud.MeetingStates.Discussion or MeetingHud.MeetingStates.NotVoted or MeetingHud.MeetingStates.Voted;
     }
 
     public static void UpdateMeetingButton()
@@ -192,21 +209,21 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         button.graphic.sprite = _localMode == ArbitratorJudgmentMode.Accuse ? NewModAsset.AccuseButton.LoadAsset() : NewModAsset.DefendButton.LoadAsset();
         button.graphic.SetCooldownNormalizedUvs();
 
-        if (_localLocked)
+        if (_localLocked || !IsJudgmentOpen())
         {
-            button.OverrideText("LOCKED");
+            button.OverrideText(_localLocked ? "LOCKED" : "CLOSED");
             button.OverrideColor(new Color32(90, 90, 90, 255));
             return;
         }
 
         if (_localMode == ArbitratorJudgmentMode.Accuse)
         {
-            button.OverrideText("ACCUSE");
+            button.OverrideText("ACCUSE\nSELECT");
             button.OverrideColor(new Color32(255, 104, 104, 255));
         }
         else
         {
-            button.OverrideText("DEFEND");
+            button.OverrideText("DEFEND\nSELECT");
             button.OverrideColor(new Color32(102, 191, 255, 255));
         }
     }
@@ -225,13 +242,15 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 
         var arbitrator = Utils.PlayerById(_hostOwner);
 
-        if (!arbitrator || arbitrator.Data.Disconnected)
+        if (!arbitrator || arbitrator.Data.IsDead || arbitrator.Data.Disconnected)
             return;
 
+        var target = Utils.PlayerById(_hostTarget);
+        if (!target || target.Data.IsDead || target.Data.Disconnected) return;
         var votesOnTarget = 0;
 
         foreach (var vote in evt.Votes)
-            if (vote.Suspect == _hostTarget)
+            if (vote.Suspect == _hostTarget && vote.Voter != _hostTarget)
                 votesOnTarget++;
 
         var exiled = MeetingHud.Instance.exiledPlayer;
@@ -248,16 +267,19 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         JudgmentTokens.TryGetValue(arbitrator.PlayerId, out var tokens);
 
         if (success)
+        {
             tokens++;
+            ScoredTargets.Add(_hostTarget);
+        }
 
-        RpcResolveJudgment(arbitrator, success, tokens);
+        RpcResolveJudgment(PlayerControl.LocalPlayer, arbitrator.PlayerId, _hostTarget, success, tokens);
 
-        if (success && tokens >= OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin) Coroutines.Start(CoTriggerWin(arbitrator.PlayerId));
+        if (success && tokens >= OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin) PendingWinner = arbitrator.PlayerId;
     }
 
     public static void OnMeetingAbilityClicked()
     {
-        if (_localLocked)
+        if (_localLocked || !IsJudgmentOpen())
         {
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#B7B7B7>Your judgment is already locked.</color>"));
 
@@ -272,20 +294,28 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.ArbitratorJudgment)]
     public static void RpcSetJudgment(PlayerControl source, byte mode, byte targetId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not ArbitratorRole)
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not ArbitratorRole || source.Data.IsDead || source.Data.Disconnected ||
+            !IsJudgmentOpen() ||
+            _hostOwner != byte.MaxValue || mode > (byte)ArbitratorJudgmentMode.Defend || ScoredTargets.Contains(targetId))
             return;
 
+        var target = Utils.PlayerById(targetId);
+        if (!target || target == source || target.Data.IsDead || target.Data.Disconnected) return;
         _hostOwner = source.PlayerId;
         _hostTarget = targetId;
         _hostMode = (ArbitratorJudgmentMode)mode;
     }
 
     [MethodRpc((uint)CustomRPC.ArbitratorJudgmentResult)]
-    public static void RpcResolveJudgment(PlayerControl source, bool success, byte tokens)
+    public static void RpcResolveJudgment(PlayerControl source, byte ownerId, byte targetId, bool success, byte tokens)
     {
-        JudgmentTokens[source.PlayerId] = tokens;
+        if (!source.IsHost()) return;
+        JudgmentTokens[ownerId] = tokens;
+        if (success && tokens == OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin - 1)
+            Coroutines.Start(CoroutinesHelper.CoNotify("An Arbitrator is one correct judgment away from winning."));
+        if (success) ScoredTargets.Add(targetId);
 
-        if (!source.AmOwner)
+        if (PlayerControl.LocalPlayer.PlayerId != ownerId)
             return;
 
         var required = (int)OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin;
@@ -296,27 +326,15 @@ public class ArbitratorRole : CrewmateRole, INewModRole
             Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#B7B7B7>Judgment failed.</color>\nJudgment Tokens: {tokens}/{required}"));
     }
 
-    private static IEnumerator CoTriggerWin(byte playerId)
+    public static void ResetState()
     {
-        while (MeetingHud.Instance || ExileController.Instance)
-            yield return null;
-
-        if (!AmongUsClient.Instance.AmHost || !GameManager.Instance.ShouldCheckForGameEnd) yield break;
-
-        var winner = Utils.PlayerById(playerId);
-
-        if (winner && !winner.Data.Disconnected)
-            CustomGameOver.Trigger<ArbitratorGameOver>([winner.Data]);
-    }
-
-    private static void ResetState()
-    {
+        PendingWinner = byte.MaxValue;
         JudgmentTokens.Clear();
+        ScoredTargets.Clear();
         LastVotes.Clear();
 
         _localMode = ArbitratorJudgmentMode.Accuse;
         _localLocked = false;
-        _localTarget = byte.MaxValue;
 
         _hostOwner = byte.MaxValue;
         _hostTarget = byte.MaxValue;

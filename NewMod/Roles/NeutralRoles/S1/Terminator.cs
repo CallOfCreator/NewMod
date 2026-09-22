@@ -165,7 +165,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
             Destroy(ObjectiveMarker);
 
         var radius = OptionGroupSingleton<TerminatorOptions>.Instance.FinalObjectiveRadius;
-        ObjectiveMarker = Utils.CreateCircle("TerminatorFinalObjective", new Vector3(x, y, 0f), radius, new Color32(217, 110, 32, 130), 600f);
+        ObjectiveMarker = Utils.CreateSphere("TerminatorFinalObjective", new Vector3(x, y, 0f), radius, new Color32(217, 110, 32, 130), 600f);
         CreateObjectiveArrow(ObjectivePosition);
         Coroutines.Start(CoroutinesHelper.CoNotify("<color=#D96E20><b>Terminator Final Objective revealed.</b></color>"));
     }
@@ -245,7 +245,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
                 continue;
             }
 
-            ThreatText.text = $"STOP THE TERMINATOR  •  {Mathf.CeilToInt(timeLeft)}s\n<size=75%>ARMOR  <color=#FF8C32>{new string('■', HuntState.Armor)}</color></size>";
+            ThreatText.text = $"STOP THE TERMINATOR  •  {Mathf.CeilToInt(timeLeft)}s\n\n<size=65%>ARMOR  <color=#FF8C32>{new string('■', HuntState.Armor)}</color></size>";
 
             flashTimer -= Time.deltaTime;
             if (flashTimer <= 0f)

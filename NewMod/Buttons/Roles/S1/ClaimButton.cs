@@ -12,10 +12,10 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class ClaimButton : CustomActionButton, IEnergyAbility
+public class ClaimButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
-    private PlayerControl _target;
+    public PlayerControl _target;
 
     public override string Name => "Claim";
     public override float Cooldown => OptionGroupSingleton<UsurperOptions>.Instance.ClaimCooldown;

@@ -243,7 +243,7 @@ public sealed class WraithSiege : AbstractGameMode
         _ticketIcon.sprite = NewModAsset.WraithSiegeTicket.LoadAsset();
         _ticketIcon.sortingOrder = 100;
 
-        _flagZone = Utils.CreateCircle("WraithSiegeFlagZone", _flagPosition, options.FlagRadius, new Color32(155, 108, 255, 90), options.RoundTime + 10f);
+        _flagZone = Utils.CreateSphere("WraithSiegeFlagZone", _flagPosition, options.FlagRadius, new Color32(155, 108, 255, 90), options.RoundTime + 10f);
 
         _flagObject = new GameObject("WraithSiegeFlag");
 

@@ -37,11 +37,10 @@ public class WraithCaller : ImpostorRole, INewModRole
         var tab = INewModRole.GetRoleTabText(this);
         var playerId = PlayerControl.LocalPlayer.PlayerId;
 
-        var sent = WraithCallerUtilities.GetSentNPC(playerId);
         var kills = WraithCallerUtilities.GetKillsNPC(playerId);
 
         var required = (int)OptionGroupSingleton<WraithCallerOptions>.Instance.RequiredNPCsToSend;
-        var showWarn = OptionGroupSingleton<WraithCallerOptions>.Instance.ShowSummonWarnings;
+        tab.AppendLine(MiraLocaleManager.Get(WraithCallerUtilities.Traces.Contains(playerId) ? "NewMod.Roles.NeutralRoles.WraithCaller.Tab.TraceReady" : "NewMod.Roles.NeutralRoles.WraithCaller.Tab.NeedTrace"));
 
         var cyan = ColorUtility.ToHtmlStringRGBA(Color.cyan);
         var yellow = ColorUtility.ToHtmlStringRGBA(Color.yellow);
@@ -49,7 +48,6 @@ public class WraithCaller : ImpostorRole, INewModRole
 
         tab.AppendLine();
 
-        tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.Sent"), cyan, sent));
         tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.Kills"), kills >= required ? green : cyan, kills, yellow, required));
 
         if (kills < required)
@@ -62,11 +60,7 @@ public class WraithCaller : ImpostorRole, INewModRole
             tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.GoalReached"), green));
         }
 
-        if (showWarn)
-        {
-            tab.AppendLine();
-            tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.SummonTip"), yellow));
-        }
+        tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.HuntDuration"), OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration));
 
         return tab;
     }

@@ -7,6 +7,7 @@ using MiraAPI.Networking;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles.S1;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using Reactor.Utilities.Attributes;
@@ -29,6 +30,7 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
     public bool isActive;
     public bool Reflected;
     public bool ResolvingKill;
+    public bool HuntSucceeded;
 
     [HideFromIl2Cpp]
     public void Initialize(PlayerControl owner, PlayerControl target, Vector2 start, int npcId)
@@ -104,8 +106,11 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
     public IEnumerator CoMove()
     {
         var speed = OptionGroupSingleton<WraithCallerOptions>.Instance.NPCSpeed;
+        var endsAt = Time.time + OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration;
+        if (Target.AmOwner)
+            Coroutines.Start(CoroutinesHelper.CoNotify($"A Wraith is hunting you.\nStay away for {OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration:0} seconds."));
 
-        while (isActive && !MeetingHud.Instance)
+        while (isActive && !MeetingHud.Instance && !ExileController.Instance && Time.time < endsAt && !Owner.Data.IsDead && !Owner.Data.Disconnected && Owner.Data.Role is WraithCaller)
         {
             if (Target.Data.IsDead || Target.Data.Disconnected || Target.HasModifier<InVoid>())
                 break;
@@ -192,6 +197,8 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
             return;
 
         isActive = false;
+        if (AmongUsClient.Instance.AmHost && !HuntSucceeded && !Owner.Data.IsDead && !Owner.Data.Disconnected)
+            WraithCallerUtilities.RpcRestoreTrace(PlayerControl.LocalPlayer, Owner.PlayerId);
         WraithCallerUtilities.ActiveNpcs.Remove(((uint)Owner.PlayerId << 16) | (uint)NpcId);
 
         if (Owner.AmOwner && OptionGroupSingleton<WraithCallerOptions>.Instance.ShouldSwitchCamToNPC)

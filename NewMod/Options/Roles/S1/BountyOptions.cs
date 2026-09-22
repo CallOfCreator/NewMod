@@ -9,6 +9,15 @@ namespace NewMod.Options.Roles.S1;
 [MiraIgnore]
 public sealed class BountyOptions : AbstractOptionGroup<Bounty>
 {
+    [ModdedNumberOption("Target Head Start", 1f, 6f, 0.5f, MiraNumberSuffixes.Seconds)]
+    public float HeadStart { get; set; } = 3f;
+
+    [ModdedNumberOption("Tracking Interval", 2f, 10f, 1f, MiraNumberSuffixes.Seconds)]
+    public float TrackingInterval { get; set; } = 4f;
+
+    [ModdedNumberOption("Lost Contact Grace", 2f, 15f, 1f, MiraNumberSuffixes.Seconds)]
+    public float ContactGrace { get; set; } = 5f;
+
     public override string GroupName => "Bounty Settings";
 
     [ModdedNumberOption("Cash Out Cooldown", 10f, 30f, 5f, MiraNumberSuffixes.Seconds)]

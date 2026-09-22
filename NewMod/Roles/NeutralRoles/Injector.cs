@@ -1,3 +1,8 @@
+using System.Text;
+using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.GameOptions;
+using NewMod.Options.Roles;
+using NewMod.Utilities;
 using MiraAPI.Translation;
 using MiraAPI.GameEnd;
 using MiraAPI.Roles;
@@ -5,7 +10,7 @@ using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles;
 
-public class InjectorRole : ImpostorRole, ICustomRole
+public class InjectorRole : ImpostorRole, INewModRole
 {
     public TeamIntroConfiguration TeamConfiguration => new() { IntroTeamDescription = RoleDescription, IntroTeamColor = RoleColor };
 
@@ -13,6 +18,7 @@ public class InjectorRole : ImpostorRole, ICustomRole
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.IntroBlurb");
     public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.TabDescription");
     public Color RoleColor => new(0.9f, 0.3f, 0.1f);
+    public NewModFaction Faction => NewModFaction.Entropy;
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
 
@@ -30,6 +36,18 @@ public class InjectorRole : ImpostorRole, ICustomRole
             CanModifyChance = true,
             RoleHintType = RoleHintType.RoleTab
         };
+
+    [HideFromIl2Cpp]
+    public StringBuilder SetTabText()
+    {
+        var text = INewModRole.GetRoleTabText(this);
+        text.AppendLine();
+        var options = OptionGroupSingleton<InjectorOptions>.Instance;
+        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.Tab.Progress"),
+            InjectorUtilities.SampleCount(PlayerControl.LocalPlayer.PlayerId), options.RequiredInjectCount,
+            options.ObservationDuration, options.CollectionWindow, options.SubmissionDuration));
+        return text;
+    }
 
     public override bool DidWin(GameOverReason gameOverReason)
     {

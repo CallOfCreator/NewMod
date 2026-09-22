@@ -9,6 +9,15 @@ namespace NewMod.Options.Roles.S1;
 [MiraIgnore]
 public sealed class NomadOptions : AbstractOptionGroup<Nomad>
 {
+    [ModdedNumberOption("Time At Each Destination", 1f, 8f, 1f, MiraNumberSuffixes.Seconds)]
+    public float VisitDuration { get; set; } = 3f;
+
+    [ModdedNumberOption("Minimum Travel Between Destinations", 2f, 8f, 0.5f)]
+    public float MinimumTravel { get; set; } = 4f;
+
+    [ModdedNumberOption("Backtrack Protection Duration", 2f, 15f, 1f, MiraNumberSuffixes.Seconds)]
+    public float BacktrackDuration { get; set; } = 5f;
+
     public override string GroupName => "Nomad Settings";
 
     [ModdedNumberOption("Anchor Cooldown", 15f, 45f, 5f, MiraNumberSuffixes.Seconds)]

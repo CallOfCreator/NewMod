@@ -386,18 +386,6 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    ///     Coroutine that waits for a given duration before destroying a specified GameObject.
-    /// </summary>
-    /// <param name="go">The GameObject to destroy after the delay.</param>
-    /// <param name="duration">The time in seconds to wait before destroying the object.</param>
-    /// <returns>IEnumerator for coroutine execution.</returns>
-    public static IEnumerator DespawnCircle(GameObject go, float duration)
-    {
-        yield return new WaitForSeconds(duration);
-        go.Destroy();
-    }
-
-    /// <summary>
     ///     Coroutine that waits for a given duration and then removes
     ///     specific visual effects from a Camera.
     /// </summary>

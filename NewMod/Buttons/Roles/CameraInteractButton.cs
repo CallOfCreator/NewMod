@@ -22,7 +22,7 @@ public class CameraInteractButton : CustomActionButton
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return true;
+        return Button && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.Data;
     }
 
     protected override void FixedUpdate(PlayerControl playerControl)

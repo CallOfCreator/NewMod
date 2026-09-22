@@ -10,7 +10,7 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles.S1;
 
 [MiraIgnore]
-public sealed class ManifestButton : CustomActionButton, IEnergyAbility
+public class ManifestButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
     public override string Name => "Manifest";

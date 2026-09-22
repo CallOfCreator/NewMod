@@ -15,47 +15,62 @@ public enum CollectorManifestResult : byte
     Drift
 }
 
-public sealed class CollectorInventory
+public class CollectorInventory
 {
-    private readonly int[] _counts = new int[3];
+    public readonly int[] Counts = new int[3];
 
     public void Add(CollectorFragmentKind kind)
     {
-        _counts[(int)kind]++;
+        Counts[(int)kind]++;
     }
 
     public int Count(CollectorFragmentKind kind)
     {
-        return _counts[(int)kind];
+        return Counts[(int)kind];
     }
 
-    public bool CanManifest => (_counts[0] > 0 && _counts[1] > 0 && _counts[2] > 0) || _counts[0] >= 2 || _counts[1] >= 2 || _counts[2] >= 2;
+    public bool CanConvert(int cost)
+    {
+        return System.Array.Exists(Counts, count => count == 0) && System.Array.Exists(Counts, count => count > cost);
+    }
+
+    public bool Convert(int cost)
+    {
+        var missing = System.Array.FindIndex(Counts, count => count == 0);
+        var donor = System.Array.FindIndex(Counts, count => count > cost);
+        if (missing < 0 || donor < 0) return false;
+        Counts[donor] -= cost;
+        Counts[missing]++;
+        return true;
+    }
+
+    public bool CanManifest => (Counts[0] > 0 && Counts[1] > 0 && Counts[2] > 0) || Counts[0] >= 2 || Counts[1] >= 2 || Counts[2] >= 2;
 
     public CollectorManifestResult Manifest()
     {
-        if (_counts[0] > 0 && _counts[1] > 0 && _counts[2] > 0)
+        if (Counts[0] > 0 && Counts[1] > 0 && Counts[2] > 0)
         {
-            _counts[0]--;
-            _counts[1]--;
-            _counts[2]--;
+            Counts[0]--;
+            Counts[1]--;
+            Counts[2]--;
             return CollectorManifestResult.Victory;
         }
 
-        if (_counts[0] >= 2)
+        if (Counts[0] >= 2)
         {
-            _counts[0] -= 2;
+            Counts[0] -= 2;
             return CollectorManifestResult.Trace;
         }
 
-        if (_counts[1] >= 2)
+        if (Counts[1] >= 2)
         {
-            _counts[1] -= 2;
+            Counts[1] -= 2;
             return CollectorManifestResult.Trace;
         }
 
-        if (_counts[2] >= 2)
+        if (Counts[2] >= 2)
         {
-            _counts[2] -= 2;
+            Counts[2] -= 2;
             return CollectorManifestResult.Drift;
         }
 
