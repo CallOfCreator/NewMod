@@ -7,7 +7,6 @@ namespace NewMod.Options.Roles;
 
 public class ShadeOptions : AbstractOptionGroup<Shade>
 {
-
     public override string GroupName => "Shade Options";
 
     [ModdedNumberOption("Shadow Cooldown", 5f, 60f, suffixType: MiraNumberSuffixes.Seconds)]
@@ -24,5 +23,4 @@ public class ShadeOptions : AbstractOptionGroup<Shade>
 
     [ModdedNumberOption("Required Kills To Win", 1f, 5f, suffixType: MiraNumberSuffixes.None)]
     public float RequiredKills { get; set; } = 3f;
-
 }

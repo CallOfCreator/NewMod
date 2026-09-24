@@ -69,8 +69,7 @@ public static class CustomEndGame
             return true;
         }
 
-        if ((Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet) ||
-            (alivePlayers.Length == 1 && alivePlayers[0].Data.Role is Tyrant))
+        if ((Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet) || (alivePlayers.Length == 1 && alivePlayers[0].Data.Role is Tyrant))
         {
             var tyrant = alivePlayers.FirstOrDefault(player => player.Data.Role is Tyrant);
 

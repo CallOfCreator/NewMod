@@ -78,6 +78,7 @@ public static class WraithCallerUtilities
                 npc.HuntSucceeded = true;
                 npc.Dispose();
             }
+
         Traces.Clear();
         CollectedTraces.Clear();
         NextSummon.Clear();
@@ -94,10 +95,7 @@ public static class WraithCallerUtilities
     [MethodRpc((uint)CustomRPC.RequestSummon)]
     public static void RpcRequestSummonNPC(PlayerControl source, byte targetId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not WraithCaller || source.Data.IsDead || source.Data.Disconnected ||
-            MeetingHud.Instance || ExileController.Instance || !Traces.Contains(source.PlayerId) ||
-            NextSummon.GetValueOrDefault(source.PlayerId) > Time.time ||
-            ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not WraithCaller || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || !Traces.Contains(source.PlayerId) || NextSummon.GetValueOrDefault(source.PlayerId) > Time.time || ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
             return;
 
         var target = Utils.PlayerById(targetId);
@@ -134,16 +132,11 @@ public static class WraithCallerUtilities
     [MethodRpc((uint)CustomRPC.WraithCollectTrace)]
     public static void RpcCollectTrace(PlayerControl source, byte bodyId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not WraithCaller || source.Data.IsDead || source.Data.Disconnected ||
-            MeetingHud.Instance || ExileController.Instance || Traces.Contains(source.PlayerId) ||
-            CollectedTraces.Contains((source.PlayerId, bodyId)) ||
-            ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not WraithCaller || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Traces.Contains(source.PlayerId) || CollectedTraces.Contains((source.PlayerId, bodyId)) || ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
             return;
 
         var body = Helpers.GetBodyById(bodyId);
-        if (!body || body.Reported || PranksterUtilities.IsPranksterBody(body) ||
-            Vector2.Distance(source.GetTruePosition(), body.TruePosition) > OptionGroupSingleton<WraithCallerOptions>.Instance.TraceRange ||
-            PhysicsHelpers.AnythingBetween(source.GetTruePosition(), body.TruePosition, Constants.ShipAndObjectsMask, false))
+        if (!body || body.Reported || PranksterUtilities.IsPranksterBody(body) || Vector2.Distance(source.GetTruePosition(), body.TruePosition) > OptionGroupSingleton<WraithCallerOptions>.Instance.TraceRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), body.TruePosition, Constants.ShipAndObjectsMask, false))
             return;
 
         RpcConfirmTrace(PlayerControl.LocalPlayer, source.PlayerId, bodyId);
@@ -164,5 +157,4 @@ public static class WraithCallerUtilities
     {
         if (source.IsHost()) Traces.Add(ownerId);
     }
-
 }

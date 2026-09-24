@@ -69,8 +69,7 @@ public class Shade : ImpostorRole, INewModRole
         if (killer.Data.Role is not Shade)
             return;
 
-        if (!victim.Data.IsDead || !ShadowZone.zones.Any(zone => zone && zone.shadeId == killer.PlayerId &&
-            zone.Contains(killer.GetTruePosition()) && zone.Contains(victim.GetTruePosition())))
+        if (!victim.Data.IsDead || !ShadowZone.zones.Any(zone => zone && zone.shadeId == killer.PlayerId && zone.Contains(killer.GetTruePosition()) && zone.Contains(victim.GetTruePosition())))
             return;
 
         var id = killer.PlayerId;
@@ -87,8 +86,7 @@ public class Shade : ImpostorRole, INewModRole
     public static void BeforeMurder(BeforeMurderEvent evt)
     {
         if (evt.Source.Data.Role is not Shade) return;
-        if (!ShadowZone.zones.Any(zone => zone && zone.shadeId == evt.Source.PlayerId &&
-                zone.Contains(evt.Source.GetTruePosition()) && zone.Contains(evt.Target.GetTruePosition())))
+        if (!ShadowZone.zones.Any(zone => zone && zone.shadeId == evt.Source.PlayerId && zone.Contains(evt.Source.GetTruePosition()) && zone.Contains(evt.Target.GetTruePosition())))
             evt.Cancel();
     }
 

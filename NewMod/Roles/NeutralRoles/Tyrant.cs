@@ -23,7 +23,12 @@ namespace NewMod.Roles.ImpostorRoles;
 
 public class Tyrant : ImpostorRole, INewModRole
 {
-    public enum ThroneOutcome { None, ChampionSideWin }
+    public enum ThroneOutcome
+    {
+        None,
+        ChampionSideWin
+    }
+
     public static byte ChampionId = byte.MaxValue;
     public static bool OfferAnswered;
     public static bool ApexThroneReady;
@@ -39,13 +44,22 @@ public class Tyrant : ImpostorRole, INewModRole
     public Color RoleColor => new(0.78f, 0.10f, 0.16f);
     public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
     public NewModFaction Faction => NewModFaction.Apex;
-    public CustomRoleConfiguration Configuration => new(this)
-    {
-        MaxRoleCount = 1, Icon = NewModAsset.CrownIcon, CanGetKilled = true,
-        UseVanillaKillButton = true, CanUseVent = true, TasksCountForProgress = false,
-        CanUseSabotage = false, DefaultChance = 25, DefaultRoleCount = 1,
-        CanModifyChance = true, RoleHintType = RoleHintType.RoleTab
-    };
+
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            MaxRoleCount = 1,
+            Icon = NewModAsset.CrownIcon,
+            CanGetKilled = true,
+            UseVanillaKillButton = true,
+            CanUseVent = true,
+            TasksCountForProgress = false,
+            CanUseSabotage = false,
+            DefaultChance = 25,
+            DefaultRoleCount = 1,
+            CanModifyChance = true,
+            RoleHintType = RoleHintType.RoleTab
+        };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()
@@ -56,7 +70,10 @@ public class Tyrant : ImpostorRole, INewModRole
         return text;
     }
 
-    public override bool DidWin(GameOverReason reason) => reason == CustomGameOver.GameOverReason<TyrantGameOver>();
+    public override bool DidWin(GameOverReason reason)
+    {
+        return reason == CustomGameOver.GameOverReason<TyrantGameOver>();
+    }
 
     public static void ResetState()
     {
@@ -90,16 +107,13 @@ public class Tyrant : ImpostorRole, INewModRole
         if (evt.TriggeredByIntro || !GameManager.Instance.ShouldCheckForGameEnd || !AmongUsClient.Instance.AmHost || !ChampionMeeting) return;
         var champion = Utils.PlayerById(ChampionId);
         var tyrant = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(player => player.Data.Role is Tyrant);
-        ApexThroneOutcomeSet = champion && tyrant && !champion.Data.IsDead && !champion.Data.Disconnected &&
-            !tyrant.Data.IsDead && !tyrant.Data.Disconnected;
+        ApexThroneOutcomeSet = champion && tyrant && !champion.Data.IsDead && !champion.Data.Disconnected && !tyrant.Data.IsDead && !tyrant.Data.Disconnected;
     }
 
     [MethodRpc((uint)CustomRPC.NotifyChampion)]
     public static void RpcNotifyChampion(PlayerControl source, PlayerControl target)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Tyrant tyrant || tyrant.Kills < 4 ||
-            source.Data.IsDead || source.Data.Disconnected || !target || target == source || target.Data.IsDead || target.Data.Disconnected ||
-            ChampionId != byte.MaxValue || MeetingHud.Instance || ExileController.Instance) return;
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Tyrant tyrant || tyrant.Kills < 4 || source.Data.IsDead || source.Data.Disconnected || !target || target == source || target.Data.IsDead || target.Data.Disconnected || ChampionId != byte.MaxValue || MeetingHud.Instance || ExileController.Instance) return;
         RpcConfirmOffer(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId);
     }
 
@@ -123,8 +137,7 @@ public class Tyrant : ImpostorRole, INewModRole
     [MethodRpc((uint)CustomRPC.TyrantAnswerOffer)]
     public static void RpcAnswerOffer(PlayerControl source, bool accepted)
     {
-        if (!AmongUsClient.Instance.AmHost || source.PlayerId != ChampionId || OfferAnswered || source.Data.IsDead || source.Data.Disconnected ||
-            MeetingHud.Instance || ExileController.Instance) return;
+        if (!AmongUsClient.Instance.AmHost || source.PlayerId != ChampionId || OfferAnswered || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance) return;
         RpcConfirmAnswer(PlayerControl.LocalPlayer, accepted);
     }
 
@@ -138,6 +151,7 @@ public class Tyrant : ImpostorRole, INewModRole
             CustomButtonSingleton<AcceptChampionButton>.Instance.SetActive(false, PlayerControl.LocalPlayer.Data.Role);
             CustomButtonSingleton<RejectChampionButton>.Instance.SetActive(false, PlayerControl.LocalPlayer.Data.Role);
         }
+
         Outcome = accepted ? ThroneOutcome.ChampionSideWin : ThroneOutcome.None;
         Coroutines.Start(CoroutinesHelper.CoNotify(accepted ? "The Champion accepted.\nExile or kill either ally before they survive a meeting." : "The Champion rejected the Tyrant's offer."));
     }
@@ -145,8 +159,7 @@ public class Tyrant : ImpostorRole, INewModRole
     [MethodRpc((uint)CustomRPC.FearPulse)]
     public static void RpcSpawnFearPulse(PlayerControl source, float x, float y)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Tyrant tyrant || tyrant.Kills < 1 ||
-            source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Time.time < tyrant.NextPulse) return;
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Tyrant tyrant || tyrant.Kills < 1 || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Time.time < tyrant.NextPulse) return;
         tyrant.NextPulse = Time.time + OptionGroupSingleton<TyrantOptions>.Instance.PulseCooldown;
         RpcConfirmPulse(PlayerControl.LocalPlayer, source.PlayerId, source.GetTruePosition());
     }
@@ -161,14 +174,14 @@ public class Tyrant : ImpostorRole, INewModRole
     {
         var options = OptionGroupSingleton<TyrantOptions>.Instance;
         var radius = options.FearPulseRadius + Mathf.Min(2, ((Tyrant)owner.Data.Role).Kills - 1) * 0.5f;
-        var bubble = Utils.CreateSphere("TyrantPulse", new Vector3(position.x, position.y, -1f), radius, Color.red,
-            options.PulseWarning + options.FearPulseDuration);
+        var bubble = Utils.CreateSphere("TyrantPulse", new Vector3(position.x, position.y, -1f), radius, Color.red, options.PulseWarning + options.FearPulseDuration);
         yield return new WaitForSeconds(options.PulseWarning);
         if (!owner || owner.Data.IsDead || owner.Data.Disconnected || owner.Data.Role is not Tyrant || MeetingHud.Instance || ExileController.Instance)
         {
             Destroy(bubble);
             yield break;
         }
+
         var area = new GameObject("FearPulseArea").AddComponent<FearPulseArea>();
         area.transform.position = position;
         bubble.transform.SetParent(area.transform, true);

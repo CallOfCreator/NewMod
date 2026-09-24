@@ -16,8 +16,17 @@ public class OfferChampionButton : CustomActionButton
     public override float Cooldown => 0f;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.CrownIcon;
-    public override bool Enabled(RoleBehaviour role) => role is Tyrant;
-    public override bool CanUse() => base.CanUse() && !ActiveMenu && Tyrant.ApexThroneReady && Tyrant.ChampionId == byte.MaxValue;
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return role is Tyrant;
+    }
+
+    public override bool CanUse()
+    {
+        return base.CanUse() && !ActiveMenu && Tyrant.ApexThroneReady && Tyrant.ChampionId == byte.MaxValue;
+    }
+
     [RegisterEvent]
     public static void OnMeetingStart(StartMeetingEvent evt)
     {
@@ -34,11 +43,10 @@ public class OfferChampionButton : CustomActionButton
     {
         var menu = CustomPlayerMenu.Create();
         ActiveMenu = menu;
-        menu.Begin(player => player != PlayerControl.LocalPlayer && !player.Data.IsDead && !player.Data.Disconnected,
-            player =>
-            {
-                if (player) Tyrant.RpcNotifyChampion(PlayerControl.LocalPlayer, player);
-                menu.ForceClose();
-            });
+        menu.Begin(player => player != PlayerControl.LocalPlayer && !player.Data.IsDead && !player.Data.Disconnected, player =>
+        {
+            if (player) Tyrant.RpcNotifyChampion(PlayerControl.LocalPlayer, player);
+            menu.ForceClose();
+        });
     }
 }

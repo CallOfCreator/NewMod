@@ -83,8 +83,10 @@ public class EgoistRole : CrewmateRole, INewModRole
                 if (winner && !winner.Data.IsDead && !winner.Data.Disconnected && winner.Data.Role is EgoistRole)
                     CustomGameOver.Trigger<EgoistGameOver>([winner.Data]);
             }
+
             return;
         }
+
         PendingWinner = byte.MaxValue;
 
         States.Clear();
@@ -136,7 +138,6 @@ public class EgoistRole : CrewmateRole, INewModRole
             RpcRequestChallenge(local, target);
             return;
         }
-
     }
 
     [RegisterEvent]
@@ -260,6 +261,4 @@ public class EgoistRole : CrewmateRole, INewModRole
         if (hud && PlayerControl.LocalPlayer.Data.Role is EgoistRole)
             UpdateMeetingButton();
     }
-
-
 }

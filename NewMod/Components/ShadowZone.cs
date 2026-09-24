@@ -26,8 +26,7 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
     public void Update()
     {
         timer += Time.deltaTime;
-        if (!owner || owner.Data.IsDead || owner.Data.Disconnected || owner.Data.Role is not Shade ||
-            timer >= duration + activationDelay || MeetingHud.Instance || ExileController.Instance)
+        if (!owner || owner.Data.IsDead || owner.Data.Disconnected || owner.Data.Role is not Shade || timer >= duration + activationDelay || MeetingHud.Instance || ExileController.Instance)
         {
             Destroy(gameObject);
             return;
@@ -47,7 +46,10 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
         {
             if (camera.GetScreenEffect<ShadowFluxEffect>() == null) camera.AddScreenEffect<ShadowFluxEffect>();
         }
-        else camera.GetScreenEffect<ShadowFluxEffect>()?.Remove();
+        else
+        {
+            camera.GetScreenEffect<ShadowFluxEffect>()?.Remove();
+        }
 
         if (!owner.AmOwner) return;
         var killButton = HudManager.Instance.KillButton;
@@ -58,10 +60,9 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
         {
             var players = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
             owner.Data.Role.GetPlayersInAbilityRangeSorted(players);
-            target = players.ToArray().FirstOrDefault(player => player != owner && !player.Data.IsDead && !player.Data.Disconnected &&
-                !player.inVent && Contains(player.GetTruePosition()) &&
-                !PhysicsHelpers.AnythingBetween(owner.GetTruePosition(), player.GetTruePosition(), Constants.ShipAndObjectsMask, false));
+            target = players.ToArray().FirstOrDefault(player => player != owner && !player.Data.IsDead && !player.Data.Disconnected && !player.inVent && Contains(player.GetTruePosition()) && !PhysicsHelpers.AnythingBetween(owner.GetTruePosition(), player.GetTruePosition(), Constants.ShipAndObjectsMask, false));
         }
+
         killButton.SetTarget(target);
     }
 
@@ -73,11 +74,13 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
             owner.cosmetics.SetPhantomRoleAlpha(1f);
             owner.cosmetics.nameText.gameObject.SetActive(true);
         }
+
         if (owner && owner.AmOwner && HudManager.Instance)
         {
             HudManager.Instance.KillButton.SetTarget(null);
             HudManager.Instance.KillButton.Hide();
         }
+
         if (Camera.main && PlayerControl.LocalPlayer && !IsInsideAny(PlayerControl.LocalPlayer.GetTruePosition()))
             Camera.main.GetScreenEffect<ShadowFluxEffect>()?.Remove();
     }
@@ -99,8 +102,7 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
         zone.activationDelay = OptionGroupSingleton<ShadeOptions>.Instance.ActivationDelay;
         zone.transform.position = position;
         zones.Add(zone);
-        var bubble = Utils.CreateSphere("ShadowBoundary", new Vector3(position.x, position.y, -1f), radius,
-            new Color(0.65f, 0.3f, 0.95f), zone.activationDelay + duration, true);
+        var bubble = Utils.CreateSphere("ShadowBoundary", new Vector3(position.x, position.y, -1f), radius, new Color(0.65f, 0.3f, 0.95f), zone.activationDelay + duration, true);
         bubble.transform.SetParent(zone.transform, true);
         return zone;
     }
@@ -112,5 +114,8 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
             Create(source.PlayerId, position, radius, duration);
     }
 
-    public static bool IsInsideAny(Vector2 position) => zones.Any(zone => zone && zone.Contains(position));
+    public static bool IsInsideAny(Vector2 position)
+    {
+        return zones.Any(zone => zone && zone.Contains(position));
+    }
 }

@@ -164,7 +164,10 @@ public class Usurper : CrewmateRole, INewModRole
     }
 
     [RegisterEvent]
-    public static void OnMeetingStart(StartMeetingEvent evt) => Pickup.Clear();
+    public static void OnMeetingStart(StartMeetingEvent evt)
+    {
+        Pickup.Clear();
+    }
 
     public static void HostFixedUpdate()
     {
@@ -175,10 +178,13 @@ public class Usurper : CrewmateRole, INewModRole
             var contested = false;
             foreach (var player in PlayerControl.AllPlayerControls)
             {
-                if (player.Data.IsDead || player.Data.Disconnected || player.inVent ||
-                    Vector2.Distance(player.GetTruePosition(), pair.Value) > options.CrownPickupRange ||
-                    PhysicsHelpers.AnythingBetween(player.GetTruePosition(), pair.Value, Constants.ShipAndObjectsMask, false)) continue;
-                if (candidate) { contested = true; break; }
+                if (player.Data.IsDead || player.Data.Disconnected || player.inVent || Vector2.Distance(player.GetTruePosition(), pair.Value) > options.CrownPickupRange || PhysicsHelpers.AnythingBetween(player.GetTruePosition(), pair.Value, Constants.ShipAndObjectsMask, false)) continue;
+                if (candidate)
+                {
+                    contested = true;
+                    break;
+                }
+
                 candidate = player;
             }
 
@@ -187,8 +193,11 @@ public class Usurper : CrewmateRole, INewModRole
                 Pickup.Remove(pair.Key);
                 continue;
             }
+
             if (!Pickup.TryGetValue(pair.Key, out var pickup) || pickup.Player != candidate.PlayerId)
+            {
                 Pickup[pair.Key] = (candidate.PlayerId, Time.time);
+            }
             else if (Time.time - pickup.Started >= options.PickupDuration)
             {
                 if (candidate.PlayerId == pair.Key) RpcTakeCrown(PlayerControl.LocalPlayer, pair.Key);

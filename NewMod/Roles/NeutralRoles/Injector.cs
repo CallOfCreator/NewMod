@@ -43,9 +43,7 @@ public class InjectorRole : ImpostorRole, INewModRole
         var text = INewModRole.GetRoleTabText(this);
         text.AppendLine();
         var options = OptionGroupSingleton<InjectorOptions>.Instance;
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.Tab.Progress"),
-            InjectorUtilities.SampleCount(PlayerControl.LocalPlayer.PlayerId), options.RequiredInjectCount,
-            options.ObservationDuration, options.CollectionWindow, options.SubmissionDuration));
+        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.Tab.Progress"), InjectorUtilities.SampleCount(PlayerControl.LocalPlayer.PlayerId), options.RequiredInjectCount, options.ObservationDuration, options.CollectionWindow, options.SubmissionDuration));
         return text;
     }
 

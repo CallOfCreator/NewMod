@@ -25,9 +25,7 @@ public static class PranksterUtilities
     [MethodRpc((uint)CustomRPC.FakeBody, LocalHandling = RpcLocalHandling.After)]
     public static void CreatePranksterDeadBody(PlayerControl source, byte parentId)
     {
-        if (source.Data.Role is not Prankster || source.Data.IsDead || source.Data.Disconnected ||
-            parentId != source.PlayerId || MeetingHud.Instance || ExileController.Instance ||
-            FindAllPranksterBodies().Any(body => body.ParentId == parentId)) return;
+        if (source.Data.Role is not Prankster || source.Data.IsDead || source.Data.Disconnected || parentId != source.PlayerId || MeetingHud.Instance || ExileController.Instance || FindAllPranksterBodies().Any(body => body.ParentId == parentId)) return;
         var deadBody = Object.Instantiate(GameManager.Instance.GetDeadBody(source.Data.Role));
         deadBody.name = PranksterBodyName;
         deadBody.ParentId = parentId;
@@ -128,9 +126,7 @@ public static class PranksterUtilities
         var position = new Vector2(x, y);
         foreach (var body in Object.FindObjectsOfType<DeadBody>())
         {
-            if (body.ParentId != bodyId || Vector2.Distance(body.TruePosition, position) > 0.05f ||
-                Vector2.Distance(source.GetTruePosition(), body.TruePosition) > OptionGroupSingleton<PranksterOptions>.Instance.InspectRange ||
-                PhysicsHelpers.AnythingBetween(source.GetTruePosition(), body.TruePosition, Constants.ShipAndObjectsMask, false)) continue;
+            if (body.ParentId != bodyId || Vector2.Distance(body.TruePosition, position) > 0.05f || Vector2.Distance(source.GetTruePosition(), body.TruePosition) > OptionGroupSingleton<PranksterOptions>.Instance.InspectRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), body.TruePosition, Constants.ShipAndObjectsMask, false)) continue;
             RpcConfirmInspection(PlayerControl.LocalPlayer, source.PlayerId, bodyId, x, y, IsPranksterBody(body));
             return;
         }
@@ -147,8 +143,8 @@ public static class PranksterUtilities
                     Object.Destroy(body.gameObject);
                     break;
                 }
+
         if (PlayerControl.LocalPlayer.PlayerId == inspectorId)
             Coroutines.Start(CoroutinesHelper.CoNotify(fake ? "Fake body removed. The Prankster earned nothing." : "This body is real."));
     }
-
 }

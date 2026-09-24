@@ -14,8 +14,17 @@ public class TyrantPulseButton : CustomActionButton
     public override float Cooldown => OptionGroupSingleton<TyrantOptions>.Instance.PulseCooldown;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.CrownIcon;
-    public override bool Enabled(RoleBehaviour role) => role is Tyrant;
-    public override bool CanUse() => base.CanUse() && ((Tyrant)PlayerControl.LocalPlayer.Data.Role).Kills >= 1;
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return role is Tyrant;
+    }
+
+    public override bool CanUse()
+    {
+        return base.CanUse() && ((Tyrant)PlayerControl.LocalPlayer.Data.Role).Kills >= 1;
+    }
+
     protected override void OnClick()
     {
         var player = PlayerControl.LocalPlayer;

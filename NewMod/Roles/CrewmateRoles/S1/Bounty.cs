@@ -211,14 +211,15 @@ public class Bounty : CrewmateRole, INewModRole
                 continue;
             }
 
-            if (Vector2.Distance(bounty.GetTruePosition(), target.GetTruePosition()) <= options.EscortRange &&
-                !PhysicsHelpers.AnythingBetween(bounty.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false))
+            if (Vector2.Distance(bounty.GetTruePosition(), target.GetTruePosition()) <= options.EscortRange && !PhysicsHelpers.AnythingBetween(bounty.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false))
             {
                 if (pair.Value.Advance(Time.fixedDeltaTime, options.EscortDuration))
                     RpcBeginCollection(PlayerControl.LocalPlayer, pair.Key, options.CollectionDuration);
             }
             else
+            {
                 pair.Value.LoseContact(Time.fixedDeltaTime, options.ContactGrace);
+            }
         }
     }
 
@@ -294,14 +295,11 @@ public class Bounty : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.BountyRequestCashOut)]
     public static void RpcRequestCashOut(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Bounty || source.Data.IsDead || !Contracts.TryGetValue(source.PlayerId, out var contract) || MeetingHud.Instance || ExileController.Instance ||
-            !contract.CanCollect(Time.time, CollectionStartsAt.GetValueOrDefault(source.PlayerId), CollectionExpiresAt.GetValueOrDefault(source.PlayerId)))
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Bounty || source.Data.IsDead || !Contracts.TryGetValue(source.PlayerId, out var contract) || MeetingHud.Instance || ExileController.Instance || !contract.CanCollect(Time.time, CollectionStartsAt.GetValueOrDefault(source.PlayerId), CollectionExpiresAt.GetValueOrDefault(source.PlayerId)))
             return;
 
         var target = Utils.PlayerById(contract.TargetId);
-        if (target.Data.IsDead || target.Data.Disconnected || target.inVent ||
-            PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false) ||
-            Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<BountyOptions>.Instance.CashOutRange)
+        if (target.Data.IsDead || target.Data.Disconnected || target.inVent || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false) || Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<BountyOptions>.Instance.CashOutRange)
             return;
 
         PendingCashOut[source.PlayerId] = target.PlayerId;
@@ -322,6 +320,7 @@ public class Bounty : CrewmateRole, INewModRole
             local.CancelPlayerTracking();
             yield return new WaitForSeconds(OptionGroupSingleton<BountyOptions>.Instance.TrackingInterval);
         }
+
         local.CancelPlayerTracking();
     }
 

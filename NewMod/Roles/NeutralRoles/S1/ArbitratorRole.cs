@@ -95,7 +95,9 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     public static void OnRoundStart(RoundStartEvent evt)
     {
         if (evt.TriggeredByIntro)
+        {
             ResetState();
+        }
         else if (AmongUsClient.Instance.AmHost && GameManager.Instance.ShouldCheckForGameEnd && PendingWinner != byte.MaxValue)
         {
             var winner = Utils.PlayerById(PendingWinner);
@@ -135,8 +137,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnMeetingSelect(MeetingSelectEvent evt)
     {
-        if (_localLocked || PlayerControl.LocalPlayer.Data.IsDead || PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole ||
-            !IsJudgmentOpen())
+        if (_localLocked || PlayerControl.LocalPlayer.Data.IsDead || PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole || !IsJudgmentOpen())
             return;
 
         evt.AllowSelect = false;
@@ -192,8 +193,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 
     public static bool IsJudgmentOpen()
     {
-        return MeetingHud.Instance && MeetingHud.Instance.discussionTimer < Mathf.Max(GameOptionsManager.Instance.CurrentGameOptions.GetInt(Int32OptionNames.DiscussionTime), OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentWindow) &&
-            MeetingHud.Instance.CurrentState is MeetingHud.MeetingStates.Discussion or MeetingHud.MeetingStates.NotVoted or MeetingHud.MeetingStates.Voted;
+        return MeetingHud.Instance && MeetingHud.Instance.discussionTimer < Mathf.Max(GameOptionsManager.Instance.CurrentGameOptions.GetInt(Int32OptionNames.DiscussionTime), OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentWindow) && MeetingHud.Instance.CurrentState is MeetingHud.MeetingStates.Discussion or MeetingHud.MeetingStates.NotVoted or MeetingHud.MeetingStates.Voted;
     }
 
     public static void UpdateMeetingButton()
@@ -294,9 +294,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.ArbitratorJudgment)]
     public static void RpcSetJudgment(PlayerControl source, byte mode, byte targetId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not ArbitratorRole || source.Data.IsDead || source.Data.Disconnected ||
-            !IsJudgmentOpen() ||
-            _hostOwner != byte.MaxValue || mode > (byte)ArbitratorJudgmentMode.Defend || ScoredTargets.Contains(targetId))
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not ArbitratorRole || source.Data.IsDead || source.Data.Disconnected || !IsJudgmentOpen() || _hostOwner != byte.MaxValue || mode > (byte)ArbitratorJudgmentMode.Defend || ScoredTargets.Contains(targetId))
             return;
 
         var target = Utils.PlayerById(targetId);

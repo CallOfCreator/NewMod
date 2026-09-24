@@ -32,8 +32,7 @@ public class TerminateButton : CustomActionButton<PlayerControl>
     public override PlayerControl GetTarget()
     {
         var terminator = TerminatorRole.GetTerminator();
-        return terminator && !terminator.Data.IsDead && !terminator.Data.Disconnected && Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), terminator.GetTruePosition()) <= Distance &&
-            !PhysicsHelpers.AnythingBetween(PlayerControl.LocalPlayer.GetTruePosition(), terminator.GetTruePosition(), Constants.ShipAndObjectsMask, false) ? terminator : null;
+        return terminator && !terminator.Data.IsDead && !terminator.Data.Disconnected && Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), terminator.GetTruePosition()) <= Distance && !PhysicsHelpers.AnythingBetween(PlayerControl.LocalPlayer.GetTruePosition(), terminator.GetTruePosition(), Constants.ShipAndObjectsMask, false) ? terminator : null;
     }
 
     public override void SetOutline(bool active)

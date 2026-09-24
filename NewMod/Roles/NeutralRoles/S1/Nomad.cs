@@ -96,14 +96,17 @@ public class Nomad : CrewmateRole, INewModRole
                 var position = player.GetTruePosition();
                 if (!Visits.TryGetValue(player.PlayerId, out var visit) || visit.Room != roomId)
                     Visits[player.PlayerId] = (roomId, Time.time);
-                else if (Time.time - visit.Entered >= options.VisitDuration &&
-                    Vector2.Distance(position, RouteEnds[player.PlayerId]) >= options.MinimumTravel)
+                else if (Time.time - visit.Entered >= options.VisitDuration && Vector2.Distance(position, RouteEnds[player.PlayerId]) >= options.MinimumTravel)
                     RpcConfirmRoom(PlayerControl.LocalPlayer, player.PlayerId, roomId, position.x, position.y);
             }
-            else Visits.Remove(player.PlayerId);
+            else
+            {
+                Visits.Remove(player.PlayerId);
+            }
 
             return;
         }
+
         Visits.Remove(player.PlayerId);
     }
 

@@ -14,7 +14,12 @@ public class SelectSerumButton : CustomActionButton
     public override float Cooldown => 0f;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.InjectIcon;
-    public override bool Enabled(RoleBehaviour role) => role is InjectorRole;
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return role is InjectorRole;
+    }
+
     protected override void OnClick()
     {
         InjectorUtilities.SelectedSerum = InjectorUtilities.SelectedSerum == SerumType.Adrenaline ? SerumType.Sedative : SerumType.Adrenaline;

@@ -51,5 +51,8 @@ public class AreaBubble(nint ptr) : MonoBehaviour(ptr)
         renderer.sortingOrder = 2;
     }
 
-    public void OnDestroy() => Destroy(mesh);
+    public void OnDestroy()
+    {
+        Destroy(mesh);
+    }
 }

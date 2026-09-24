@@ -34,8 +34,7 @@ public class CashOutButton : CustomActionButton, IEnergyAbility
             return false;
 
         var target = Utils.PlayerById(contract.TargetId);
-        return !target.Data.IsDead && !target.Data.Disconnected && !target.inVent &&
-            !PhysicsHelpers.AnythingBetween(PlayerControl.LocalPlayer.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false) && Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), target.GetTruePosition()) <= OptionGroupSingleton<BountyOptions>.Instance.CashOutRange;
+        return !target.Data.IsDead && !target.Data.Disconnected && !target.inVent && !PhysicsHelpers.AnythingBetween(PlayerControl.LocalPlayer.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false) && Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), target.GetTruePosition()) <= OptionGroupSingleton<BountyOptions>.Instance.CashOutRange;
     }
 
     protected override void OnClick()

@@ -287,8 +287,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
             return;
 
         var terminator = GetTerminator();
-        if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected || Vector2.Distance(source.GetTruePosition(), terminator.GetTruePosition()) > OptionGroupSingleton<TerminatorOptions>.Instance.CounterAttackRange ||
-            PhysicsHelpers.AnythingBetween(source.GetTruePosition(), terminator.GetTruePosition(), Constants.ShipAndObjectsMask, false))
+        if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected || Vector2.Distance(source.GetTruePosition(), terminator.GetTruePosition()) > OptionGroupSingleton<TerminatorOptions>.Instance.CounterAttackRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), terminator.GetTruePosition(), Constants.ShipAndObjectsMask, false))
             return;
 
         if (!HuntState.TryHit(source.PlayerId))

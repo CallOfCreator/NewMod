@@ -15,6 +15,7 @@ using MiraAPI.Keybinds;
 using Reactor.Utilities;
 
 namespace NewMod.Buttons.Roles;
+
 public class CallWraithButton : CustomActionButton, IEnergyAbility
 {
     public static CustomPlayerMenu ActiveMenu;
@@ -23,16 +24,18 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
     public bool CaptureOnClick => false;
     public override string Name => "Call Wraith";
     public override float Cooldown => OptionGroupSingleton<WraithCallerOptions>.Instance.CallWraithCooldown;
+
     public override bool CanUse()
     {
         var ownerId = PlayerControl.LocalPlayer.PlayerId;
-        return base.CanUse() && WraithCallerUtilities.Traces.Contains(ownerId) &&
-            !WraithCallerUtilities.ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner.PlayerId == ownerId);
+        return base.CanUse() && WraithCallerUtilities.Traces.Contains(ownerId) && !WraithCallerUtilities.ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner.PlayerId == ownerId);
     }
+
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override float EffectDuration => 0f;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.CallWraith;
+
     public override bool Enabled(RoleBehaviour role)
     {
         return role is Wraith;

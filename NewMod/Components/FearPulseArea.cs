@@ -68,7 +68,6 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
 
                 if (Constants.ShouldPlaySfx())
                     SoundManager.Instance.PlaySound(_enterClip, false);
-
             }
         }
         else if (!inside && _affectingLocalPlayer)
@@ -148,11 +147,7 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
     {
         var localPlayer = PlayerControl.LocalPlayer;
 
-        if (localPlayer && OriginalSpeeds.Remove(localPlayer.PlayerId, out var originalSpeed))
-        {
-            localPlayer.MyPhysics.Speed = originalSpeed;
-
-        }
+        if (localPlayer && OriginalSpeeds.Remove(localPlayer.PlayerId, out var originalSpeed)) localPlayer.MyPhysics.Speed = originalSpeed;
 
         ActivePulseCounts.Clear();
         OriginalSpeeds.Clear();

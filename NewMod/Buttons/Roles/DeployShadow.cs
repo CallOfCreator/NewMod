@@ -8,6 +8,7 @@ using NewMod.Roles.NeutralRoles;
 using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
+
 public class DeployShadow : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
@@ -16,10 +17,12 @@ public class DeployShadow : CustomActionButton, IEnergyAbility
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.DeployZone;
+
     public override bool Enabled(RoleBehaviour role)
     {
         return role is Shade;
     }
+
     protected override void OnClick()
     {
         var player = PlayerControl.LocalPlayer;

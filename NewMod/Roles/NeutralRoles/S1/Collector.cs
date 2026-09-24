@@ -106,7 +106,10 @@ public class Collector : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnSetRole(SetRoleEvent evt)
     {
-        if (evt.Player.Data.Role is Collector) Inventories[evt.Player.PlayerId] = new CollectorInventory();
+        if (evt.Player.Data.Role is Collector)
+        {
+            Inventories[evt.Player.PlayerId] = new CollectorInventory();
+        }
         else
         {
             Inventories.Remove(evt.Player.PlayerId);
@@ -244,10 +247,7 @@ public class Collector : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.CollectorRequestConvert)]
     public static void RpcRequestConvert(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || source.Data.Disconnected ||
-            MeetingHud.Instance || ExileController.Instance || VictoryArmed.Contains(source.PlayerId) ||
-            !Inventories.TryGetValue(source.PlayerId, out var inventory) ||
-            !inventory.CanConvert((int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost)) return;
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || VictoryArmed.Contains(source.PlayerId) || !Inventories.TryGetValue(source.PlayerId, out var inventory) || !inventory.CanConvert((int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost)) return;
         RpcConfirmConvert(PlayerControl.LocalPlayer, source.PlayerId);
     }
 

@@ -25,8 +25,7 @@ public static class PlayerRoleNamePatch
         if (!viewer || player.Role == null)
             return name;
 
-        var canSeeRole = viewer.PlayerId == player.PlayerId ||
-                         (viewer.Data?.IsDead == true && OptionGroupSingleton<GeneralOption>.Instance.ShouldDeadPlayersSeeRoles);
+        var canSeeRole = viewer.PlayerId == player.PlayerId || (viewer.Data?.IsDead == true && OptionGroupSingleton<GeneralOption>.Instance.ShouldDeadPlayersSeeRoles);
         if (!canSeeRole)
             return name;
 

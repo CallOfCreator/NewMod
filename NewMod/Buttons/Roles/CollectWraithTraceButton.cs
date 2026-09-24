@@ -28,16 +28,11 @@ public class CollectWraithTraceButton : CustomActionButton<DeadBody>
     public override DeadBody GetTarget()
     {
         var player = PlayerControl.LocalPlayer;
-        if (WraithCallerUtilities.Traces.Contains(player.PlayerId) ||
-            WraithCallerUtilities.ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == player))
+        if (WraithCallerUtilities.Traces.Contains(player.PlayerId) || WraithCallerUtilities.ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == player))
             return null;
 
         var position = player.GetTruePosition();
-        return Helpers.GetNearestDeadBodies(position, Distance, Helpers.CreateFilter(Constants.NotShipMask))
-            .Where(body => !body.Reported && !PranksterUtilities.IsPranksterBody(body) &&
-                !WraithCallerUtilities.CollectedTraces.Contains((player.PlayerId, body.ParentId)) &&
-                !PhysicsHelpers.AnythingBetween(position, body.TruePosition, Constants.ShipAndObjectsMask, false))
-            .OrderBy(body => Vector2.Distance(position, body.TruePosition)).FirstOrDefault();
+        return Helpers.GetNearestDeadBodies(position, Distance, Helpers.CreateFilter(Constants.NotShipMask)).Where(body => !body.Reported && !PranksterUtilities.IsPranksterBody(body) && !WraithCallerUtilities.CollectedTraces.Contains((player.PlayerId, body.ParentId)) && !PhysicsHelpers.AnythingBetween(position, body.TruePosition, Constants.ShipAndObjectsMask, false)).OrderBy(body => Vector2.Distance(position, body.TruePosition)).FirstOrDefault();
     }
 
     public override void SetOutline(bool active)

@@ -14,10 +14,16 @@ public class CleanseSerumButton : CustomActionButton
     public override float Cooldown => 0f;
     public override float EffectDuration => OptionGroupSingleton<InjectorOptions>.Instance.CleanseDuration;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.InjectIcon;
-    public override bool Enabled(RoleBehaviour role) =>
-        Button && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.Data &&
-        !PlayerControl.LocalPlayer.Data.IsDead && InjectorUtilities.Experiments.Values.Any(sample => sample.TargetId == PlayerControl.LocalPlayer.PlayerId);
-    protected override void OnClick() { }
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return Button && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.Data && !PlayerControl.LocalPlayer.Data.IsDead && InjectorUtilities.Experiments.Values.Any(sample => sample.TargetId == PlayerControl.LocalPlayer.PlayerId);
+    }
+
+    protected override void OnClick()
+    {
+    }
+
     public override void OnEffectEnd()
     {
         if (!MeetingHud.Instance && !ExileController.Instance)
