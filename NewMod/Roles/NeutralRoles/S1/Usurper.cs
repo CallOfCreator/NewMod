@@ -110,7 +110,12 @@ public class Usurper : CrewmateRole, INewModRole
             return;
         }
 
-        States.Remove(evt.Player.PlayerId);
+        var playerId = evt.Player.PlayerId;
+        States.Remove(playerId);
+        Pickup.Remove(playerId);
+        CrownPositions.Remove(playerId);
+        if (CrownObjects.Remove(playerId, out var crown))
+            Destroy(crown);
     }
 
     [RegisterEvent]
@@ -138,7 +143,7 @@ public class Usurper : CrewmateRole, INewModRole
         foreach (var pair in States)
         {
             var usurper = Utils.PlayerById(pair.Key);
-            if (!pair.Value.SurvivedMeeting(!usurper.Data.IsDead && !usurper.Data.Disconnected))
+            if (!pair.Value.SurvivedMeeting(usurper && !usurper.Data.IsDead && !usurper.Data.Disconnected))
                 continue;
 
             CustomGameOver.Trigger<UsurperGameOver>([usurper.Data]);

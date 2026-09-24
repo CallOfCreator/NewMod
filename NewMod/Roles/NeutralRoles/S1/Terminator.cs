@@ -115,8 +115,10 @@ public class TerminatorRole : CrewmateRole, INewModRole
     }
 
     [RegisterEvent]
-    public static void OnEndMeeting(EndMeetingEvent evt)
+    public static void OnMeetingResolved(RoundStartEvent evt)
     {
+        if (evt.TriggeredByIntro) return;
+
         var terminator = GetTerminator();
 
         if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected)
@@ -132,7 +134,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
         if (MeetingsSurvived >= required)
         {
             var pos = PickObjectivePosition();
-            RpcSpawnObjective(terminator, pos.x, pos.y);
+            RpcSpawnObjective(PlayerControl.LocalPlayer, pos.x, pos.y);
         }
     }
 
@@ -158,6 +160,8 @@ public class TerminatorRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.TerminatorObjective)]
     public static void RpcSpawnObjective(PlayerControl source, float x, float y)
     {
+        if (!source.IsHost()) return;
+
         ObjectiveSpawned = true;
         ObjectivePosition = new Vector2(x, y);
 
@@ -173,7 +177,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.TerminatorFinalCountdown)]
     public static void RpcStartFinalCountdown(PlayerControl source)
     {
-        if (FinalCountdownActive || source.Data.Role is not TerminatorRole)
+        if (!ObjectiveSpawned || FinalCountdownActive || source.Data.Role is not TerminatorRole || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance)
             return;
 
         var radius = OptionGroupSingleton<TerminatorOptions>.Instance.FinalObjectiveRadius;
@@ -279,11 +283,12 @@ public class TerminatorRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.TerminatorRequestEliminate)]
     public static void RpcRequestTerminate(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || !FinalCountdownActive || source.Data.IsDead || source.Data.Disconnected || source.Data.Role is TerminatorRole)
+        if (!AmongUsClient.Instance.AmHost || !FinalCountdownActive || MeetingHud.Instance || ExileController.Instance || source.inVent || source.Data.IsDead || source.Data.Disconnected || source.Data.Role is TerminatorRole)
             return;
 
         var terminator = GetTerminator();
-        if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected || Vector2.Distance(source.GetTruePosition(), terminator.GetTruePosition()) > OptionGroupSingleton<TerminatorOptions>.Instance.CounterAttackRange)
+        if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected || Vector2.Distance(source.GetTruePosition(), terminator.GetTruePosition()) > OptionGroupSingleton<TerminatorOptions>.Instance.CounterAttackRange ||
+            PhysicsHelpers.AnythingBetween(source.GetTruePosition(), terminator.GetTruePosition(), Constants.ShipAndObjectsMask, false))
             return;
 
         if (!HuntState.TryHit(source.PlayerId))

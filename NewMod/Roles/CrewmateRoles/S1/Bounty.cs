@@ -190,10 +190,10 @@ public class Bounty : CrewmateRole, INewModRole
         {
             var bounty = Utils.PlayerById(pair.Key);
             var target = Utils.PlayerById(pair.Value.TargetId);
-            if (bounty.Data.IsDead || bounty.Data.Disconnected)
+            if (!bounty || bounty.Data.IsDead || bounty.Data.Disconnected)
                 continue;
 
-            if (target.Data.IsDead || target.Data.Disconnected)
+            if (!target || target.Data.IsDead || target.Data.Disconnected)
             {
                 RpcFailContract(PlayerControl.LocalPlayer, pair.Key);
                 AssignContract(pair.Key);

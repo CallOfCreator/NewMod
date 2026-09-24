@@ -15,9 +15,6 @@ public class GeneralOption : AbstractOptionGroup
     [ModdedNumberOption("Total Neutrals", 0f, 10)]
     public float TotalNeutrals { get; set; } = 1f;
 
-    [ModdedToggleOption("Enable Death Recap")]
-    public bool EnableDeathRecap { get; set; } = true;
-
     [ModdedToggleOption("Keep Crew Majority")]
     public bool KeepCrewMajority { get; set; } = true;
 

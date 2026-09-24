@@ -82,21 +82,12 @@ public static class CustomEndGame
                 {
                     var champion = Utils.PlayerById(Tyrant.ChampionId);
 
-                    if (champion && !champion.Data.Disconnected) winners.Add(champion.Data);
+                    if (champion && !champion.Data.IsDead && !champion.Data.Disconnected) winners.Add(champion.Data);
                 }
 
                 CustomGameOver.Trigger<TyrantGameOver>(winners);
                 return true;
             }
-        }
-
-        var specialAgentRequired = OptionGroupSingleton<SpecialAgentOptions>.Instance.RequiredMissionsToWin;
-        var specialAgent = alivePlayers.FirstOrDefault(player => player.Data.Role is SpecialAgent && Utils.GetMissionSuccessCount(player.PlayerId) - Utils.GetMissionFailureCount(player.PlayerId) >= specialAgentRequired);
-
-        if (specialAgent)
-        {
-            CustomGameOver.Trigger<SpecialAgentGameOver>([specialAgent.Data]);
-            return true;
         }
 
         var pranksterRequired = (int)OptionGroupSingleton<PranksterOptions>.Instance.ReportsRequiredToWin;

@@ -22,10 +22,10 @@ public class RevivedKillButton : CustomActionButton<PlayerControl>, IEnergyAbili
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.VanillaKillButton;
 
-    private static bool CanUseRevivedKillButton()
+    public static bool CanUseRevivedKillButton()
     {
         var local = PlayerControl.LocalPlayer;
-        return local != null && NecromancerRole.RevivedPlayers.ContainsKey(local.PlayerId);
+        return local && local.Data && !local.Data.IsDead && NecromancerRole.RevivedPlayers.ContainsKey(local.PlayerId);
     }
 
     public override bool Enabled(RoleBehaviour role)
@@ -63,7 +63,7 @@ public class RevivedKillButton : CustomActionButton<PlayerControl>, IEnergyAbili
     {
         var local = PlayerControl.LocalPlayer;
 
-        local.RpcCustomMurder(Target, true, true, true, true, true, true);
+        local.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
 
         NecromancerRole.RevivedPlayers.Remove(local.PlayerId);
         ResetTarget();

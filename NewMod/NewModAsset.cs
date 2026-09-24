@@ -27,7 +27,6 @@ public static class NewModAsset
     public static LoadableResourceAsset PowerNodeOvercharged { get; } = new("NewMod.Resources.Overcharged.png");
 
     // Button icons
-    public static LoadableResourceAsset SpecialAgentButton { get; } = new("NewMod.Resources.givemission.png");
     public static LoadableResourceAsset ShowScreenshotButton { get; } = new("NewMod.Resources.showscreenshot.png");
     public static LoadableResourceAsset DoomAwakeningButton { get; } = new("NewMod.Resources.doomawakening.png");
     public static LoadableResourceAsset NecromancerButton { get; } = new("NewMod.Resources.Revive2.png");
@@ -41,7 +40,6 @@ public static class NewModAsset
     public static LoadableResourceAsset CameraDisabled { get; } = new("NewMod.Resources.Camera.NonDirty.Cam_Disabled.png", 1000f);
     public static LoadableResourceAsset CameraDisabledOutline { get; } = new("NewMod.Resources.Camera.Dirty.Cam_Disabled.png", 1000f);
     public static LoadableResourceAsset StrikeButton { get; } = new("NewMod.Resources.Strike.png");
-    public static LoadableResourceAsset FinalButton { get; } = new("NewMod.Resources.final.png");
     public static LoadableResourceAsset CallWraith { get; } = new("NewMod.Resources.callwraith.png");
     public static LoadableResourceAsset Shield { get; } = new("NewMod.Resources.Shield.png");
     public static LoadableResourceAsset Slash { get; } = new("NewMod.Resources.Slash.png");

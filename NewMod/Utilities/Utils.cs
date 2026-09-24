@@ -2,19 +2,14 @@ using MiraAPI.Translation;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using AmongUs.GameOptions;
-using MiraAPI.GameOptions;
-using MiraAPI.Hud;
-using MiraAPI.Networking;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.Buttons.Roles;
 using NewMod.Components;
 using NewMod.Buttons.Roles.S1;
 using NewMod.Modifiers;
-using NewMod.Options.Roles;
 using NewMod.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.CrewmateRoles.S1;
@@ -23,9 +18,6 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using Reactor.Networking.Attributes;
-using Reactor.Networking.Rpc;
-using Reactor.Utilities;
-using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
@@ -43,35 +35,14 @@ public static class Utils
     public static Dictionary<byte, byte> PlayerKiller = new();
 
     /// <summary>
-    ///     Stores the number of successful missions per player, keyed by their ID.
-    /// </summary>
-    public static Dictionary<byte, int> MissionSuccessCount = new();
-
-    /// <summary>
-    ///     Stores the number of failed missions per player, keyed by their ID.
-    /// </summary>
-    public static Dictionary<byte, int> MissionFailureCount = new();
-
-    /// <summary>
     ///     Maintains saved roles for players, keyed by their ID.
     /// </summary>
     public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles = new();
 
-    /// <summary>
-    ///     Maps a player ID to a TextMeshPro timer display for missions.
-    /// </summary>
-    public static Dictionary<byte, TextMeshPro> MissionTimer = new();
-
     public static Material _circleMat;
 
     /// <summary>
-    ///     Stores tasks that have been saved for a given player, allowing restoration after missions.
-    /// </summary>
-    public static Il2CppSystem.Collections.Generic.Dictionary<PlayerControl, Il2CppSystem.Collections.Generic.List<PlayerTask>> savedTasks = new();
-
-    /// <summary>
     ///     Maps each role to its associated list of custom action button types.
-    ///     Used by Overload to absorb abilities based on the prey's role.
     /// </summary>
     public static readonly Dictionary<Type, List<Type>> RoleToButtonsMap = new()
     {
@@ -79,7 +50,6 @@ public static class Utils
         { typeof(NecromancerRole), new List<Type> { typeof(ReviveButton) } },
         { typeof(Prankster), new List<Type> { typeof(FakeBodyButton) } },
         { typeof(Revenant), new List<Type> { typeof(FeignDeathButton), typeof(DoomAwakening) } },
-        { typeof(SpecialAgent), new List<Type> { typeof(AssignButton) } },
         { typeof(TheVisionary), new List<Type> { typeof(CaptureButton), typeof(ShowScreenshotButton) } },
         { typeof(PulseBlade), new List<Type> { typeof(StrikeButton) } },
         { typeof(WraithCaller), new List<Type> { typeof(CallWraithButton) } },
@@ -92,8 +62,6 @@ public static class Utils
         { typeof(MirrorBladeRole), new List<Type> { typeof(MirrorReflectButton) } },
         { typeof(Shade), new List<Type> { typeof(DeployShadow) } }
         // Verifier is excluded since it uses a meeting ability.
-        // I hate this system, I gotta replace it
-        // TODO: Add Launchpad roles and their associated buttons here
     };
 
     /// <summary>
@@ -225,64 +193,6 @@ public static class Utils
         return IsActive(SystemTypes.LifeSupp) || IsActive(SystemTypes.Reactor) || IsActive(SystemTypes.Laboratory) || IsActive(SystemTypes.Electrical) || IsActive(SystemTypes.Comms) || IsActive(SystemTypes.MushroomMixupSabotage) || IsActive(SystemTypes.HeliSabotage);
     }
 
-    /// <summary>
-    ///     Records a successful mission for the given Special Agent player.
-    /// </summary>
-    /// <param name="specialAgent">The player who successfully completed the mission.</param>
-    public static void RecordMissionSuccess(PlayerControl specialAgent)
-    {
-        var playerId = specialAgent.PlayerId;
-        MissionSuccessCount[playerId] = GetMissionSuccessCount(playerId) + 1;
-    }
-
-    /// <summary>
-    ///     Retrieves the number of successful missions for a given player.
-    /// </summary>
-    /// <param name="playerId">The player's ID.</param>
-    /// <returns>The count of successful missions.</returns>
-    public static int GetMissionSuccessCount(byte playerId)
-    {
-        return MissionSuccessCount.TryGetValue(playerId, out var count) ? count : 0;
-    }
-
-    /// <summary>
-    ///     Resets the count of successful missions for all players.
-    /// </summary>
-    public static void ResetMissionSuccessCount()
-    {
-        MissionSuccessCount.Clear();
-    }
-
-    /// <summary>
-    ///     Records a failed mission for the given Special Agent player.
-    /// </summary>
-    /// <param name="specialAgent">The player who failed the mission.</param>
-    public static void RecordMissionFailure(PlayerControl specialAgent)
-    {
-        var playerId = specialAgent.PlayerId;
-        var currentFailureCount = GetMissionFailureCount(playerId);
-
-        if (currentFailureCount >= 0) MissionFailureCount[playerId] = currentFailureCount + 1;
-    }
-
-    /// <summary>
-    ///     Retrieves the number of failed missions for a given player.
-    /// </summary>
-    /// <param name="playerId">The player's ID.</param>
-    /// <returns>The count of failed missions.</returns>
-    public static int GetMissionFailureCount(byte playerId)
-    {
-        return MissionFailureCount.TryGetValue(playerId, out var count) ? count : 0;
-    }
-
-    /// <summary>
-    ///     Resets the count of failed missions for all players.
-    /// </summary>
-    public static void ResetMissionFailureCount()
-    {
-        MissionFailureCount.Clear();
-    }
-
 // Inspired By: https://github.com/AU-Avengers/TOU-Mira/blob/dev/TownOfUs/Modules/ReviveUtilities.cs#L40
 
     [MethodRpc((uint)CustomRPC.HandleRevive)]
@@ -290,18 +200,21 @@ public static class Utils
     {
         var revived = PlayerById(revivedId);
 
-        if (revived.Data.Disconnected)
+        if (!revived || revived.Data.Disconnected)
             yield break;
 
         yield return new WaitForSeconds(0.15f);
 
-        if (revived.Data.Disconnected || !revived.Data.IsDead)
+        if (!revived || revived.Data.Disconnected || !revived.Data.IsDead)
             yield break;
 
         var revivePos = new Vector2(reviveX, reviveY);
         var inMeetingOrExile = MeetingHud.Instance || ExileController.Instance;
 
         if (revived.Data.Role is NoisemakerRole noisemaker && noisemaker.deathArrowPrefab != null) Object.Destroy(noisemaker.deathArrowPrefab.gameObject);
+
+        if (source.Data.Role is NecromancerRole)
+            NecromancerRole.RevivedPlayers[revivedId] = source.PlayerId;
 
         revived.Revive();
         revived.RemainingEmergencies = 0;
@@ -386,179 +299,6 @@ public static class Utils
         };
     }
 
-    /// <summary>
-    ///     Checks if there is at least one dead player in the game.
-    /// </summary>
-    /// <returns>A PlayerControl who is dead, or null if none.</returns>
-    public static PlayerControl AnyDeadPlayer()
-    {
-        foreach (var player in PlayerControl.AllPlayerControls)
-            if (player.Data.IsDead)
-                return player;
-
-        return null;
-    }
-
-    /// <summary>
-    ///     Performs a random draining action on a target player as part of a custom RPC.
-    /// </summary>
-    /// <param name="source">The player who initiates the drain.</param>
-    /// <param name="target">The player who is the target of the drain.</param>
-    [MethodRpc((uint)CustomRPC.Drain)]
-    public static void RpcRandomDrainActions(PlayerControl source, PlayerControl target)
-    {
-        List<Action> actions = new()
-        {
-            () =>
-            {
-                target.MyPhysics.Speed *= 0.5f;
-                if (source.AmOwner)
-                    HudManager.Instance.ShowPopUp($"<color=purple>{target.Data.PlayerName} speed was reduced by 50%!</color>");
-            },
-            () =>
-            {
-                if (target.AmOwner)
-                {
-                    HudManager.Instance.StartCoroutine(HudManager.Instance.CoFadeFullScreen(Color.black, Color.black, 0.5f));
-                    target.NetTransform.Halt();
-                }
-
-                if (source.AmOwner)
-                    HudManager.Instance.ShowPopUp($"<color=blue>Movement is disabled for {target.Data.PlayerName}, and their screen is black!</color>");
-            },
-            () =>
-            {
-                target.myTasks.Clear();
-                if (source.AmOwner)
-                    HudManager.Instance.ShowPopUp($"<color=green>{target.Data.PlayerName} had all of their tasks cleared!</color>");
-            },
-            () =>
-            {
-                target.RemainingEmergencies = 0;
-                if (source.AmOwner)
-                    HudManager.Instance.ShowPopUp($"<color=orange>{target.Data.PlayerName} can no longer call emergency meetings!</color>");
-            },
-            () =>
-            {
-                var randomPlayer = GetRandomPlayer(p => !p.Data.IsDead && !p.Data.Disconnected);
-                if (randomPlayer != null)
-                {
-                    target.NetTransform.RpcSnapTo(randomPlayer.GetTruePosition());
-                    if (source.AmOwner)
-                        HudManager.Instance.ShowPopUp($"<color=red>{target.Data.PlayerName} has been teleported!</color>");
-                }
-            }
-        };
-        var randomIndex = Random.Range(0, actions.Count);
-        actions[randomIndex].Invoke();
-    }
-
-    /// <summary>
-    /// Selects and processes a mission for the specified target player based on the provided MissionType.
-    /// </summary>
-    /// <param name="target">The target player receiving the mission.</param>
-    /// <param name="mission">The type of mission assigned.</param>
-    /// <returns>A formatted string describing the selected mission.</returns>
-    public static string GetMission(PlayerControl specialAgent, PlayerControl target, MissionType mission, byte mostWantedId)
-    {
-        switch (mission)
-        {
-            case MissionType.KillMostWanted:
-            {
-                var mostWanted = PlayerById(mostWantedId);
-                var arrowObject = new GameObject("SpecialAgent_MostWantedArrow") { layer = 5 };
-                var renderer = arrowObject.AddComponent<SpriteRenderer>();
-                renderer.sprite = NewModAsset.Arrow.LoadAsset();
-
-                var arrow = arrowObject.AddComponent<ArrowBehaviour>();
-                arrow.image = renderer;
-                arrow.target = mostWanted.transform.position;
-
-                Coroutines.Start(CoroutinesHelper.CoHandleWantedTarget(specialAgent, arrow, mostWanted, target));
-
-                return $"Kill the Most Wanted Target: {mostWanted.Data.PlayerName}";
-            }
-            case MissionType.CreateFakeBodies:
-            {
-                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#32CD32><i><b>Press F5 to create two fake bodies</b></i></color>"));
-                Coroutines.Start(CoroutinesHelper.UsePranksterAbilities(specialAgent, target));
-                return "Create two fake dead bodies using Prankster abilities";
-            }
-            case MissionType.DrainEnergy:
-            {
-                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FA9A><i><b>Press F5 to drain two nearby players</b></i></color>"));
-                Coroutines.Start(CoroutinesHelper.UseEnergyThiefAbilities(specialAgent, target));
-                return "Drain two nearby players using Energy Thief abilities";
-            }
-            case MissionType.ReviveAndKill:
-            {
-                Coroutines.Start(CoroutinesHelper.CoReviveAndKill(specialAgent, target));
-                return "Revive a dead player and kill them again";
-            }
-            default:
-                return "Unknown mission";
-        }
-    }
-
-    [MethodRpc((uint)CustomRPC.MissionSuccess, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcMissionSuccess(PlayerControl requester, PlayerControl specialAgent, PlayerControl target)
-    {
-        if (!AmongUsClient.Instance.AmHost || requester != target || specialAgent.Data.Role is not SpecialAgent || SpecialAgent.AssignedPlayer != target)
-            return;
-
-        RpcApplyMissionResult(PlayerControl.LocalPlayer, specialAgent, target, true);
-    }
-
-    [MethodRpc((uint)CustomRPC.MissionFails, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcMissionFails(PlayerControl requester, PlayerControl specialAgent, PlayerControl target)
-    {
-        if (!AmongUsClient.Instance.AmHost || requester != target || specialAgent.Data.Role is not SpecialAgent || SpecialAgent.AssignedPlayer != target)
-            return;
-
-        RpcApplyMissionResult(PlayerControl.LocalPlayer, specialAgent, target, false);
-    }
-
-    [MethodRpc((uint)CustomRPC.ApplyMissionResult, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcApplyMissionResult(PlayerControl source, PlayerControl specialAgent, PlayerControl target, bool succeeded)
-    {
-        if (succeeded)
-            RecordMissionSuccess(specialAgent);
-        else
-            RecordMissionFailure(specialAgent);
-
-        if (specialAgent.AmOwner)
-        {
-            var score = GetMissionSuccessCount(specialAgent.PlayerId) - GetMissionFailureCount(specialAgent.PlayerId);
-            var color = succeeded ? "#FFD700" : "#FF0000";
-            var outcome = succeeded ? "completed" : "failed";
-            Coroutines.Start(CoroutinesHelper.CoNotify($"<color={color}>Target {target.Data.PlayerName} {outcome} their mission!\nNet score: {score}/3</color>"));
-        }
-
-        if (target.AmOwner)
-        {
-            Coroutines.Start(CoroutinesHelper.CoNotify(succeeded ? "<color=#32CD32>Mission completed. You are free to go!</color>" : "<color=#FF0000>Mission failed. You will face the consequences!</color>"));
-
-            if (savedTasks.TryGetValue(target, out var tasks))
-            {
-                target.myTasks = tasks;
-                savedTasks.Remove(target);
-            }
-
-            if (target.Data.Role is ICustomRole role && RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
-                foreach (var buttonType in buttonTypes)
-                {
-                    var button = CustomButtonManager.Buttons.FirstOrDefault(candidate => candidate.GetType() == buttonType);
-                    if (button != null && button.Button)
-                        button.Button.SetEnabled();
-                }
-        }
-
-        if (!succeeded && AmongUsClient.Instance.AmHost && !target.Data.IsDead) specialAgent.RpcCustomMurder(target, createDeadBody: false, didSucceed: true, showKillAnim: false, playKillSound: true, teleportMurderer: false);
-
-        if (SpecialAgent.AssignedPlayer == target)
-            SpecialAgent.AssignedPlayer = null;
-    }
-
     public static string GetFactionDisplay(INewModRole role)
     {
         return role.Faction switch
@@ -569,52 +309,6 @@ public static class Utils
             NewModFaction.Rift => $"<b><color=#301934>{MiraLocaleManager.Get("NewMod.Faction.Rift")}</color></b>",
             _ => MiraLocaleManager.Get("NewMod.Faction.Unknown")
         };
-    }
-
-    /// <summary>
-    /// Assigns a random mission to the target player as a custom RPC.
-    /// </summary>
-    /// <param name="source">The player initiating the assignment (Special Agent).</param>
-    /// <param name="target">The player who will receive the mission.</param>
-    [MethodRpc((uint)CustomRPC.AssignMission)]
-    public static void RpcAssignMission(PlayerControl source, PlayerControl target, MissionType mission, byte mostWantedId)
-    {
-        SpecialAgent.AssignedPlayer = target;
-
-        if (!target.AmOwner)
-            return;
-
-        // Save the target's tasks
-        if (!savedTasks.ContainsKey(target))
-        {
-            var newTaskList = new Il2CppSystem.Collections.Generic.List<PlayerTask>();
-
-            foreach (var task in target.myTasks) newTaskList.Add(task);
-
-            savedTasks[target] = newTaskList;
-        }
-
-        // Clear all assigned tasks for the specified target player
-        target.myTasks.Clear();
-
-        // Add the mission message to the player's tasks
-        var missionMessage = new GameObject("MissionMessage").AddComponent<ImportantTextTask>();
-        missionMessage.transform.SetParent(AmongUsClient.Instance.transform, false);
-        missionMessage.Text = $"<color=red>Special Agent</color> has given you a mission!\n" + $"<b><color=blue>Mission:</color></b> {GetMission(source, target, mission, mostWantedId)}\n" + $"<i><color=green>Complete it or face the consequences!</color></i>";
-
-        target.myTasks.Insert(0, missionMessage);
-        // Disable the Role Player's Ability
-        if (target.Data.Role is ICustomRole role)
-            if (RoleToButtonsMap.TryGetValue(role.GetType(), out var buttonTypes))
-                foreach (var btnType in buttonTypes)
-                {
-                    var btn = CustomButtonManager.Buttons.FirstOrDefault(b => b.GetType() == btnType);
-
-                    if (btn != null && btn.Button)
-                        btn.Button.SetDisabled();
-                }
-
-        Coroutines.Start(CoroutinesHelper.CoMissionTimer(source, target, 30f));
     }
 
     /// <summary>

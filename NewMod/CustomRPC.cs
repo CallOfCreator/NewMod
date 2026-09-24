@@ -3,13 +3,8 @@ namespace NewMod;
 public enum CustomRPC
 {
     HandleRevive,
-    ApplyMissionResult,
-    Drain,
-    FakeBody,
-    AssignMission,
-    MissionSuccess,
-    MissionFails,
-    ApplySerum,
+    FakeBody = 3,
+    ApplySerum = 7,
     Dash,
     FearPulse,
     RequestSummon,

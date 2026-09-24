@@ -134,7 +134,7 @@ public class Collector : CrewmateRole, INewModRole
         foreach (var playerId in VictoryArmed)
         {
             var player = Utils.PlayerById(playerId);
-            if (!player.Data.IsDead && !player.Data.Disconnected)
+            if (player && !player.Data.IsDead && !player.Data.Disconnected)
             {
                 CustomGameOver.Trigger<CollectorGameOver>([player.Data]);
                 return;

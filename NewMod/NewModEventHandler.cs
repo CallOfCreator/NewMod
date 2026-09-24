@@ -6,24 +6,17 @@ using System.Reflection;
 using System.Text;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.GameOptions;
-using MiraAPI.Hud;
-using MiraAPI.Roles;
-using NewMod.Buttons.Roles;
 using NewMod.Components;
 using NewMod.GeneralEvents;
 using NewMod.Modifiers;
-using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using NewMod.Utilities;
-using Reactor.Utilities;
 using Twitch;
 using UnityEngine;
-using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
 namespace NewMod;
@@ -71,12 +64,8 @@ public static class NewModEventHandler
     {
         Utils.ResetKillTracking();
         EnergyThief.ResetState();
-        Utils.ResetMissionSuccessCount();
-        Utils.ResetMissionFailureCount();
         InjectorUtilities.Reset();
         Utils.savedPlayerRoles.Clear();
-        Utils.MissionTimer.Clear();
-        Utils.savedTasks.Clear();
 
         PranksterUtilities.ResetReportCount();
         WraithCallerUtilities.ClearAll();
@@ -88,8 +77,6 @@ public static class NewModEventHandler
         NecromancerRole.RevivedPlayers.Clear();
         VerifierUtilities.Reset(true, false);
 
-        CoroutinesHelper.bodiesCreated.Clear();
-        CoroutinesHelper.drainCount.Clear();
         StickyModifier.ResetState();
         FearPulseArea.ResetState();
 
@@ -100,11 +87,9 @@ public static class NewModEventHandler
         ShieldArea._active.Clear();
 
         Tyrant.ResetState();
-        OverloadRole.ResetState();
         TerminatorRole.ResetState();
         MirrorBladeRole.ArmedReflections.Clear();
         MirrorBladeRole.Reflecting = false;
-        SpecialAgent.AssignedPlayer = null;
 
         Beacon.Reset();
 
@@ -158,53 +143,8 @@ public static class NewModEventHandler
     }
 
     [RegisterEvent]
-    public static void OnBeforeMurder(BeforeMurderEvent evt)
-    {
-        if (!evt.Source.AmOwner || evt.Source.Data.Role is not OverloadRole || evt.Target != OverloadRole.chosenPrey) return;
-
-        //TODO: Use the newest MiraAPI roles for button mapping
-        if (evt.Target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
-        {
-            OverloadRole.CachedButtons = [.. CustomButtonManager.Buttons.Where(b => buttonsType.Contains(b.GetType()))];
-            Message($"CachedButton: {buttonsType.GetType().Name}");
-        }
-    }
-
-    [RegisterEvent]
     public static void OnAfterMurder(AfterMurderEvent evt)
     {
-        var source = evt.Source;
-        var target = evt.Target;
-        Utils.RecordOnKill(source, target);
-
-        if (!source.AmOwner || source.Data.Role is not OverloadRole || target != OverloadRole.chosenPrey) return;
-
-        foreach (var pc in PlayerControl.AllPlayerControls.ToArray().Where(p => p.AmOwner && p.Data.Role is OverloadRole))
-            if (target.Data.Role is ICustomRole customRole)
-            {
-                foreach (var button in OverloadRole.CachedButtons)
-                {
-                    CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
-                    Debug($"[Overload] Successfully absorbed ability: {button.Name}");
-                }
-            }
-            else if (target.Data.Role is not ICustomRole)
-            {
-                var btn = Object.Instantiate(HudManager.Instance.AbilityButton, HudManager.Instance.AbilityButton.transform.parent);
-                btn.SetFromSettings(target.Data.Role.Ability);
-                var pb = btn.GetComponent<PassiveButton>();
-                pb.OnClick.RemoveAllListeners();
-                pb.OnClick.AddListener((UnityAction)target.Data.Role.UseAbility);
-            }
-
-        OverloadRole.CachedButtons.Clear();
-        OverloadRole.AbsorbedAbilityCount++;
-        OverloadRole.chosenPrey = null;
-        Coroutines.Start(CoroutinesHelper.CoNotify($"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
-
-        if (OverloadRole.AbsorbedAbilityCount >= OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge)
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FF7F>Objective completed: Final Ability unlocked!</color>"));
-        else
-            Coroutines.Start(OverloadRole.CoShowMenu(1f));
+        Utils.RecordOnKill(evt.Source, evt.Target);
     }
 }

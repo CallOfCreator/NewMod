@@ -128,46 +128,6 @@ public class PranksterGameOver : CustomGameOver
     }
 }
 
-public class SpecialAgentGameOver : CustomGameOver
-{
-    private CachedPlayerData[] _winners = [];
-
-    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
-    {
-        return NewModGameOver.CaptureWinners<SpecialAgent>(winners, out _winners);
-    }
-
-    public override bool BeforeEndGameSetup(EndGameManager manager)
-    {
-        return NewModGameOver.SetWinners(_winners);
-    }
-
-    public override void AfterEndGameSetup(EndGameManager manager)
-    {
-        NewModGameOver.SetPresentation<SpecialAgent>(manager, "Special Agent Victory");
-    }
-}
-
-public class OverloadGameOver : CustomGameOver
-{
-    private CachedPlayerData[] _winners = [];
-
-    public override bool VerifyCondition(PlayerControl playerControl, NetworkedPlayerInfo[] winners)
-    {
-        return NewModGameOver.CaptureWinners<OverloadRole>(winners, out _winners);
-    }
-
-    public override bool BeforeEndGameSetup(EndGameManager manager)
-    {
-        return NewModGameOver.SetWinners(_winners);
-    }
-
-    public override void AfterEndGameSetup(EndGameManager manager)
-    {
-        NewModGameOver.SetPresentation<OverloadRole>(manager, "Overload Wins!");
-    }
-}
-
 public class EgoistGameOver : CustomGameOver
 {
     private CachedPlayerData[] _winners = [];

@@ -16,7 +16,7 @@ public class SubmitResearchButton : CustomActionButton
     public override bool Enabled(RoleBehaviour role) => role is InjectorRole;
     public override bool CanUse()
     {
-        return base.CanUse() && !InjectorUtilities.Submitting.Contains(PlayerControl.LocalPlayer.PlayerId) &&
+        return base.CanUse() && PlayerControl.LocalPlayer.CanMove && !InjectorUtilities.Submitting.Contains(PlayerControl.LocalPlayer.PlayerId) &&
             !InjectorUtilities.Submitted.Contains(PlayerControl.LocalPlayer.PlayerId) && InjectorUtilities.SampleCount(PlayerControl.LocalPlayer.PlayerId) >= OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount;
     }
     protected override void OnClick()

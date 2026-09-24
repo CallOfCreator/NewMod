@@ -132,10 +132,13 @@ public class Nomad : CrewmateRole, INewModRole
             return;
 
         var playerId = evt.Player.PlayerId;
+        Visits.Remove(playerId);
         Anchors.Remove(playerId);
         LastRooms.Remove(playerId);
         CanWander.Remove(playerId);
         BacktrackPositions.Remove(playerId);
+        ProtectionEnds.Remove(playerId);
+        NextWander.Remove(playerId);
         Scores.Remove(playerId);
         RouteRooms.Remove(playerId);
         RouteEnds.Remove(playerId);
@@ -144,7 +147,7 @@ public class Nomad : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnBeforeMurder(BeforeMurderEvent evt)
     {
-        if (!AmongUsClient.Instance.AmHost || evt.IgnoreDefense || evt.Target.Data.Role is not Nomad || !BacktrackPositions.TryGetValue(evt.Target.PlayerId, out var position))
+        if (!AmongUsClient.Instance.AmHost || evt.IsCancelled || evt.IgnoreDefense || evt.Target.Data.Role is not Nomad || !BacktrackPositions.TryGetValue(evt.Target.PlayerId, out var position))
             return;
 
         if (Time.time >= ProtectionEnds.GetValueOrDefault(evt.Target.PlayerId))
@@ -166,7 +169,7 @@ public class Nomad : CrewmateRole, INewModRole
         foreach (var pair in Scores)
         {
             var player = Utils.PlayerById(pair.Key);
-            if (!player.Data.IsDead && !player.Data.Disconnected && pair.Value >= OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal)
+            if (player && !player.Data.IsDead && !player.Data.Disconnected && pair.Value >= OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal)
             {
                 CustomGameOver.Trigger<NomadGameOver>([player.Data]);
                 return;
@@ -233,6 +236,7 @@ public class Nomad : CrewmateRole, INewModRole
         if (RouteEnds.TryGetValue(playerId, out var routeEnd))
             BacktrackPositions[playerId] = routeEnd;
 
+        Visits.Remove(playerId);
         Anchors.Remove(playerId);
         LastRooms.Remove(playerId);
         RouteRooms.Remove(playerId);

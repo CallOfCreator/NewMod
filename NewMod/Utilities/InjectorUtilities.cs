@@ -62,9 +62,16 @@ public static class InjectorUtilities
     [MethodRpc((uint)CustomRPC.ApplySerum)]
     public static void RpcApplySerum(PlayerControl source, PlayerControl target, SerumType serum)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not InjectorRole || source.Data.IsDead || source.Data.Disconnected || !target || target == source || target.Data.IsDead || target.Data.Disconnected || target.inVent || MeetingHud.Instance || ExileController.Instance || Experiments.ContainsKey(source.PlayerId) || Experiments.Values.Any(sample => sample.TargetId == target.PlayerId) || Samples.Contains((source.PlayerId, target.PlayerId)) || Time.time < NextInjection.GetValueOrDefault(source.PlayerId) || serum is not (SerumType.Adrenaline or SerumType.Sedative)) return;
+        if ((!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost) || source.Data.Role is not InjectorRole ||
+            source.Data.IsDead || source.Data.Disconnected || !target || target == source || target.Data.IsDead || target.Data.Disconnected ||
+            target.inVent || MeetingHud.Instance || ExileController.Instance || Experiments.ContainsKey(source.PlayerId) ||
+            Experiments.Values.Any(sample => sample.TargetId == target.PlayerId) || Samples.Contains((source.PlayerId, target.PlayerId)) ||
+            Time.time < NextInjection.GetValueOrDefault(source.PlayerId) || serum is not (SerumType.Adrenaline or SerumType.Sedative))
+            return;
         var options = OptionGroupSingleton<InjectorOptions>.Instance;
-        if (Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > options.InjectionRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false)) return;
+        if (Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > options.InjectionRange ||
+            PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false))
+            return;
         RpcConfirmInjection(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId, serum);
     }
 
@@ -88,16 +95,22 @@ public static class InjectorUtilities
     [MethodRpc((uint)CustomRPC.InjectorCollectSample)]
     public static void RpcCollectSample(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not InjectorRole || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || !Experiments.TryGetValue(source.PlayerId, out var sample) || Time.time < sample.ReadyAt || Time.time >= sample.ExpiresAt) return;
+        if ((!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost) || source.Data.Role is not InjectorRole ||
+            source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance ||
+            !Experiments.TryGetValue(source.PlayerId, out var sample) || Time.time < sample.ReadyAt || Time.time >= sample.ExpiresAt)
+            return;
         var target = Utils.PlayerById(sample.TargetId);
-        if (!target || target.Data.IsDead || target.Data.Disconnected || target.inVent || Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<InjectorOptions>.Instance.InjectionRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false)) return;
+        if (!target || target.Data.IsDead || target.Data.Disconnected || target.inVent ||
+            Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<InjectorOptions>.Instance.InjectionRange ||
+            PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false))
+            return;
         RpcResolveExperiment(PlayerControl.LocalPlayer, source.PlayerId, true);
     }
 
     [MethodRpc((uint)CustomRPC.InjectorCleanse)]
     public static void RpcCleanse(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance) return;
+        if ((!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance) return;
         foreach (var pair in Experiments)
             if (pair.Value.TargetId == source.PlayerId)
             {
@@ -125,7 +138,11 @@ public static class InjectorUtilities
     [MethodRpc((uint)CustomRPC.InjectorSubmit)]
     public static void RpcSubmit(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not InjectorRole || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || SampleCount(source.PlayerId) < OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount || Submitted.Contains(source.PlayerId) || !source.CanMove || source.inVent || !Submitting.Add(source.PlayerId)) return;
+        if ((!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost) || source.Data.Role is not InjectorRole ||
+            source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance ||
+            SampleCount(source.PlayerId) < OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount ||
+            Submitted.Contains(source.PlayerId) || source.inVent || !Submitting.Add(source.PlayerId))
+            return;
         RpcAnnounceSubmission(PlayerControl.LocalPlayer, source.PlayerId);
         Coroutines.Start(CoSubmit(source));
     }
@@ -154,7 +171,7 @@ public static class InjectorUtilities
         flash.gameObject.SetActive(false);
         var end = Time.time + duration;
         var nextFlash = 0f;
-        while (owner && Submitting.Contains(owner.PlayerId) && !MeetingHud.Instance && !ExileController.Instance && AmongUsClient.Instance.IsGameStarted)
+        while (owner && Submitting.Contains(owner.PlayerId) && !MeetingHud.Instance && !ExileController.Instance && (AmongUsClient.Instance.IsGameStarted || DestroyableSingleton<TutorialManager>.InstanceExists))
         {
             var seconds = Mathf.Max(0, Mathf.CeilToInt(end - Time.time));
             text.text = owner.AmOwner ? $"STAY STILL AND SURVIVE - {seconds}s" : $"STOP THE INJECTOR - {seconds}s";
@@ -179,7 +196,12 @@ public static class InjectorUtilities
     {
         if (!source.IsHost()) return;
         Submitting.Remove(ownerId);
-        if (completed) Submitted.Add(ownerId);
+        if (completed)
+        {
+            Submitted.Add(ownerId);
+            if (DestroyableSingleton<TutorialManager>.InstanceExists && PlayerControl.LocalPlayer.PlayerId == ownerId)
+                Coroutines.Start(CoroutinesHelper.CoNotify("<color=#75E6A5>Research complete.</color>\nYou met the Injector win condition."));
+        }
         else if (PlayerControl.LocalPlayer.PlayerId == ownerId)
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FFB14F>Submission interrupted.</color>\nYour samples are kept."));
     }

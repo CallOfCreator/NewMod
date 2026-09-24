@@ -4,6 +4,7 @@ using System.Linq;
 using HarmonyLib;
 using MiraAPI.GameModes;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using NewMod.GameModes.WraithSiegeGamemode;
 using NewMod.RoleLogic;
 using NewMod.Roles;
@@ -89,17 +90,17 @@ public static class InfoChatPatch
             if (factions.Length == 0 || (command == "/factions" && query.Length > 0))
                 reply = "Use /factions to learn about all four groups, or /faction <name> for details.";
             else
-                reply = "Factions group role styles, not teams. Sharing a faction does not guarantee a shared win.\n" + string.Join("\n", factions.Select(faction =>
+                reply = "<b>FACTIONS</b>\nFactions group role styles, not teams. Sharing a faction does not guarantee a shared win.\n" + string.Join("\n", factions.Select(faction =>
                 {
-                    var description = faction switch
+                    var (color, description) = faction switch
                     {
-                        NewModFaction.Apex => "Offensive roles built around hunting, kills and combat power.",
-                        NewModFaction.Entropy => "Independent roles with their own objectives and victory rules.",
-                        NewModFaction.Sentinel => "Crew-aligned roles focused on information, protection and control.",
-                        NewModFaction.Rift => "Roles built around unusual movement, energy and interactions.",
-                        _ => ""
+                        NewModFaction.Apex => ("#FF5A5A", "Offensive roles built around hunting, kills and combat power."),
+                        NewModFaction.Entropy => ("#EAAA3E", "Independent roles with their own objectives and victory rules."),
+                        NewModFaction.Sentinel => ("#3AA6FF", "Crew-aligned roles focused on information, protection and control."),
+                        NewModFaction.Rift => ("#A879E8", "Roles built around unusual movement, energy and interactions."),
+                        _ => ("#FFFFFF", "")
                     };
-                    var details = $"{faction}: {description}";
+                    var details = $"<b><color={color}>{faction}:</color></b> {description}";
                     if (command == "/faction")
                     {
                         var names = CustomRoleManager.CustomMiraRoles.OfType<INewModRole>().Where(role => role.Faction == faction).Select(role => role.RoleName).OrderBy(name => name);
@@ -114,12 +115,12 @@ public static class InfoChatPatch
             AbstractGameMode[] modes = [new ClassicMode(), new HideAndSeekMode(), new WraithSiege()];
             if (command == "/gamemodes" && query.Length == 0)
             {
-                reply = $"Game modes: {string.Join(", ", modes.Select(mode => mode.Name))}\nUse /gamemode <name> for details.";
+                reply = $"Game modes: {string.Join(", ", modes.Select(mode => MiraLocaleManager.Get(mode.Name)))}\nUse /gamemode <name> for details.";
             }
             else if (command == "/gamemode")
             {
-                var mode = query.Length == 0 ? CustomGameModeManager.ActiveMode : modes.FirstOrDefault(mode => string.Concat(mode.Name.Where(character => !char.IsWhiteSpace(character))).Equals(query, StringComparison.OrdinalIgnoreCase));
-                reply = mode == null ? "GameMode not found. Use /gamemodes to see the names." : $"{mode.Name}\n{mode.Description}";
+                var mode = query.Length == 0 ? CustomGameModeManager.ActiveMode : modes.FirstOrDefault(mode => string.Concat(MiraLocaleManager.Get(mode.Name).Where(character => !char.IsWhiteSpace(character))).Equals(query, StringComparison.OrdinalIgnoreCase));
+                reply = mode == null ? "GameMode not found. Use /gamemodes to see the names." : $"{MiraLocaleManager.Get(mode.Name)}\n{MiraLocaleManager.Get(mode.Description)}";
             }
             else
             {

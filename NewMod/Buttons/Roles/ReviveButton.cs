@@ -55,7 +55,7 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
     /// </summary>
     public override LoadableAsset<Sprite> Sprite => NewModAsset.NecromancerButton;
 
-    private DeadBody GetReviveTarget()
+    public DeadBody GetReviveTarget()
     {
         var local = PlayerControl.LocalPlayer;
         var localPos = local.GetTruePosition();
@@ -69,7 +69,7 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
             return false;
 
         var killedPlayer = GameData.Instance.GetPlayerById(body.ParentId)?.Object;
-        if (killedPlayer == null)
+        if (!killedPlayer || !killedPlayer.Data.IsDead || killedPlayer.Data.Disconnected)
             return false;
 
         var killer = Utils.GetKiller(killedPlayer);
@@ -87,7 +87,7 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
     /// <returns>True if all requirements to use this button are met; otherwise false.</returns
     public override bool CanUse()
     {
-        return GetReviveTarget() != null;
+        return base.CanUse() && GetReviveTarget() != null;
     }
 
     /// <summary>
@@ -101,8 +101,6 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
         SoundManager.Instance.PlaySound(NewModAsset.ReviveSound?.LoadAsset(), false, 2f);
 
         Utils.HandleRevive(local, body.ParentId, RoleTypes.Crewmate, body.transform.position.x, body.transform.position.y);
-
-        NecromancerRole.RevivedPlayers[body.ParentId] = local.PlayerId;
     }
 
     /// <summary>

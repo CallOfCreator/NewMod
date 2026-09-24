@@ -95,7 +95,7 @@ public static class NewModHostTickPatch
     [HarmonyPostfix]
     public static void Postfix()
     {
-        if (!AmongUsClient.Instance.AmHost)
+        if (!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost)
             return;
 
         if (EnergyThief.TetherTargets.Count > 0 || EnergyThief.BreachActive)

@@ -1,12 +1,8 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using MiraAPI.GameOptions;
-using MiraAPI.Roles;
 using MiraAPI.Utilities;
-using NewMod.Cosmetics;
 using NewMod.Options;
-using NewMod.Roles;
-using NewMod.Utilities;
 using UnityEngine;
 
 namespace NewMod.Patches;
@@ -20,8 +16,6 @@ public static class PlayerVoteArea_SetCosmetics_Patch
     public static void Postfix(PlayerVoteArea __instance, NetworkedPlayerInfo playerInfo)
     {
         var opts = OptionGroupSingleton<GeneralOption>.Instance;
-        var lp = PlayerControl.LocalPlayer;
-        var revealRolesForDead = opts.ShouldDeadPlayersSeeRoles && lp?.Data?.IsDead == true;
         var anonNames = opts.EnableAnonymousNamesInMeetings;
         var anonIcons = anonNames;
 
@@ -53,29 +47,6 @@ public static class PlayerVoteArea_SetCosmetics_Patch
             __instance.PlayerIcon.SetVisor("", randomColor);
         }
 
-        if (revealRolesForDead)
-        {
-            var role = playerInfo.Role;
-            string roleText;
-            string hex;
-
-            if (role != null && CustomRoleManager.GetCustomRoleBehaviour(role.Role, out var customRole))
-            {
-                roleText = customRole is INewModRole nm ? $"{nm.RoleName} [{Utils.GetFactionDisplay(nm)}]" : customRole.RoleName;
-                hex = ColorUtility.ToHtmlStringRGB(customRole.RoleColor);
-            }
-            else
-            {
-                var isImp = role?.IsImpostor == true;
-                roleText = isImp ? "Impostor" : "Crewmate";
-                hex = isImp ? "FF4D4D" : "00E0FF";
-            }
-
-            __instance.NameText.text = $"{baseName}\n<color=#{hex}>{roleText}</color>";
-        }
-        else
-        {
-            __instance.NameText.text = baseName;
-        }
+        __instance.NameText.text = PlayerRoleNamePatch.FormatName(baseName, playerInfo);
     }
 }
