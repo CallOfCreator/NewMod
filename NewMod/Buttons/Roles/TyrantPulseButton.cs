@@ -13,7 +13,7 @@ public class TyrantPulseButton : CustomActionButton
     public override string Name => "Intimidate";
     public override float Cooldown => OptionGroupSingleton<TyrantOptions>.Instance.PulseCooldown;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.CrownIcon;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.TyrantIntimidate;
 
     public override bool Enabled(RoleBehaviour role)
     {

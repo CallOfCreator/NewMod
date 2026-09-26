@@ -4,7 +4,6 @@ using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
-using NewMod.RoleLogic;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using UnityEngine;
@@ -31,7 +30,7 @@ public class ClaimButton : CustomActionButton, IEnergyAbility
 
     public override bool CanUse()
     {
-        if (!base.CanUse() || !Usurper.States.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state) || state.Phase != UsurperCrownPhase.Unclaimed)
+        if (!base.CanUse() || !Usurper.States.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state) || state.Phase != Usurper.CrownPhase.Unclaimed)
             return false;
 
         _target = null;

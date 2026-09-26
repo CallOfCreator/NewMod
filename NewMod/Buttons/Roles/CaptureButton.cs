@@ -62,7 +62,7 @@ public class CaptureButton : CustomActionButton, IEnergyAbility
         PlacementPreview = preview;
         preview.transform.SetParent(ShipStatus.Instance.transform, false);
         preview.layer = LayerMask.NameToLayer("UI");
-        preview.transform.localScale = Vector3.one * 0.5f;
+        preview.transform.localScale = Vector3.one * 0.05f;
         var sprite = new GameObject("CameraSprite").AddComponent<SpriteRenderer>();
         sprite.gameObject.layer = preview.layer;
         sprite.transform.SetParent(preview.transform, false);

@@ -30,7 +30,7 @@ public class CashOutButton : CustomActionButton, IEnergyAbility
     public override bool CanUse()
     {
         var bountyId = PlayerControl.LocalPlayer.PlayerId;
-        if (!base.CanUse() || !Bounty.Contracts.TryGetValue(bountyId, out var contract) || !contract.CanCollect(Time.time, Bounty.CollectionStartsAt.GetValueOrDefault(bountyId), Bounty.CollectionExpiresAt.GetValueOrDefault(bountyId)))
+        if (!base.CanUse() || !Bounty.Contracts.TryGetValue(bountyId, out var contract) || !Bounty.CanCollect(bountyId, Time.time))
             return false;
 
         var target = Utils.PlayerById(contract.TargetId);

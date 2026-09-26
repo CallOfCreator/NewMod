@@ -11,20 +11,17 @@ public static class NewModAsset
 #pragma warning restore CA2211
 
     // Miscellaneous
-    public static LoadableResourceAsset Banner { get; } = new("NewMod.Resources.optionImage.png");
-    public static LoadableResourceAsset Arrow { get; } = new("NewMod.Resources.Arrow.png");
-    public static LoadableResourceAsset ModLogo { get; } = new("NewMod.Resources.Logo.png");
+    public static LoadableAsset<Sprite> Arrow { get; } = new LoadableBundleAsset<Sprite>("arrow.png", Bundle);
     public static LoadableResourceAsset NewModLogo { get; } = new("NewMod.Resources.NewModLogo.png");
-    public static LoadableResourceAsset NormalLogo { get; } = new("NewMod.Resources.NormalLogo.png");
-    public static LoadableResourceAsset NMIcon { get; } = new("NewMod.Resources.nm.png");
-    public static LoadableResourceAsset CustomCursor { get; } = new("NewMod.Resources.cursor.png");
+    public static LoadableAsset<Sprite> NMIcon { get; } = new LoadableBundleAsset<Sprite>("nm", Bundle);
+    public static LoadableAsset<Sprite> CustomCursor { get; } = new LoadableBundleAsset<Sprite>("cursor.png", Bundle);
     public static LoadableAsset<GameObject> Toast { get; } = new LoadableBundleAsset<GameObject>("Toast", Bundle);
     public static LoadableAsset<GameObject> SlashTray { get; } = new LoadableBundleAsset<GameObject>("SlashTray", Bundle);
     public static LoadableAsset<Sprite> ConfirmIconHover { get; } = new LoadableBundleAsset<Sprite>("confirmOutline", Bundle);
     public static LoadableAsset<Sprite> DenyIconHover { get; } = new LoadableBundleAsset<Sprite>("deniedOutline", Bundle);
     public static LoadableResourceAsset ResidualTrace { get; } = new("NewMod.Resources.residualTrace.png");
-    public static LoadableResourceAsset PowerNodeActive { get; } = new("NewMod.Resources.Active.png");
-    public static LoadableResourceAsset PowerNodeOvercharged { get; } = new("NewMod.Resources.Overcharged.png");
+    public static LoadableAsset<Sprite> PowerNodeActive { get; } = new LoadableBundleAsset<Sprite>("active.png", Bundle);
+    public static LoadableAsset<Sprite> PowerNodeOvercharged { get; } = new LoadableBundleAsset<Sprite>("overcharged.png", Bundle);
 
     // Button icons
     public static LoadableResourceAsset ShowScreenshotButton { get; } = new("NewMod.Resources.showscreenshot.png");
@@ -33,12 +30,15 @@ public static class NewModAsset
     public static LoadableResourceAsset InjectButton { get; } = new("NewMod.Resources.inject.png");
     public static LoadableResourceAsset DeadBodySprite { get; } = new("NewMod.Resources.deadbody.png");
     public static LoadableResourceAsset Camera { get; } = new("NewMod.Resources.cam.png");
-    public static LoadableResourceAsset CameraOff { get; } = new("NewMod.Resources.Camera.NonDirty.Cam_OFF.png", 1000f);
-    public static LoadableResourceAsset CameraOffOutline { get; } = new("NewMod.Resources.Camera.Dirty.Cam_OFF.png", 1000f);
-    public static LoadableResourceAsset CameraEnabled { get; } = new("NewMod.Resources.Camera.NonDirty.Cam_Enabled.png", 1000f);
-    public static LoadableResourceAsset CameraEnabledOutline { get; } = new("NewMod.Resources.Camera.Dirty.Cam_Enabled.png", 1000f);
-    public static LoadableResourceAsset CameraDisabled { get; } = new("NewMod.Resources.Camera.NonDirty.Cam_Disabled.png", 1000f);
-    public static LoadableResourceAsset CameraDisabledOutline { get; } = new("NewMod.Resources.Camera.Dirty.Cam_Disabled.png", 1000f);
+    public static LoadableAsset<Sprite> CameraOff { get; } = new LoadableBundleAsset<Sprite>("cam_off.png", Bundle);
+    
+    public static LoadableAsset<Sprite> CameraOffOutline { get; } = new LoadableBundleAsset<Sprite>("cam_off.png", Bundle);
+    public static LoadableAsset<Sprite> CameraEnabled { get; } = new LoadableBundleAsset<Sprite>("cam_enabled.png", Bundle);
+    public static LoadableAsset<Sprite> CameraEnabledOutline { get; } = new LoadableBundleAsset<Sprite>("cam_enabled.png", Bundle);
+    public static LoadableAsset<Sprite> CameraDisabled { get; } = new LoadableBundleAsset<Sprite>("cam_disabled.png", Bundle);
+    public static LoadableAsset<Sprite> CameraDisabledOutline { get; } = new LoadableBundleAsset<Sprite>("cam_disabled.png", Bundle);
+    public static LoadableAsset<Sprite> TyrantAlliance { get; } = new LoadableBundleAsset<Sprite>("tyrantAlliance.png", Bundle);
+    public static LoadableAsset<Sprite> TyrantIntimidate { get; } = new LoadableBundleAsset<Sprite>("tyrantIntimidate.png", Bundle);
     public static LoadableResourceAsset StrikeButton { get; } = new("NewMod.Resources.Strike.png");
     public static LoadableResourceAsset CallWraith { get; } = new("NewMod.Resources.callwraith.png");
     public static LoadableResourceAsset Shield { get; } = new("NewMod.Resources.Shield.png");
@@ -62,25 +62,25 @@ public static class NewModAsset
 
 
     // Energy category icons
-    public static LoadableResourceAsset AggressionEnergyIcon { get; } = new("NewMod.Resources.Aggression.png");
-    public static LoadableResourceAsset ControlEnergyIcon { get; } = new("NewMod.Resources.Control.png");
-    public static LoadableResourceAsset IntelligenceEnergyIcon { get; } = new("NewMod.Resources.Intelligence.png");
-    public static LoadableResourceAsset MobilityEnergyIcon { get; } = new("NewMod.Resources.Mobility.png");
-    public static LoadableResourceAsset ProtectionEnergyIcon { get; } = new("NewMod.Resources.Protection.png");
+    public static LoadableAsset<Sprite> AggressionEnergyIcon { get; } = new LoadableBundleAsset<Sprite>("aggression.png", Bundle);
+    public static LoadableAsset<Sprite> ControlEnergyIcon { get; } = new LoadableBundleAsset<Sprite>("control.png", Bundle);
+    public static LoadableAsset<Sprite> IntelligenceEnergyIcon { get; } = new LoadableBundleAsset<Sprite>("intelligence.png", Bundle);
+    public static LoadableAsset<Sprite> MobilityEnergyIcon { get; } = new LoadableBundleAsset<Sprite>("mobility.png", Bundle);
+    public static LoadableAsset<Sprite> ProtectionEnergyIcon { get; } = new LoadableBundleAsset<Sprite>("protection.png", Bundle);
 
 
     // SFX
-    public static LoadableAudioResourceAsset ReviveSound { get; } = new("NewMod.Resources.Sounds.revive.wav");
-    public static LoadableAudioResourceAsset DoomAwakeningSound { get; } = new("NewMod.Resources.Sounds.gloomy_aura.wav");
-    public static LoadableAudioResourceAsset DoomAwakeningEndSound { get; } = new("NewMod.Resources.Sounds.evil_laugh.wav");
-    public static LoadableAudioResourceAsset FeignDeathSound { get; } = new("NewMod.Resources.Sounds.feign_death.wav");
-    public static LoadableAudioResourceAsset VisionarySound { get; } = new("NewMod.Resources.Sounds.visionary_sound.wav");
-    public static LoadableAudioResourceAsset StrikeSound { get; } = new("NewMod.Resources.Sounds.strike_sound.wav");
-    public static LoadableAudioResourceAsset FearSound { get; } = new("NewMod.Resources.Sounds.fear_sound.wav");
-    public static LoadableAudioResourceAsset HeartbeatSound { get; } = new("NewMod.Resources.Sounds.heartbeat_sound.wav");
-    public static LoadableAudioResourceAsset GEEnterSound { get; } = new("NewMod.Resources.Sounds.ge_enter.wav");
-    public static LoadableAudioResourceAsset GEExitSound { get; } = new("NewMod.Resources.Sounds.ge_exit.wav");
-    public static LoadableAudioResourceAsset EnterVoidSFX { get; } = new("NewMod.Resources.Sounds.entervoid.wav");
+    public static LoadableAsset<AudioClip> ReviveSound { get; } = new LoadableBundleAsset<AudioClip>("revive.wav", Bundle);
+    public static LoadableAsset<AudioClip> DoomAwakeningSound { get; } = new LoadableBundleAsset<AudioClip>("gloomy_aura.wav", Bundle);
+    public static LoadableAsset<AudioClip> DoomAwakeningEndSound { get; } = new LoadableBundleAsset<AudioClip>("evil_laugh.wav", Bundle);
+    public static LoadableAsset<AudioClip> FeignDeathSound { get; } = new LoadableBundleAsset<AudioClip>("feign_death.wav", Bundle);
+    public static LoadableAsset<AudioClip> VisionarySound { get; } = new LoadableBundleAsset<AudioClip>("visionary_sound.wav", Bundle);
+    public static LoadableAsset<AudioClip> StrikeSound { get; } = new LoadableBundleAsset<AudioClip>("strike_sound.wav", Bundle);
+    public static LoadableAsset<AudioClip> FearSound { get; } = new LoadableBundleAsset<AudioClip>("fear_sound.wav", Bundle);
+    public static LoadableAsset<AudioClip> HeartbeatSound { get; } = new LoadableBundleAsset<AudioClip>("heartbeat_sound.wav", Bundle);
+    public static LoadableAsset<AudioClip> GEEnterSound { get; } = new LoadableBundleAsset<AudioClip>("ge_enter.wav", Bundle);
+    public static LoadableAsset<AudioClip> GEExitSound { get; } = new LoadableBundleAsset<AudioClip>("ge_exit.wav", Bundle);
+    public static LoadableAsset<AudioClip> EnterVoidSFX { get; } = new LoadableBundleAsset<AudioClip>("entervoid.wav", Bundle);
 
     // Role Icons
     public static LoadableResourceAsset StrikeIcon { get; } = new("NewMod.Resources.RoleIcons.StrikeIcon.png");
@@ -120,37 +120,37 @@ public static class NewModAsset
 
     // Textures
     public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
-    public static LoadableResourceAsset CrismonTexture { get; } = new("NewMod.Resources.turbulence8.png");
+    public static LoadableAsset<Texture2D> CrismonTexture { get; } = new LoadableBundleAsset<Texture2D>("turbulence8.png", Bundle);
     public static LoadableAsset<Texture2D> ShatteredGlassTexture { get; } = new LoadableBundleAsset<Texture2D>("radialShatter.png", Bundle);
 
     //General Events
     public static LoadableAsset<GameObject> GeneralEventHud { get; } = new LoadableBundleAsset<GameObject>("GeneralEvent", Bundle);
-    public static LoadableResourceAsset CrismonIcon { get; } = new("NewMod.Resources.GeneralEvents.crismon_ge_icon.png");
-    public static LoadableResourceAsset NegativeRealityIcon { get; } = new("NewMod.Resources.GeneralEvents.NegativeIcon.png");
-    public static LoadableResourceAsset IdentityCrisisIcon { get; } = new("NewMod.Resources.GeneralEvents.IdentityCrisis.png");
-    public static LoadableResourceAsset RoleScrambleIcon { get; } = new("NewMod.Resources.GeneralEvents.RoleScramble.png");
-    public static LoadableResourceAsset SystemOverrideIcon { get; } = new("NewMod.Resources.GeneralEvents.SystemOverride.png");
-    public static LoadableResourceAsset AbilityExchangeIcon { get; } = new("NewMod.Resources.GeneralEvents.AbilityExchange.png");
-    public static LoadableResourceAsset NoMansLandIcon { get; } = new("NewMod.Resources.GeneralEvents.NoMansLand.png");
-    public static LoadableResourceAsset ScrDesyncIcon { get; } = new("NewMod.Resources.GeneralEvents.ScrDesyncIcon.png");
+    public static LoadableAsset<Sprite> CrismonIcon { get; } = new LoadableBundleAsset<Sprite>("crismon_ge_icon.png", Bundle);
+    public static LoadableAsset<Sprite> NegativeRealityIcon { get; } = new LoadableBundleAsset<Sprite>("negativeicon.png", Bundle);
+    public static LoadableAsset<Sprite> IdentityCrisisIcon { get; } = new LoadableBundleAsset<Sprite>("identitycrisis.png", Bundle);
+    public static LoadableAsset<Sprite> RoleScrambleIcon { get; } = new LoadableBundleAsset<Sprite>("rolescramble.png", Bundle);
+    public static LoadableAsset<Sprite> SystemOverrideIcon { get; } = new LoadableBundleAsset<Sprite>("systemoverride.png", Bundle);
+    public static LoadableAsset<Sprite> AbilityExchangeIcon { get; } = new LoadableBundleAsset<Sprite>("abilityexchange.png", Bundle);
+    public static LoadableAsset<Sprite> NoMansLandIcon { get; } = new LoadableBundleAsset<Sprite>("nomansland.png", Bundle);
+    public static LoadableAsset<Sprite> ScrDesyncIcon { get; } = new LoadableBundleAsset<Sprite>("scrdesyncicon.png", Bundle);
 
     //Cosmetics
-    public static LoadableResourceAsset OG_NewModHat { get; } = new("NewMod.Resources.Cosmetics.Hats.og_newmod.png");
-    public static LoadableResourceAsset MintIceCreamHat { get; } = new("NewMod.Resources.Cosmetics.Hats.minticecream.png");
-    public static LoadableResourceAsset StrawberryIceCreamHat { get; } = new("NewMod.Resources.Cosmetics.Hats.strawberryicecream.png");
-    public static LoadableResourceAsset PizzaHat { get; } = new("NewMod.Resources.Cosmetics.Hats.pizza.png");
-    public static LoadableResourceAsset SqueezeCapHat { get; } = new("NewMod.Resources.Cosmetics.Hats.squeezecap.png");
+    public static LoadableAsset<Sprite> OG_NewModHat { get; } = new LoadableBundleAsset<Sprite>("og_newmod.png", Bundle);
+    public static LoadableAsset<Sprite> MintIceCreamHat { get; } = new LoadableBundleAsset<Sprite>("minticecream.png", Bundle);
+    public static LoadableAsset<Sprite> StrawberryIceCreamHat { get; } = new LoadableBundleAsset<Sprite>("strawberryicecream.png", Bundle);
+    public static LoadableAsset<Sprite> PizzaHat { get; } = new LoadableBundleAsset<Sprite>("pizza.png", Bundle);
+    public static LoadableAsset<Sprite> SqueezeCapHat { get; } = new LoadableBundleAsset<Sprite>("squeezecap.png", Bundle);
 
-    public static LoadableResourceAsset ZrosHat { get; } = new("NewMod.Resources.Cosmetics.Hats.zros.png");
+    public static LoadableAsset<Sprite> ZrosHat { get; } = new LoadableBundleAsset<Sprite>("zros.png", Bundle);
 
-    public static LoadableResourceAsset IGotanIdeaHat { get; } = new("NewMod.Resources.Cosmetics.Hats.igotanidea.png");
+    public static LoadableAsset<Sprite> IGotanIdeaHat { get; } = new LoadableBundleAsset<Sprite>("igotanidea.png", Bundle);
 
-    public static LoadableResourceAsset CottonMemoriesVisor { get; } = new("NewMod.Resources.Cosmetics.Visors.cottonmemories.png");
-    public static LoadableResourceAsset MaliciousLook { get; } = new("NewMod.Resources.Cosmetics.Visors.maliciouslook.png");
+    public static LoadableAsset<Sprite> CottonMemoriesVisor { get; } = new LoadableBundleAsset<Sprite>("cottonmemories.png", Bundle);
+    public static LoadableAsset<Sprite> MaliciousLook { get; } = new LoadableBundleAsset<Sprite>("maliciouslook.png", Bundle);
 
-    public static LoadableResourceAsset GlitchedRealityHat { get; } = new("NewMod.Resources.Cosmetics.Hats.glitchedReality.png");
-    public static LoadableResourceAsset SunnyNameplate { get; } = new("NewMod.Resources.Cosmetics.Nameplates.sunnynameplate.png");
-    public static LoadableResourceAsset NMraveNameplate { get; } = new("NewMod.Resources.Cosmetics.Nameplates.nmrave.png");
+    public static LoadableAsset<Sprite> GlitchedRealityHat { get; } = new LoadableBundleAsset<Sprite>("glitchedreality.png", Bundle);
+    public static LoadableAsset<Sprite> SunnyNameplate { get; } = new LoadableBundleAsset<Sprite>("sunnynameplate.png", Bundle);
+    public static LoadableAsset<Sprite> NMraveNameplate { get; } = new LoadableBundleAsset<Sprite>("nmrave.png", Bundle);
 
     //Minigames
     public static LoadableAsset<GameObject> VerifyMinigame { get; } = new LoadableBundleAsset<GameObject>("VerifyMinigame", Bundle);
@@ -159,8 +159,8 @@ public static class NewModAsset
 
 
     // GameModes
-    public static LoadableResourceAsset WraithSiegeFlag { get; } = new("NewMod.Resources.flag.png");
-    public static LoadableResourceAsset WraithSiegeTicket { get; } = new("NewMod.Resources.ticket.png");
-    public static LoadableResourceAsset WraithSiegeWraith { get; } = new("NewMod.Resources.wraith.png");
+    public static LoadableAsset<Sprite> WraithSiegeFlag { get; } = new LoadableBundleAsset<Sprite>("flag.png", Bundle);
+    public static LoadableAsset<Sprite> WraithSiegeTicket { get; } = new LoadableBundleAsset<Sprite>("ticket.png", Bundle);
+    public static LoadableAsset<Sprite> WraithSiegeWraith { get; } = new LoadableBundleAsset<Sprite>("wraith.png", Bundle);
     public static LoadableResourceAsset WraithSiegeBanish { get; } = new("NewMod.Resources.banish.png");
 }

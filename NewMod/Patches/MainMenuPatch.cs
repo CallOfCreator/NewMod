@@ -55,11 +55,7 @@ public static class MainMenuPatch
         if (!AchievementsManager.Tabs.Any(tab => tab is PreseasonAchievementsTab))
             AchievementsManager.Tabs.Add(new PreseasonAchievementsTab());
 
-        if (!_cachedCursor)
-        {
-            var cursorSprite = NewModAsset.CustomCursor.LoadAsset();
-            _cachedCursor = cursorSprite ? cursorSprite.texture : null;
-        }
+        GetCursorTexture();
 
         if (_cachedCursor && LocalSettingsTabSingleton<NewModLocalSettings>.Instance.EnableCustomCursor.Value) Cursor.SetCursor(_cachedCursor, Vector2.zero, CursorMode.Auto);
 
@@ -76,5 +72,23 @@ public static class MainMenuPatch
 
         SeasonManager.InitializeSeasons(__instance);
         ModCompatibility.Initialize();
+    }
+
+    public static Texture2D GetCursorTexture()
+    {
+        if (_cachedCursor)
+            return _cachedCursor;
+
+        var texture = NewModAsset.CustomCursor.LoadAsset().texture;
+        var target = RenderTexture.GetTemporary(texture.width, texture.height, 0);
+        var previous = RenderTexture.active;
+        Graphics.Blit(texture, target);
+        RenderTexture.active = target;
+        _cachedCursor = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+        _cachedCursor.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
+        _cachedCursor.Apply();
+        RenderTexture.active = previous;
+        RenderTexture.ReleaseTemporary(target);
+        return _cachedCursor;
     }
 }

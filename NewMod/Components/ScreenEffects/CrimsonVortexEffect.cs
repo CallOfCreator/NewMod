@@ -60,7 +60,7 @@ public class CrimsonVortexEffect : ScreenEffect
 
         _mat = new Material(shader) { hideFlags = HideFlags.DontSave };
 
-        _mat.SetTexture("_CrimsonTex", texture.texture);
+        _mat.SetTexture("_CrimsonTex", texture);
     }
 
     public override void Render(RenderTexture src, RenderTexture dst)

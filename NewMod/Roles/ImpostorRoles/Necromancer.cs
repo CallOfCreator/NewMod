@@ -19,5 +19,5 @@ public class NecromancerRole : ImpostorRole, ICustomRole
     public ModdedRoleTeams Team => ModdedRoleTeams.Impostor;
     public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Impostor;
 
-    public CustomRoleConfiguration Configuration => new(this) { Icon = NewModAsset.ReviveIcon, OptionsScreenshot = NewModAsset.Banner, MaxRoleCount = 1 };
+    public CustomRoleConfiguration Configuration => new(this) { Icon = NewModAsset.ReviveIcon, MaxRoleCount = 1 };
 }

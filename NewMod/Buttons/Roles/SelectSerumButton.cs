@@ -1,4 +1,3 @@
-using NewMod.RoleLogic;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
@@ -22,7 +21,7 @@ public class SelectSerumButton : CustomActionButton
 
     protected override void OnClick()
     {
-        InjectorUtilities.SelectedSerum = InjectorUtilities.SelectedSerum == SerumType.Adrenaline ? SerumType.Sedative : SerumType.Adrenaline;
+        InjectorUtilities.SelectedSerum = InjectorUtilities.SelectedSerum == InjectorRole.SerumType.Adrenaline ? InjectorRole.SerumType.Sedative : InjectorRole.SerumType.Adrenaline;
         OverrideName(Name);
     }
 }

@@ -22,7 +22,7 @@ public class ConvertFragmentsButton : CustomActionButton
 
     public override bool CanUse()
     {
-        return base.CanUse() && !Collector.VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId) && Collector.Inventories.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var inventory) && inventory.CanConvert((int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost);
+        return base.CanUse() && !Collector.VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId) && Collector.Inventories.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var inventory) && Collector.CanConvert(inventory, (int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost);
     }
 
     protected override void OnClick()

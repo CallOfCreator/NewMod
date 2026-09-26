@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Translation;
 using MiraAPI.Events;
@@ -14,7 +15,6 @@ using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
-using NewMod.RoleLogic;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
@@ -23,14 +23,11 @@ using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles.S1;
 
-using FragmentKind = CollectorFragmentKind;
-using FragmentPower = CollectorManifestResult;
-
 [MiraIgnore]
 public class Collector : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<uint, FragmentRecord> Fragments = [];
-    public static readonly Dictionary<byte, CollectorInventory> Inventories = [];
+    public static readonly Dictionary<byte, int[]> Inventories = [];
     public static readonly HashSet<byte> VictoryArmed = [];
     public static readonly HashSet<byte> EnvironmentalDeaths = [];
 
@@ -66,7 +63,7 @@ public class Collector : CrewmateRole, INewModRole
         text.AppendLine();
         if (VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId)) text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.ManifestComplete"));
         if (Inventories.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var inventory))
-            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.Inventory"), inventory.Count(FragmentKind.Violence), inventory.Count(FragmentKind.Ability), inventory.Count(FragmentKind.Fate), OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost));
+            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.Inventory"), inventory[(int)FragmentKind.Violence], inventory[(int)FragmentKind.Ability], inventory[(int)FragmentKind.Fate], OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost));
         return text;
     }
 
@@ -93,7 +90,7 @@ public class Collector : CrewmateRole, INewModRole
 
             foreach (var player in PlayerControl.AllPlayerControls)
                 if (player.Data.Role is Collector)
-                    Inventories[player.PlayerId] = new CollectorInventory();
+                    Inventories[player.PlayerId] = new int[3];
         }
 
         if (!evt.TriggeredByIntro && ExilePending && AmongUsClient.Instance.AmHost)
@@ -108,7 +105,7 @@ public class Collector : CrewmateRole, INewModRole
     {
         if (evt.Player.Data.Role is Collector)
         {
-            Inventories[evt.Player.PlayerId] = new CollectorInventory();
+            Inventories[evt.Player.PlayerId] = new int[3];
         }
         else
         {
@@ -201,7 +198,7 @@ public class Collector : CrewmateRole, INewModRole
             return;
 
         Destroy(fragment.Object);
-        inventory.Add((FragmentKind)kindId);
+        inventory[kindId]++;
 
         var collector = Utils.PlayerById(collectorId);
         var local = PlayerControl.LocalPlayer;
@@ -216,10 +213,10 @@ public class Collector : CrewmateRole, INewModRole
         if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || VictoryArmed.Contains(source.PlayerId) || !Inventories.TryGetValue(source.PlayerId, out var inventory))
             return;
 
-        if (!inventory.CanManifest)
+        if (!CanManifest(inventory))
             return;
 
-        RpcConfirmManifest(PlayerControl.LocalPlayer, source.PlayerId, (byte)inventory.Manifest());
+        RpcConfirmManifest(PlayerControl.LocalPlayer, source.PlayerId, (byte)Manifest(inventory));
     }
 
     [MethodRpc((uint)CustomRPC.CollectorConfirmManifest, LocalHandling = RpcLocalHandling.After)]
@@ -230,7 +227,7 @@ public class Collector : CrewmateRole, INewModRole
 
         var power = (FragmentPower)result;
         if (!AmongUsClient.Instance.AmHost)
-            inventory.Manifest();
+            Manifest(inventory);
 
         if (power == FragmentPower.Victory)
         {
@@ -247,7 +244,7 @@ public class Collector : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.CollectorRequestConvert)]
     public static void RpcRequestConvert(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || VictoryArmed.Contains(source.PlayerId) || !Inventories.TryGetValue(source.PlayerId, out var inventory) || !inventory.CanConvert((int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost)) return;
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Collector || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || VictoryArmed.Contains(source.PlayerId) || !Inventories.TryGetValue(source.PlayerId, out var inventory) || !CanConvert(inventory, (int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost)) return;
         RpcConfirmConvert(PlayerControl.LocalPlayer, source.PlayerId);
     }
 
@@ -255,7 +252,7 @@ public class Collector : CrewmateRole, INewModRole
     public static void RpcConfirmConvert(PlayerControl source, byte ownerId)
     {
         if (!source.IsHost()) return;
-        Inventories[ownerId].Convert((int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost);
+        ConvertFragments(Inventories[ownerId], (int)OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost);
         if (PlayerControl.LocalPlayer.PlayerId == ownerId)
             Coroutines.Start(CoroutinesHelper.CoNotify("Duplicates converted into a missing fragment."));
     }
@@ -322,4 +319,58 @@ public class Collector : CrewmateRole, INewModRole
         public GameObject Object;
         public Vector2 Position;
     }
+
+    public enum FragmentKind : byte
+    {
+        Violence,
+        Ability,
+        Fate
+    }
+
+    public enum FragmentPower : byte
+    {
+        None,
+        Victory,
+        Trace,
+        Drift
+    }
+    public static bool CanConvert(int[] fragments, int cost)
+    {
+        return System.Array.Exists(fragments, count => count == 0) && System.Array.Exists(fragments, count => count > cost);
+    }
+
+    public static bool ConvertFragments(int[] fragments, int cost)
+    {
+        var missing = System.Array.FindIndex(fragments, count => count == 0);
+        var donor = System.Array.FindIndex(fragments, count => count > cost);
+        if (missing < 0 || donor < 0)
+            return false;
+
+        fragments[donor] -= cost;
+        fragments[missing]++;
+        return true;
+    }
+
+    public static bool CanManifest(int[] fragments)
+    {
+        return fragments.All(count => count > 0) || fragments.Any(count => count >= 2);
+    }
+
+    public static FragmentPower Manifest(int[] fragments)
+    {
+        if (fragments.All(count => count > 0))
+        {
+            for (var index = 0; index < fragments.Length; index++)
+                fragments[index]--;
+            return FragmentPower.Victory;
+        }
+
+        var pair = System.Array.FindIndex(fragments, count => count >= 2);
+        if (pair < 0)
+            return FragmentPower.None;
+
+        fragments[pair] -= 2;
+        return pair == (int)FragmentKind.Fate ? FragmentPower.Drift : FragmentPower.Trace;
+    }
+
 }

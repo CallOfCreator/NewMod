@@ -1,3 +1,4 @@
+using System.Text;
 using System;
 using System.Collections;
 using System.Linq;
@@ -6,7 +7,6 @@ using MiraAPI.GameModes;
 using MiraAPI.Roles;
 using MiraAPI.Translation;
 using NewMod.GameModes.WraithSiegeGamemode;
-using NewMod.RoleLogic;
 using NewMod.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities;
@@ -42,11 +42,9 @@ public static class InfoChatPatch
         if (!PlayerControl.LocalPlayer || !PlayerControl.LocalPlayer.Data || __instance.quickChatMenu.IsOpen || __instance.quickChatMenu.CanSend)
             return true;
 
-        if (!InfoChatCommand.TryParse(__instance.freeChatField.Text, out var parsed))
+        if (!TryParse(__instance.freeChatField.Text, out var command, out var query))
             return true;
 
-        var command = parsed.Name;
-        var query = parsed.Query;
         string reply;
 
         if (command == "/help")
@@ -136,5 +134,28 @@ public static class InfoChatPatch
         __instance.AddChat(PlayerControl.LocalPlayer, reply.Replace("—", ",").Replace("–", "-"), false);
 
         return false;
+    }
+
+    public static bool TryParse(string text, out string name, out string query)
+    {
+        text = text.Trim();
+        var separator = 0;
+        while (separator < text.Length && !char.IsWhiteSpace(text[separator]))
+            separator++;
+
+        name = text[..separator].ToLowerInvariant();
+        query = string.Empty;
+        if (name is not ("/help" or "/roles" or "/role" or "/r" or "/gamemodes" or "/gamemode" or "/factions" or "/faction"))
+        {
+            return false;
+        }
+
+        var queryText = new StringBuilder();
+        for (var index = separator; index < text.Length; index++)
+            if (!char.IsWhiteSpace(text[index]))
+                queryText.Append(text[index]);
+
+        query = queryText.ToString();
+        return true;
     }
 }

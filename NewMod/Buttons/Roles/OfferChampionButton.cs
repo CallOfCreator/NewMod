@@ -15,7 +15,7 @@ public class OfferChampionButton : CustomActionButton
     public override string Name => "Offer Alliance";
     public override float Cooldown => 0f;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.CrownIcon;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.TyrantAlliance;
 
     public override bool Enabled(RoleBehaviour role)
     {

@@ -15,7 +15,6 @@ using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Buttons.Roles.S1;
 using NewMod.Options.Roles.S1;
-using NewMod.RoleLogic;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
@@ -27,7 +26,7 @@ namespace NewMod.Roles.NeutralRoles.S1;
 [MiraIgnore]
 public class Usurper : CrewmateRole, INewModRole
 {
-    public static readonly Dictionary<byte, UsurperCrownState> States = [];
+    public static readonly Dictionary<byte, (byte TargetId, CrownPhase Phase)> States = [];
     public static readonly Dictionary<byte, Vector2> CrownPositions = [];
 
     public static readonly Dictionary<byte, GameObject> CrownObjects = [];
@@ -65,11 +64,11 @@ public class Usurper : CrewmateRole, INewModRole
         if (!States.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state))
             return text;
 
-        if (state.Phase == UsurperCrownPhase.Claimed)
+        if (state.Phase == CrownPhase.Claimed)
             text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Claimed"), Utils.PlayerById(state.TargetId).Data.PlayerName));
-        else if (state.Phase == UsurperCrownPhase.Available)
+        else if (state.Phase == CrownPhase.Available)
             text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.CrownWaiting"));
-        else if (state.Phase == UsurperCrownPhase.Held)
+        else if (state.Phase == CrownPhase.Held)
             text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.SurvivalGoal"));
 
         return text;
@@ -89,7 +88,7 @@ public class Usurper : CrewmateRole, INewModRole
 
             foreach (var player in PlayerControl.AllPlayerControls)
                 if (player.Data.Role is Usurper)
-                    States[player.PlayerId] = new UsurperCrownState();
+                    States[player.PlayerId] = (byte.MaxValue, CrownPhase.Unclaimed);
 
             return;
         }
@@ -106,7 +105,7 @@ public class Usurper : CrewmateRole, INewModRole
     {
         if (evt.Player.Data.Role is Usurper)
         {
-            States[evt.Player.PlayerId] = new UsurperCrownState();
+            States[evt.Player.PlayerId] = (byte.MaxValue, CrownPhase.Unclaimed);
             return;
         }
 
@@ -143,7 +142,7 @@ public class Usurper : CrewmateRole, INewModRole
         foreach (var pair in States)
         {
             var usurper = Utils.PlayerById(pair.Key);
-            if (!pair.Value.SurvivedMeeting(usurper && !usurper.Data.IsDead && !usurper.Data.Disconnected))
+            if ((pair.Value.Phase != CrownPhase.Held || !usurper || usurper.Data.IsDead || usurper.Data.Disconnected))
                 continue;
 
             CustomGameOver.Trigger<UsurperGameOver>([usurper.Data]);
@@ -159,7 +158,7 @@ public class Usurper : CrewmateRole, INewModRole
 
         var targetId = evt.ClientData.Character.PlayerId;
         foreach (var pair in States)
-            if (pair.Value.Phase == UsurperCrownPhase.Claimed && pair.Value.TargetId == targetId)
+            if (pair.Value.Phase == CrownPhase.Claimed && pair.Value.TargetId == targetId)
                 RpcRefundClaim(PlayerControl.LocalPlayer, pair.Key, targetId);
     }
 
@@ -210,14 +209,14 @@ public class Usurper : CrewmateRole, INewModRole
     public static void MarkClaimedDeath(byte targetId, Vector2 position)
     {
         foreach (var pair in States)
-            if (pair.Value.Phase == UsurperCrownPhase.Claimed && pair.Value.TargetId == targetId)
+            if (pair.Value.Phase == CrownPhase.Claimed && pair.Value.TargetId == targetId)
                 RpcSpawnCrown(PlayerControl.LocalPlayer, pair.Key, targetId, position.x, position.y);
     }
 
     [MethodRpc((uint)CustomRPC.UsurperRequestClaim)]
     public static void RpcRequestClaim(PlayerControl source, PlayerControl target)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Usurper || source.Data.IsDead || target.Data.IsDead || target.Data.Disconnected || !States.TryGetValue(source.PlayerId, out var state) || state.Phase != UsurperCrownPhase.Unclaimed || Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<UsurperOptions>.Instance.ClaimRange)
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Usurper || source.Data.IsDead || target.Data.IsDead || target.Data.Disconnected || !States.TryGetValue(source.PlayerId, out var state) || state.Phase != CrownPhase.Unclaimed || Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<UsurperOptions>.Instance.ClaimRange)
             return;
 
         RpcConfirmClaim(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId);
@@ -227,13 +226,13 @@ public class Usurper : CrewmateRole, INewModRole
     public static void RpcConfirmClaim(PlayerControl source, byte usurperId, byte targetId)
     {
         if (source.IsHost())
-            States[usurperId].Claim(targetId);
+            Claim(usurperId, targetId);
     }
 
     [MethodRpc((uint)CustomRPC.UsurperSpawnCrown, LocalHandling = RpcLocalHandling.After)]
     public static void RpcSpawnCrown(PlayerControl source, byte usurperId, byte targetId, float x, float y)
     {
-        if (!source.IsHost() || !States[usurperId].MakeCrownAvailable(targetId))
+        if (!source.IsHost() || !MakeCrownAvailable(usurperId, targetId))
             return;
 
         var position = new Vector2(x, y);
@@ -254,7 +253,7 @@ public class Usurper : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.UsurperTakeCrown, LocalHandling = RpcLocalHandling.After)]
     public static void RpcTakeCrown(PlayerControl source, byte usurperId)
     {
-        if (!source.IsHost() || !States[usurperId].TakeCrown())
+        if (!source.IsHost() || !TakeCrown(usurperId))
             return;
 
         Pickup.Remove(usurperId);
@@ -270,7 +269,7 @@ public class Usurper : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.UsurperRefundClaim, LocalHandling = RpcLocalHandling.After)]
     public static void RpcRefundClaim(PlayerControl source, byte usurperId, byte targetId)
     {
-        if (!source.IsHost() || !States[usurperId].Refund(targetId))
+        if (!source.IsHost() || !RefundClaim(usurperId, targetId))
             return;
 
         var usurper = Utils.PlayerById(usurperId);
@@ -288,7 +287,7 @@ public class Usurper : CrewmateRole, INewModRole
         Pickup.Remove(usurperId);
         Destroy(CrownObjects[usurperId]);
         CrownObjects.Remove(usurperId);
-        States[usurperId] = new UsurperCrownState();
+        States[usurperId] = (byte.MaxValue, CrownPhase.Unclaimed);
         if (PlayerControl.LocalPlayer.PlayerId == usurperId)
             CustomButtonSingleton<ClaimButton>.Instance.SetUses(1);
         Coroutines.Start(CoroutinesHelper.CoNotify("The unclaimed crown was secured.\nThe Usurper must choose a new claim."));
@@ -306,4 +305,47 @@ public class Usurper : CrewmateRole, INewModRole
         ExiledPlayerId = byte.MaxValue;
         ExilePosition = Vector2.zero;
     }
+
+    public enum CrownPhase : byte
+    {
+        Unclaimed,
+        Claimed,
+        Available,
+        Held
+    }
+    public static bool Claim(byte ownerId, byte targetId)
+    {
+        if (States[ownerId].Phase != CrownPhase.Unclaimed)
+            return false;
+        States[ownerId] = (targetId, CrownPhase.Claimed);
+        return true;
+    }
+
+    public static bool MakeCrownAvailable(byte ownerId, byte targetId)
+    {
+        var state = States[ownerId];
+        if (state.Phase != CrownPhase.Claimed || state.TargetId != targetId)
+            return false;
+        States[ownerId] = (targetId, CrownPhase.Available);
+        return true;
+    }
+
+    public static bool RefundClaim(byte ownerId, byte targetId)
+    {
+        var state = States[ownerId];
+        if (state.Phase != CrownPhase.Claimed || state.TargetId != targetId)
+            return false;
+        States[ownerId] = (byte.MaxValue, CrownPhase.Unclaimed);
+        return true;
+    }
+
+    public static bool TakeCrown(byte ownerId)
+    {
+        var state = States[ownerId];
+        if (state.Phase != CrownPhase.Available)
+            return false;
+        States[ownerId] = (state.TargetId, CrownPhase.Held);
+        return true;
+    }
+
 }

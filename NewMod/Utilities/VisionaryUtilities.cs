@@ -67,7 +67,7 @@ public static class VisionaryUtilities
         var go = new GameObject("VisionaryCamera") { layer = LayerMask.NameToLayer("Ship") };
         go.transform.SetParent(ShipStatus.Instance.transform, false);
         go.transform.position = new Vector3(x, y, y / 1000f);
-        go.transform.localScale = Vector3.one * 0.5f;
+        go.transform.localScale = Vector3.one * 0.05f;
 
         var renderer = new GameObject("CameraSprite").AddComponent<SpriteRenderer>();
         renderer.transform.SetParent(go.transform, false);

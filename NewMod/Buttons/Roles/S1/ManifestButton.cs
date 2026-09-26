@@ -29,7 +29,7 @@ public class ManifestButton : CustomActionButton, IEnergyAbility
         if (!base.CanUse() || Collector.VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId) || !Collector.Inventories.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var inventory))
             return false;
 
-        return inventory.CanManifest;
+        return Collector.CanManifest(inventory);
     }
 
     protected override void OnClick()

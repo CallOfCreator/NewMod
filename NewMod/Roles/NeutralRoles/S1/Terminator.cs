@@ -18,7 +18,6 @@ using NewMod.Options.Roles.S1;
 using NewMod.Buttons.Roles.S1;
 using NewMod.Components;
 using NewMod.Utilities;
-using NewMod.RoleLogic;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
 using Reactor.Utilities;
@@ -38,7 +37,8 @@ public class TerminatorRole : CrewmateRole, INewModRole
     public static bool FinalCountdownActive;
     public static Vector2 ObjectivePosition;
     public static GameObject ObjectiveMarker;
-    public static TerminatorHuntState HuntState = new(1);
+    public static int Armor = 1;
+    public static readonly HashSet<byte> ArmorAttackers = [];
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.IntroBlurb");
 
@@ -187,7 +187,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
 
         FinalCountdownActive = true;
         ObjectiveSpawned = false;
-        HuntState = new TerminatorHuntState((int)OptionGroupSingleton<TerminatorOptions>.Instance.ArmorSegments);
+        ResetArmor((int)OptionGroupSingleton<TerminatorOptions>.Instance.ArmorSegments);
 
         var terminateButton = CustomButtonSingleton<TerminateButton>.Instance;
         terminateButton.SetUses(1);
@@ -250,7 +250,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
                 continue;
             }
 
-            ThreatText.text = $"STOP THE TERMINATOR  •  {Mathf.CeilToInt(timeLeft)}s\n\n<size=65%>ARMOR  <color=#FF8C32>{new string('■', HuntState.Armor)}</color></size>";
+            ThreatText.text = $"STOP THE TERMINATOR  •  {Mathf.CeilToInt(timeLeft)}s\n\n<size=65%>ARMOR  <color=#FF8C32>{new string('■', Armor)}</color></size>";
 
             flashTimer -= Time.deltaTime;
             if (flashTimer <= 0f)
@@ -291,12 +291,12 @@ public class TerminatorRole : CrewmateRole, INewModRole
         if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected || Vector2.Distance(source.GetTruePosition(), terminator.GetTruePosition()) > OptionGroupSingleton<TerminatorOptions>.Instance.CounterAttackRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), terminator.GetTruePosition(), Constants.ShipAndObjectsMask, false))
             return;
 
-        if (!HuntState.TryHit(source.PlayerId))
+        if (!TryHitArmor(source.PlayerId))
             return;
 
-        RpcResolveTerminate(PlayerControl.LocalPlayer, source.PlayerId, (byte)HuntState.Armor);
+        RpcResolveTerminate(PlayerControl.LocalPlayer, source.PlayerId, (byte)Armor);
 
-        if (!HuntState.IsDefeated)
+        if (Armor != 0)
             return;
 
         var winners = PlayerControl.AllPlayerControls.ToArray().Where(player => !player.Data.Disconnected && player.Data.Role is not TerminatorRole).Select(player => player.Data).ToArray();
@@ -310,7 +310,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
             return;
 
         if (!AmongUsClient.Instance.AmHost)
-            HuntState = new TerminatorHuntState(armor);
+            ResetArmor(armor);
 
         if (armor == 0)
             FinalCountdownActive = false;
@@ -484,11 +484,26 @@ public class TerminatorRole : CrewmateRole, INewModRole
         ObjectiveSpawned = false;
         FinalCountdownActive = false;
         ObjectivePosition = Vector2.zero;
-        HuntState = new TerminatorHuntState(1);
+        ResetArmor(1);
 
         if (ObjectiveMarker)
             Destroy(ObjectiveMarker);
 
         ObjectiveMarker = null;
+    }
+
+    public static void ResetArmor(int armor)
+    {
+        Armor = armor;
+        ArmorAttackers.Clear();
+    }
+
+    public static bool TryHitArmor(byte attackerId)
+    {
+        if (Armor == 0 || !ArmorAttackers.Add(attackerId))
+            return false;
+
+        Armor--;
+        return true;
     }
 }

@@ -31,8 +31,7 @@ public class NewModLocalSettings(ConfigFile config) : LocalSettingsTab(config)
         {
             if (EnableCustomCursor.Value)
             {
-                var cur = NewModAsset.CustomCursor.LoadAsset();
-                var tex = cur?.texture;
+                var tex = MainMenuPatch.GetCursorTexture();
 
                 if (tex != null)
                 {

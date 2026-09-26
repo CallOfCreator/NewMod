@@ -12,7 +12,6 @@ using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
-using NewMod.RoleLogic;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -25,7 +24,7 @@ namespace NewMod.Roles.ImpostorRoles.S1;
 [MiraIgnore]
 public class Deadwire : ImpostorRole, INewModRole
 {
-    public static readonly Dictionary<byte, DeadwireRecord> Records = [];
+    public static readonly Dictionary<byte, (byte ActorId, EnergyCategory Category)> Records = [];
     public static readonly Dictionary<byte, float> JammedUntil = [];
     public static readonly Dictionary<byte, float> BarrierUntil = [];
 
@@ -57,7 +56,7 @@ public class Deadwire : ImpostorRole, INewModRole
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
-        text.AppendLine(Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record) ? string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.Captured"), MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{record.Response}")) : MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.NoCategoryRecorded"));
+        text.AppendLine(Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record) ? string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.Captured"), MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{GetResponse(record.Category)}")) : MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.NoCategoryRecorded"));
         text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.OffensiveRewards"));
         text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.UtilityRewards"));
         return text;
@@ -163,12 +162,12 @@ public class Deadwire : ImpostorRole, INewModRole
             return;
 
         var category = (EnergyCategory)categoryId;
-        Records[deadwireId] = new DeadwireRecord(actorId, category);
+        Records[deadwireId] = (actorId, category);
         MarkedPlayers.Remove(deadwireId);
         MarkExpiresAt.Remove(deadwireId);
 
         if (PlayerControl.LocalPlayer.PlayerId == deadwireId)
-            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF6B72>Captured:</color> {MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{Records[deadwireId].Response}")}"));
+            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF6B72>Captured:</color> {MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{GetResponse(Records[deadwireId].Category)}")}"));
         if (PlayerControl.LocalPlayer.PlayerId == actorId)
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF6B72>Deadwire recorded your ability.</color> Your ability still works normally."));
     }
@@ -179,7 +178,7 @@ public class Deadwire : ImpostorRole, INewModRole
         if (!AmongUsClient.Instance.AmHost || MeetingHud.Instance || ExileController.Instance || source.inVent || source.Data.Role is not Deadwire || source.Data.IsDead || !Records.TryGetValue(source.PlayerId, out var record))
             return;
 
-        if (record.Response is DeadwireResponse.TrackActor or DeadwireResponse.JamActor)
+        if (GetResponse(record.Category) is Response.TrackActor or Response.JamActor)
         {
             var actor = Utils.PlayerById(record.ActorId);
             if (!actor || actor.Data.IsDead || actor.Data.Disconnected)
@@ -197,29 +196,29 @@ public class Deadwire : ImpostorRole, INewModRole
 
         var deadwire = Utils.PlayerById(deadwireId);
         var actor = Utils.PlayerById(actorId);
-        var record = new DeadwireRecord(actorId, (EnergyCategory)categoryId);
+        var record = (ActorId: actorId, Category: (EnergyCategory)categoryId);
         var options = OptionGroupSingleton<DeadwireOptions>.Instance;
 
-        switch (record.Response)
+        switch (GetResponse(record.Category))
         {
-            case DeadwireResponse.ReduceKillCooldown:
+            case Response.ReduceKillCooldown:
                 if (deadwire.AmOwner)
-                    deadwire.SetKillTimer(DeadwireRecord.ReduceCooldown(deadwire.killTimer, options.KillCooldownReduction, options.MinimumKillDelay));
+                    deadwire.SetKillTimer(ReduceCooldown(deadwire.killTimer, options.KillCooldownReduction, options.MinimumKillDelay));
                 break;
-            case DeadwireResponse.TrackActor:
+            case Response.TrackActor:
                 if (deadwire.AmOwner)
                     Coroutines.Start(CoTrackActor(deadwire, actor, options.TrackingDuration));
                 break;
-            case DeadwireResponse.Blink:
+            case Response.Blink:
                 if (deadwire.AmOwner)
                     Blink(deadwire, options.BlinkDistance);
                 break;
-            case DeadwireResponse.JamActor:
+            case Response.JamActor:
                 JammedUntil[actorId] = Time.time + options.JamDuration;
                 if (actor.AmOwner)
                     Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF6B72>Abilities jammed for {options.JamDuration:0.#}s.</color>"));
                 break;
-            case DeadwireResponse.Barrier:
+            case Response.Barrier:
                 BarrierUntil[deadwireId] = Time.time + options.BarrierDuration;
                 break;
         }
@@ -242,4 +241,30 @@ public class Deadwire : ImpostorRole, INewModRole
 
         player.NetTransform.RpcSnapTo(player.GetTruePosition() + direction * distance);
     }
+
+    public enum Response : byte
+    {
+        ReduceKillCooldown,
+        TrackActor,
+        Blink,
+        JamActor,
+        Barrier
+    }
+    public static float ReduceCooldown(float remaining, float reduction, float minimum)
+    {
+        return System.Math.Min(remaining, System.Math.Max(minimum, remaining - reduction));
+    }
+
+    public static Response GetResponse(EnergyCategory category)
+    {
+        return category switch
+        {
+            EnergyCategory.Aggression => Response.ReduceKillCooldown,
+            EnergyCategory.Intelligence => Response.TrackActor,
+            EnergyCategory.Mobility => Response.Blink,
+            EnergyCategory.Control => Response.JamActor,
+            _ => Response.Barrier
+        };
+    }
+
 }

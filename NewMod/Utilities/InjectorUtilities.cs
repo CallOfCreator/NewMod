@@ -9,7 +9,6 @@ using NewMod.Buttons.Roles;
 using NewMod.Components;
 using MiraAPI.Utilities;
 using NewMod.Options.Roles;
-using NewMod.RoleLogic;
 using NewMod.Roles.NeutralRoles;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
@@ -20,12 +19,12 @@ namespace NewMod.Utilities;
 
 public static class InjectorUtilities
 {
-    public static readonly Dictionary<byte, InjectionSample> Experiments = [];
+    public static readonly Dictionary<byte, (byte TargetId, InjectorRole.SerumType Serum, float ReadyAt, float ExpiresAt)> Experiments = [];
     public static readonly HashSet<(byte Owner, byte Target)> Samples = [];
     public static readonly Dictionary<byte, float> NextInjection = [];
     public static readonly HashSet<byte> Submitting = [];
     public static readonly HashSet<byte> Submitted = [];
-    public static SerumType SelectedSerum;
+    public static InjectorRole.SerumType SelectedSerum;
 
     public static int SampleCount(byte ownerId)
     {
@@ -52,7 +51,7 @@ public static class InjectorUtilities
         NextInjection.Clear();
         Submitting.Clear();
         Submitted.Clear();
-        SelectedSerum = SerumType.Adrenaline;
+        SelectedSerum = InjectorRole.SerumType.Adrenaline;
     }
 
     public static void HostFixedUpdate()
@@ -67,9 +66,9 @@ public static class InjectorUtilities
     }
 
     [MethodRpc((uint)CustomRPC.ApplySerum)]
-    public static void RpcApplySerum(PlayerControl source, PlayerControl target, SerumType serum)
+    public static void RpcApplySerum(PlayerControl source, PlayerControl target, InjectorRole.SerumType serum)
     {
-        if ((!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost) || source.Data.Role is not InjectorRole || source.Data.IsDead || source.Data.Disconnected || !target || target == source || target.Data.IsDead || target.Data.Disconnected || target.inVent || MeetingHud.Instance || ExileController.Instance || Experiments.ContainsKey(source.PlayerId) || Experiments.Values.Any(sample => sample.TargetId == target.PlayerId) || Samples.Contains((source.PlayerId, target.PlayerId)) || Time.time < NextInjection.GetValueOrDefault(source.PlayerId) || serum is not (SerumType.Adrenaline or SerumType.Sedative))
+        if ((!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost) || source.Data.Role is not InjectorRole || source.Data.IsDead || source.Data.Disconnected || !target || target == source || target.Data.IsDead || target.Data.Disconnected || target.inVent || MeetingHud.Instance || ExileController.Instance || Experiments.ContainsKey(source.PlayerId) || Experiments.Values.Any(sample => sample.TargetId == target.PlayerId) || Samples.Contains((source.PlayerId, target.PlayerId)) || Time.time < NextInjection.GetValueOrDefault(source.PlayerId) || serum is not (InjectorRole.SerumType.Adrenaline or InjectorRole.SerumType.Sedative))
             return;
         var options = OptionGroupSingleton<InjectorOptions>.Instance;
         if (Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > options.InjectionRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false))
@@ -78,11 +77,11 @@ public static class InjectorUtilities
     }
 
     [MethodRpc((uint)CustomRPC.InjectorConfirmInjection)]
-    public static void RpcConfirmInjection(PlayerControl source, byte ownerId, byte targetId, SerumType serum)
+    public static void RpcConfirmInjection(PlayerControl source, byte ownerId, byte targetId, InjectorRole.SerumType serum)
     {
         if (!source.IsHost()) return;
         var options = OptionGroupSingleton<InjectorOptions>.Instance;
-        Experiments[ownerId] = new InjectionSample { TargetId = targetId, Serum = serum, ReadyAt = Time.time + options.ObservationDuration, ExpiresAt = Time.time + options.ObservationDuration + options.CollectionWindow };
+        Experiments[ownerId] = (targetId, serum, Time.time + options.ObservationDuration, Time.time + options.ObservationDuration + options.CollectionWindow);
         NextInjection[ownerId] = Time.time + options.SerumCooldown;
         if (PlayerControl.LocalPlayer.PlayerId == targetId)
         {
@@ -90,7 +89,7 @@ public static class InjectorUtilities
             button.EffectActive = false;
             button.Timer = 0f;
             button.SetActive(true, PlayerControl.LocalPlayer.Data.Role);
-            Coroutines.Start(CoroutinesHelper.CoNotify(serum == SerumType.Adrenaline ? "Adrenaline injected: you move faster briefly.\nUse Cleanse to cancel the experiment." : "Sedative injected: you move slower briefly.\nUse Cleanse to cancel the experiment."));
+            Coroutines.Start(CoroutinesHelper.CoNotify(serum == InjectorRole.SerumType.Adrenaline ? "Adrenaline injected: you move faster briefly.\nUse Cleanse to cancel the experiment." : "Sedative injected: you move slower briefly.\nUse Cleanse to cancel the experiment."));
         }
     }
 

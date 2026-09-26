@@ -28,24 +28,23 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Resources\**\*.*"/>
-        <Compile Remove="Tests\**\*.cs"/>
     </ItemGroup>
 
     <ItemGroup>
         <Reference Include="CorsacCosmetics">
-            <HintPath>Resources/CorsacCosmetics.dll</HintPath>
+            <HintPath>Resources/Dlls/CorsacCosmetics.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="Reactor">
-            <HintPath>Resources/Reactor.dll</HintPath>
+            <HintPath>Resources/Dlls/Reactor.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="AchievementsAPI">
-            <HintPath>Resources/AchievementsAPI.dll</HintPath>
+            <HintPath>Resources/Dlls/AchievementsAPI.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="ReactUI">
-            <HintPath>Resources/ReactUI.dll</HintPath>
+            <HintPath>Resources/Dlls/ReactUI.dll</HintPath>
             <Private>false</Private>
         </Reference>
     </ItemGroup>

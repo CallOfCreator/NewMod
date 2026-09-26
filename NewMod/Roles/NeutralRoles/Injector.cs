@@ -26,7 +26,6 @@ public class InjectorRole : ImpostorRole, INewModRole
         new(this)
         {
             Icon = NewModAsset.InjectIcon,
-            OptionsScreenshot = NewModAsset.Banner,
             MaxRoleCount = 1,
             UseVanillaKillButton = false,
             CanUseVent = false,
@@ -50,5 +49,11 @@ public class InjectorRole : ImpostorRole, INewModRole
     public override bool DidWin(GameOverReason gameOverReason)
     {
         return gameOverReason == CustomGameOver.GameOverReason<InjectorGameOver>();
+    }
+
+    public enum SerumType
+    {
+        Adrenaline,
+        Sedative
     }
 }

@@ -16,7 +16,6 @@ using MiraAPI.Roles;
 using MiraAPI.Utilities;
 using NewMod.GameModes.WraithSiegeGamemode;
 using NewMod.Options.Roles.S1;
-using NewMod.RoleLogic;
 using NewMod.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
@@ -552,12 +551,11 @@ public static class MatchSummaryTracker
                 faction = newModRole.Faction.ToString();
         }
 
-        if (previous != null)
+        if (player.IsDead && previous != null)
         {
-            var summaryRole = MatchSummaryRole.Select(new MatchSummaryRole(roleName, roleColor, faction), new MatchSummaryRole(previous.Role, previous.RoleColor, previous.Faction), player.IsDead);
-            roleName = summaryRole.Name;
-            roleColor = summaryRole.Color;
-            faction = summaryRole.Faction;
+            roleName = previous.Role;
+            roleColor = previous.RoleColor;
+            faction = previous.Faction;
         }
 
         var inSiege = CustomGameModeManager.ActiveMode is WraithSiege;

@@ -1,6 +1,6 @@
+using System;
 using MiraAPI.Modifiers;
 using NewMod.Modifiers.S1;
-using NewMod.RoleLogic;
 using UnityEngine;
 
 namespace NewMod.Components.ScreenEffects;
@@ -41,7 +41,7 @@ public class ScrDesyncEffect : ScreenEffect
             return;
         }
 
-        var frame = ScreenDesynchronizationAnimation.Sample(Time.time - _startedAt, duration);
+        var frame = Sample(Time.time - _startedAt, duration);
 
         if (frame.Finished)
         {
@@ -68,5 +68,22 @@ public class ScrDesyncEffect : ScreenEffect
         _mat.SetColor("_ColdTint", coldTint);
         _mat.SetColor("_BlackTint", blackTint);
         Graphics.Blit(source, destination, _mat);
+    }
+
+    public static (float Intensity, float Burst, bool Finished) Sample(float elapsed, float duration)
+    {
+        var time = Math.Clamp(elapsed, 0f, duration);
+        var visibility = Math.Min(Math.Clamp(time / 0.25f, 0f, 1f), Math.Clamp((duration - time) / 0.35f, 0f, 1f));
+        var opening = Pulse(time, 1f);
+        var recurring = time < 1f ? 0f : Pulse((time - 1f) % 4.5f, 0.6f);
+        var closing = time < duration - 1f ? 0f : Pulse(time - duration + 1f, 1f);
+        var burst = Math.Max(opening, Math.Max(recurring, closing)) * visibility;
+
+        return ((0.42f + burst * 0.18f) * visibility, burst, elapsed >= duration);
+    }
+
+    public static float Pulse(float time, float duration)
+    {
+        return time <= 0f || time >= duration ? 0f : MathF.Sin(MathF.PI * time / duration);
     }
 }

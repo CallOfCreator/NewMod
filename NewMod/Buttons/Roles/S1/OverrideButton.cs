@@ -1,3 +1,4 @@
+using NewMod.Roles.ImpostorRoles.S1;
 using MiraAPI.Translation;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
@@ -7,7 +8,6 @@ using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
-using NewMod.RoleLogic;
 using NewMod.Utilities;
 using DeadwireRole = NewMod.Roles.ImpostorRoles.S1.Deadwire;
 
@@ -33,7 +33,7 @@ public class OverrideButton : CustomActionButton, IEnergyAbility
     {
         if (!base.CanUse() || !DeadwireRole.Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record))
             return false;
-        if (record.Response is not (DeadwireResponse.TrackActor or DeadwireResponse.JamActor))
+        if (DeadwireRole.GetResponse(record.Category) is not (Deadwire.Response.TrackActor or Deadwire.Response.JamActor))
             return true;
         var actor = Utils.PlayerById(record.ActorId);
         return actor && !actor.Data.IsDead && !actor.Data.Disconnected;
@@ -41,7 +41,7 @@ public class OverrideButton : CustomActionButton, IEnergyAbility
 
     protected override void FixedUpdate(PlayerControl playerControl)
     {
-        OverrideName(DeadwireRole.Records.TryGetValue(playerControl.PlayerId, out var record) ? MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{record.Response}") : Name);
+        OverrideName(DeadwireRole.Records.TryGetValue(playerControl.PlayerId, out var record) ? MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{DeadwireRole.GetResponse(record.Category)}") : Name);
     }
 
     protected override void OnClick()
