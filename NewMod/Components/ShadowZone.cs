@@ -15,6 +15,7 @@ namespace NewMod.Components;
 public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
 {
     public static readonly List<ShadowZone> zones = [];
+    public AreaBubble bubble;
     public byte shadeId;
     public float radius;
     public float duration;
@@ -69,6 +70,8 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
     public void OnDestroy()
     {
         zones.Remove(this);
+        if (bubble)
+            bubble.Break();
         if (owner && concealed)
         {
             owner.cosmetics.SetPhantomRoleAlpha(1f);
@@ -103,7 +106,7 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
         zone.transform.position = position;
         zones.Add(zone);
         var bubble = Utils.CreateSphere("ShadowBoundary", new Vector3(position.x, position.y, -1f), radius, new Color(0.65f, 0.3f, 0.95f), zone.activationDelay + duration, true);
-        bubble.transform.SetParent(zone.transform, true);
+        zone.bubble = bubble.GetComponent<AreaBubble>();
         return zone;
     }
 

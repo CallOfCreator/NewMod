@@ -417,8 +417,10 @@ public static class Utils
     {
         var sphere = new GameObject(name);
         sphere.transform.position = position;
-        sphere.AddComponent<AreaBubble>().Init(radius, color, filled ? 0.25f : 0.04f);
-        Object.Destroy(sphere, duration);
+        sphere.transform.SetParent(ShipStatus.Instance.transform, true);
+        var bubble = sphere.AddComponent<AreaBubble>();
+        bubble.Init(radius, color, filled ? 0.25f : 0.04f);
+        bubble.expiresAt = Time.time + duration;
         return sphere;
     }
 

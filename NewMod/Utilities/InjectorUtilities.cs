@@ -6,6 +6,7 @@ using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using NewMod.Buttons.Roles;
+using NewMod.Components;
 using MiraAPI.Utilities;
 using NewMod.Options.Roles;
 using NewMod.RoleLogic;
@@ -180,7 +181,8 @@ public static class InjectorUtilities
             yield return null;
         }
 
-        Object.Destroy(bubble);
+        if (bubble)
+            bubble.GetComponent<AreaBubble>().Break();
         Object.Destroy(text.gameObject);
         Object.Destroy(flash.gameObject);
     }

@@ -37,6 +37,6 @@ public static class PlayerRoleNamePatch
             color = role.RoleColor;
         }
 
-        return $"{name} <color=#{ColorUtility.ToHtmlStringRGB(color)}>({roleName})</color>";
+        return $"{name} <size=75%><color=#{ColorUtility.ToHtmlStringRGB(color)}>({roleName})</color></size>";
     }
 }

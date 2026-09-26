@@ -184,7 +184,7 @@ public class Tyrant : ImpostorRole, INewModRole
 
         var area = new GameObject("FearPulseArea").AddComponent<FearPulseArea>();
         area.transform.position = position;
-        bubble.transform.SetParent(area.transform, true);
+        area.bubble = bubble.GetComponent<AreaBubble>();
         area.Init(owner.PlayerId, radius, options.FearPulseDuration, options.FearPulseSpeed);
     }
 }

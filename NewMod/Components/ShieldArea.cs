@@ -10,6 +10,7 @@ namespace NewMod.Components;
 public class ShieldArea(IntPtr ptr) : MonoBehaviour(ptr)
 {
     public static readonly List<ShieldArea> _active = new();
+    public AreaBubble bubble;
     public byte ownerId;
     public float radius;
     public float expiresAt;
@@ -22,8 +23,8 @@ public class ShieldArea(IntPtr ptr) : MonoBehaviour(ptr)
         _active.Add(this);
         transform.position += new Vector3(0f, 0f, -1f);
 
-        var bubble = Utils.CreateSphere("AegisBubble", transform.position, radius, new Color(0.23f, 0.65f, 1f), duration);
-        bubble.transform.SetParent(transform, true);
+        var visual = Utils.CreateSphere("AegisBubble", transform.position, radius, new Color(0.23f, 0.65f, 1f), duration);
+        bubble = visual.GetComponent<AreaBubble>();
     }
 
     public void Update()
@@ -40,5 +41,7 @@ public class ShieldArea(IntPtr ptr) : MonoBehaviour(ptr)
     public void OnDestroy()
     {
         _active.Remove(this);
+        if (bubble)
+            bubble.Break();
     }
 }

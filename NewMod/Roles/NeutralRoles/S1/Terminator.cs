@@ -16,6 +16,7 @@ using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
 using NewMod.Buttons.Roles.S1;
+using NewMod.Components;
 using NewMod.Utilities;
 using NewMod.RoleLogic;
 using Reactor.Networking.Attributes;
@@ -194,7 +195,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
         terminateButton.SetActive(true, PlayerControl.LocalPlayer.Data.Role);
 
         if (ObjectiveMarker)
-            Destroy(ObjectiveMarker);
+            ObjectiveMarker.GetComponent<AreaBubble>().Break();
 
         ObjectiveMarker = null;
         DestroyObjectiveArrow();

@@ -16,6 +16,7 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
     public static readonly Dictionary<byte, int> ActivePulseCounts = [];
     public static readonly Dictionary<byte, float> OriginalSpeeds = [];
 
+    public AreaBubble bubble;
     public byte ownerId;
 
     public AudioClip _enterClip;
@@ -82,6 +83,8 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
     public void OnDestroy()
     {
         RestoreAll();
+        if (bubble)
+            bubble.Break();
     }
 
     public void Init(byte ownerId, float radius, float duration, float speedMul)

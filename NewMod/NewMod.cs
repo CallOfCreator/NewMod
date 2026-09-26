@@ -53,7 +53,7 @@ public class NewMod : BasePlugin, IMiraPlugin
     public const string CorsacPluginId = "CorsacCosmetics";
     public const string LaunchpadReloadedId = "dev.xtracube.launchpad";
 
-    public const string NewModBackendAPI = "";
+    public const string NewModBackendAPI = "https://newmod-blog.vercel.app";
 
     public static BasePlugin Instance;
     public static Minigame Minigame;

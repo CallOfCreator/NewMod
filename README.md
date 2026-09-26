@@ -35,7 +35,6 @@
 - [✨ Features](#-features)
 - [🔗 Compatibility](#-compatibility)
 - [🤝 Contributing](#-contributing)
-- [📱  Android](#-android)
 - [👥 Credits](#-credits)
 - [⚠️ Disclaimer](#-disclaimer)
 
@@ -99,14 +98,6 @@ If you’d like to contribute, feel free to join and improve the project!
 
 ---
 
-# 📱 Android
-
-NewMod now officially supports Android.  
-Special thanks to [@xtracube](https://github.com/XtraCube) for providing access to the Android game lib, ensuring NewMod is fully compatible with **Starlight** at launch.  
-For more information about Starlight, please visit: [https://discord.gg/FYYqJU2bvp](https://discord.gg/FYYqJU2bvp)
-
----
-
 # 👥 Credits
 
 - **MiraAPI**: [MiraAPI GitHub](https://github.com/All-Of-Us-Mods/MiraAPI) - Among Us modding API and utility library, with inspiration for the debug window and the derivation of the gold color from MiraAPIExample Mod.
@@ -118,9 +109,10 @@ For more information about Starlight, please visit: [https://discord.gg/FYYqJU2b
 - **Jsenm**: [Jsenm Discord](jsenm) - For the newer sprites/art for NewMod
 - **Pixabay**: [Pixabay](https://pixabay.com) - For sound effects used in NewMod
 - **angxlwtf**: [angxlwtf](https://github.com/angxlwtf) - Idea for **Wraith Caller** (originally for Hitman LP)
-- **shawarma**: [angxlwtf](https://github.com/am-clonec) - For the Voidwalker Role
-- **Wandering Pix**: [WanderingPix](https://github.com/WanderingPix) - For the Thinking Animation
-
+- **CloneC**: [am-clonec](https://github.com/am-clonec) - For the Voidwalker Role & being NewMod's third developer
+- **exec**: [3X3CODE](https://github.com/3X3CODE) - For being NewMod’s second developer and providing artwork for the mod alongside Jsenm
+- **Ramcette**: [Ram's Discord](ramcetteau) - For providing some nameplate cosmetics
+- **Raly**: [Raly's Discord](dpanimating) - For providing the "Cosmic Visor" cosmetic
 ---
 
 # ⚠️ Disclaimer
