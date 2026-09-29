@@ -158,24 +158,15 @@ public class Collector : CrewmateRole, INewModRole
         var gameObject = new GameObject($"CollectorFragment_{fragmentId}");
         gameObject.transform.position = new Vector3(x, y, -1f);
 
-        var line = gameObject.AddComponent<LineRenderer>();
-        line.useWorldSpace = false;
-        line.loop = true;
-        line.positionCount = 4;
-        line.startWidth = 0.065f;
-        line.endWidth = 0.065f;
-        line.sharedMaterial = Utils.GetCircleMat();
-        line.SetPosition(0, new Vector3(0f, 0.28f));
-        line.SetPosition(1, new Vector3(0.2f, 0f));
-        line.SetPosition(2, new Vector3(0f, -0.28f));
-        line.SetPosition(3, new Vector3(-0.2f, 0f));
-        line.startColor = line.endColor = kind switch
+        var renderer = gameObject.AddComponent<SpriteRenderer>();
+        renderer.sprite = (kind switch
         {
-            FragmentKind.Violence => new Color(0.95f, 0.15f, 0.15f),
-            FragmentKind.Ability => new Color(0.72f, 0.2f, 0.95f),
-            FragmentKind.Fate => new Color(0.31f, 0.62f, 1f),
-            _ => Color.white
-        };
+            FragmentKind.Violence => NewModAsset.ViolenceFragment,
+            FragmentKind.Ability => NewModAsset.AbilityFragment,
+            _ => NewModAsset.FateFragment
+        }).LoadAsset();
+        var size = renderer.sprite.bounds.size;
+        gameObject.transform.localScale = Vector3.one * (0.6f / Mathf.Max(size.x, size.y));
 
         gameObject.SetActive(PlayerControl.LocalPlayer.Data.Role is Collector && !PlayerControl.LocalPlayer.Data.IsDead);
         Fragments[fragmentId] = new FragmentRecord { Kind = kind, Position = new Vector2(x, y), Object = gameObject };
@@ -284,12 +275,12 @@ public class Collector : CrewmateRole, INewModRole
         if (!nearest)
             yield break;
 
-        var line = nearest.GetComponent<LineRenderer>();
-        var start = line.startColor;
-        line.startColor = line.endColor = Color.yellow;
+        var renderer = nearest.GetComponent<SpriteRenderer>();
+        var start = renderer.color;
+        renderer.color = Color.yellow;
         yield return new WaitForSeconds(options.TraceDuration);
-        if (line)
-            line.startColor = line.endColor = start;
+        if (renderer)
+            renderer.color = start;
     }
 
     public static IEnumerator CoRevealCollector(PlayerControl collector, float duration)

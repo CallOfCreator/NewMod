@@ -118,6 +118,7 @@ public class S1 : ISeason
             typeof(WraithSiegeReviveButton),
             typeof(InspectResidualButton),
             typeof(WardenSealButton),
+            typeof(ConvertFragmentsButton),
             typeof(EnterVoid),
             typeof(ArbitratorLeverageButton),
             typeof(DeadlockButton),

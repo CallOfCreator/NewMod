@@ -40,6 +40,12 @@ internal static class CorsacCosmeticsIntegration
         NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new NamePlateMetadata { Name = "NM Rave" });
         NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new NamePlateMetadata { Name = "Sunny Sky" });
 
+        NewModCosmeticsRegistry.RegisterVisor("do_worry", NewModAsset.DoWorryVisor.LoadAsset(), new VisorMetadata { Name = "Do Worry", MatchPlayerColor = true });
+        NewModCosmeticsRegistry.RegisterVisor("cosmic", NewModAsset.CosmicVisor.LoadAsset(), new VisorMetadata { Name = "Cosmic Visor" });
+        NewModCosmeticsRegistry.RegisterNamePlate("airship", NewModAsset.AirshipNameplate.LoadAsset(), new NamePlateMetadata { Name = "The Airship" });
+        NewModCosmeticsRegistry.RegisterNamePlate("polus_planet", NewModAsset.PolusPlanetNameplate.LoadAsset(), new NamePlateMetadata { Name = "Polus Planet" });
+        NewModCosmeticsRegistry.RegisterNamePlate("dance_and_fire", NewModAsset.DanceAndFireNameplate.LoadAsset(), new NamePlateMetadata { Name = "Dance and Fire" });
+
         SourceRegistry.Instance.RegisterSource(new NewModCosmeticSource());
         Initialized = true;
 

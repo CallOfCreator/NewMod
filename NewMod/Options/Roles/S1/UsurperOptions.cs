@@ -9,8 +9,11 @@ namespace NewMod.Options.Roles.S1;
 [MiraIgnore]
 public sealed class UsurperOptions : AbstractOptionGroup<Usurper>
 {
-    [ModdedNumberOption("Crown Interaction Duration", 1f, 5f, 0.5f, MiraNumberSuffixes.Seconds)]
-    public float PickupDuration { get; set; } = 2f;
+    [ModdedNumberOption("Crown Interaction Duration", 3f, 5f, 0.5f, MiraNumberSuffixes.Seconds)]
+    public float PickupDuration { get; set; } = 3f;
+
+    [ModdedNumberOption("Crown Hold Duration", 20f, 60f, 5f, MiraNumberSuffixes.Seconds)]
+    public float HoldDuration { get; set; } = 20f;
 
     public override string GroupName => "Usurper Settings";
 

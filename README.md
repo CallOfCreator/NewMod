@@ -113,6 +113,7 @@ If you’d like to contribute, feel free to join and improve the project!
 - **exec**: [3X3CODE](https://github.com/3X3CODE) - For being NewMod’s second developer and providing artwork for the mod alongside Jsenm
 - **Ramcette**: [Ram's Discord](ramcetteau) - For providing some nameplate cosmetics
 - **Raly**: [Raly's Discord](dpanimating) - For providing the "Cosmic Visor" cosmetic
+- **WanderingPix**: [WanderingPixel](https://github.com/WanderingPix) - For providing the "Do worry" & "Dance and Fire" cosmetics
 ---
 
 # ⚠️ Disclaimer
