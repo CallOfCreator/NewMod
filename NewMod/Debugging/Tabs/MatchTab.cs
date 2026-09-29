@@ -1,5 +1,6 @@
 ﻿using MiraAPI.Hud;
 using NewMod.Utilities;
+using NewMod.Patches;
 using UnityEngine;
 
 namespace NewMod.Debugging.Tabs;
@@ -32,6 +33,14 @@ public class MatchTab : IDebugTab
         if (_zoom != prevZoom) DebugWindow.Instance.ApplyZoom(_zoom);
 
         if (GUILayout.Button("Reset _zoom")) DebugWindow.Instance.ApplyZoom(DebugWindow.ZoomDefault);
+
+        GUILayout.Label("INFLUENCER ICONS");
+        GUILayout.Label($"{InfluencerIconsPatch.RoleIconIndices.Count} NewMod icons loaded");
+        GUILayout.Label("Use Influencer and open its image menu to preview.");
+        var forceIcons = GUILayout.Toggle(InfluencerIconsPatch.ForceNewModIcons, "Force NewMod icons");
+        if (forceIcons != InfluencerIconsPatch.ForceNewModIcons)
+            InfluencerIconsPatch.SetForcedPreview(forceIcons);
+        if (GUILayout.Button("Refresh icons")) InfluencerIconsPatch.RefreshIcons();
 
         GUILayout.Label("LOCAL ABILITIES");
 

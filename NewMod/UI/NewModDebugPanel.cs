@@ -10,6 +10,7 @@ using NewMod.Components.ScreenEffects;
 using NewMod.Debugging;
 using NewMod.GeneralEvents;
 using NewMod.Options.Roles;
+using NewMod.Patches;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using Reactor.Utilities;
@@ -183,7 +184,7 @@ public static class NewModDebugPanel
         {
             foreach (var button in CustomButtonManager.Buttons)
                 button.SetUses(3);
-        }, false))), meetingSection, Section("SEASONS", Toggle(NewMod.ForceEnableAllSeasons.Value, value => NewMod.ForceEnableAllSeasons.Value = value, ClassName("nm-debug-toggle")), Text($"Force all seasons: {(NewMod.ForceEnableAllSeasons.Value ? "ON" : "OFF")}", ClassName("nm-debug-value"))));
+        }, false))), Section("INFLUENCER ICONS", Text($"{InfluencerIconsPatch.RoleIconIndices.Count} NewMod icons loaded", ClassName("nm-debug-value")), Text("Use Influencer and open its image menu to preview.", ClassName("nm-debug-muted")), Text("Force NewMod icons", ClassName("nm-debug-label")), Toggle(InfluencerIconsPatch.ForceNewModIcons, InfluencerIconsPatch.SetForcedPreview, ClassName("nm-debug-toggle")), MutatingActions(("Refresh icons", InfluencerIconsPatch.RefreshIcons, false))), meetingSection, Section("SEASONS", Toggle(NewMod.ForceEnableAllSeasons.Value, value => NewMod.ForceEnableAllSeasons.Value = value, ClassName("nm-debug-toggle")), Text($"Force all seasons: {(NewMod.ForceEnableAllSeasons.Value ? "ON" : "OFF")}", ClassName("nm-debug-value"))));
     }
 
     private static VNode EventsPage()
