@@ -20,7 +20,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
     public Vector2 goal;
     public bool hasStart;
     public bool hasGoal;
-    public LineRenderer route;
+    public readonly List<LineRenderer> routeSegments = new();
     public LineRenderer startMarker;
     public LineRenderer goalMarker;
     public MapPathRequest request;
@@ -111,9 +111,32 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
     [HideFromIl2Cpp]
     public void DrawPath(MapPath path)
     {
-        route.positionCount = path.Points.Length > 1 ? path.Points.Length : 0;
-        for (var i = 0; i < route.positionCount; i++)
-            route.SetPosition(i, new Vector3(path.Points[i].x, path.Points[i].y, -5f));
+        foreach (var line in routeSegments) line.positionCount = 0;
+        var breaks = new HashSet<int>();
+        foreach (var crossing in path.Crossings)
+            if (crossing.Type == PathTraversal.Elevator)
+                breaks.Add(crossing.PointIndex);
+
+        var startIndex = 0;
+        var segment = 0;
+        for (var end = 1; end <= path.Points.Length; end++)
+        {
+            if (end != path.Points.Length && !breaks.Contains(end - 1)) continue;
+            var count = end - startIndex;
+            if (count > 1)
+            {
+                if (segment == routeSegments.Count)
+                    routeSegments.Add(CreateLine($"Path_{segment}", new Color(0.3f, 0.9f, 1f)));
+                var line = routeSegments[segment++];
+                line.positionCount = count;
+                for (var i = 0; i < count; i++)
+                {
+                    var point = path.Points[startIndex + i];
+                    line.SetPosition(i, new Vector3(point.x, point.y, -5f));
+                }
+            }
+            startIndex = end;
+        }
     }
 
     public static void Clear()
@@ -297,7 +320,6 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
 
     public void Awake()
     {
-        route = CreateLine("Path", new Color(0.3f, 0.9f, 1f));
         startMarker = CreateLine("Start", new Color(0.35f, 1f, 0.5f));
         goalMarker = CreateLine("Goal", new Color(1f, 0.3f, 0.7f));
         startMarker.loop = goalMarker.loop = true;
@@ -339,7 +361,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
     {
         request?.Cancel();
         request = null;
-        route.positionCount = 0;
+        foreach (var line in routeSegments) line.positionCount = 0;
     }
 
     public static PathfindingPreview GetOrCreate()

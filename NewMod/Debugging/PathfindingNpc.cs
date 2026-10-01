@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Il2CppInterop.Runtime.Attributes;
 using PathfindingAPI.Core;
+using PathfindingAPI.Compatibility;
+using Il2CppInterop.Runtime;
 using PathfindingAPI.Navigation;
 using PathfindingAPI.Options;
 using Reactor.Utilities.Attributes;
@@ -9,9 +11,17 @@ using UnityEngine;
 namespace NewMod.Debugging;
 
 [RegisterInIl2Cpp]
-public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
+public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 {
     public float Speed = 2.5f;
+    public SubmergedElevator elevator;
+    public Behaviour elevatorMover;
+    public MapPathRequest elevatorRequest;
+    public int elevatorWaypoint;
+    public int elevatorPhase;
+    public bool elevatorFromUpper;
+    public bool elevatorRequested;
+    public Vector2 elevatorControlPosition;
     public ZiplineConsole zipConsole;
     public HandZiplinePoolable zipHand;
     public int zipPhase;
@@ -37,14 +47,11 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     public PathfindingPreview preview;
     public MapPathRequest request;
     public MapPath path;
-    public readonly Queue<(Vector2 Position, string Name)> stops = new();
+    public readonly Queue<Vector2> stops = new();
     public readonly Queue<Vector2> traversalPoints = new();
     public Vector2 destination;
-    public string destinationName;
     public int waypoint;
     public int retries;
-    public int visited;
-    public int skipped;
     public bool touring;
     public bool returning;
     public bool crossing;
@@ -89,7 +96,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         if (tour && !BuildTour(owner.start))
             return;
         if (!tour)
-            stops.Enqueue((owner.goal, "marked goal"));
+            stops.Enqueue(owner.goal);
         NextStop();
     }
 
@@ -99,7 +106,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         if (probe.grid == null)
         {
             probe.Cancel();
-            Finish("NPC start is not on clear floor.");
+            Finish();
             return false;
         }
 
@@ -123,12 +130,10 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             }
 
             if (best < float.MaxValue)
-                stops.Enqueue((point, room.name));
-            else
-                skipped++;
+                stops.Enqueue(point);
         }
 
-        stops.Enqueue((start, "marked start"));
+        stops.Enqueue(start);
         probe.Cancel();
         return true;
     }
@@ -137,11 +142,11 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     {
         if (stops.Count == 0)
         {
-            Finish(touring ? $"NPC returned to start. Visited {visited} rooms; skipped {skipped}." : "NPC reached the marked goal.");
+            Finish();
             return;
         }
 
-        (destination, destinationName) = stops.Dequeue();
+        destination = stops.Dequeue();
         returning = touring && stops.Count == 0;
         retries = 0;
         Plan();
@@ -150,17 +155,15 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     public void Plan()
     {
         request?.Cancel();
-        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = retries > 0 ? 0.2f : 0.35f, WaitForDoors = true, UseVents = PlayerControl.LocalPlayer.Data.Role.CanVent }, PlayerControl.LocalPlayer);
+        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = retries > 0 ? 0.2f : 0.35f, WaitForDoors = true, UseVents = PlayerControl.LocalPlayer.Data.Role.CanVent && !MapPathfinding.IsSubmergedMap() }, PlayerControl.LocalPlayer);
         path = null;
         SetWalking(false);
-        preview.message = $"NPC finding route to {destinationName}...";
     }
 
     public void FixedUpdate()
     {
         if (!visual || !preview || MeetingHud.Instance || !ShipStatus.Instance)
         {
-            if (preview) preview.message = "NPC stopped: meeting or map unavailable.";
             Dispose();
             return;
         }
@@ -178,12 +181,10 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             if (!waitingDoor.IsOpen)
             {
                 SetWalking(false);
-                preview.message = $"NPC waiting for {waitingDoor.name} to open.";
                 return;
             }
 
             waitingDoor = null;
-            preview.message = $"NPC continuing to {destinationName}";
         }
 
         if (recoveryWait > 0f)
@@ -207,17 +208,15 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
                 }
                 else if (!request.IsClear(visual.GetTruePosition()))
                 {
-                    Finish("NPC stopped: current position is blocked; remaining tour stops were preserved.");
+                    Finish();
                 }
                 else if (touring && !returning)
                 {
-                    skipped++;
-                    Info($"Pathfinding NPC skipped {destinationName}: {request.Status}");
                     NextStop();
                 }
                 else
                 {
-                    Finish($"NPC could not reach {destinationName}: {request.Status}.");
+                    Finish();
                 }
 
                 return;
@@ -226,12 +225,10 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             path = request.Result;
             waypoint = 1;
             preview.DrawPath(path);
-            preview.message = $"NPC travelling to {destinationName} | {stops.Count} stops remaining";
         }
 
         if (waypoint >= path.Points.Length)
         {
-            if (touring && !returning) visited++;
             NextStop();
             return;
         }
@@ -258,9 +255,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             }
             else
             {
-                var blocker = request.IsClear(position) ? "segment collision" : request.overlaps[0].name;
-                Info($"Pathfinding NPC blocked at {position}, target={path.Points[waypoint]}, blocker={blocker}");
-                Finish($"NPC stopped after recovery attempts: {blocker}.");
+                Finish();
             }
 
             return;
@@ -286,7 +281,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     {
         if (!step.Source || !step.Source.Cast<Behaviour>().isActiveAndEnabled)
         {
-            Finish("NPC stopped: crossing is no longer available.");
+            Finish();
             return;
         }
 
@@ -325,7 +320,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 
             if (!PlayerControl.LocalPlayer.Data.Role.CanVent || !ventExit)
             {
-                Finish("NPC vent traversal is not permitted.");
+                Finish();
                 return;
             }
 
@@ -345,6 +340,23 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             platformExit = parent.TransformPoint(fromLeft ? platform.RightUsePosition : platform.LeftUsePosition);
             platformPhase = 0;
         }
+        else if (step.Type == PathTraversal.Elevator)
+        {
+            var map = SubmergedCompatibility.Get(ShipStatus.Instance);
+            elevator = map?.Elevators.Find(item => item.Source == step.Source);
+            var moverType = SubmergedCompatibility.Assembly?.GetType("Submerged.Elevators.Objects.ElevatorMover");
+            if (elevator == null || !elevator.Initialized || moverType == null || !AmongUsClient.Instance.AmHost)
+            {
+                Finish();
+                return;
+            }
+
+            elevatorMover = visual.gameObject.AddComponent(Il2CppType.From(moverType)).Cast<Behaviour>();
+            elevatorMover.enabled = false;
+            elevatorFromUpper = map.IsUpper(visual.GetTruePosition());
+            elevatorPhase = 0;
+            elevatorRequested = false;
+        }
         else if (step.Type == PathTraversal.Decontamination)
         {
             decon = null;
@@ -357,13 +369,18 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 
             if (!decon)
             {
-                Finish("NPC stopped: decontamination system not found.");
+                Finish();
                 return;
             }
         }
 
+        if (step.Type is not (PathTraversal.Ladder or PathTraversal.Zipline or PathTraversal.Vent or PathTraversal.MovingPlatform or PathTraversal.Decontamination or PathTraversal.Door or PathTraversal.Elevator))
+        {
+            Finish();
+            return;
+        }
+
         if (step.Type != PathTraversal.Ladder) traversalPoints.Enqueue(path.Points[waypoint]);
-        preview.message = $"NPC using {step.Type} toward {destinationName}";
     }
 
     public void Traverse()
@@ -371,12 +388,15 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         crossingTime += Time.fixedDeltaTime;
         if (!interaction.Source || (interaction.Type is not (PathTraversal.Door or PathTraversal.MovingPlatform) && crossingTime > 30f))
         {
-            Finish("NPC stopped: crossing unavailable or timed out.");
+            Finish();
             return;
         }
 
         switch (interaction.Type)
         {
+            case PathTraversal.Elevator:
+                TraverseElevator();
+                return;
             case PathTraversal.Zipline:
                 TraverseZipline();
                 return;
@@ -392,7 +412,6 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         if (interaction.Type == PathTraversal.Door && !request.CanMove(position, traversalPoints.Peek()))
         {
             SetWalking(false);
-            preview.message = $"NPC waiting for {interaction.Source.name} to open.";
             return;
         }
 
@@ -423,15 +442,165 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         CompleteTraversal();
     }
 
+    public void TraverseElevator()
+    {
+        if (elevatorPhase is 1 or 2 && elevator.Map.IsUpper(visual.GetTruePosition()) != elevatorFromUpper)
+        {
+            elevatorRequest?.Cancel();
+            elevatorRequest = null;
+            elevatorPhase = 3;
+        }
+
+        if (elevatorPhase == 0)
+        {
+            if (!elevator.Ready(elevatorFromUpper))
+            {
+                if (elevator.Moving()) elevatorRequested = false;
+                else if (!elevatorRequested && elevator.TargetUpper() != elevatorFromUpper)
+                {
+                    var console = elevatorFromUpper ? elevator.UpperConsole : elevator.LowerConsole;
+                    var range = elevatorFromUpper ? elevator.UpperRange : elevator.LowerRange;
+                    if (Vector2.Distance(visual.GetTruePosition(), console.transform.position) > range || PhysicsHelpers.AnythingBetween(visual.GetTruePosition(), console.transform.position, Constants.ShipOnlyMask, false))
+                    {
+                        Finish();
+                        return;
+                    }
+
+                    ShipStatus.Instance.RpcUpdateSystem(elevator.SystemType, (byte)2);
+                    elevatorRequested = true;
+                }
+
+                return;
+            }
+
+            elevatorRequested = false;
+            elevatorPhase = 1;
+        }
+
+        if (elevatorPhase == 1)
+        {
+            var cabin = elevatorFromUpper ? elevator.UpperCabin : elevator.LowerCabin;
+            if (!WalkElevatorTo((Vector2)cabin.bounds.center + visual.Collider.offset)) return;
+            elevatorMover.enabled = true;
+            var console = elevatorFromUpper ? elevator.UpperControl : elevator.LowerControl;
+            var range = elevatorFromUpper ? elevator.UpperControlRange : elevator.LowerControlRange;
+            if (!WalkingGrid.TryApproach(console.transform.position, cabin.bounds.center - console.transform.position, range, point => request.IsClear(point) && cabin.OverlapPoint(point - visual.Collider.offset), request.CanReachInteraction, out elevatorControlPosition))
+            {
+                Finish();
+                return;
+            }
+
+            elevatorPhase = 2;
+        }
+
+        if (elevatorPhase == 2)
+        {
+            if (!WalkElevatorTo(elevatorControlPosition)) return;
+            elevatorPhase = 3;
+        }
+
+        if (elevatorPhase == 3)
+        {
+            SetWalking(false);
+            if (!elevator.Contains(visual))
+            {
+                Finish();
+                return;
+            }
+
+            if (elevator.Ready(!elevatorFromUpper) && elevator.Map.IsUpper(visual.GetTruePosition()) != elevatorFromUpper)
+            {
+                elevatorPhase = 4;
+            }
+            else
+            {
+                if (elevator.Moving()) elevatorRequested = false;
+                else if (!elevatorRequested && elevator.TargetUpper() == elevatorFromUpper)
+                {
+                    ShipStatus.Instance.RpcUpdateSystem(elevator.SystemType, (byte)2);
+                    elevatorRequested = true;
+                }
+
+                return;
+            }
+        }
+
+        if (WalkElevatorTo(path.Points[waypoint])) CompleteTraversal();
+    }
+
+    public bool WalkElevatorTo(Vector2 target)
+    {
+        if (elevatorRequest == null)
+        {
+            elevatorRequest = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), target, new PathOptions
+            {
+                UseElevators = false,
+                UseVents = false,
+                UseLadders = false,
+                UseZiplines = false,
+                UseMovingPlatforms = false,
+                UseDecontamination = false,
+                WaitForDoors = false,
+                AutoOpenDoors = false
+            });
+            elevatorWaypoint = 0;
+        }
+
+        elevatorRequest.Step();
+        if (elevatorRequest.Status == PathStatus.Searching) return false;
+        if (elevatorRequest.Status != PathStatus.Found)
+        {
+            Finish();
+            return false;
+        }
+
+        var points = elevatorRequest.Result.Points;
+        while (elevatorWaypoint < points.Length && Vector2.Distance(visual.GetTruePosition(), points[elevatorWaypoint]) <= 0.03f)
+            elevatorWaypoint++;
+        if (elevatorWaypoint == points.Length)
+        {
+            elevatorRequest = null;
+            SetWalking(false);
+            return true;
+        }
+
+        var next = Vector2.MoveTowards(visual.GetTruePosition(), points[elevatorWaypoint], Speed * Time.fixedDeltaTime);
+        if (!elevatorRequest.CanMove(visual.GetTruePosition(), next))
+        {
+            Finish();
+            return false;
+        }
+
+        Face(next - visual.GetTruePosition());
+        SetWalking(true);
+        SetPosition(next);
+        return false;
+    }
+
+    public void ReleaseElevator()
+    {
+        elevatorRequest?.Cancel();
+        elevatorRequest = null;
+        if (elevatorMover)
+        {
+            elevatorMover.enabled = false;
+            Destroy(elevatorMover);
+        }
+
+        elevatorMover = null;
+        elevator = null;
+    }
+
     public void CompleteTraversal()
     {
+        ReleaseElevator();
         ReleaseZipline();
         ReleasePlatform();
         var landing = path.Points[waypoint];
         SetPosition(landing);
         if (!request.IsClear(visual.GetTruePosition()))
         {
-            Finish("NPC crossing exit is blocked; stopped before starting the next tour leg.");
+            Finish();
             return;
         }
 
@@ -448,8 +617,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         var count = Physics2D.CircleCast(from, request.options.Radius, delta.normalized, request.filter, request.crossingHits, delta.magnitude);
         for (var i = 0; i < count; i++)
         {
-            var collider = request.crossingHits[i].collider;
-            var door = collider.GetComponentInParent<OpenableDoor>();
+            var door = request.crossingHits[i].collider.GetComponentInParent<OpenableDoor>();
             if (door && !door.IsOpen) return door;
         }
 
@@ -491,7 +659,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     {
         if (!zipConsole || !zipConsole.zipline)
         {
-            Finish("NPC zipline disappeared.");
+            Finish();
             return;
         }
 
@@ -587,7 +755,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         if (!ventExit || !request.VentAvailable(ventExit) || !PlayerControl.LocalPlayer.Data.Role.CanVent)
         {
             visual.cosmetics.Visible = true;
-            Finish("NPC vent became unavailable.");
+            Finish();
             return;
         }
 
@@ -642,7 +810,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     {
         if (!platform || !platform.isActiveAndEnabled)
         {
-            Finish("NPC platform is unavailable.");
+            Finish();
             return;
         }
 
@@ -651,7 +819,6 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             var available = !platform.InUse && Vector2.Distance(platform.transform.position, platformStart) < 0.1f;
             if (!AmongUsClient.Instance.AmHost || !available)
             {
-                preview.message = "NPC waiting for the real platform; checking another route.";
                 if (platform.InUse && crossingTime < 5f) return;
                 platformAlternative ??= new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = request.options.CellSize, WaitForDoors = request.options.WaitForDoors, UseVents = request.options.UseVents, UseMovingPlatforms = false }, PlayerControl.LocalPlayer);
                 platformAlternative.Step();
@@ -677,7 +844,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 
         if (platform.Target != visual)
         {
-            Finish("NPC platform reservation was interrupted.");
+            Finish();
             return;
         }
 
@@ -773,11 +940,11 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         }
     }
 
-    public void Finish(string message)
+    public void Finish()
     {
+        ReleaseElevator();
         ReleasePlatform();
         ReleaseZipline();
-        if (preview) preview.message = message;
         request?.Cancel();
         request = null;
         crossing = false;
@@ -790,10 +957,7 @@ public sealed class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 
     public void ReleaseNpc()
     {
-        ReleasePlatform();
-        ReleaseZipline();
-        request?.Cancel();
-        request = null;
+        Finish();
         if (visual) Destroy(visual.gameObject);
         visual = null;
     }
