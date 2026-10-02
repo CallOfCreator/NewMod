@@ -5,6 +5,7 @@
 <p align="center">
 <i>📱 NewMod now supports Android!</i>
 </p>
+
 <p align="center">
     <a href="https://github.com/CallOfCreator/NewMod/stargazers">
         <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod" alt="GitHub stars">
@@ -13,19 +14,25 @@
         <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
     </a>
     <a href="https://starlight.allofus.dev/mods/com.callofcreator.newmod">
-    <img alt="Starlight Downloads" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fstarlight.allofus.dev%2Fapi%2Fv3%2Fmods%2Fcom.callofcreator.newmod&query=%24.downloads&suffix=%20downloads&label=%E2%AD%90%20Starlight&labelColor=%23B8860B&color=%23FFD700">
+      <img alt="Starlight Downloads" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fstarlight.allofus.dev%2Fapi%2Fv3%2Fmods%2Fcom.callofcreator.newmod&query=%24.downloads&suffix=%20downloads&label=%E2%AD%90%20Starlight&labelColor=%23B8860B&color=%23FFD700">
 </a>
+    </a>
     <a href="https://github.com/CallOfCreator/NewMod/network/members">
         <img src="https://img.shields.io/github/forks/CallOfCreator/NewMod?style=social" alt="GitHub forks">
     </a>
     <a href="https://github.com/CallOfCreator/NewMod/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/CallOfCreator/NewMod" alt="License">
     </a>
-     <a href="https://discord.gg/7UKG528WxZ">
-        <img src="https://img.shields.io/discord/1345441098851422259?label=Discord&logo=discord&color=5865F2&style=flat" alt="Join">
+    <a href="https://discord.gg/7UKG528WxZ">
+        <img src="https://img.shields.io/discord/1345441098851422259?label=Discord&logo=discord&color=5865F2&style=flat" alt="Join Discord">
     </a>
 </p>
 
+<p align="center">
+    <a href="https://starlight.allofus.dev/mods/com.callofcreator.newmod">
+        <img src="https://raw.githubusercontent.com/All-Of-Us-Mods/allofus.dev/refs/heads/master/static/images/starlight-badge.svg" alt="Starlight badge">
+    </a>
+</p>
 
 ---
 
