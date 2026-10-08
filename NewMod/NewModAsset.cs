@@ -145,23 +145,20 @@ public static class NewModAsset
     public static LoadableAsset<Sprite> StrawberryIceCreamHat { get; } = new LoadableBundleAsset<Sprite>("strawberryicecream.png", Bundle);
     public static LoadableAsset<Sprite> PizzaHat { get; } = new LoadableBundleAsset<Sprite>("pizza.png", Bundle);
     public static LoadableAsset<Sprite> SqueezeCapHat { get; } = new LoadableBundleAsset<Sprite>("squeezecap.png", Bundle);
-
     public static LoadableAsset<Sprite> ZrosHat { get; } = new LoadableBundleAsset<Sprite>("zros.png", Bundle);
-
     public static LoadableAsset<Sprite> IGotanIdeaHat { get; } = new LoadableBundleAsset<Sprite>("igotanidea.png", Bundle);
-
     public static LoadableAsset<Sprite> CottonMemoriesVisor { get; } = new LoadableBundleAsset<Sprite>("cottonmemories.png", Bundle);
     public static LoadableAsset<Sprite> MaliciousLook { get; } = new LoadableBundleAsset<Sprite>("maliciouslook.png", Bundle);
-
     public static LoadableAsset<Sprite> GlitchedRealityHat { get; } = new LoadableBundleAsset<Sprite>("glitchedreality.png", Bundle);
     public static LoadableAsset<Sprite> SunnyNameplate { get; } = new LoadableBundleAsset<Sprite>("sunnynameplate.png", Bundle);
     public static LoadableAsset<Sprite> NMraveNameplate { get; } = new LoadableBundleAsset<Sprite>("nmrave.png", Bundle);
-
     public static LoadableAsset<Sprite> AirshipNameplate { get; } = new LoadableBundleAsset<Sprite>("theairshipship.png", Bundle);
     public static LoadableAsset<Sprite> PolusPlanetNameplate { get; } = new LoadableBundleAsset<Sprite>("theplanetofplus.png", Bundle);
     public static LoadableAsset<Sprite> DanceAndFireNameplate { get; } = new LoadableBundleAsset<Sprite>("DanceAndFire.png", Bundle);
     public static LoadableAsset<Sprite> DoWorryVisor { get; } = new LoadableBundleAsset<Sprite>("DoWorry.png", Bundle);
     public static LoadableAsset<Sprite> CosmicVisor { get; } = new LoadableBundleAsset<Sprite>("CosmicVisor.png", Bundle);
+    public static LoadableAsset<Sprite> FoggedUpVisor { get; } = new LoadableBundleAsset<Sprite>("foggedup.png", Bundle);
+    public static LoadableAsset<Sprite> CosmicNebulaNameplate { get; } = new LoadableBundleAsset<Sprite>("cosmicnebula.png", Bundle);
 
     //Minigames
     public static LoadableAsset<GameObject> VerifyMinigame { get; } = new LoadableBundleAsset<GameObject>("VerifyMinigame", Bundle);
