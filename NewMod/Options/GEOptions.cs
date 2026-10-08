@@ -50,6 +50,8 @@ public class GEOptions : AbstractOptionGroup
 
     public ModdedNumberOption SystemOverrideFrequency { get; } = new("System Override Frequency", 15f, 0f, 100f, 5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
+    public ModdedToggleOption ShowCrimsonWarning { get; } = new("Show Crimson Warning", true) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
+
     public ModdedNumberOption CrimsonDuration { get; } = new("Vortex Duration", 30f, 10f, 60f, 5f, MiraNumberSuffixes.Seconds) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };
 
     public ModdedNumberOption CrimsonRadius { get; } = new("Vortex Size", 5f, 2f, 20f, 0.5f, MiraNumberSuffixes.None) { Visible = () => OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents.Value };

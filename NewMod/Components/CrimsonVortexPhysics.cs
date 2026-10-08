@@ -41,9 +41,9 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         if (!_physics.AmOwner)
             return;
 
-        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
         {
-            if (!CrismonVortexGE.Active && _physics.AmOwner && !_player.Data.IsDead && _player.CanMove && !_player.inVent)
+            if ((!CrismonVortexGE.Active || CrismonVortexGE.IsWarning()) && _physics.AmOwner && !_player.Data.IsDead && _player.CanMove && !_player.inVent)
             {
                 _lastSafePosition = _player.GetTruePosition();
                 _lastSafePositionReady = true;
@@ -137,7 +137,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public void FixedUpdate()
     {
-        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
         {
             _escaping = false;
             _escapedThisEntry = false;
@@ -210,7 +210,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public void ApplyVortex()
     {
-        if (_writingVelocity || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return;
+        if (_writingVelocity || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return;
 
         if (_escaping)
             return;
@@ -297,7 +297,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public bool CanAcceptEscape()
     {
-        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>() || !_player.CanMove || _player.inVent || _escaping || _escapedThisEntry) return false;
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>() || !_player.CanMove || _player.inVent || _escaping || _escapedThisEntry) return false;
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
         var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
@@ -335,7 +335,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public bool ShouldConsumeEscapeInput()
     {
-        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return false;
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return false;
 
         if (_escaping)
             return true;

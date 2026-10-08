@@ -17,6 +17,7 @@ public class CrismonVortexGE : IGeneralEvent
     public static bool PositionReady { get; private set; }
     public static Vector2 VortexPosition { get; private set; }
     public static float StartedAt { get; private set; }
+    public static float WarningDuration;
 
     public string Title => "Crimson Vortex";
     public string Description => "ESCAPE THE SINGULARITY!";
@@ -24,7 +25,9 @@ public class CrismonVortexGE : IGeneralEvent
     public Color AccentColor => new(0.9f, 0.03f, 0.05f);
     public int OccurrenceChance => (int)OptionGroupSingleton<GEOptions>.Instance.CrimsonVortexFrequency.Value;
 
-    public float Duration => OptionGroupSingleton<GEOptions>.Instance.CrimsonDuration.Value;
+    public float Duration => OptionGroupSingleton<GEOptions>.Instance.CrimsonDuration.Value + WarningDuration;
+
+    public static bool IsWarning() => Active && PositionReady && Time.time < StartedAt;
 
     public bool CanOccur()
     {
@@ -42,6 +45,7 @@ public class CrismonVortexGE : IGeneralEvent
     {
         Active = true;
         PositionReady = false;
+        WarningDuration = OptionGroupSingleton<GEOptions>.Instance.ShowCrimsonWarning.Value ? 3f : 0f;
 
         if (!AmongUsClient.Instance.AmHost)
             return;
@@ -78,7 +82,7 @@ public class CrismonVortexGE : IGeneralEvent
     {
         VortexPosition = new Vector2(x, y);
         PositionReady = true;
-        StartedAt = Time.time;
+        StartedAt = Time.time + WarningDuration;
 
         if (Camera.main.GetScreenEffect<CrimsonVortexEffect>() == null) Camera.main.AddScreenEffect<CrimsonVortexEffect>();
     }

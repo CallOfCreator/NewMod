@@ -72,6 +72,7 @@ public class CrimsonVortexEffect : ScreenEffect
         }
 
         var options = OptionGroupSingleton<GEOptions>.Instance;
+        var warning = CrismonVortexGE.IsWarning();
 
         var worldCenter = new Vector3(CrismonVortexGE.VortexPosition.x, CrismonVortexGE.VortexPosition.y, 0f);
 
@@ -84,12 +85,12 @@ public class CrimsonVortexEffect : ScreenEffect
 
         _mat.SetFloat("_Amount", amount);
 
-        _mat.SetColor("_Tint", tint);
-        _mat.SetColor("_HotTint", hotTint);
-        _mat.SetColor("_DeepTint", deepTint);
-        _mat.SetColor("_CoreTint", coreTint);
+        _mat.SetColor("_Tint", warning ? Color.gray : tint);
+        _mat.SetColor("_HotTint", warning ? Color.gray : hotTint);
+        _mat.SetColor("_DeepTint", warning ? new Color(0.16f, 0.16f, 0.16f) : deepTint);
+        _mat.SetColor("_CoreTint", warning ? Color.black : coreTint);
 
-        _mat.SetFloat("_Opacity", opacity);
+        _mat.SetFloat("_Opacity", warning ? opacity * 0.4f : opacity);
         _mat.SetFloat("_Tiling", tiling);
         _mat.SetFloat("_DetailTiling", detailTiling);
 
@@ -97,11 +98,11 @@ public class CrimsonVortexEffect : ScreenEffect
         _mat.SetFloat("_VortexStrength", vortexStrength);
         _mat.SetFloat("_VortexSpeed", vortexSpeed);
 
-        _mat.SetFloat("_DistortStrength", distortStrength);
+        _mat.SetFloat("_DistortStrength", warning ? 0f : distortStrength);
 
-        _mat.SetFloat("_SuctionStrength", suctionStrength);
+        _mat.SetFloat("_SuctionStrength", warning ? 0f : suctionStrength);
 
-        _mat.SetFloat("_ChromaticShift", chromaticShift);
+        _mat.SetFloat("_ChromaticShift", warning ? 0f : chromaticShift);
 
         _mat.SetFloat("_Density", density);
         _mat.SetFloat("_Contrast", contrast);
@@ -122,7 +123,7 @@ public class CrimsonVortexEffect : ScreenEffect
 
         _mat.SetFloat("_CoreDarkness", coreDarkness);
 
-        _mat.SetFloat("_CoreGlow", coreGlow);
+        _mat.SetFloat("_CoreGlow", warning ? 0f : coreGlow);
 
         _mat.SetFloat("_PulseStrength", pulseStrength);
 
@@ -140,7 +141,7 @@ public class CrimsonVortexEffect : ScreenEffect
 
         _mat.SetFloat("_LeadingEdgeWidth", leadingEdgeWidth);
 
-        _mat.SetFloat("_LeadingEdgeStrength", leadingEdgeStrength);
+        _mat.SetFloat("_LeadingEdgeStrength", warning ? 0f : leadingEdgeStrength);
 
         _mat.SetFloat("_UseCircular", 1f);
 
