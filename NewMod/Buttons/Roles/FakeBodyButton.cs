@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
@@ -14,7 +15,7 @@ public class FakeBodyButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
     public override string Name => "Prank";
-    public override float Cooldown => OptionGroupSingleton<PranksterOptions>.Instance.PrankCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<PranksterOptions>.Instance.PrankCooldown);
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.DeadBodySprite;

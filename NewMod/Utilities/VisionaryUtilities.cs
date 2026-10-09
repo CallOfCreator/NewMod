@@ -55,6 +55,7 @@ public static class VisionaryUtilities
         var offset = position - source.GetTruePosition();
         if (offset.magnitude > OptionGroupSingleton<VisionaryOptions>.Instance.PlacementRange || PhysicsHelpers.AnyNonTriggersBetween(source.GetTruePosition(), offset.normalized, offset.magnitude, Constants.ShipAndObjectsMask))
             return;
+        OverclockedModifier.Pulse(source);
         RpcPlaceCamera(PlayerControl.LocalPlayer, source.PlayerId, NextCameraId++, x, y, angle);
     }
 

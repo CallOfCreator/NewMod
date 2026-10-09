@@ -14,13 +14,14 @@ public static class CrismonVortexPhysicsAwakePatch
     }
 }
 
-[HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.SetNormalizedVelocity))]
+[HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.FixedUpdate))]
 public static class CrismonVortexFixedUpdatePatch
 {
     [HarmonyPostfix]
-    public static void Postfix(PlayerPhysics __instance, Vector2 direction)
+    [HarmonyPriority(Priority.Last)]
+    public static void Postfix(PlayerPhysics __instance)
     {
-        if (!__instance.AmOwner)
+        if (!__instance.AmOwner && !(__instance.myPlayer.isDummy && AmongUsClient.Instance.AmHost))
             return;
 
         var vortex = __instance.GetComponent<CrismonVortexPhysics>();

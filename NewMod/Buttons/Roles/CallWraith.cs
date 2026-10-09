@@ -4,6 +4,7 @@ using MiraAPI.Utilities.Assets;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using Wraith = NewMod.Roles.NeutralRoles.WraithCaller;
@@ -23,7 +24,7 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
     public EnergyCategory Category => EnergyCategory.Control;
     public bool CaptureOnClick => false;
     public override string Name => "Call Wraith";
-    public override float Cooldown => OptionGroupSingleton<WraithCallerOptions>.Instance.CallWraithCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<WraithCallerOptions>.Instance.CallWraithCooldown);
 
     public override bool CanUse()
     {

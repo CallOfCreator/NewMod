@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using NewMod.Modifiers.S1;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -179,6 +180,7 @@ public class Collector : CrewmateRole, INewModRole
             return;
 
         if (PhysicsHelpers.AnythingBetween(source.GetTruePosition(), fragment.Position, Constants.ShipAndObjectsMask, false)) return;
+        OverclockedModifier.Pulse(source);
         RpcConfirmHarvest(PlayerControl.LocalPlayer, source.PlayerId, fragmentId, (byte)fragment.Kind);
     }
 
@@ -325,6 +327,7 @@ public class Collector : CrewmateRole, INewModRole
         Trace,
         Drift
     }
+
     public static bool CanConvert(int[] fragments, int cost)
     {
         return System.Array.Exists(fragments, count => count == 0) && System.Array.Exists(fragments, count => count > cost);
@@ -363,5 +366,4 @@ public class Collector : CrewmateRole, INewModRole
         fragments[pair] -= 2;
         return pair == (int)FragmentKind.Fate ? FragmentPower.Drift : FragmentPower.Trace;
     }
-
 }

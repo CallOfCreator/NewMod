@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
@@ -13,7 +14,7 @@ public class DeployShadow : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
     public override string Name => "Deploy Shadow";
-    public override float Cooldown => OptionGroupSingleton<ShadeOptions>.Instance.Cooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<ShadeOptions>.Instance.Cooldown);
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.DeployZone;

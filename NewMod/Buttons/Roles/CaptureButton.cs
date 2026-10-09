@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Linq;
 using MiraAPI.Utilities;
@@ -27,7 +28,7 @@ public class CaptureButton : CustomActionButton, IEnergyAbility
 
     public override string Name => "Place Camera";
 
-    public override float Cooldown => OptionGroupSingleton<VisionaryOptions>.Instance.ScreenshotCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<VisionaryOptions>.Instance.ScreenshotCooldown);
 
     public override float EffectDuration => 0;
 

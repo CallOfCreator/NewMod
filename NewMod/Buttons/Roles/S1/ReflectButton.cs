@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
@@ -15,7 +16,7 @@ public class MirrorReflectButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Protection;
     public override string Name => "Reflect";
-    public override float Cooldown => OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectCooldown);
     public override float EffectDuration => OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectWindow;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;

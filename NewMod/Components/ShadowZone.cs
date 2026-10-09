@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.GameOptions;
@@ -114,7 +115,10 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
     public static void RpcDeployZone(PlayerControl source, Vector2 position, float radius, float duration)
     {
         if (source.Data.Role is Shade && !source.Data.IsDead && !source.Data.Disconnected && !MeetingHud.Instance)
+        {
+            OverclockedModifier.Pulse(source);
             Create(source.PlayerId, position, radius, duration);
+        }
     }
 
     public static bool IsInsideAny(Vector2 position)

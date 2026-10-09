@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using MiraAPI.Utilities;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
@@ -19,7 +20,7 @@ public class ArcButton : CustomActionButton, IEnergyAbility
 
     public override string Name => "Arc";
 
-    public override float Cooldown => OptionGroupSingleton<EdgeveilOptions>.Instance.SlashCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<EdgeveilOptions>.Instance.SlashCooldown);
 
     public override float EffectDuration => OptionGroupSingleton<EdgeveilOptions>.Instance.ChargeDuration;
 
@@ -49,6 +50,7 @@ public class ArcButton : CustomActionButton, IEnergyAbility
     {
         if (source.Data.Role is not Edgeveil || source.Data.IsDead || source.inVent || MeetingHud.Instance)
             return;
+        OverclockedModifier.Pulse(source);
         Coroutines.Start(CoArc(source, direction.normalized));
     }
 

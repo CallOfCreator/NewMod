@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using NewMod.Modifiers.S1;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
@@ -102,6 +103,7 @@ public class WardenRole : CrewmateRole, INewModRole
         if (!currentRoom || currentRoom.RoomId != (SystemTypes)roomId)
             return;
         var duration = OptionGroupSingleton<WardenOptions>.Instance.SealDuration;
+        OverclockedModifier.Pulse(source);
         SealOwnerId = source.PlayerId;
         SealedRoom = (SystemTypes)roomId;
         SealActive = true;

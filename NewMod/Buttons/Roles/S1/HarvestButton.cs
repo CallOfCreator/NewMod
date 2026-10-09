@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
@@ -17,7 +18,7 @@ public class HarvestButton : CustomActionButton, IEnergyAbility
     public uint _fragmentId;
 
     public override string Name => "Harvest";
-    public override float Cooldown => OptionGroupSingleton<CollectorOptions>.Instance.HarvestCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<CollectorOptions>.Instance.HarvestCooldown);
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;

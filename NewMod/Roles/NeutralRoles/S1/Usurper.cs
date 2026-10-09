@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -69,15 +70,17 @@ public class Usurper : CrewmateRole, INewModRole
             return text;
 
         if (state.Phase == CrownPhase.Claimed)
+        {
             text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Claimed"), Utils.PlayerById(state.TargetId).Data.PlayerName));
+        }
         else if (state.Phase == CrownPhase.Available)
+        {
             text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.CrownWaiting"));
+        }
         else if (state.Phase == CrownPhase.Held)
         {
             var remaining = HoldRemaining.GetValueOrDefault(PlayerControl.LocalPlayer.PlayerId);
-            text.AppendLine(remaining > 0f
-                ? string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Hold"), Mathf.CeilToInt(remaining))
-                : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.SurvivalGoal"));
+            text.AppendLine(remaining > 0f ? string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Hold"), Mathf.CeilToInt(remaining)) : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.SurvivalGoal"));
         }
 
         return text;
@@ -238,6 +241,7 @@ public class Usurper : CrewmateRole, INewModRole
         if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Usurper || source.Data.IsDead || target.Data.IsDead || target.Data.Disconnected || !States.TryGetValue(source.PlayerId, out var state) || state.Phase != CrownPhase.Unclaimed || Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > OptionGroupSingleton<UsurperOptions>.Instance.ClaimRange)
             return;
 
+        OverclockedModifier.Pulse(source);
         RpcConfirmClaim(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId);
     }
 
@@ -284,9 +288,7 @@ public class Usurper : CrewmateRole, INewModRole
         MeetingEligible.Remove(usurperId);
         Coroutines.Start(CoHoldCrown(holder, crown));
         var color = ((Usurper)holder.Data.Role).RoleColor.ToTextColor();
-        var message = holder.AmOwner
-            ? string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.YourCrown"), color, HoldRemaining[usurperId])
-            : string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.Claimed"), color, holder.Data.PlayerName);
+        var message = holder.AmOwner ? string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.YourCrown"), color, HoldRemaining[usurperId]) : string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.Claimed"), color, holder.Data.PlayerName);
         Coroutines.Start(CoroutinesHelper.CoNotify(message));
     }
 
@@ -339,6 +341,7 @@ public class Usurper : CrewmateRole, INewModRole
         Available,
         Held
     }
+
     public static bool Claim(byte ownerId, byte targetId)
     {
         if (States[ownerId].Phase != CrownPhase.Unclaimed)
@@ -394,9 +397,7 @@ public class Usurper : CrewmateRole, INewModRole
         var renderer = crown.GetComponent<SpriteRenderer>();
         var nameRenderer = holder.cosmetics.nameText.GetComponent<MeshRenderer>();
         var colorNameRenderer = holder.cosmetics.colorBlindText.GetComponent<MeshRenderer>();
-        while (holder && !holder.Data.IsDead && !holder.Data.Disconnected && holder.Data.Role is Usurper
-            && States.TryGetValue(ownerId, out var held) && held.Phase == CrownPhase.Held
-            && CrownObjects.TryGetValue(ownerId, out var current) && current == crown)
+        while (holder && !holder.Data.IsDead && !holder.Data.Disconnected && holder.Data.Role is Usurper && States.TryGetValue(ownerId, out var held) && held.Phase == CrownPhase.Held && CrownObjects.TryGetValue(ownerId, out var current) && current == crown)
         {
             var meetingActive = MeetingHud.Instance || ExileController.Instance;
             AdvanceHold(ownerId, Time.deltaTime, meetingActive);
@@ -409,9 +410,7 @@ public class Usurper : CrewmateRole, INewModRole
             if (colorNameRenderer.enabled && colorNameRenderer.gameObject.activeInHierarchy)
                 position.y = Mathf.Max(position.y, colorNameRenderer.bounds.max.y + crownHalfHeight + 0.03f);
             crown.transform.position = position;
-            renderer.enabled = !meetingActive && holder.Visible && !holder.inVent && body.enabled && body.color.a > 0f
-                && (holder == local || (Vector2.Distance(local.GetTruePosition(), holder.GetTruePosition()) <= ShipStatus.Instance.CalculateLightRadius(local.Data)
-                    && !PhysicsHelpers.AnythingBetween(local.GetTruePosition(), holder.GetTruePosition(), Constants.ShipAndObjectsMask, false)));
+            renderer.enabled = !meetingActive && holder.Visible && !holder.inVent && body.enabled && body.color.a > 0f && (holder == local || (Vector2.Distance(local.GetTruePosition(), holder.GetTruePosition()) <= ShipStatus.Instance.CalculateLightRadius(local.Data) && !PhysicsHelpers.AnythingBetween(local.GetTruePosition(), holder.GetTruePosition(), Constants.ShipAndObjectsMask, false)));
             renderer.color = new Color(1f, 1f, 1f, body.color.a);
             yield return null;
         }
@@ -424,8 +423,8 @@ public class Usurper : CrewmateRole, INewModRole
             if (States.TryGetValue(ownerId, out var state) && state.Phase == CrownPhase.Held)
                 States[ownerId] = (byte.MaxValue, CrownPhase.Unclaimed);
         }
+
         if (crown)
             Destroy(crown);
     }
-
 }

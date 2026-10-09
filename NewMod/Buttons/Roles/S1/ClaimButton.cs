@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
@@ -17,7 +18,7 @@ public class ClaimButton : CustomActionButton, IEnergyAbility
     public PlayerControl _target;
 
     public override string Name => "Claim";
-    public override float Cooldown => OptionGroupSingleton<UsurperOptions>.Instance.ClaimCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<UsurperOptions>.Instance.ClaimCooldown);
     public override int MaxUses => 1;
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;

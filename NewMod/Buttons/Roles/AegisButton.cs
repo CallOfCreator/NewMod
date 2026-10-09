@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.NeutralRoles;
@@ -20,7 +21,7 @@ public class AegisButton : CustomActionButton, IEnergyAbility
 
     public override string Name => "Sentinel Ward";
 
-    public override float Cooldown => OptionGroupSingleton<AegisOptions>.Instance.AegisCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<AegisOptions>.Instance.AegisCooldown);
 
     public override int MaxUses => (int)OptionGroupSingleton<AegisOptions>.Instance.MaxCharges;
 

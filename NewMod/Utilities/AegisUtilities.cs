@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
@@ -17,6 +18,7 @@ public static class AegisUtilities
     {
         if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Aegis || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ShieldArea._active.Any(area => area.ownerId == source.PlayerId))
             return;
+        OverclockedModifier.Pulse(source);
         var position = source.GetTruePosition();
         RpcPlaceWard(PlayerControl.LocalPlayer, source.PlayerId, position.x, position.y);
     }

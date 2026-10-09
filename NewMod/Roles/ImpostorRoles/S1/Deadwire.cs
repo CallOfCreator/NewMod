@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -135,6 +136,7 @@ public class Deadwire : ImpostorRole, INewModRole
         if (!source.IsHost() || Records.ContainsKey(deadwireId))
             return;
 
+        OverclockedModifier.Pulse(Utils.PlayerById(deadwireId));
         MarkedPlayers[deadwireId] = targetId;
         MarkExpiresAt[deadwireId] = Time.time + duration;
     }
@@ -195,6 +197,7 @@ public class Deadwire : ImpostorRole, INewModRole
             return;
 
         var deadwire = Utils.PlayerById(deadwireId);
+        OverclockedModifier.Pulse(deadwire);
         var actor = Utils.PlayerById(actorId);
         var record = (ActorId: actorId, Category: (EnergyCategory)categoryId);
         var options = OptionGroupSingleton<DeadwireOptions>.Instance;
@@ -250,6 +253,7 @@ public class Deadwire : ImpostorRole, INewModRole
         JamActor,
         Barrier
     }
+
     public static float ReduceCooldown(float remaining, float reduction, float minimum)
     {
         return System.Math.Min(remaining, System.Math.Max(minimum, remaining - reduction));
@@ -266,5 +270,4 @@ public class Deadwire : ImpostorRole, INewModRole
             _ => Response.Barrier
         };
     }
-
 }

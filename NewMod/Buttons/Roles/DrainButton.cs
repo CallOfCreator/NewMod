@@ -4,6 +4,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
@@ -16,7 +17,7 @@ public sealed class DrainButton : CustomActionButton
     private bool _breachMode;
 
     public override string Name => "Siphon";
-    public override float Cooldown => OptionGroupSingleton<EnergyThiefOptions>.Instance.SiphonCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<EnergyThiefOptions>.Instance.SiphonCooldown);
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;

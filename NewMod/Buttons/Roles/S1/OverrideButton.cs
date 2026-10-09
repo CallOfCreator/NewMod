@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using NewMod.Roles.ImpostorRoles.S1;
 using MiraAPI.Translation;
 using MiraAPI.Hud;
@@ -19,7 +20,7 @@ public class OverrideButton : CustomActionButton, IEnergyAbility
     public EnergyCategory Category => EnergyCategory.Control;
     public override string Name => "Override";
     public override float InitialCooldown => 0f;
-    public override float Cooldown => OptionGroupSingleton<DeadwireOptions>.Instance.OverrideCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<DeadwireOptions>.Instance.OverrideCooldown);
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.OverrideButton;

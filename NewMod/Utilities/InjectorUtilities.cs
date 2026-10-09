@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,6 +74,7 @@ public static class InjectorUtilities
         var options = OptionGroupSingleton<InjectorOptions>.Instance;
         if (Vector2.Distance(source.GetTruePosition(), target.GetTruePosition()) > options.InjectionRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false))
             return;
+        OverclockedModifier.Pulse(source);
         RpcConfirmInjection(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId, serum);
     }
 
@@ -82,7 +84,7 @@ public static class InjectorUtilities
         if (!source.IsHost()) return;
         var options = OptionGroupSingleton<InjectorOptions>.Instance;
         Experiments[ownerId] = (targetId, serum, Time.time + options.ObservationDuration, Time.time + options.ObservationDuration + options.CollectionWindow);
-        NextInjection[ownerId] = Time.time + options.SerumCooldown;
+        NextInjection[ownerId] = Time.time + OverclockedModifier.GetCooldown(Utils.PlayerById(ownerId), options.SerumCooldown);
         if (PlayerControl.LocalPlayer.PlayerId == targetId)
         {
             var button = CustomButtonSingleton<CleanseSerumButton>.Instance;

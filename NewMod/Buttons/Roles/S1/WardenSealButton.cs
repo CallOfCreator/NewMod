@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.NeutralRoles;
@@ -15,7 +16,7 @@ public class WardenSealButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Control;
     public override string Name => "Seal";
-    public override float Cooldown => OptionGroupSingleton<WardenOptions>.Instance.SealCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<WardenOptions>.Instance.SealCooldown);
     public override float EffectDuration => OptionGroupSingleton<WardenOptions>.Instance.SealDuration;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;

@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections.Generic;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
@@ -193,6 +194,7 @@ public class Nomad : CrewmateRole, INewModRole
         if (!source.IsHost())
             return;
 
+        OverclockedModifier.Pulse(Utils.PlayerById(playerId));
         Anchors[playerId] = new Vector2(x, y);
         LastRooms[playerId] = roomId;
         RouteRooms[playerId] = [roomId];
@@ -221,6 +223,7 @@ public class Nomad : CrewmateRole, INewModRole
         if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Nomad || source.Data.IsDead || MeetingHud.Instance || ExileController.Instance || NextWander.GetValueOrDefault(source.PlayerId) > Time.time || !CanWander.Contains(source.PlayerId) || !Anchors.TryGetValue(source.PlayerId, out var anchor))
             return;
 
+        OverclockedModifier.Pulse(source);
         RpcConfirmWander(PlayerControl.LocalPlayer, source.PlayerId, anchor.x, anchor.y);
     }
 
@@ -234,7 +237,7 @@ public class Nomad : CrewmateRole, INewModRole
         Scores[playerId] = score + 1;
         if (Scores[playerId] >= OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal)
             Coroutines.Start(CoroutinesHelper.CoNotify("A Nomad has finished their journeys.\nThe next meeting can decide their win."));
-        NextWander[playerId] = Time.time + OptionGroupSingleton<NomadOptions>.Instance.WanderCooldown;
+        NextWander[playerId] = Time.time + OverclockedModifier.GetCooldown(Utils.PlayerById(playerId), OptionGroupSingleton<NomadOptions>.Instance.WanderCooldown);
         ProtectionEnds[playerId] = Time.time + OptionGroupSingleton<NomadOptions>.Instance.BacktrackDuration;
         if (RouteEnds.TryGetValue(playerId, out var routeEnd))
             BacktrackPositions[playerId] = routeEnd;

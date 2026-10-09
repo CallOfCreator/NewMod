@@ -1,3 +1,5 @@
+using MiraAPI.Modifiers;
+using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
 using MiraAPI.GameOptions;
@@ -20,6 +22,8 @@ public static class BeaconShowMapPatch
             yield break;
 
         var options = OptionGroupSingleton<BeaconOptions>.Instance;
+        if (PlayerControl.LocalPlayer.HasModifier<OverclockedModifier>())
+            OverclockedModifier.RpcRequestPulse(PlayerControl.LocalPlayer);
         BC.charges--;
         BC.pulseUntil = Time.time + options.PulseDuration;
         Rpc<BeaconPulseRpc>.Instance.Send(new BeaconPulseRpc.Data(0.6f));

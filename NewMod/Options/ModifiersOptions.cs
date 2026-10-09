@@ -41,4 +41,9 @@ public class ModifiersOptions : AbstractOptionGroup
 
     [ModdedNumberOption("Marked Amount", 0, 5, 1, MiraNumberSuffixes.None)]
     public float MarkedAmount { get; set; } = 1f;
+
+    [ModdedNumberOption("Overclocked Amount", 0, 5, 1, MiraNumberSuffixes.None)]
+    public float OverclockedAmount { get; set; } = 1f;
+
+    public ModdedNumberOption OverclockedChance { get; } = new("Overclocked Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.OverclockedAmount > 0f };
 }

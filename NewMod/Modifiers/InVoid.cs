@@ -30,6 +30,7 @@ public class InVoid : BaseModifier
 
     public override void OnActivate()
     {
+        OverclockedModifier.Pulse(Player, true);
         VoidActive = true;
 
         if (GeneralEventManager.CurrentEvent is IdentityCrisisGE)

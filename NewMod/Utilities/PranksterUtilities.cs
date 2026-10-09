@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ public static class PranksterUtilities
     public static void CreatePranksterDeadBody(PlayerControl source, byte parentId)
     {
         if (source.Data.Role is not Prankster || source.Data.IsDead || source.Data.Disconnected || parentId != source.PlayerId || MeetingHud.Instance || ExileController.Instance || FindAllPranksterBodies().Any(body => body.ParentId == parentId)) return;
+        OverclockedModifier.Pulse(source);
         var deadBody = Object.Instantiate(GameManager.Instance.GetDeadBody(source.Data.Role));
         deadBody.name = PranksterBodyName;
         deadBody.ParentId = parentId;

@@ -4,6 +4,7 @@ using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
 using MiraAPI.Utilities;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
@@ -19,7 +20,7 @@ public class DeadlockButton : CustomActionButton<PlayerControl>, IEnergyAbility
 
     public override string Name => "Deadlock";
     public override float InitialCooldown => 0f;
-    public override float Cooldown => OptionGroupSingleton<DeadwireOptions>.Instance.DeadlockCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<DeadwireOptions>.Instance.DeadlockCooldown);
     public override int MaxUses => (int)OptionGroupSingleton<DeadwireOptions>.Instance.DeadlockUses;
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;

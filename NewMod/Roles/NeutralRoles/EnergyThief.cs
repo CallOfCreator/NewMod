@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -312,6 +313,7 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
         if (HarvestedTargets.TryGetValue(source.PlayerId, out var harvested) && harvested.Contains(target.PlayerId))
             return;
 
+        OverclockedModifier.Pulse(source);
         RpcConfirmSiphon(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId, options.SiphonDuration);
     }
 

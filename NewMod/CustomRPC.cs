@@ -129,5 +129,7 @@ public enum CustomRPC
     TyrantAnswerOffer,
     TyrantConfirmAnswer,
     TyrantConfirmPulse,
-    InjectorFinishSubmission
+    InjectorFinishSubmission,
+    OverclockedRequestPulse,
+    OverclockedPulse
 }

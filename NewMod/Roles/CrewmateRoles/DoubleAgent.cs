@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections;
 using MiraAPI.Translation;
 using MiraAPI.Events;
@@ -77,19 +78,20 @@ public class DoubleAgent : CrewmateRole, INewModRole
             return;
 
         var duration = OptionGroupSingleton<DoubleAgentOptions>.Instance.CounterfeitDuration;
-        RpcStartCounterfeit(PlayerControl.LocalPlayer, duration);
+        OverclockedModifier.Pulse(source);
+        RpcStartCounterfeit(PlayerControl.LocalPlayer, source.PlayerId, duration);
         ShipStatus.Instance.UpdateSystem(SystemTypes.Comms, source, 128);
         Coroutines.Start(CoFinishCounterfeit(duration));
     }
 
     [MethodRpc((uint)CustomRPC.DoubleAgentStartCounterfeit, LocalHandling = RpcLocalHandling.After)]
-    public static void RpcStartCounterfeit(PlayerControl source, float duration)
+    public static void RpcStartCounterfeit(PlayerControl source, byte ownerId, float duration)
     {
         if (!source.IsHost())
             return;
 
         CounterfeitActive = true;
-        CooldownUntil = Time.time + OptionGroupSingleton<DoubleAgentOptions>.Instance.CounterfeitCooldown;
+        CooldownUntil = Time.time + OverclockedModifier.GetCooldown(Utils.PlayerById(ownerId), OptionGroupSingleton<DoubleAgentOptions>.Instance.CounterfeitCooldown);
 
         if (PlayerControl.LocalPlayer.Data.Role is DoubleAgent)
             Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FF4B4B>Counterfeit deployed.</color> It will collapse in {duration:0}s."));

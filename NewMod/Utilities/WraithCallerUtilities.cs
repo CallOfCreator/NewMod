@@ -104,7 +104,8 @@ public static class WraithCallerUtilities
 
         var start = source.GetTruePosition();
 
-        NextSummon[source.PlayerId] = Time.time + OptionGroupSingleton<WraithCallerOptions>.Instance.CallWraithCooldown;
+        NextSummon[source.PlayerId] = Time.time + OverclockedModifier.GetCooldown(source, OptionGroupSingleton<WraithCallerOptions>.Instance.CallWraithCooldown);
+        OverclockedModifier.Pulse(source);
         RpcSummonNPC(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId, start.x, start.y);
     }
 

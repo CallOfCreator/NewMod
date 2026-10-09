@@ -16,7 +16,7 @@ public class EnterVoid : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Mobility;
     public override string Name => "Enter Void";
-    public override float Cooldown => OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterVoidCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterVoidCooldown);
     public override LoadableAsset<Sprite> Sprite => NewModAsset.EnterVoid;
 
     public override bool IsEffectCancellable()

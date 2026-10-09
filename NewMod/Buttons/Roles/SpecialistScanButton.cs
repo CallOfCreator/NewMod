@@ -1,4 +1,5 @@
 using MiraAPI.Hud;
+using NewMod.Modifiers.S1;
 using NewMod.Utilities;
 using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
@@ -15,7 +16,7 @@ public class SpecialistScanButton : CustomActionButton, IEnergyAbility
     public override string Name => "Scan";
     public Vector2 ScanOrigin;
     public bool Interrupted;
-    public override float Cooldown => 8f;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, 8f);
     public override float EffectDuration => 1.5f;
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;

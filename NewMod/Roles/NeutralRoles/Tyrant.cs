@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Linq;
 using System.Text;
@@ -160,7 +161,8 @@ public class Tyrant : ImpostorRole, INewModRole
     public static void RpcSpawnFearPulse(PlayerControl source, float x, float y)
     {
         if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Tyrant tyrant || tyrant.Kills < 1 || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Time.time < tyrant.NextPulse) return;
-        tyrant.NextPulse = Time.time + OptionGroupSingleton<TyrantOptions>.Instance.PulseCooldown;
+        tyrant.NextPulse = Time.time + OverclockedModifier.GetCooldown(source, OptionGroupSingleton<TyrantOptions>.Instance.PulseCooldown);
+        OverclockedModifier.Pulse(source);
         RpcConfirmPulse(PlayerControl.LocalPlayer, source.PlayerId, source.GetTruePosition());
     }
 

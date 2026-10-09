@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Linq;
 using AmongUs.GameOptions;
 using MiraAPI.GameOptions;
@@ -28,7 +29,7 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
     /// <summary>
     ///     Gets the cooldown time for this button, based on <see cref="NecromancerOption" />.
     /// </summary>
-    public override float Cooldown => OptionGroupSingleton<NecromancerOption>.Instance.ButtonCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<NecromancerOption>.Instance.ButtonCooldown);
 
     /// <summary>
     ///     Gets the maximum number of uses for this button, based on <see cref="NecromancerOption" />.

@@ -1,4 +1,5 @@
 using MiraAPI.Translation;
+using NewMod.Modifiers.S1;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -214,7 +215,10 @@ public static class Utils
         if (revived.Data.Role is NoisemakerRole noisemaker && noisemaker.deathArrowPrefab != null) Object.Destroy(noisemaker.deathArrowPrefab.gameObject);
 
         if (source.Data.Role is NecromancerRole)
+        {
+            OverclockedModifier.Pulse(source);
             NecromancerRole.RevivedPlayers[revivedId] = source.PlayerId;
+        }
 
         revived.Revive();
         revived.RemainingEmergencies = 0;

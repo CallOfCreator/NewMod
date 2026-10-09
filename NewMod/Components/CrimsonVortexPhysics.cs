@@ -27,7 +27,6 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
     private bool _lastSafePositionReady;
     private PlayerPhysics _physics;
     private PlayerControl _player;
-    private bool _writingVelocity;
 
     public void Awake()
     {
@@ -38,7 +37,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public void Update()
     {
-        if (!_physics.AmOwner)
+        if (!_physics.AmOwner || _player.notRealPlayer || _player.Data == null)
             return;
 
         if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
@@ -137,6 +136,9 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public void FixedUpdate()
     {
+        if (_player.notRealPlayer || _player.Data == null)
+            return;
+
         if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
         {
             _escaping = false;
@@ -189,11 +191,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        if (_player.isDummy && AmongUsClient.Instance.AmHost)
-        {
-            ApplyVortex();
-        }
-        else if (_physics.AmOwner && !_escaping && !_player.CanMove && _collisionDisabled)
+        if (_physics.AmOwner && !_escaping && !_player.CanMove && _collisionDisabled)
         {
             _player.Collider.enabled = true;
             _collisionDisabled = false;
@@ -202,15 +200,15 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
     public void OnDestroy()
     {
-        if (_collisionDisabled)
+        if (_collisionDisabled && _player && _player.Collider)
             _player.Collider.enabled = true;
 
-        if (_physics.AmOwner && CrimsonVortexEscapeHud.Instance) CrimsonVortexEscapeHud.Instance.ForceHide();
+        if (_physics && _physics.AmOwner && CrimsonVortexEscapeHud.Instance) CrimsonVortexEscapeHud.Instance.ForceHide();
     }
 
     public void ApplyVortex()
     {
-        if (_writingVelocity || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return;
+        if (_player.notRealPlayer || _player.Data == null || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return;
 
         if (_escaping)
             return;
@@ -288,11 +286,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var direction = currentDirection + inward * pull + tangent * orbit;
 
-        _writingVelocity = true;
-
         _physics.SetNormalizedVelocity(Vector2.ClampMagnitude(direction, 2.1f * intensity));
-
-        _writingVelocity = false;
     }
 
     public bool CanAcceptEscape()

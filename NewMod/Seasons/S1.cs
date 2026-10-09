@@ -78,7 +78,8 @@ public class S1 : ISeason
             typeof(LazyModifier),
             typeof(InVoid),
             typeof(MarkedModifier),
-            typeof(MomentumModifier)
+            typeof(MomentumModifier),
+            typeof(OverclockedModifier)
         ];
     }
 
@@ -92,6 +93,7 @@ public class S1 : ISeason
             typeof(WraithSiegeOptions),
             typeof(VoidwalkerOptions),
             typeof(MomentumModifierOptions),
+            typeof(OverclockedModifierOptions),
             typeof(MarkedModifierOptions),
             typeof(WardenOptions),
             typeof(ArbitratorOptions),

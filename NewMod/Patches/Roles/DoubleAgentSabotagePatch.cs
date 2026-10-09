@@ -1,6 +1,7 @@
 using HarmonyLib;
 using Hazel;
 using MiraAPI.GameOptions;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using UnityEngine;
 using NewMod.Roles.CrewmateRoles;
@@ -42,7 +43,7 @@ public static class DoubleAgentMapCooldownPatch
         if (PlayerControl.LocalPlayer.Data.Role is not DoubleAgent)
             return;
         foreach (var room in __instance.rooms)
-            room.SetSpecialActive(room.room == SystemTypes.Comms && !DoubleAgent.CounterfeitActive ? Mathf.Clamp01((DoubleAgent.CooldownUntil - Time.time) / OptionGroupSingleton<DoubleAgentOptions>.Instance.CounterfeitCooldown) : 1f);
+            room.SetSpecialActive(room.room == SystemTypes.Comms && !DoubleAgent.CounterfeitActive ? Mathf.Clamp01((DoubleAgent.CooldownUntil - Time.time) / OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<DoubleAgentOptions>.Instance.CounterfeitCooldown)) : 1f);
     }
 }
 

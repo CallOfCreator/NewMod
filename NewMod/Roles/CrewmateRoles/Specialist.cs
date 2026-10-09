@@ -1,3 +1,5 @@
+using MiraAPI.Modifiers;
+using NewMod.Modifiers.S1;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -114,6 +116,8 @@ public class Specialist : CrewmateRole, INewModRole
         if (state.Charges == 0)
             return;
 
+        if (specialist.HasModifier<OverclockedModifier>())
+            OverclockedModifier.RpcRequestPulse(specialist);
         ScanStates[specialist.PlayerId] = (state.Charges - 1, state.Mode);
         var position = specialist.GetTruePosition();
         string result;
@@ -149,10 +153,10 @@ public class Specialist : CrewmateRole, INewModRole
         Forensics,
         Disturbance
     }
+
     public static void EarnScan(byte playerId)
     {
         var state = ScanStates[playerId];
         ScanStates[playerId] = (System.Math.Min(3, state.Charges + 1), state.Mode);
     }
-
 }

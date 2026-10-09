@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Linq;
 using MiraAPI.GameOptions;
@@ -19,7 +20,7 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Aggression;
     public override string Name => "Strike";
-    public override float Cooldown => OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeCooldown;
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeCooldown);
     public override float EffectDuration => OptionGroupSingleton<PulseBladeOptions>.Instance.ChargeDuration;
     public override float Distance => OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeRange;
     public override ButtonLocation Location => ButtonLocation.BottomRight;
@@ -59,6 +60,7 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
         if (source.Data.Role is not PulseBlade || source.Data.IsDead || source.inVent || MeetingHud.Instance || ExileController.Instance)
             return;
 
+        OverclockedModifier.Pulse(source);
         Coroutines.Start(DoPulseStrike(source, direction.normalized));
     }
 

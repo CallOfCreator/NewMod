@@ -1,3 +1,4 @@
+using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -114,6 +115,7 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
     {
         if (source.Data.Role is not MirrorBladeRole || source.Data.IsDead || source.inVent || MeetingHud.Instance || !ArmedReflections.Add(source.PlayerId))
             return;
+        OverclockedModifier.Pulse(source);
         Coroutines.Start(CoDisarmReflection(source, OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectWindow));
 
         if (source.AmOwner)
