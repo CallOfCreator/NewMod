@@ -1,3 +1,4 @@
+using NewMod.Components.ScreenEffects.Effects;
 using Hazel;
 using NewMod.Components.ScreenEffects;
 using NewMod.Roles.CrewmateRoles;

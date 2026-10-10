@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NewMod.Components.ScreenEffects.Effects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
@@ -237,17 +238,23 @@ public static class NewModDebugPanel
     private static VNode EffectsPage()
     {
         var camera = Camera.main;
-        var glitch = camera.GetScreenEffect<GlitchEffect>();
-        var distortion = camera.GetScreenEffect<DistorationWaveEffect>();
-        var flux = camera.GetScreenEffect<ShadowFluxEffect>();
-        var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Energy breach", PlayEnergyThiefBreak, false), ("Glitch", AddEffect<GlitchEffect>, false), ("Earthquake", AddEffect<EarthquakeEffect>, false), ("Pulse hue", AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", AddEffect<DistorationWaveEffect>, false), ("Shadow flux", AddEffect<ShadowFluxEffect>, false), ("Negative reality", AddEffect<NegativeRealityEffect>, false), ("Shattered glass", AddEffect<ShatteredGlassEffect>, false), ("Glitch V2", AddEffect<ScrDesyncEffect>, false), ("Remove all", RemoveEffects, true))) };
-
-        if (glitch != null && glitch.Active) sections.Add(Section("GLITCH", EffectSlider("Intensity", glitch.intensity, value => glitch.intensity = value, 0f, 1f), EffectSlider("Block size", glitch.blockSize, value => glitch.blockSize = value, 8f, 128f), EffectSlider("Colour split", glitch.colorSplit, value => glitch.colorSplit = value, 0f, 3f), EffectSlider("Speed", glitch.speed, value => glitch.speed = value, 0f, 10f)));
-
-        if (distortion != null && distortion.Active) sections.Add(Section("DISTORTION WAVE", EffectSlider("Amplitude", distortion.amplitude, value => distortion.amplitude = value, 0f, 0.25f), EffectSlider("Frequency", distortion.frequency, value => distortion.frequency = value, 0f, 12f), EffectSlider("Speed", distortion.speed, value => distortion.speed = value, 0f, 5f), EffectSlider("Radius", distortion.radius, value => distortion.radius = value, 0f, 1f), EffectSlider("Falloff", distortion.falloff, value => distortion.falloff = value, 0f, 5f)));
-
-        if (flux != null && flux.Active) sections.Add(Section("SHADOW FLUX", EffectSlider("Noise scale", flux.noiseScale, value => flux.noiseScale = value, 0f, 5f), EffectSlider("Speed", flux.speed, value => flux.speed = value, 0f, 3f), EffectSlider("Edge width", flux.edgeWidth, value => flux.edgeWidth = value, 0f, 1f), EffectSlider("Threshold", flux.threshold, value => flux.threshold = value, 0f, 1f), EffectSlider("Opacity", flux.opacity, value => flux.opacity = value, 0f, 1f), EffectSlider("Darkness", flux.darkness, value => flux.darkness = value, 0f, 1f)));
-
+        var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Energy breach", PlayEnergyThiefBreak, false), ("Glitch", AddEffect<GlitchEffect>, false), ("Earthquake", AddEffect<EarthquakeEffect>, false), ("Pulse hue", AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", AddEffect<DistorationWaveEffect>, false), ("Shadow flux", AddEffect<ShadowFluxEffect>, false), ("Negative reality", AddEffect<NegativeRealityEffect>, false), ("Glitch V2", AddEffect<ScrDesyncEffect>, false), ("Remove all", RemoveEffects, true))) };
+        var system = camera.GetComponent<ScreenEffectSystem>();
+        if (system)
+        {
+            foreach (var effect in system.Effects)
+            {
+                if (!effect.Active || !effect._mat) continue;
+                var controls = new List<VNode>();
+                foreach (var property in effect.Properties)
+                {
+                    if (!property.Editable || property.Type != UnityEngine.Rendering.ShaderPropertyType.Range) continue;
+                    controls.Add(EffectSlider(property.Label, effect._mat.GetFloat(property.Id),
+                        value => effect._mat.SetFloat(property.Id, value), property.Range.x, property.Range.y));
+                }
+                if (controls.Count > 0) sections.Add(Section(effect.GetType().Name, controls.ToArray()));
+            }
+        }
         return Div(ClassName("nm-debug-stack"), sections);
     }
 

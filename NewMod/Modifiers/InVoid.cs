@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using NewMod.Components.ScreenEffects.Effects;
+using System.Collections;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;

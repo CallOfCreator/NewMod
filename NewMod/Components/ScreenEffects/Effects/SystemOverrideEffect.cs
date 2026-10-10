@@ -3,7 +3,7 @@ using MiraAPI.Modifiers;
 using NewMod.Modifiers.S1;
 using UnityEngine;
 
-namespace NewMod.Components.ScreenEffects;
+namespace NewMod.Components.ScreenEffects.Effects;
 
 public class SystemOverrideEffect : ScreenEffect
 {

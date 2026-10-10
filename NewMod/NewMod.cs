@@ -109,7 +109,7 @@ public class NewMod : BasePlugin, IMiraPlugin
         Message($"AssetBundle '{bundle.name}' contains {assetNames.Length} assets");
 
         foreach (var name in assetNames) Message($"{name}");
-        Message($"Loaded Successfully NewMod v{ModVersion} ALPHA With MiraAPI Version : {MiraApiPlugin.Version}");
+        Message($"Loaded Successfully NewMod v{ModVersion} DEV With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 
     public static void InitializeKeyBinds()

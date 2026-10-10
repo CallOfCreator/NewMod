@@ -1,3 +1,4 @@
+using NewMod.Components.ScreenEffects.Effects;
 using NewMod.Modifiers.S1;
 using System.Collections.Generic;
 using System.Linq;

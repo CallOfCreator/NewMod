@@ -120,13 +120,12 @@ public static class NewModAsset
     public static LoadableAsset<Shader> VoidwalkerTransitionVoid { get; } = new LoadableBundleAsset<Shader>("VoidwalkerTransition.shader", Bundle);
     public static LoadableAsset<Shader> VoidwalkerVoidShader { get; } = new LoadableBundleAsset<Shader>("VoidwalkerVoid.shader", Bundle);
     public static LoadableAsset<Shader> NegativeRealityShader { get; } = new LoadableBundleAsset<Shader>("NegativeReality.shader", Bundle);
-    public static LoadableAsset<Shader> ShatteredGlassShader { get; } = new LoadableBundleAsset<Shader>("ShatteredGlass.shader", Bundle);
+    public static LoadableAsset<Shader> NightTimeShader { get; } = new LoadableBundleAsset<Shader>("NightTime.shader", Bundle);
     public static LoadableAsset<Shader> EnergyThiefBreak { get; } = new LoadableBundleAsset<Shader>("EnergyThiefBreak.shader", Bundle);
 
     // Textures
     public static LoadableAsset<Texture2D> NoiseTex { get; } = new LoadableBundleAsset<Texture2D>("noise.png", Bundle);
     public static LoadableAsset<Texture2D> CrismonTexture { get; } = new LoadableBundleAsset<Texture2D>("turbulence8.png", Bundle);
-    public static LoadableAsset<Texture2D> ShatteredGlassTexture { get; } = new LoadableBundleAsset<Texture2D>("radialShatter.png", Bundle);
 
     //General Events
     public static LoadableAsset<GameObject> GeneralEventHud { get; } = new LoadableBundleAsset<GameObject>("GeneralEvent", Bundle);

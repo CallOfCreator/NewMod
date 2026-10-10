@@ -1,4 +1,8 @@
-﻿using NewMod.Components.ScreenEffects;
+﻿using NewMod.Components.ScreenEffects.Effects;
+using System.Collections.Generic;
+using System.Globalization;
+using UnityEngine.Rendering;
+using NewMod.Components.ScreenEffects;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
@@ -7,151 +11,157 @@ namespace NewMod.Debugging.Tabs;
 
 public class EffectsTab : IDebugTab
 {
+    public ScreenEffect SelectedEffect;
+    public ScreenEffect InspectedEffect;
+    public NightTimeEffect VisibleNightTime;
+    public readonly List<ScreenEffect> VisibleEffects = new();
+    public readonly List<ScreenEffectProperty> VisibleProperties = new();
+    public readonly Dictionary<(int Property, int Component), string> Inputs = new();
     public string Name => "EFFECTS";
     public bool ShouldShow => ShipStatus.Instance != null && PlayerControl.LocalPlayer;
 
     public void BuildGUI()
     {
         var camera = Camera.main;
-        var glitch = camera.GetScreenEffect<GlitchEffect>();
-        var distortion = camera.GetScreenEffect<DistorationWaveEffect>();
-        var flux = camera.GetScreenEffect<ShadowFluxEffect>();
+        if (Event.current.type == EventType.Layout)
+            RefreshLayout(camera);
+        var nightTime = VisibleNightTime;
 
         GUILayout.Label("EFFECTS");
 
         if (GUILayout.Button("Energy Breach")) PlayEnergyThiefBreak();
         if (GUILayout.Button("Glitch")) AddEffect<GlitchEffect>();
+        if (GUILayout.Button("Night Time")) AddEffect<NightTimeEffect>();
         if (GUILayout.Button("Earthquake")) AddEffect<EarthquakeEffect>();
         if (GUILayout.Button("Pulse Hue")) AddEffect<SlowPulseHueEffect>();
         if (GUILayout.Button("Distortion Wave")) AddEffect<DistorationWaveEffect>();
         if (GUILayout.Button("Shadow Flux")) AddEffect<ShadowFluxEffect>();
         if (GUILayout.Button("Negative Reality")) AddEffect<NegativeRealityEffect>();
-        if (GUILayout.Button("Shattered Glass")) AddEffect<ShatteredGlassEffect>();
         if (GUILayout.Button("Glitch V2")) AddEffect<ScrDesyncEffect>();
         if (GUILayout.Button("Remove All")) RemoveEffects();
 
-        if (glitch != null && glitch.Active)
+        DrawShaderProperties();
+
+        if (nightTime != null)
         {
-            GUILayout.Label("GLITCH");
+            GUILayout.Label($"Night Time: {nightTime.currentPhase}");
+            GUILayout.Label($"Night Strength: {nightTime.currentNightAmount:P0}");
 
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label("Intensity");
-            glitch.intensity = GUILayout.HorizontalSlider(glitch.intensity, 0f, 1f);
-            GUILayout.Label(glitch.intensity.ToString());
+            if (GUILayout.Button(nightTime.autoCycle ? "Auto Cycle: ON" : "Auto Cycle: OFF"))
+            {
+                nightTime.autoCycle = !nightTime.autoCycle;
+
+                if (nightTime.autoCycle)
+                    nightTime.RestartCycle();
+            }
+
+            if (GUILayout.Button("Sunset"))
+                nightTime.SetPhase(NightTimeEffect.CyclePhase.Sunset);
+
+            if (GUILayout.Button("Sunrise"))
+                nightTime.SetPhase(NightTimeEffect.CyclePhase.Sunrise);
 
             GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
 
-            GUILayout.Label("Block Size");
-            glitch.blockSize = GUILayout.HorizontalSlider(glitch.blockSize, 8f, 128f);
-            GUILayout.Label(glitch.blockSize.ToString());
+            nightTime.cycleSpeed = GUILayout.HorizontalSlider(nightTime.cycleSpeed, 0.25f, 10f);
+            GUILayout.Label($"Cycle Speed: {nightTime.cycleSpeed:F1}x");
+            if (GUILayout.Button(nightTime.midnightMode ? "Midnight: ON" : "Midnight: OFF"))
+                nightTime.midnightMode = !nightTime.midnightMode;
 
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Color Split");
-            glitch.colorSplit = GUILayout.HorizontalSlider(glitch.colorSplit, 0f, 3f);
-            GUILayout.Label(glitch.colorSplit.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Speed");
-            glitch.speed = GUILayout.HorizontalSlider(glitch.speed, 0f, 10f);
-            GUILayout.Label(glitch.speed.ToString());
-
-            GUILayout.EndHorizontal();
+            GUILayout.Label($"Midnight Strength: {nightTime.currentMidnightAmount:P0}");
         }
+    }
 
-        if (distortion != null && distortion.Active)
+    public void RefreshLayout(Camera camera)
+    {
+        VisibleEffects.Clear();
+        var system = camera.GetComponent<ScreenEffectSystem>();
+        if (system)
+            foreach (var effect in system.Effects)
+                if (effect.Active && effect.Properties.Count > 0)
+                    VisibleEffects.Add(effect);
+
+        if (!VisibleEffects.Contains(SelectedEffect))
+            SelectedEffect = null;
+        if (InspectedEffect != SelectedEffect)
         {
-            GUILayout.Label("DISTORTION WAVE");
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Amplitude");
-            distortion.amplitude = GUILayout.HorizontalSlider(distortion.amplitude, 0f, 0.25f);
-            GUILayout.Label(distortion.amplitude.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Frequency");
-            distortion.frequency = GUILayout.HorizontalSlider(distortion.frequency, 0f, 12f);
-            GUILayout.Label(distortion.frequency.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Speed");
-            distortion.speed = GUILayout.HorizontalSlider(distortion.speed, 0f, 5f);
-            GUILayout.Label(distortion.speed.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Radius");
-            distortion.radius = GUILayout.HorizontalSlider(distortion.radius, 0f, 1f);
-            GUILayout.Label(distortion.radius.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Falloff");
-            distortion.falloff = GUILayout.HorizontalSlider(distortion.falloff, 0f, 5f);
-            GUILayout.Label(distortion.falloff.ToString());
-
-            GUILayout.EndHorizontal();
+            Inputs.Clear();
+            GUI.FocusControl(null);
         }
+        InspectedEffect = SelectedEffect;
+        VisibleProperties.Clear();
+        if (InspectedEffect != null)
+            VisibleProperties.AddRange(InspectedEffect.Properties);
+        VisibleNightTime = camera.GetScreenEffect<NightTimeEffect>();
+    }
 
-        if (flux != null && flux.Active)
+    public void DrawShaderProperties()
+    {
+        foreach (var effect in VisibleEffects)
         {
-            GUILayout.Label("SHADOW FLUX");
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Noise Scale");
-            flux.noiseScale = GUILayout.HorizontalSlider(flux.noiseScale, 0f, 5f);
-            GUILayout.Label(flux.noiseScale.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Speed");
-            flux.speed = GUILayout.HorizontalSlider(flux.speed, 0f, 3f);
-            GUILayout.Label(flux.speed.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Edge Width");
-            flux.edgeWidth = GUILayout.HorizontalSlider(flux.edgeWidth, 0f, 1f);
-            GUILayout.Label(flux.edgeWidth.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Threshold");
-            flux.threshold = GUILayout.HorizontalSlider(flux.threshold, 0f, 1f);
-            GUILayout.Label(flux.threshold.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Opacity");
-            flux.opacity = GUILayout.HorizontalSlider(flux.opacity, 0f, 1f);
-            GUILayout.Label(flux.opacity.ToString());
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Darkness");
-            flux.darkness = GUILayout.HorizontalSlider(flux.darkness, 0f, 1f);
-            GUILayout.Label(flux.darkness.ToString());
-
-            GUILayout.EndHorizontal();
+            if (GUILayout.Button(effect.GetType().Name))
+            {
+                SelectedEffect = SelectedEffect == effect ? null : effect;
+            }
         }
+        if (InspectedEffect == null) return;
+
+        var material = InspectedEffect._mat;
+        foreach (var property in VisibleProperties)
+        {
+            if (!property.Editable) continue;
+            GUILayout.Label(property.Label);
+            switch (property.Type)
+            {
+                case ShaderPropertyType.Range:
+                    var number = GUILayout.HorizontalSlider((material ? material.GetFloat(property.Id) : 0f), property.Range.x, property.Range.y);
+                    if (material) material.SetFloat(property.Id, number);
+                    GUILayout.Label(number.ToString("G4", CultureInfo.InvariantCulture));
+                    break;
+                case ShaderPropertyType.Float:
+                    var scalar = DrawNumber(property.Id, 0, material ? material.GetFloat(property.Id) : 0f);
+                    if (material) material.SetFloat(property.Id, scalar);
+                    break;
+                case ShaderPropertyType.Int:
+                    var integer = DrawNumber(property.Id, 0, material ? material.GetInteger(property.Id) : 0);
+                    if (material) material.SetInteger(property.Id, (int)integer);
+                    break;
+                case ShaderPropertyType.Color:
+                case ShaderPropertyType.Vector:
+                    var vector = property.Type == ShaderPropertyType.Color
+                        ? (material ? (Vector4)material.GetColor(property.Id) : Vector4.zero) : (material ? material.GetVector(property.Id) : Vector4.zero);
+                    GUILayout.BeginHorizontal();
+                    for (var component = 0; component < 4; component++)
+                        vector[component] = DrawNumber(property.Id, component, vector[component]);
+                    GUILayout.EndHorizontal();
+                    if (material)
+                    {
+                        if (property.Type == ShaderPropertyType.Color)
+                            material.SetColor(property.Id, (Color)vector);
+                        else
+                            material.SetVector(property.Id, vector);
+                    }
+                    break;
+                case ShaderPropertyType.Texture:
+                    var texture = material ? material.GetTexture(property.Id) : null;
+                    GUILayout.Label(texture ? texture.name : "None");
+                    break;
+            }
+        }
+    }
+
+    public float DrawNumber(int property, int component, float value)
+    {
+        var key = (property, component);
+        var control = $"EffectProperty{property}:{component}";
+        if (GUI.GetNameOfFocusedControl() != control || !Inputs.ContainsKey(key))
+            Inputs[key] = value.ToString("G9", CultureInfo.InvariantCulture);
+        GUI.SetNextControlName(control);
+        Inputs[key] = GUILayout.TextField(Inputs[key]);
+        return float.TryParse(Inputs[key], NumberStyles.Float, CultureInfo.InvariantCulture, out var number) && float.IsFinite(number)
+            ? number : value;
     }
 
     private static void AddEffect<T>() where T : ScreenEffect, new()

@@ -1,3 +1,4 @@
+using NewMod.Components.ScreenEffects.Effects;
 using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities.Assets;
