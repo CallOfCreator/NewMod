@@ -1,5 +1,5 @@
-﻿using NewMod.GeneralEvents.Season1;
-using MiraAPI.Modifiers;
+﻿using MiraAPI.Modifiers;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using UnityEngine;
 
@@ -14,11 +14,11 @@ public class SystemOverrideEffect : ScreenEffect
         _startedAt = Time.time;
     }
 
-    public override void Render(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture source, RenderTexture destination)
     {
         if (!SystemOverrideGE.Active || MeetingHud.Instance || ExileController.Instance || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {
-            Graphics.Blit(src, dst);
+            Graphics.Blit(source, destination);
             return;
         }
 
@@ -26,7 +26,7 @@ public class SystemOverrideEffect : ScreenEffect
 
         if (time < 0.09f || time is >= 0.16f and < 0.27f || Mathf.Repeat(time, 2.7f) < 0.05f)
         {
-            Graphics.Blit(Texture2D.blackTexture, dst);
+            Graphics.Blit(Texture2D.blackTexture, destination);
             return;
         }
 
@@ -35,20 +35,20 @@ public class SystemOverrideEffect : ScreenEffect
         switch (phase)
         {
             case 0:
-                Graphics.Blit(src, dst);
+                Graphics.Blit(source, destination);
                 break;
             case 1:
-                Graphics.Blit(src, dst, new Vector2(-1f, 1f), new Vector2(1f, 0f));
+                Graphics.Blit(source, destination, new Vector2(-1f, 1f), new Vector2(1f, 0f));
                 break;
             case 2:
-                Graphics.Blit(src, dst, new Vector2(1f, -1f), new Vector2(0f, 1f));
+                Graphics.Blit(source, destination, new Vector2(1f, -1f), new Vector2(0f, 1f));
                 break;
             case 3:
-                Graphics.Blit(src, dst, new Vector2(-1f, -1f), Vector2.one);
+                Graphics.Blit(source, destination, new Vector2(-1f, -1f), Vector2.one);
                 break;
             default:
                 var offset = Mathf.Sin(time * 43f) * 0.018f;
-                Graphics.Blit(src, dst, Vector2.one, new Vector2(offset, 0f));
+                Graphics.Blit(source, destination, Vector2.one, new Vector2(offset, 0f));
                 break;
         }
     }

@@ -1,19 +1,20 @@
-using NewMod.Modifiers.S1;
 using System.Collections;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
-using NewMod.Buttons.Roles;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
+using NewMod.Buttons.Roles;
 using NewMod.Components;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -27,7 +28,7 @@ public class Tyrant : ImpostorRole, INewModRole
     public enum ThroneOutcome
     {
         None,
-        ChampionSideWin
+        ChampionSideWin,
     }
 
     public static byte ChampionId = byte.MaxValue;
@@ -59,7 +60,7 @@ public class Tyrant : ImpostorRole, INewModRole
             DefaultChance = 25,
             DefaultRoleCount = 1,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -67,13 +68,13 @@ public class Tyrant : ImpostorRole, INewModRole
     {
         var text = INewModRole.GetRoleTabText(this);
         text.AppendLine();
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.Tab.Progress"), Kills));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.Tab.Progress"), Kills));
         return text;
     }
 
-    public override bool DidWin(GameOverReason reason)
+    public override bool DidWin(GameOverReason gameOverReason)
     {
-        return reason == CustomGameOver.GameOverReason<TyrantGameOver>();
+        return gameOverReason == CustomGameOver.GameOverReason<TyrantGameOver>();
     }
 
     public static void ResetState()

@@ -70,21 +70,21 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             GEOptions.EscapeDifficulty.Easy => 0.12f,
             GEOptions.EscapeDifficulty.Standard => 0.09f,
             GEOptions.EscapeDifficulty.Hard => 0.07f,
-            _ => 0.09f
+            _ => 0.09f,
         };
         var decayDelay = options.CrimsonEscapeDifficulty.Value switch
         {
             GEOptions.EscapeDifficulty.Easy => 0.25f,
             GEOptions.EscapeDifficulty.Standard => 0.15f,
             GEOptions.EscapeDifficulty.Hard => 0.1f,
-            _ => 0.15f
+            _ => 0.15f,
         };
         var decayRate = options.CrimsonEscapeDifficulty.Value switch
         {
             GEOptions.EscapeDifficulty.Easy => 0.35f,
             GEOptions.EscapeDifficulty.Standard => 0.55f,
             GEOptions.EscapeDifficulty.Hard => 0.75f,
-            _ => 0.55f
+            _ => 0.55f,
         };
 
         if (_escapedThisEntry || !_player.CanMove || _player.inVent || distance > escapeRadius || distance <= killRadius)
@@ -103,6 +103,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         var pressed = Input.GetKeyDown(KeyCode.Space);
 
         if (Application.platform == RuntimePlatform.Android)
+        {
             for (var touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
             {
                 var touch = Input.GetTouch(touchIndex);
@@ -113,6 +114,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
                 pressed = true;
                 break;
             }
+        }
 
         if (!inputBlocked && pressed)
         {
@@ -265,7 +267,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var outward = fromCenter / distance;
         var inward = -outward;
-        var tangent = new Vector2(-outward.y, outward.x);
+        var tangent = Vector2.Perpendicular(outward);
 
         var proximity = Mathf.Clamp01(1f - distance / options.CrimsonRadius.Value);
 
@@ -275,7 +277,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             GEOptions.VortexIntensity.Gentle => 0.75f,
             GEOptions.VortexIntensity.Standard => 1f,
             GEOptions.VortexIntensity.Brutal => 1.3f,
-            _ => 1f
+            _ => 1f,
         };
         var pull = Mathf.Lerp(0.55f, 4.25f, pullProgress) * intensity;
         var orbit = 2.25f * intensity * (1f - pullProgress);

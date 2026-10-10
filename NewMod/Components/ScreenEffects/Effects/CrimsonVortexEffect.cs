@@ -63,11 +63,11 @@ public class CrimsonVortexEffect : ScreenEffect
         RenderMaterial = new Material(_mat) { hideFlags = HideFlags.DontSave };
     }
 
-    public override void Render(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture source, RenderTexture destination)
     {
         if (!_mat || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || MeetingHud.Instance || ExileController.Instance || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {
-            Graphics.Blit(src, dst);
+            Graphics.Blit(source, destination);
             return;
         }
 
@@ -105,7 +105,7 @@ public class CrimsonVortexEffect : ScreenEffect
             RenderMaterial.SetFloat(Shader.PropertyToID("_LeadingEdgeStrength"), 0f);
         }
 
-        Graphics.Blit(src, dst, RenderMaterial);
+        Graphics.Blit(source, destination, RenderMaterial);
     }
 
     public override void Dispose()

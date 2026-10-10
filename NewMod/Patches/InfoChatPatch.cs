@@ -1,7 +1,7 @@
-using System.Text;
 using System;
 using System.Collections;
 using System.Linq;
+using System.Text;
 using HarmonyLib;
 using MiraAPI.GameModes;
 using MiraAPI.Roles;
@@ -70,7 +70,7 @@ public static class InfoChatPatch
                 }
                 else
                 {
-                    var heading = $"<color=#{ColorUtility.ToHtmlStringRGB(role.RoleColor)}>{role.RoleName}</color> ({(role.Team == ModdedRoleTeams.Custom ? "Neutral" : role.Team.ToString())})" + (role is INewModRole newModRole ? $" | {Utils.GetFactionDisplay(newModRole)}" : "");
+                    var heading = $"<color=#{ColorUtility.ToHtmlStringRGB(role.RoleColor)}>{role.RoleName}</color> ({(role.Team == ModdedRoleTeams.Custom ? "Neutral" : role.Team.ToString())})" + (role is INewModRole newModRole ? $" | {Utils.GetFactionDisplay(newModRole)}" : string.Empty);
                     reply = $"{heading}\n{role.RoleDescription}";
                 }
             }
@@ -86,8 +86,11 @@ public static class InfoChatPatch
                 factions = factions.Where(faction => faction.ToString().Equals(query, StringComparison.OrdinalIgnoreCase)).ToArray();
 
             if (factions.Length == 0 || (command == "/factions" && query.Length > 0))
+            {
                 reply = "Use /factions to learn about all four groups, or /faction <name> for details.";
+            }
             else
+            {
                 reply = "<b>FACTIONS</b>\nFactions group role styles, not teams. Sharing a faction does not guarantee a shared win.\n" + string.Join("\n", factions.Select(faction =>
                 {
                     var (color, description) = faction switch
@@ -96,7 +99,7 @@ public static class InfoChatPatch
                         NewModFaction.Entropy => ("#EAAA3E", "Independent roles with their own objectives and victory rules."),
                         NewModFaction.Sentinel => ("#3AA6FF", "Crew-aligned roles focused on information, protection and control."),
                         NewModFaction.Rift => ("#A879E8", "Roles built around unusual movement, energy and interactions."),
-                        _ => ("#FFFFFF", "")
+                        _ => ("#FFFFFF", string.Empty),
                     };
                     var details = $"<b><color={color}>{faction}:</color></b> {description}";
                     if (command == "/faction")
@@ -107,6 +110,7 @@ public static class InfoChatPatch
 
                     return details;
                 }));
+            }
         }
         else
         {
@@ -152,8 +156,10 @@ public static class InfoChatPatch
 
         var queryText = new StringBuilder();
         for (var index = separator; index < text.Length; index++)
+        {
             if (!char.IsWhiteSpace(text[index]))
                 queryText.Append(text[index]);
+        }
 
         query = queryText.ToString();
         return true;

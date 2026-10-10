@@ -48,7 +48,7 @@ public class NMOverlay(nint ptr) : MonoBehaviour(ptr)
 
         var now = Time.unscaledTime;
         var elapsed = now - StartedAt;
-        if (elapsed is >= 0.5f and > 0f)
+        if (elapsed >= 0.5f)
         {
             var fps = (Time.frameCount - StartedFrame) / elapsed;
             if (Has && fps < FramesPerSecond * (1f - 0.25f))
@@ -59,14 +59,22 @@ public class NMOverlay(nint ptr) : MonoBehaviour(ptr)
             StartedFrame = Time.frameCount;
         }
 
-        var fpsColor = FramesPerSecond < 30f ? "#FF6060" : FramesPerSecond < 60f || now < WarningUntil ? "#FFD45C" : "#75E6A5";
+        var fpsColor = FramesPerSecond switch
+        {
+            < 30f => "#FF6060",
+            < 60f => "#FFD45C",
+            _ when now < WarningUntil => "#FFD45C",
+            _ => "#75E6A5",
+        };
         Label.text = Has ? $"FPS: <color={fpsColor}><b>{Mathf.RoundToInt(FramesPerSecond)}</b></color>" : "FPS: ...";
 
         if (!client.IsGameStarted && client.NetworkMode != NetworkModes.FreePlay)
         {
             var local = client.NetworkMode == NetworkModes.LocalGame;
             var region = local ? "Local" : ServerManager.Instance.CurrentRegion.Name;
-            var regionColor = local || client.Ping <= 60f ? "#75E6A5" : client.Ping <= 200f ? "#FFD45C" : "#FF6060";
+            var regionColor = "#75E6A5";
+            if (!local && client.Ping > 60f)
+                regionColor = client.Ping <= 200f ? "#FFD45C" : "#FF6060";
             Label.text += $"  |  REGION: <color={regionColor}><b>{region}</b></color>";
         }
     }

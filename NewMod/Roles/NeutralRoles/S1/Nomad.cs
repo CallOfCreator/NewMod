@@ -1,17 +1,17 @@
-using NewMod.Modifiers.S1;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -55,7 +55,7 @@ public class Nomad : CrewmateRole, INewModRole
             CanUseVent = false,
             UseVanillaKillButton = false,
             TasksCountForProgress = false,
-            Icon = MiraAssets.Empty
+            Icon = MiraAssets.Empty,
         };
 
     [HideFromIl2Cpp]
@@ -66,18 +66,18 @@ public class Nomad : CrewmateRole, INewModRole
         var playerId = PlayerControl.LocalPlayer.PlayerId;
         Scores.TryGetValue(playerId, out var score);
 
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.Routes"), score, (int)OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.Routes"), score, (int)OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal));
         if (CanWander.Contains(playerId)) text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.WanderReady"));
         var options = OptionGroupSingleton<NomadOptions>.Instance;
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.Journey"), RouteRooms.TryGetValue(playerId, out var rooms) ? rooms.Count : 0, options.RoomsPerRoute, options.VisitDuration));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.Journey"), RouteRooms.TryGetValue(playerId, out var rooms) ? rooms.Count : 0, options.RoomsPerRoute, options.VisitDuration));
         if (BacktrackPositions.ContainsKey(playerId) && Time.time < ProtectionEnds.GetValueOrDefault(playerId))
             text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Nomad.Tab.BacktrackReady"));
         return text;
     }
 
-    public override bool DidWin(GameOverReason reason)
+    public override bool DidWin(GameOverReason gameOverReason)
     {
-        return reason == CustomGameOver.GameOverReason<NomadGameOver>();
+        return gameOverReason == CustomGameOver.GameOverReason<NomadGameOver>();
     }
 
     public static void FixedUpdate(PlayerControl player)

@@ -11,7 +11,6 @@ namespace NewMod.GeneralEvents;
 [RegisterInIl2Cpp]
 public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
 {
-    private Animator _animator;
     private SpriteRenderer _background;
     private Vector3 _backgroundScale;
     private Color _descColor;
@@ -25,7 +24,6 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
     private Vector3 _logoScale;
 
     private IEnumerator _showCoro;
-    private Color _titleColor;
     private Vector3 _titlePosition;
     private TextMeshPro _titleText;
     private Transform _ui;
@@ -35,13 +33,13 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
     public void Awake()
     {
         _ui = transform.Find("UI");
-        _animator = _ui.GetComponent<Animator>();
+        var animator = _ui.GetComponent<Animator>();
         _background = transform.Find("UI/Background").GetComponent<SpriteRenderer>();
         _titleText = transform.Find("UI/TitleText").GetComponent<TextMeshPro>();
         _descText = transform.Find("UI/DescText").GetComponent<TextMeshPro>();
         _logo = transform.Find("UI/GE_Logo").GetComponent<SpriteRenderer>();
 
-        _animator.enabled = false;
+        animator.enabled = false;
         _background.transform.localPosition = new Vector3(0f, 0f, 0.1f);
 
         _uiPosition = _ui.localPosition;
@@ -52,7 +50,6 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
         _descPosition = _descText.transform.localPosition;
 
         _logoColor = _logo.color;
-        _titleColor = _titleText.color;
         _descColor = _descText.color;
 
         gameObject.SetActive(false);
@@ -60,7 +57,7 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
 
     public void Update()
     {
-        GeneralEventManager.CurrentEvent?.Tick();
+        GeneralEventManager.CurrentEvent?.OnHudUpdate();
     }
 
     [HideFromIl2Cpp]

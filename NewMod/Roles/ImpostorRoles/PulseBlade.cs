@@ -1,8 +1,9 @@
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using NewMod.Options.Roles;
 using UnityEngine;
 
@@ -26,7 +27,7 @@ public class PulseBlade : ImpostorRole, INewModRole
             UseVanillaKillButton = false,
             TasksCountForProgress = false,
             MaxRoleCount = 1,
-            Icon = NewModAsset.StrikeIcon
+            Icon = NewModAsset.StrikeIcon,
         };
 
     [HideFromIl2Cpp]
@@ -34,7 +35,7 @@ public class PulseBlade : ImpostorRole, INewModRole
     {
         var tabText = INewModRole.GetRoleTabText(this);
         var options = OptionGroupSingleton<PulseBladeOptions>.Instance;
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.PulseBlade.Tab.Timing"), options.ChargeDuration, options.RecoveryDuration));
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.PulseBlade.Tab.Timing"), options.ChargeDuration, options.RecoveryDuration));
         tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.PulseBlade.Tab.DashRules"));
         return tabText;
     }

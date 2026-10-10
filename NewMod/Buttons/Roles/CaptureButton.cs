@@ -1,22 +1,21 @@
-using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Linq;
-using MiraAPI.Utilities;
-using Reactor.Utilities;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
+using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
 
 /// <summary>
-///     Defines a custom action button for the role.
+/// Places the Visionary's camera.
 /// </summary>
 public class CaptureButton : CustomActionButton, IEnergyAbility
 {
@@ -108,7 +107,7 @@ public class CaptureButton : CustomActionButton, IEnergyAbility
                 var radians = PlacementAngle * Mathf.Deg2Rad;
                 var direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
                 var tip = PlacementPosition + direction;
-                var side = new Vector2(-direction.y, direction.x) * 0.15f;
+                var side = Vector2.Perpendicular(direction) * 0.15f;
                 arrow.SetPositions(new Vector3[] { PlacementPosition, tip, tip - direction * 0.25f + side, tip, tip - direction * 0.25f - side });
                 var color = valid ? new Color(0.6f, 0.6f, 0.6f, 0.6f) : new Color(1f, 0.3f, 0.3f, 0.6f);
                 sprite.color = color;

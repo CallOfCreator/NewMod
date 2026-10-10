@@ -1,16 +1,17 @@
-using MiraAPI.Modifiers;
-using NewMod.Modifiers.S1;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using MiraAPI.Translation;
-using MiraAPI.Utilities;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Player;
+using MiraAPI.Modifiers;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
+using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
@@ -21,7 +22,7 @@ public class Specialist : CrewmateRole, INewModRole
 {
     public static readonly Dictionary<byte, (int Charges, ScanMode Mode)> ScanStates = [];
 
-    public static readonly List<(Vector2 Position, float Time)> Disturbances = new();
+    public static readonly List<(Vector2 Position, float Time)> Disturbances = [];
 
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Specialist");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Specialist.IntroBlurb");
@@ -44,7 +45,7 @@ public class Specialist : CrewmateRole, INewModRole
             DefaultChance = 30,
             DefaultRoleCount = 1,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -54,7 +55,7 @@ public class Specialist : CrewmateRole, INewModRole
         if (!ScanStates.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var state))
             return text;
 
-        text.Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Specialist.Tab.Details"), RoleColor.ToTextColor(), MiraLocaleManager.Get($"NewMod.Roles.CrewmateRoles.Specialist.Mode.{state.Mode}"), state.Charges));
+        text.Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Specialist.Tab.Details"), RoleColor.ToTextColor(), MiraLocaleManager.Get($"NewMod.Roles.CrewmateRoles.Specialist.Mode.{state.Mode}"), state.Charges));
         return text;
     }
 
@@ -67,8 +68,10 @@ public class Specialist : CrewmateRole, INewModRole
         ScanStates.Clear();
         Disturbances.Clear();
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.Data.Role is Specialist)
                 ScanStates[player.PlayerId] = (0, ScanMode.Presence);
+        }
     }
 
     [RegisterEvent]
@@ -129,7 +132,17 @@ public class Specialist : CrewmateRole, INewModRole
                 break;
             case ScanMode.Forensics:
                 var bodies = Helpers.GetNearestDeadBodies(position, 5f, Helpers.CreateFilter(Constants.NotShipMask));
-                result = bodies.Count == 0 ? "Forensics: no bodies within 5 units." : bodies.Any(body => Vector2.Distance(position, body.TruePosition) <= 2f) ? "Forensics: a body is very close (within 2 units)." : "Forensics: a body is nearby (2-5 units).";
+                if (bodies.Count == 0)
+                {
+                    result = "Forensics: no bodies within 5 units.";
+                }
+                else
+                {
+                    result = bodies.Any(body => Vector2.Distance(position, body.TruePosition) <= 2f)
+                        ? "Forensics: a body is very close (within 2 units)."
+                        : "Forensics: a body is nearby (2-5 units).";
+                }
+
                 break;
             default:
                 Disturbances.RemoveAll(entry => Time.time - entry.Time > 15f);
@@ -151,7 +164,7 @@ public class Specialist : CrewmateRole, INewModRole
     {
         Presence,
         Forensics,
-        Disturbance
+        Disturbance,
     }
 
     public static void EarnScan(byte playerId)

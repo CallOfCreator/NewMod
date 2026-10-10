@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace NewMod.Components.ScreenEffects.Effects;
 
 public class SlowPulseHueEffect : ScreenEffect
@@ -8,5 +6,4 @@ public class SlowPulseHueEffect : ScreenEffect
     {
         CreateMaterial(NewModAsset.SlowPulseHueShader.LoadAsset());
     }
-
 }

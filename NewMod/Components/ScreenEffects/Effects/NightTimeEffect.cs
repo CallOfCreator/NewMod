@@ -12,7 +12,7 @@ public class NightTimeEffect : ScreenEffect
         Day,
         Sunset,
         Night,
-        Sunrise
+        Sunrise,
     }
 
     public bool autoCycle = true;
@@ -99,7 +99,7 @@ public class NightTimeEffect : ScreenEffect
             CyclePhase.Sunset => day,
             CyclePhase.Night => day + sunset,
             CyclePhase.Sunrise => day + sunset + darkness,
-            _ => 0f
+            _ => 0f,
         };
 
         var elapsed = useExternalClock ? externalElapsedSeconds : Time.unscaledTime - cycleStartedAt;
@@ -146,18 +146,20 @@ public class NightTimeEffect : ScreenEffect
             !(skipInVoid && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.HasModifier<InVoid>());
     }
 
-    public override void Render(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture source, RenderTexture destination)
     {
         if (!ShouldRender())
         {
-            Graphics.Blit(src, dst);
+            Graphics.Blit(source, destination);
             return;
         }
 
         var time = Time.unscaledTime;
         var delta = Mathf.Clamp(time - lastRenderTime, 0f, 0.1f);
         lastRenderTime = time;
-        currentMidnightAmount = Mathf.MoveTowards(currentMidnightAmount, midnightMode ? 1f : 0f,
+        currentMidnightAmount = Mathf.MoveTowards(
+            currentMidnightAmount,
+            midnightMode ? 1f : 0f,
             delta / Mathf.Max(0.01f, midnightFadeDuration));
 
         UpdateCycle(out var night, out var twilight);
@@ -166,7 +168,7 @@ public class NightTimeEffect : ScreenEffect
 
         if (currentNightAmount <= 0.0001f && twilightAmount <= 0.0001f)
         {
-            Graphics.Blit(src, dst);
+            Graphics.Blit(source, destination);
             return;
         }
 
@@ -176,6 +178,6 @@ public class NightTimeEffect : ScreenEffect
         _mat.SetFloat(Shader.PropertyToID("_Midnight"), currentMidnightAmount);
         _mat.SetColor(Shader.PropertyToID("_TwilightTint"), currentPhase == CyclePhase.Sunrise ? sunriseTint : sunsetTint);
 
-        Graphics.Blit(src, dst, _mat);
+        Graphics.Blit(source, destination, _mat);
     }
 }

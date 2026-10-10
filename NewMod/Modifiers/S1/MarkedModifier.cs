@@ -42,12 +42,15 @@ public class MarkedModifier : GameModifier, INewModModifier
 
     public override void OnActivate()
     {
-        _nearTimers.Clear();
-        _triggered.Clear();
-        _nearby.Clear();
+        ResetTracking();
     }
 
     public override void OnDeactivate()
+    {
+        ResetTracking();
+    }
+
+    public void ResetTracking()
     {
         _nearTimers.Clear();
         _triggered.Clear();
@@ -63,9 +66,7 @@ public class MarkedModifier : GameModifier, INewModModifier
 
         if (Player.Data.IsDead || Player.Data.Disconnected || Player.inVent || MeetingHud.Instance)
         {
-            _nearTimers.Clear();
-            _triggered.Clear();
-            _nearby.Clear();
+            ResetTracking();
             return;
         }
 
@@ -105,8 +106,10 @@ public class MarkedModifier : GameModifier, INewModModifier
         _toRemove.Clear();
 
         foreach (var pair in _nearTimers)
+        {
             if (!_nearby.Contains(pair.Key))
                 _toRemove.Add(pair.Key);
+        }
 
         foreach (var id in _toRemove)
             _nearTimers.Remove(id);
@@ -114,8 +117,10 @@ public class MarkedModifier : GameModifier, INewModModifier
         _toRemove.Clear();
 
         foreach (var id in _triggered)
+        {
             if (!_nearby.Contains(id))
                 _toRemove.Add(id);
+        }
 
         foreach (var id in _toRemove)
             _triggered.Remove(id);

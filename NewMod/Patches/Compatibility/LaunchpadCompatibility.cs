@@ -7,7 +7,7 @@ namespace NewMod.Patches.Compatibility;
 
 public static class LaunchpadCompatibility
 {
-    private static MethodBase TargetMethod()
+    public static MethodInfo TargetMethod()
     {
         if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
             return null;
@@ -17,7 +17,7 @@ public static class LaunchpadCompatibility
         return method;
     }
 
-    private static bool Prefix(object __instance)
+    public static bool Prefix(object __instance)
     {
         var playerField = __instance.GetType().GetField("Player", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         if (playerField == null) return true;
@@ -36,7 +36,7 @@ public static class LaunchpadCompatibility
 
 public static class LaunchpadHackTextPatch
 {
-    private static MethodBase TargetMethod()
+    public static MethodInfo TargetMethod()
     {
         if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
             return null;
@@ -46,14 +46,14 @@ public static class LaunchpadHackTextPatch
         return method;
     }
 
-    private static void Postfix(object __instance)
+    public static void Postfix(object __instance)
     {
         var player = __instance.GetType().GetField("Player", BindingFlags.Instance | BindingFlags.Public)?.GetValue(__instance) as PlayerControl;
         var hackedText = __instance.GetType().GetField("_hackedText", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(__instance) as TextMeshPro;
 
         if (player != null && hackedText != null && Revenant.Phases.TryGetValue(player.PlayerId, out var phase) && phase == Revenant.Phase.Feigning)
         {
-            hackedText.SetText("");
+            hackedText.SetText(string.Empty);
             Debug($"hackedText: {hackedText.text}");
         }
     }
@@ -61,7 +61,7 @@ public static class LaunchpadHackTextPatch
 
 public static class LaunchpadTagSpacingPatch
 {
-    private static MethodBase TargetMethod()
+    public static MethodInfo TargetMethod()
     {
         if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
             return null;
@@ -71,7 +71,7 @@ public static class LaunchpadTagSpacingPatch
         return method;
     }
 
-    private static void Postfix(object __instance)
+    public static void Postfix(object __instance)
     {
         var type = __instance.GetType();
         var tagHolderObj = type.GetField("tagHolder", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(__instance);

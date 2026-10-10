@@ -1,11 +1,11 @@
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.GameOptions;
-using NewMod.Options.Roles;
-using NewMod.Utilities;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
+using NewMod.Options.Roles;
 using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles;
@@ -34,13 +34,13 @@ public class TheVisionary : CrewmateRole, INewModRole
             Icon = MiraAssets.Empty,
             OptionsScreenshot = MiraAssets.Empty,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()
     {
         var options = OptionGroupSingleton<VisionaryOptions>.Instance;
-        return INewModRole.GetRoleTabText(this).Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.TheVisionary.Tab.Details"), RoleColor.ToTextColor(), options.MaxScreenshots, options.CaptureDelay));
+        return INewModRole.GetRoleTabText(this).Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.TheVisionary.Tab.Details"), RoleColor.ToTextColor(), options.MaxScreenshots, options.CaptureDelay));
     }
 }

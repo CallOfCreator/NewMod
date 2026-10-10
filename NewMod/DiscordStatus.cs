@@ -11,9 +11,6 @@ namespace NewMod;
 [HarmonyPatch]
 public static class NewModDiscordPatch
 {
-    private static Discord.Discord discord;
-    public static ActivityManager activityManager;
-
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ActivityManager), nameof(ActivityManager.UpdateActivity))]
     public static void UpdateActivityPrefix([HarmonyArgument(0)] ref Activity activity)
@@ -21,16 +18,14 @@ public static class NewModDiscordPatch
         if (Application.platform == RuntimePlatform.Android) return;
         if (activity == null) return;
 
-        var isBeta = false;
-        var details = $"NewMod v{NewMod.ModVersion}" + (isBeta ? " (Beta)" : " (Dev)");
-
-        activity.Details = details;
+        var inLobby = activity.State == "In Lobby";
+        activity.Details = $"NewMod v{NewMod.ModVersion} (Dev)";
         activity.State = $"Playing Among Us | NewMod v{NewMod.ModVersion}";
         activity.Assets = new ActivityAssets { LargeImage = "nm", SmallText = "Made with MiraAPI" };
 
         try
         {
-            if (activity.State.Contains("Menus"))
+            if (inLobby)
             {
                 var maxPlayers = GameOptionsManager.Instance?.currentNormalGameOptions?.MaxPlayers ?? 10;
                 var lobbyCode = GameStartManager.Instance?.GameRoomNameCode?.text;

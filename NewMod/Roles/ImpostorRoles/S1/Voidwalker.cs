@@ -1,9 +1,10 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
 using UnityEngine;
@@ -28,7 +29,7 @@ public class Voidwalker : ImpostorRole, INewModRole
             TasksCountForProgress = false,
             CanUseSabotage = true,
             MaxRoleCount = 1,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     public Color RoleColor => new(0.3f, 0f, 0.5f, 1f);
@@ -42,7 +43,7 @@ public class Voidwalker : ImpostorRole, INewModRole
         var options = OptionGroupSingleton<VoidwalkerOptions>.Instance;
 
         tabText.AppendLine();
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.Timing"), options.VoidTime, options.EnterVoidCooldown));
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.Timing"), options.VoidTime, options.EnterVoidCooldown));
 
         tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Voidwalker.Tab.PhasedRules"));
 

@@ -1,6 +1,6 @@
-﻿using NewMod.Components.ScreenEffects.Effects;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using AmongUs.GameOptions;
 using MiraAPI.GameOptions;
@@ -8,6 +8,7 @@ using MiraAPI.Hud;
 using MiraAPI.Networking;
 using MiraAPI.Roles;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using NewMod.Debugging;
 using NewMod.GeneralEvents;
 using NewMod.Options.Roles;
@@ -50,7 +51,7 @@ public static class NewModDebugPanel
             Scheduler.ScheduleRender(_componentId);
     }
 
-    public static void Tick()
+    public static void OnUpdate()
     {
         if (_screenWidth != Screen.width || _screenHeight != Screen.height)
         {
@@ -93,11 +94,14 @@ public static class NewModDebugPanel
     {
         var style = _page == page ? "nm-debug-tab nm-debug-tab-active" : "nm-debug-tab";
 
-        return Button(label, () =>
+        return Button(
+            label,
+            () =>
         {
             _page = page;
             Scheduler.ScheduleRender(_componentId);
-        }, ClassName(style));
+        },
+            ClassName(style));
     }
 
     private static VNode PageContent()
@@ -110,7 +114,7 @@ public static class NewModDebugPanel
             Page.Events => EventsPage(),
             Page.Effects => EffectsPage(),
             Page.Pathfinding => PathfindingPage(),
-            _ => Div()
+            _ => Div(),
         };
     }
 
@@ -119,8 +123,10 @@ public static class NewModDebugPanel
         var players = new List<PlayerControl>();
 
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.Data?.Role != null && !player.Data.Disconnected)
                 players.Add(player);
+        }
 
         if (players.Count == 0)
             return Section("TARGET", Text("No initialized players.", ClassName("nm-debug-muted")));
@@ -145,34 +151,48 @@ public static class NewModDebugPanel
 
             var selectedRoleIndex = Array.FindIndex(roles, role => role.RoleName == _selectedRole);
 
-            roleSection = Section("ASSIGN ROLE", Selector(_selectedRole, () =>
+            roleSection = Section(
+                "ASSIGN ROLE",
+                Selector(
+                _selectedRole,
+                () =>
             {
                 selectedRoleIndex = (selectedRoleIndex - 1 + roles.Length) % roles.Length;
                 _selectedRole = roles[selectedRoleIndex].RoleName;
                 Scheduler.ScheduleRender(_componentId);
-            }, () =>
+            },
+                () =>
             {
                 selectedRoleIndex = (selectedRoleIndex + 1) % roles.Length;
                 _selectedRole = roles[selectedRoleIndex].RoleName;
                 Scheduler.ScheduleRender(_componentId);
-            }), MutatingActions(("Assign role", () =>
+            }),
+                MutatingActions(("Assign role", () =>
             {
                 var role = (RoleBehaviour)roles.First(candidate => candidate.RoleName == _selectedRole);
                 selectedPlayer.RpcSetRole(role.Role);
             }, false)));
         }
 
-        return Div(ClassName("nm-debug-stack"), Section("TARGET", Selector($"{selectedPlayer.Data.PlayerName}  #{selectedPlayer.PlayerId}", () =>
+        return Div(
+            ClassName("nm-debug-stack"),
+            Section("TARGET", Selector(
+            $"{selectedPlayer.Data.PlayerName}  #{selectedPlayer.PlayerId}",
+            () =>
         {
             selectedPlayerIndex = (selectedPlayerIndex - 1 + players.Count) % players.Count;
             _selectedPlayerId = players[selectedPlayerIndex].PlayerId;
             Scheduler.ScheduleRender(_componentId);
-        }, () =>
+        },
+            () =>
         {
             selectedPlayerIndex = (selectedPlayerIndex + 1) % players.Count;
             _selectedPlayerId = players[selectedPlayerIndex].PlayerId;
             Scheduler.ScheduleRender(_componentId);
-        })), Section("POSITION", MutatingActions(("Go to target", () => PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(selectedPlayer.GetTruePosition()), false), ("Bring target here", () => selectedPlayer.NetTransform.RpcSnapTo(PlayerControl.LocalPlayer.GetTruePosition()), false))), Section("STATE", MutatingActions(("Kill", () => selectedPlayer.RpcAdvancedCustomMurder(selectedPlayer, MeetingCheck.OutsideMeeting, true, true, resetKillTimer: false, teleportMurderer: false, showKillAnim: false, playKillSound: false), true), ("Revive", () => Utils.HandleRevive(PlayerControl.LocalPlayer, selectedPlayer.PlayerId, RoleTypes.Crewmate, selectedPlayer.GetTruePosition().x, selectedPlayer.GetTruePosition().y), false))), roleSection);
+        })),
+            Section("POSITION", MutatingActions(("Go to target", () => PlayerControl.LocalPlayer.NetTransform.RpcSnapTo(selectedPlayer.GetTruePosition()), false), ("Bring target here", () => selectedPlayer.NetTransform.RpcSnapTo(PlayerControl.LocalPlayer.GetTruePosition()), false))),
+            Section("STATE", MutatingActions(("Kill", () => selectedPlayer.RpcAdvancedCustomMurder(selectedPlayer, MeetingCheck.OutsideMeeting, true, true, resetKillTimer: false, teleportMurderer: false, showKillAnim: false, playKillSound: false), true), ("Revive", () => Utils.HandleRevive(PlayerControl.LocalPlayer, selectedPlayer.PlayerId, RoleTypes.Crewmate, selectedPlayer.GetTruePosition().x, selectedPlayer.GetTruePosition().y), false))),
+            roleSection);
     }
 
     private static VNode MatchPage()
@@ -181,11 +201,17 @@ public static class NewModDebugPanel
         var meeting = MeetingHud.Instance;
         var meetingSection = meeting ? Section("MEETING", MutatingActions(("Cast random vote", () => CastRandomVote(meeting), false), ("Close meeting", meeting.Close, true))) : Section("MEETING", Text("No active meeting.", ClassName("nm-debug-muted")));
 
-        return Div(ClassName("nm-debug-stack"), Section("CAMERA · MOUSE WHEEL", Div(ClassName("nm-debug-row"), Slider(zoom, DebugWindow.Instance.ApplyZoom, DebugWindow.ZoomMin, DebugWindow.ZoomMax, ClassName("nm-debug-slider"), 0.1f, 14f, 24f, 5f, 5f), Text(zoom.ToString("0.0"), ClassName("nm-debug-value"))), MutatingActions(("Reset zoom", () => DebugWindow.Instance.ApplyZoom(3f), false))), Section("LOCAL ABILITIES", MutatingActions(("Reset kill cooldown", () => PlayerControl.LocalPlayer.SetKillTimer(0f), false), ("Reset button cooldowns", ResetButtonCooldowns, false), ("Set button uses to 3", () =>
+        return Div(
+            ClassName("nm-debug-stack"),
+            Section("CAMERA · MOUSE WHEEL", Div(ClassName("nm-debug-row"), Slider(zoom, DebugWindow.Instance.ApplyZoom, DebugWindow.ZoomMin, DebugWindow.ZoomMax, ClassName("nm-debug-slider"), 0.1f, 14f, 24f, 5f, 5f), Text(zoom.ToString("0.0", CultureInfo.CurrentCulture), ClassName("nm-debug-value"))), MutatingActions(("Reset zoom", () => DebugWindow.Instance.ApplyZoom(3f), false))),
+            Section("LOCAL ABILITIES", MutatingActions(("Reset kill cooldown", () => PlayerControl.LocalPlayer.SetKillTimer(0f), false), ("Reset button cooldowns", ResetButtonCooldowns, false), ("Set button uses to 3", () =>
         {
             foreach (var button in CustomButtonManager.Buttons)
                 button.SetUses(3);
-        }, false))), Section("INFLUENCER ICONS", Text($"{InfluencerIconsPatch.RoleIconIndices.Count} NewMod icons loaded", ClassName("nm-debug-value")), Text("Use Influencer and open its image menu to preview.", ClassName("nm-debug-muted")), Text("Force NewMod icons", ClassName("nm-debug-label")), Toggle(InfluencerIconsPatch.ForceNewModIcons, InfluencerIconsPatch.SetForcedPreview, ClassName("nm-debug-toggle")), MutatingActions(("Refresh icons", InfluencerIconsPatch.RefreshIcons, false))), meetingSection, Section("SEASONS", Toggle(NewMod.ForceEnableAllSeasons.Value, value => NewMod.ForceEnableAllSeasons.Value = value, ClassName("nm-debug-toggle")), Text($"Force all seasons: {(NewMod.ForceEnableAllSeasons.Value ? "ON" : "OFF")}", ClassName("nm-debug-value"))));
+        }, false))),
+            Section("INFLUENCER ICONS", Text($"{InfluencerIconsPatch.RoleIconIndices.Count} NewMod icons loaded", ClassName("nm-debug-value")), Text("Use Influencer and open its image menu to preview.", ClassName("nm-debug-muted")), Text("Force NewMod icons", ClassName("nm-debug-label")), Toggle(InfluencerIconsPatch.ForceNewModIcons, InfluencerIconsPatch.SetForcedPreview, ClassName("nm-debug-toggle")), MutatingActions(("Refresh icons", InfluencerIconsPatch.RefreshIcons, false))),
+            meetingSection,
+            Section("SEASONS", Toggle(NewMod.ForceEnableAllSeasons.Value, value => NewMod.ForceEnableAllSeasons.Value = value, ClassName("nm-debug-toggle")), Text($"Force all seasons: {(NewMod.ForceEnableAllSeasons.Value ? "ON" : "OFF")}", ClassName("nm-debug-value"))));
     }
 
     private static VNode EventsPage()
@@ -209,17 +235,23 @@ public static class NewModDebugPanel
 
         var options = OptionGroupSingleton<EnergyThiefOptions>.Instance;
         var categoryText = categories.Count == 0 ? "None" : string.Join(" · ", categories);
-        var nodeState = EnergyThief.NodeOwnerId == thief.PlayerId ? EnergyThief.BreachActive ? $"Breaching · {Mathf.Max(0f, EnergyThief.BreachEndsAt - Time.time):0.0}s" : "Located" : "Not located";
+        var nodeState = "Not located";
+        if (EnergyThief.NodeOwnerId == thief.PlayerId)
+            nodeState = EnergyThief.BreachActive ? $"Breaching · {Mathf.Max(0f, EnergyThief.BreachEndsAt - Time.time):0.0}s" : "Located";
 
-        return Div(ClassName("nm-debug-stack"), Section("STATUS", Text($"{thief.Data.PlayerName}  #{thief.PlayerId}", ClassName("nm-debug-value")), Text($"Energy  {energy}/{(int)options.EnergyRequired}", ClassName("nm-debug-label")), Text($"Resonance  {categories.Count}/{(int)options.CategoriesRequired}", ClassName("nm-debug-label")), Text(categoryText, ClassName("nm-debug-muted")), Text($"Node  {nodeState}", ClassName("nm-debug-label"))), Section("CAPTURE", MutatingActions(("Capture aggression", () => CaptureEnergy(thief, EnergyCategory.Aggression, false), false), ("Capture control", () => CaptureEnergy(thief, EnergyCategory.Control, false), false), ("Capture intelligence", () => CaptureEnergy(thief, EnergyCategory.Intelligence, false), false), ("Capture mobility", () => CaptureEnergy(thief, EnergyCategory.Mobility, false), false), ("Capture protection", () => CaptureEnergy(thief, EnergyCategory.Protection, false), false), ("Add raw energy", () => CaptureEnergy(thief, EnergyCategory.Aggression, true), false), ("Complete requirements", () => CompleteEnergyThiefRequirements(thief), false), ("Cancel siphon", () => EnergyThief.RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, thief.PlayerId), false))), Section("POWER NODE", MutatingActions(("Go to node", () =>
+        return Div(ClassName("nm-debug-stack"), Section("STATUS", Text($"{thief.Data.PlayerName}  #{thief.PlayerId}", ClassName("nm-debug-value")), Text($"Energy  {energy}/{(int)options.EnergyRequired}", ClassName("nm-debug-label")), Text($"Resonance  {categories.Count}/{(int)options.CategoriesRequired}", ClassName("nm-debug-label")), Text(categoryText, ClassName("nm-debug-muted")), Text($"Node  {nodeState}", ClassName("nm-debug-label"))), Section("CAPTURE", MutatingActions(("Capture aggression", () => CaptureEnergy(thief, EnergyCategory.Aggression, false), false), ("Capture control", () => CaptureEnergy(thief, EnergyCategory.Control, false), false), ("Capture intelligence", () => CaptureEnergy(thief, EnergyCategory.Intelligence, false), false), ("Capture mobility", () => CaptureEnergy(thief, EnergyCategory.Mobility, false), false), ("Capture protection", () => CaptureEnergy(thief, EnergyCategory.Protection, false), false), ("Add raw energy", () => CaptureEnergy(thief, EnergyCategory.Aggression, true), false), ("Complete requirements", () => CompleteEnergyThiefRequirements(thief), false), ("Cancel siphon", () => EnergyThief.RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, thief.PlayerId), false))), Section("POWER NODE", MutatingActions(
+            ("Go to node", () =>
         {
             if (EnergyThief.NodeOwnerId == thief.PlayerId)
                 thief.NetTransform.RpcSnapTo(EnergyThief.GetNodePosition() + Vector3.down * 0.5f);
-        }, false), ("Start breach", () => EnergyThief.RpcRequestBreach(thief), false), ("Interrupt breach", () =>
+        }, false),
+            ("Start breach", () => EnergyThief.RpcRequestBreach(thief), false),
+            ("Interrupt breach", () =>
         {
             if (EnergyThief.BreachActive && EnergyThief.NodeOwnerId == thief.PlayerId)
                 EnergyThief.RpcResolveBreach(PlayerControl.LocalPlayer, thief.PlayerId, false);
-        }, false), ("Complete breach", () =>
+        }, false),
+            ("Complete breach", () =>
         {
             if (EnergyThief.BreachActive && EnergyThief.NodeOwnerId == thief.PlayerId)
                 EnergyThief.RpcResolveBreach(PlayerControl.LocalPlayer, thief.PlayerId, true);
@@ -232,7 +264,7 @@ public static class NewModDebugPanel
             return Section("PATHFINDING", Text("Start a match or Freeplay to test routes."));
 
         var preview = PathfindingPreview.Current;
-        return Div(ClassName("nm-debug-stack"), Section("PATHFINDING", Text(preview ? preview.StartText : "Start: not set"), Text(preview ? preview.GoalText : "Goal: not set"), MutatingActions(("Mark start here", PathfindingPreview.MarkStart, false), ("Mark goal here", PathfindingPreview.MarkGoal, false), ("Find path", PathfindingPreview.FindPath, false), ("Send NPC", PathfindingPreview.SendNpc, false), ("Tour map and return", PathfindingPreview.TourMap, false), ("Stop NPC", PathfindingPreview.StopNpc, false), ("Inspect ladders / ziplines", PathfindingPreview.InspectTraversals, false), ("Copy traversal report", PathfindingPreview.CopyTraversalReport, false), ("Test nearest ladder", PathfindingPreview.TestNearestLadder, false), ("Test nearest zipline", PathfindingPreview.TestNearestZipline, false), ("Clear preview", PathfindingPreview.Clear, false)), Text(preview ? preview.StatusText : "Mark a start, move to a destination, then mark the goal."), Text(preview ? preview.traversalReport : ""), Text("Green: start | Pink: goal | Cyan: route. Crossings require using the ladder, zipline or decon door.")));
+        return Div(ClassName("nm-debug-stack"), Section("PATHFINDING", Text(preview ? preview.StartText : "Start: not set"), Text(preview ? preview.GoalText : "Goal: not set"), MutatingActions(("Mark start here", PathfindingPreview.MarkStart, false), ("Mark goal here", PathfindingPreview.MarkGoal, false), ("Find path", PathfindingPreview.FindPath, false), ("Send NPC", PathfindingPreview.SendNpc, false), ("Tour map and return", PathfindingPreview.TourMap, false), ("Stop NPC", PathfindingPreview.StopNpc, false), ("Inspect ladders / ziplines", PathfindingPreview.InspectTraversals, false), ("Copy traversal report", PathfindingPreview.CopyTraversalReport, false), ("Test nearest ladder", PathfindingPreview.TestNearestLadder, false), ("Test nearest zipline", PathfindingPreview.TestNearestZipline, false), ("Clear preview", PathfindingPreview.Clear, false)), Text(preview ? preview.StatusText : "Mark a start, move to a destination, then mark the goal."), Text(preview ? preview.traversalReport : string.Empty), Text("Green: start | Pink: goal | Cyan: route. Crossings require using the ladder, zipline or decon door.")));
     }
 
     private static VNode EffectsPage()
@@ -249,8 +281,12 @@ public static class NewModDebugPanel
                 foreach (var property in effect.Properties)
                 {
                     if (!property.Editable || property.Type != UnityEngine.Rendering.ShaderPropertyType.Range) continue;
-                    controls.Add(EffectSlider(property.Label, effect._mat.GetFloat(property.Id),
-                        value => effect._mat.SetFloat(property.Id, value), property.Range.x, property.Range.y));
+                    controls.Add(EffectSlider(
+                        property.Label,
+                        effect._mat.GetFloat(property.Id),
+                        value => effect._mat.SetFloat(property.Id, value),
+                        property.Range.x,
+                        property.Range.y));
                 }
                 if (controls.Count > 0) sections.Add(Section(effect.GetType().Name, controls.ToArray()));
             }
@@ -277,7 +313,7 @@ public static class NewModDebugPanel
 
     private static VNode EffectSlider(string label, float value, Action<float> onChange, float minimum, float maximum)
     {
-        return Div(ClassName("nm-debug-row"), Text(label, ClassName("nm-debug-label")), Slider(value, onChange, minimum, maximum, ClassName("nm-debug-slider"), 0f, 14f, 24f, 5f, 5f), Text(value.ToString("0.00"), ClassName("nm-debug-value")));
+        return Div(ClassName("nm-debug-row"), Text(label, ClassName("nm-debug-label")), Slider(value, onChange, minimum, maximum, ClassName("nm-debug-slider"), 0f, 14f, 24f, 5f, 5f), Text(value.ToString("0.00", CultureInfo.CurrentCulture), ClassName("nm-debug-value")));
     }
 
     private static void ResetButtonCooldowns()
@@ -305,8 +341,10 @@ public static class NewModDebugPanel
         var categories = new[] { EnergyCategory.Aggression, EnergyCategory.Control, EnergyCategory.Intelligence, EnergyCategory.Mobility, EnergyCategory.Protection };
 
         foreach (var category in categories)
+        {
             if (!EnergyThief.Categories.TryGetValue(thief.PlayerId, out var captured) || !captured.Contains(category))
                 CaptureEnergy(thief, category, false);
+        }
 
         EnergyThief.Energy.TryGetValue(thief.PlayerId, out var energy);
         var missingEnergy = Mathf.Max(0, (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.EnergyRequired - energy);
@@ -351,6 +389,6 @@ public static class NewModDebugPanel
         EnergyThief,
         Events,
         Effects,
-        Pathfinding
+        Pathfinding,
     }
 }

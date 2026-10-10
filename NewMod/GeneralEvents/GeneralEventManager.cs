@@ -8,7 +8,6 @@ using MiraAPI.GameModes;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
 using NewMod.Options;
-using NewMod.Roles.NeutralRoles.S1;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
 using Reactor.Utilities;
@@ -57,7 +56,7 @@ public static class GeneralEventManager
 
     public static void StartCycle()
     {
-        if (!AmongUsClient.Instance.AmHost || _cycleRoutine != null || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
+        if (!AmongUsClient.Instance.AmHost || _cycleRoutine != null || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && !CustomGameModeManager.IsClassic()))
             return;
 
         _cycleRoutine = Coroutines.Start(CoCycle());
@@ -105,7 +104,7 @@ public static class GeneralEventManager
 
     public static void ForceEvent(Type type)
     {
-        if (!AmongUsClient.Instance.AmHost || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
+        if (!AmongUsClient.Instance.AmHost || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && !CustomGameModeManager.IsClassic()))
             return;
 
         if (!TypeToIdMap.TryGetValue(type, out var id))
@@ -133,7 +132,7 @@ public static class GeneralEventManager
         {
             var options = OptionGroupSingleton<GEOptions>.Instance;
 
-            if (!options.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
+            if (!options.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && !CustomGameModeManager.IsClassic()))
             {
                 _cycleRoutine = null;
                 yield break;
@@ -147,7 +146,7 @@ public static class GeneralEventManager
             if (!GameManager.Instance || !GameManager.Instance.GameHasStarted)
                 break;
 
-            if (!options.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
+            if (!options.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && !CustomGameModeManager.IsClassic()))
             {
                 _cycleRoutine = null;
                 yield break;
@@ -208,7 +207,7 @@ public static class GeneralEventManager
     [MethodRpc((uint)CustomRPC.StartGeneralEvent, LocalHandling = RpcLocalHandling.After)]
     public static void RpcStartGeneralEvent(PlayerControl source, uint eventTypeId, uint sequence)
     {
-        if (!source.IsHost() || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && CustomGameModeManager.IsClassic() == false))
+        if (!source.IsHost() || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && !CustomGameModeManager.IsClassic()))
             return;
 
         if (sequence <= _lastSequence)

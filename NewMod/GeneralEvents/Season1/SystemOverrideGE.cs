@@ -1,8 +1,8 @@
-using NewMod.Components.ScreenEffects.Effects;
 using System.Collections;
 using System.Linq;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using Reactor.Utilities;
 using UnityEngine;
 
@@ -10,6 +10,7 @@ namespace NewMod.GeneralEvents.Season1;
 
 public class SystemOverrideGE : IGeneralEvent
 {
+    public IEnumerator OverrideRoutine;
     public static bool Active { get; private set; }
     public string Title => "System Override";
     public string Description => "SHIP SYSTEMS ARE BEING OVERRIDDEN!";
@@ -31,14 +32,15 @@ public class SystemOverrideGE : IGeneralEvent
         if (cam && cam.GetScreenEffect<SystemOverrideEffect>() == null)
             cam.AddScreenEffect<SystemOverrideEffect>();
 
-        if (AmongUsClient.Instance.AmHost) Coroutines.Start(CoOverrideSystems());
+        if (AmongUsClient.Instance.AmHost) OverrideRoutine = Coroutines.Start(CoOverrideSystems());
     }
 
     public void OnEventEnd()
     {
         Active = false;
 
-        Coroutines.Stop(CoOverrideSystems());
+        Coroutines.Stop(OverrideRoutine);
+        OverrideRoutine = null;
 
         var cam = Camera.main;
         if (!cam)
@@ -49,7 +51,7 @@ public class SystemOverrideGE : IGeneralEvent
             effect.Remove();
     }
 
-    public IEnumerator CoOverrideSystems()
+    public static IEnumerator CoOverrideSystems()
     {
         while (Active)
         {

@@ -14,7 +14,7 @@ public class EnergyThiefBreakEffect : ScreenEffect
         _startedAt = Time.unscaledTime;
     }
 
-    public override void Tick()
+    public override void OnHudUpdate()
     {
         if (Sample(Time.unscaledTime - _startedAt).Finished)
             Remove();

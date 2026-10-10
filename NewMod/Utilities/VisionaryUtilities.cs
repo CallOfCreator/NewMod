@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.GameOptions;
-using MiraAPI.Utilities;
 using MiraAPI.Modifiers;
-using NewMod.Modifiers.S1;
+using MiraAPI.Utilities;
 using NewMod.Components.Minigames;
+using NewMod.Modifiers.S1;
 using NewMod.Networking;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
@@ -33,8 +33,8 @@ public static class VisionaryUtilities
         public int BroadcastMeeting = -1;
     }
 
-    public static readonly Dictionary<int, CameraRecord> Cameras = new();
-    public static readonly HashSet<byte> BroadcastOwners = new();
+    public static readonly Dictionary<int, CameraRecord> Cameras = [];
+    public static readonly HashSet<byte> BroadcastOwners = [];
     public static GameObject PhotoPanel;
     public static int NextCameraId;
     public static int SelectedCamera = -1;
@@ -273,6 +273,7 @@ public static class VisionaryUtilities
             }
 
             foreach (var record in Cameras.Values)
+            {
                 if (record.Object)
                 {
                     var renderer = record.Object.GetComponentInChildren<SpriteRenderer>();
@@ -282,11 +283,17 @@ public static class VisionaryUtilities
                         renderer.forceRenderingOff = true;
                     }
                 }
+            }
 
             foreach (var body in Object.FindObjectsOfType<DeadBody>())
-            foreach (var renderer in body.GetComponentsInChildren<SpriteRenderer>())
-                if (renderer.enabled && !renderer.forceRenderingOff)
-                    camera.cullingMask |= 1 << renderer.gameObject.layer;
+            {
+                foreach (var renderer in body.GetComponentsInChildren<SpriteRenderer>())
+                {
+                    if (renderer.enabled && !renderer.forceRenderingOff)
+                        camera.cullingMask |= 1 << renderer.gameObject.layer;
+                }
+            }
+
             camera.Render();
             RenderTexture.active = target;
             texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);

@@ -9,7 +9,7 @@ namespace NewMod.Components;
 [RegisterInIl2Cpp]
 public class ShieldArea(IntPtr ptr) : MonoBehaviour(ptr)
 {
-    public static readonly List<ShieldArea> _active = new();
+    public static readonly List<ShieldArea> _active = [];
     public AreaBubble bubble;
     public byte ownerId;
     public float radius;

@@ -1,9 +1,8 @@
-using NewMod.Modifiers.S1;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -12,9 +11,10 @@ using MiraAPI.Events.Vanilla.Usables;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
-using MiraAPI.Utilities.Assets;
 using NewMod.Components;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -69,7 +69,7 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
             new Vector3(24.3133f, 14.628f, 0.0146f),
             new Vector3(7.6678f, -9.9008f, -0.0099f)
         ],
-        [(ShipStatus.MapType)6] = [] //Submerged later
+        [(ShipStatus.MapType)6] = [], // Submerged later
     };
 
     public static readonly Vector3[] AirshipPositions =
@@ -111,7 +111,7 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
             UseVanillaKillButton = false,
             TasksCountForProgress = false,
             Icon = NewModAsset.EnergyThiefIcon,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -124,25 +124,25 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
         categories ??= [];
 
         var options = OptionGroupSingleton<EnergyThiefOptions>.Instance;
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Energy"), energy, (int)options.EnergyRequired));
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Categories"), categories.Count, (int)options.CategoriesRequired));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Energy"), energy, (int)options.EnergyRequired));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Categories"), categories.Count, (int)options.CategoriesRequired));
 
         if (categories.Count > 0)
-            text.AppendLine($"<size=60%><color=#BEBEBE>{string.Join(" • ", categories.Select(category => MiraLocaleManager.Get($"NewMod.EnergyCategory.{category}")))}</color></size>");
+            text.AppendLine(CultureInfo.CurrentCulture, $"<size=60%><color=#BEBEBE>{string.Join(" • ", categories.Select(category => MiraLocaleManager.Get($"NewMod.EnergyCategory.{category}")))}</color></size>");
 
         if (BreachActive && NodeOwnerId == playerId)
-            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.BreachCountdown"), Mathf.Max(0f, BreachEndsAt - Time.time)));
+            text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.BreachCountdown"), Mathf.Max(0f, BreachEndsAt - Time.time)));
         else if (IsReady(playerId))
             text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.ObjectiveReady"));
         else if (TetherTargets.TryGetValue(playerId, out var targetId))
-            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Siphoning"), Utils.PlayerById(targetId).Data.PlayerName));
+            text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Siphoning"), Utils.PlayerById(targetId).Data.PlayerName));
 
         return text;
     }
 
-    public override bool DidWin(GameOverReason reason)
+    public override bool DidWin(GameOverReason gameOverReason)
     {
-        return reason == CustomGameOver.GameOverReason<EnergyThiefGameOver>();
+        return gameOverReason == CustomGameOver.GameOverReason<EnergyThiefGameOver>();
     }
 
     public static bool IsReady(byte playerId)
@@ -382,7 +382,7 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
                 EnergyCategory.Mobility => NewModAsset.MobilityEnergyIcon,
                 EnergyCategory.Control => NewModAsset.ControlEnergyIcon,
                 EnergyCategory.Protection => NewModAsset.ProtectionEnergyIcon,
-                _ => NewModAsset.AggressionEnergyIcon
+                _ => NewModAsset.AggressionEnergyIcon,
             }).LoadAsset();
         }
 

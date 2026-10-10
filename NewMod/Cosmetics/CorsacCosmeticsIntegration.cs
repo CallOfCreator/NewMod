@@ -1,6 +1,6 @@
-using CorsacCosmetics.Cosmetics.Sources;
 using CorsacCosmetics.Cosmetics.Hats;
 using CorsacCosmetics.Cosmetics.Nameplates;
+using CorsacCosmetics.Cosmetics.Sources;
 using CorsacCosmetics.Cosmetics.Visors;
 using HarmonyLib;
 using MiraAPI;
@@ -39,13 +39,13 @@ internal static class CorsacCosmeticsIntegration
         NewModCosmeticsRegistry.RegisterVisor("do_worry", NewModAsset.DoWorryVisor.LoadAsset(), new VisorMetadata { Name = "Do Worry", MatchPlayerColor = true });
         NewModCosmeticsRegistry.RegisterVisor("cosmic", NewModAsset.CosmicVisor.LoadAsset(), new VisorMetadata { Name = "Cosmic Visor" });
         NewModCosmeticsRegistry.RegisterVisor("fogged_up", NewModAsset.FoggedUpVisor.LoadAsset(), new VisorMetadata { Name = "Fogged Up" });
-        
+
         NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new NamePlateMetadata { Name = "NM Rave" });
         NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new NamePlateMetadata { Name = "Sunny Sky" });
         NewModCosmeticsRegistry.RegisterNamePlate("airship", NewModAsset.AirshipNameplate.LoadAsset(), new NamePlateMetadata { Name = "The Airship" });
         NewModCosmeticsRegistry.RegisterNamePlate("polus_planet", NewModAsset.PolusPlanetNameplate.LoadAsset(), new NamePlateMetadata { Name = "Polus Planet" });
         NewModCosmeticsRegistry.RegisterNamePlate("dance_and_fire", NewModAsset.DanceAndFireNameplate.LoadAsset(), new NamePlateMetadata { Name = "Dance and Fire" });
-        NewModCosmeticsRegistry.RegisterNamePlate("cosmic_nebula", NewModAsset.CosmicNebulaNameplate.LoadAsset(), new NamePlateMetadata {Name = "Cosmic Nebula"});
+        NewModCosmeticsRegistry.RegisterNamePlate("cosmic_nebula", NewModAsset.CosmicNebulaNameplate.LoadAsset(), new NamePlateMetadata { Name = "Cosmic Nebula" });
 
         SourceRegistry.Instance.RegisterSource(new NewModCosmeticSource());
         Initialized = true;

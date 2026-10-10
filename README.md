@@ -100,7 +100,7 @@ If you’d like to contribute, feel free to join and improve the project!
 
 # 👥 Credits
 
-- **MiraAPI**: [MiraAPI GitHub](https://github.com/All-Of-Us-Mods/MiraAPI) - Among Us modding API and utility library, with inspiration for the debug window and the derivation of the gold color from MiraAPIExample Mod.
+- **MiraAPI**: [MiraAPI GitHub](https://github.com/All-Of-Us-Mods/MiraAPI) - An Among Us modding API and utility library. NewMod draws inspiration from MiraAPIExample Mod for its debug window and gold color, and also utilizes MiraAPI's analyzers.
 - **Reactor**: [Reactor GitHub](https://github.com/NuclearPowered/Reactor) - Modding API for Among Us.
 - **TownOfUs-R**: - Portions of code (PlayerById, GetClosestBody) and asset (ReviveSprite) derived from [Town-Of-Us-R](https://github.com/eDonnes124/Town-Of-Us-R).
 - **MoreGamemodes**: [MoreGamemodes](https://github.com/Rabek009/MoreGamemodes) - Derivation of IsActive and IsSabotage code.

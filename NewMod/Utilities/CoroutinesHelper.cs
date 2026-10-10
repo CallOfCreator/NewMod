@@ -7,7 +7,7 @@ using UnityEngine;
 namespace NewMod.Utilities;
 
 /// <summary>
-///     Provides helper coroutines and utility methods.
+/// Coroutines for notifications and screen effects.
 /// </summary>
 public static class CoroutinesHelper
 {
@@ -16,10 +16,10 @@ public static class CoroutinesHelper
     private static HudManager _notificationHud;
 
     /// <summary>
-    ///     Displays a temporary notification on the screen using an overlay animation.
+    /// Queues a notification on the task-complete overlay.
     /// </summary>
     /// <param name="message">The message to display.</param>
-    /// <returns>An <see cref="IEnumerator" /> for coroutine control.</returns>
+    /// <returns>The notification coroutine.</returns>
     public static IEnumerator CoNotify(string message)
     {
         var hud = HudManager.Instance;
@@ -66,7 +66,12 @@ public static class CoroutinesHelper
                 if (!hud || !obj || hud != _notificationHud)
                     yield break;
 
-                var y = elapsed < 0.25f ? Mathf.SmoothStep(-8f, 0f, elapsed / 0.25f) : elapsed < 2.5f ? 0f : Mathf.SmoothStep(0f, 8f, (elapsed - 2.5f) / 0.25f);
+                var y = elapsed switch
+                {
+                    < 0.25f => Mathf.SmoothStep(-8f, 0f, elapsed / 0.25f),
+                    < 2.5f => 0f,
+                    _ => Mathf.SmoothStep(0f, 8f, (elapsed - 2.5f) / 0.25f),
+                };
                 obj.transform.localPosition = new Vector3(0f, y, Minigame.Depth - 20f);
                 yield return null;
             }
@@ -77,12 +82,11 @@ public static class CoroutinesHelper
     }
 
     /// <summary>
-    ///     Coroutine that waits for a given duration and then removes
-    ///     specific visual effects from a Camera.
+    /// Clears camera screen effects after a delay.
     /// </summary>
-    /// <param name="cam">The Camera to check for and remove effects from.</param>
-    /// <param name="duration">The time in seconds to wait before removing the effects.</param>
-    /// <returns>IEnumerator for coroutine execution.</returns>
+    /// <param name="cam">The camera to clear.</param>
+    /// <param name="duration">Delay in seconds.</param>
+    /// <returns>The effect cleanup coroutine.</returns>
     public static IEnumerator RemoveCameraEffect(Camera cam, float duration)
     {
         yield return new WaitForSeconds(duration);

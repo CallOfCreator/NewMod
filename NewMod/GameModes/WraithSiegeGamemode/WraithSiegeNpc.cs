@@ -81,8 +81,6 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     [HideFromIl2Cpp]
     public void BeginDelivery(Vector2 point)
     {
-        //Delivering = true;
-        //AtDeliverySlot = false;
         _deliveryPoint = point;
         status = WraithStatus.Delivering;
     }
@@ -100,7 +98,6 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
                 {
                     Body.velocity = Vector2.zero;
                     UpdateAnimation(Vector2.zero);
-                    //AtDeliverySlot = true;
                     status = WraithStatus.Done;
                 }
                 else
@@ -199,6 +196,6 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     {
         NotStarted,
         Delivering,
-        Done
+        Done,
     }
 }

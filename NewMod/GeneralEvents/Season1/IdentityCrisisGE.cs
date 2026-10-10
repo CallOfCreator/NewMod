@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using MiraAPI.Utilities.Assets;
 using MiraAPI.Modifiers;
+using MiraAPI.Utilities.Assets;
 using NewMod.Modifiers.S1;
 using UnityEngine;
 

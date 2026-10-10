@@ -1,5 +1,4 @@
-﻿using NewMod.Components.ScreenEffects.Effects;
-using System.Collections;
+﻿using System.Collections;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
@@ -7,6 +6,7 @@ using MiraAPI.Modifiers;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using NewMod.GeneralEvents;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles.S1;
@@ -163,7 +163,7 @@ public class InVoid : BaseModifier
             transition.Remove();
     }
 
-    public IEnumerator CoExitVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
+    public static IEnumerator CoExitVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
     {
         var duration = OptionGroupSingleton<VoidwalkerOptions>.Instance.ExitTransitionDuration;
 

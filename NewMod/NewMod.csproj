@@ -14,6 +14,23 @@
         <DefineConstants>TRACE;PC</DefineConstants>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisMode>recommended</AnalysisMode>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
+        <AdditionalFiles Include="stylecop.json" Visible="false" />
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.7.0.110445" PrivateAssets="all">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="AmongUs.GameLibs.Steam" Version="2026.9.29" PrivateAssets="all"/>
         <PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" PrivateAssets="all"/>

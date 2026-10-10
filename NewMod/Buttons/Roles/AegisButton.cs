@@ -13,7 +13,7 @@ using UnityEngine;
 namespace NewMod.Buttons.Roles;
 
 /// <summary>
-///     Custom action button for the Aegis role. Places a configurable shield zone.
+/// Places an Aegis shield zone.
 /// </summary>
 public class AegisButton : CustomActionButton, IEnergyAbility
 {

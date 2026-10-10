@@ -1,16 +1,15 @@
-using MiraAPI.Translation;
-using NewMod.Modifiers.S1;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using MiraAPI.Roles;
-using MiraAPI.Utilities;
+using MiraAPI.Translation;
 using NewMod.Buttons.Roles;
-using NewMod.Components;
 using NewMod.Buttons.Roles.S1;
+using NewMod.Components;
 using NewMod.Modifiers;
+using NewMod.Modifiers.S1;
 using NewMod.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.CrewmateRoles.S1;
@@ -26,24 +25,24 @@ using Random = UnityEngine.Random;
 namespace NewMod.Utilities;
 
 /// <summary>
-///     Provides various utility methods and fields for the mod.
+/// Shared utilities for NewMod.
 /// </summary>
 public static class Utils
 {
     /// <summary>
-    ///     Maps a victim player to its killer.
+    /// Killer IDs by victim ID.
     /// </summary>
-    public static Dictionary<byte, byte> PlayerKiller = new();
+    public static Dictionary<byte, byte> PlayerKiller = [];
 
     /// <summary>
-    ///     Maintains saved roles for players, keyed by their ID.
+    /// Role history by player ID.
     /// </summary>
-    public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles = new();
+    public static Dictionary<byte, List<RoleBehaviour>> savedPlayerRoles = [];
 
     public static Material _circleMat;
 
     /// <summary>
-    ///     Maps each role to its associated list of custom action button types.
+    /// Ability button types for each role.
     /// </summary>
     public static readonly Dictionary<Type, List<Type>> RoleToButtonsMap = new()
     {
@@ -61,39 +60,42 @@ public static class Utils
         { typeof(TerminatorRole), new List<Type> { typeof(ObjectiveButton) } },
         { typeof(ArbitratorRole), new List<Type> { typeof(ArbitratorLeverageButton) } },
         { typeof(MirrorBladeRole), new List<Type> { typeof(MirrorReflectButton) } },
-        { typeof(Shade), new List<Type> { typeof(DeployShadow) } }
+        { typeof(Shade), new List<Type> { typeof(DeployShadow) } },
         // Verifier is excluded since it uses a meeting ability.
     };
 
     /// <summary>
-    ///     Retrieves a PlayerControl instance by its player ID.
+    /// Finds a player by ID.
     /// </summary>
     /// <param name="id">The player's ID.</param>
-    /// <returns>The PlayerControl object or null if not found.</returns>
-//  Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
+    /// <returns>The player, or null if not found.</returns>
+// Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
     public static PlayerControl PlayerById(byte id)
     {
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.PlayerId == id)
                 return player;
+        }
+
         return null;
     }
 
     /// <summary>
-    ///     Records a kill event by mapping a victim to its killer.
+    /// Records who killed the victim.
     /// </summary>
-    /// <param name="killer">The player who performed the kill.</param>
-    /// <param name="victim">The player who was killed.</param>
+    /// <param name="killer">The killer.</param>
+    /// <param name="victim">The victim.</param>
     public static void RecordOnKill(PlayerControl killer, PlayerControl victim)
     {
         PlayerKiller[victim.PlayerId] = killer.PlayerId;
     }
 
     /// <summary>
-    ///     Retrieves the killer of the specified victim.
+    /// Gets the victim's killer.
     /// </summary>
-    /// <param name="victim">The player who was killed.</param>
-    /// <returns>The player who killed the victim, or null if not found.</returns>
+    /// <param name="victim">The victim.</param>
+    /// <returns>The killer, or null if not found.</returns>
     public static PlayerControl GetKiller(PlayerControl victim)
     {
         return PlayerKiller.TryGetValue(victim.PlayerId, out var killerId) ? PlayerById(killerId) : null;
@@ -105,9 +107,9 @@ public static class Utils
     }
 
     /// <summary>
-    ///     Finds the closest dead body to the local player within their kill distance.
+    /// Finds the nearest body within the local player's kill distance.
     /// </summary>
-    /// <returns>The closest DeadBody instance, or null if none are found.</returns>
+    /// <returns>The nearest body, or null if none is in range.</returns>
     public static DeadBody GetClosestBody()
     {
         var allocs = Physics2D.OverlapCircleAll(PlayerControl.LocalPlayer.GetTruePosition(), GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, Constants.PlayersOnlyMask);
@@ -132,12 +134,13 @@ public static class Utils
         return closestBody;
     }
 
-// Thanks to: https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L66
+    // Thanks to: https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L66
+
     /// <summary>
-    ///     Checks if a particular system type is active on the current map.
+    /// Checks whether a sabotage system is active.
     /// </summary>
-    /// <param name="type">The SystemTypes to check.</param>
-    /// <returns>True if the system type is active, otherwise false.</returns>
+    /// <param name="type">The system to check.</param>
+    /// <returns>True if the system is active.</returns>
     public static bool IsActive(SystemTypes type)
     {
         int mapId = GameOptionsManager.Instance.CurrentGameOptions.MapId;
@@ -148,54 +151,54 @@ public static class Utils
         {
             case SystemTypes.Electrical:
                 if (mapId == 5) return false;
-                var SwitchSystem = ShipStatus.Instance.Systems[type].TryCast<SwitchSystem>();
-                return SwitchSystem != null && SwitchSystem.IsActive;
+                var switchSystem = ShipStatus.Instance.Systems[type].TryCast<SwitchSystem>();
+                return switchSystem != null && switchSystem.IsActive;
             case SystemTypes.Reactor:
                 if (mapId == 2) return false;
-                var ReactorSystemType = ShipStatus.Instance.Systems[type].TryCast<ReactorSystemType>();
-                return ReactorSystemType != null && ReactorSystemType.IsActive;
+                var reactorSystemType = ShipStatus.Instance.Systems[type].TryCast<ReactorSystemType>();
+                return reactorSystemType != null && reactorSystemType.IsActive;
             case SystemTypes.Laboratory:
                 if (mapId != 2) return false;
-                var ReactorSystemType2 = ShipStatus.Instance.Systems[type].TryCast<ReactorSystemType>();
-                return ReactorSystemType2 != null && ReactorSystemType2.IsActive;
+                var reactorSystemType2 = ShipStatus.Instance.Systems[type].TryCast<ReactorSystemType>();
+                return reactorSystemType2 != null && reactorSystemType2.IsActive;
             case SystemTypes.LifeSupp:
                 if (mapId is 2 or 4 or 5) return false;
-                var LifeSuppSystemType = ShipStatus.Instance.Systems[type].TryCast<LifeSuppSystemType>();
-                return LifeSuppSystemType != null && LifeSuppSystemType.IsActive;
+                var lifeSuppSystemType = ShipStatus.Instance.Systems[type].TryCast<LifeSuppSystemType>();
+                return lifeSuppSystemType != null && lifeSuppSystemType.IsActive;
             case SystemTypes.HeliSabotage:
                 if (mapId != 4) return false;
-                var HeliSabotageSystem = ShipStatus.Instance.Systems[type].TryCast<HeliSabotageSystem>();
-                return HeliSabotageSystem != null && HeliSabotageSystem.IsActive;
+                var heliSabotageSystem = ShipStatus.Instance.Systems[type].TryCast<HeliSabotageSystem>();
+                return heliSabotageSystem != null && heliSabotageSystem.IsActive;
             case SystemTypes.Comms:
                 if (mapId is 1 or 5)
                 {
-                    var HqHudSystemType = ShipStatus.Instance.Systems[type].TryCast<HqHudSystemType>();
-                    return HqHudSystemType != null && HqHudSystemType.IsActive;
+                    var hqHudSystemType = ShipStatus.Instance.Systems[type].TryCast<HqHudSystemType>();
+                    return hqHudSystemType != null && hqHudSystemType.IsActive;
                 }
 
-                var HudOverrideSystemType = ShipStatus.Instance.Systems[type].TryCast<HudOverrideSystemType>();
-                return HudOverrideSystemType != null && HudOverrideSystemType.IsActive;
+                var hudOverrideSystemType = ShipStatus.Instance.Systems[type].TryCast<HudOverrideSystemType>();
+                return hudOverrideSystemType != null && hudOverrideSystemType.IsActive;
             case SystemTypes.MushroomMixupSabotage:
                 if (mapId != 5) return false;
-                var MushroomMixupSabotageSystem = ShipStatus.Instance.Systems[type].TryCast<MushroomMixupSabotageSystem>();
-                return MushroomMixupSabotageSystem != null && MushroomMixupSabotageSystem.IsActive;
+                var mushroomMixupSabotageSystem = ShipStatus.Instance.Systems[type].TryCast<MushroomMixupSabotageSystem>();
+                return mushroomMixupSabotageSystem != null && mushroomMixupSabotageSystem.IsActive;
             default:
                 return false;
         }
     }
 
-// Thanks to : https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L118
+    // Thanks to : https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L118
+
     /// <summary>
-    ///     Checks if any sabotage system is currently active.
+    /// Checks whether any sabotage is active.
     /// </summary>
-    /// <returns>True if a sabotage system is active, otherwise false.</returns>
+    /// <returns>True if a sabotage is active.</returns>
     public static bool IsSabotage()
     {
         return IsActive(SystemTypes.LifeSupp) || IsActive(SystemTypes.Reactor) || IsActive(SystemTypes.Laboratory) || IsActive(SystemTypes.Electrical) || IsActive(SystemTypes.Comms) || IsActive(SystemTypes.MushroomMixupSabotage) || IsActive(SystemTypes.HeliSabotage);
     }
 
-// Inspired By: https://github.com/AU-Avengers/TOU-Mira/blob/dev/TownOfUs/Modules/ReviveUtilities.cs#L40
-
+    // Inspired By: https://github.com/AU-Avengers/TOU-Mira/blob/dev/TownOfUs/Modules/ReviveUtilities.cs#L40
     [MethodRpc((uint)CustomRPC.HandleRevive)]
     public static IEnumerator HandleRevive(PlayerControl source, byte revivedId, RoleTypes roleToSet, float reviveX, float reviveY)
     {
@@ -238,52 +241,56 @@ public static class Utils
         }
 
         foreach (var deadBody in Object.FindObjectsOfType<DeadBody>())
+        {
             if (deadBody.ParentId == revived.PlayerId)
                 Object.Destroy(deadBody.gameObject);
+        }
 
         var elapsed = 0f;
         while (elapsed < 1f)
         {
             foreach (var deadBody in Object.FindObjectsOfType<DeadBody>())
+            {
                 if (deadBody.ParentId == revived.PlayerId)
                     Object.Destroy(deadBody.gameObject);
+            }
 
             elapsed += 0.05f;
             yield return new WaitForSeconds(0.05f);
         }
     }
 
-// Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L55
+    // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L55
+
     /// <summary>
-    ///     Records a player's role in their role history.
+    /// Adds a role to the player's history.
     /// </summary>
-    /// <param name="playerId">The ID of the player</param>
-    /// <param name="role">The RoleBehaviour to save.</param>
+    /// <param name="playerId">The player's ID.</param>
+    /// <param name="role">The role to save.</param>
     public static void SavePlayerRole(byte playerId, RoleBehaviour role)
     {
-        if (!savedPlayerRoles.ContainsKey(playerId)) savedPlayerRoles[playerId] = new List<RoleBehaviour>();
+        if (!savedPlayerRoles.ContainsKey(playerId)) savedPlayerRoles[playerId] = [];
 
         savedPlayerRoles[playerId].Add(role);
     }
 
-// Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L64
+    // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L64
+
     /// <summary>
-    ///     Retrieves the role history for a specific player.
+    /// Gets the player's role history.
     /// </summary>
-    /// <param name="playerId">The ID of the player</param>
-    /// <returns>A list of RoleBehaviour representing the player's role history.</returns>
+    /// <param name="playerId">The player's ID.</param>
+    /// <returns>Saved roles, or an empty list if none are recorded.</returns>
     public static List<RoleBehaviour> GetPlayerRolesHistory(byte playerId)
     {
-        if (savedPlayerRoles.ContainsKey(playerId)) return savedPlayerRoles[playerId];
-
-        return new List<RoleBehaviour>();
+        return savedPlayerRoles.TryGetValue(playerId, out var roles) ? roles : [];
     }
 
     /// <summary>
-    ///     Retrieves a random player from the game who meets a specified condition.
+    /// Picks a random player that matches the filter.
     /// </summary>
-    /// <param name="match">A predicate to filter eligible players.</param>
-    /// <returns>A random PlayerControl instance, or null if none are valid.</returns>
+    /// <param name="match">The player filter.</param>
+    /// <returns>A matching player, or null if none match.</returns>
     public static PlayerControl GetRandomPlayer(Predicate<PlayerControl> match)
     {
         var players = PlayerControl.AllPlayerControls.ToArray().Where(p => match(p)).ToList();
@@ -299,7 +306,7 @@ public static class Utils
         {
             ModifierFaction.Crew => $"<b><color=#00B7C7>Crew</color></b>",
             ModifierFaction.Murder => $"<b><color=#FF4C4C>Murder</color></b>",
-            _ => MiraLocaleManager.Get("NewMod.Faction.Unknown")
+            _ => MiraLocaleManager.Get("NewMod.Faction.Unknown"),
         };
     }
 
@@ -311,16 +318,16 @@ public static class Utils
             NewModFaction.Entropy => $"<b><color=#EAAA3E>{MiraLocaleManager.Get("NewMod.Faction.Entropy")}</color></b>",
             NewModFaction.Sentinel => $"<b><color=#3AA6FF>{MiraLocaleManager.Get("NewMod.Faction.Sentinel")}</color></b>",
             NewModFaction.Rift => $"<b><color=#301934>{MiraLocaleManager.Get("NewMod.Faction.Rift")}</color></b>",
-            _ => MiraLocaleManager.Get("NewMod.Faction.Unknown")
+            _ => MiraLocaleManager.Get("NewMod.Faction.Unknown"),
         };
     }
 
     /// <summary>
-    ///     Gradually fades out the provided ghost object and then destroys it.
+    /// Fades out the ghost, then destroys it.
     /// </summary>
-    /// <param name="ghost">The GameObject representing the ghost.</param>
-    /// <param name="fadeDuration">The duration of the fade effect.</param>
-    /// <returns>An IEnumerator for coroutine control.</returns>
+    /// <param name="ghost">The ghost to fade out.</param>
+    /// <param name="fadeDuration">Fade time in seconds.</param>
+    /// <returns>The fade coroutine.</returns>
     public static IEnumerator FadeAndDestroy(GameObject ghost, float fadeDuration)
     {
         var ghostRenderer = ghost.GetComponent<SpriteRenderer>();
@@ -337,15 +344,11 @@ public static class Utils
     }
 
     /// <summary>
-    ///     Tracks the camera on its current target for a given duration,
-    ///     then restores its position to the original state.
-    ///     Optionally applies a shake effect during the final moments.
+    /// Shakes the camera during the last 1.5 seconds, then restores its position.
     /// </summary>
-    /// <param name="cam">The <see cref="FollowerCamera" /> instance to adjust.</param>
-    /// <param name="duration">The total duration, in seconds, to keep tracking before resetting.</param>
-    /// <returns>
-    ///     An <see cref="IEnumerator" /> coroutine that handles timing and the optional shake effect.
-    /// </returns>
+    /// <param name="cam">The camera to shake.</param>
+    /// <param name="duration">Total time in seconds, including the delay before shaking.</param>
+    /// <returns>The camera shake coroutine.</returns>
     public static IEnumerator CoShakeCamera(FollowerCamera cam, float duration)
     {
         var timeElapsed = 0f;
@@ -372,11 +375,6 @@ public static class Utils
         cam.transform.localPosition = originalPos;
     }
 
-    /// <summary>
-    ///     Formats a <see cref="System.TimeSpan" /> into a string with the format:
-    ///     <c>dd:hh:mm:ss</c>.
-    /// </summary>
-    /// <param name="t">The <see cref="System.TimeSpan" /> to format.</param>
     public static string FormatSpan(TimeSpan t)
     {
         var dd = Mathf.Max(0, t.Days);
@@ -387,29 +385,24 @@ public static class Utils
     }
 
     /// <summary>
-    ///     Finds the surveillance console on the current ship.
+    /// Finds the surveillance console on the current ship.
     /// </summary>
-    /// <returns>
-    ///     The first <see cref="SystemConsole" /> instance representing the surveillance console,
-    /// </returns>
+    /// <returns>The surveillance console, or null if the map has none.</returns>
     public static SystemConsole FindSurveillanceConsole()
     {
-        var all = ShipStatus.Instance?.AllConsoles;
-        var sys = all.OfType<SystemConsole>().FirstOrDefault(c => c && c.MinigamePrefab && c.MinigamePrefab is SurveillanceMinigame);
+        if (!ShipStatus.Instance)
+            return null;
 
-        return all.OfType<SystemConsole>().FirstOrDefault(c =>
-        {
-            var n = c.name;
-            return n.Contains("Surv", StringComparison.OrdinalIgnoreCase) || n.Contains("Lookout", StringComparison.OrdinalIgnoreCase);
-        });
+        return ShipStatus.Instance.GetComponentsInChildren<SystemConsole>().FirstOrDefault(console =>
+            console.MinigamePrefab && (console.MinigamePrefab.TryCast<SurveillanceMinigame>() ||
+                                      console.MinigamePrefab.TryCast<PlanetSurveillanceMinigame>() ||
+                                      console.MinigamePrefab.TryCast<FungleSurveillanceMinigame>()));
     }
 
     /// <summary>
-    ///     Retrieves or creates a material used for drawing circles.
+    /// Gets the shared circle material, creating it if needed.
     /// </summary>
-    /// <returns>
-    ///     A <see cref="Material" /> instance with the "Sprites/Default" shader
-    /// </returns>
+    /// <returns>The circle material using the "Sprites/Default" shader.</returns>
     public static Material GetCircleMat()
     {
         if (_circleMat) return _circleMat;

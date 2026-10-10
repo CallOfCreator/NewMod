@@ -1,5 +1,5 @@
-using HarmonyLib;
 using AmongUs.GameOptions;
+using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -39,7 +39,7 @@ public static class EnergyThiefAbilityEvents
             RoleTypes.GuardianAngel => EnergyCategory.Protection,
             RoleTypes.Shapeshifter => EnergyCategory.Control,
             RoleTypes.Viper => EnergyCategory.Aggression,
-            _ => (EnergyCategory?)null
+            _ => (EnergyCategory?)null,
         };
 
         if (!category.HasValue || !EnergyThief.IsBrownedOut(PlayerControl.LocalPlayer.PlayerId, category.Value))
@@ -62,7 +62,7 @@ public static class EnergyThiefAbilityEvents
             RoleTypes.GuardianAngel => EnergyCategory.Protection,
             RoleTypes.Shapeshifter => EnergyCategory.Control,
             RoleTypes.Viper => EnergyCategory.Aggression,
-            _ => (EnergyCategory?)null
+            _ => (EnergyCategory?)null,
         };
 
         if (category.HasValue)
@@ -116,7 +116,9 @@ public static class NewModHostTickPatch
             return;
 
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.Data.Role is Nomad)
                 Nomad.FixedUpdate(player);
+        }
     }
 }

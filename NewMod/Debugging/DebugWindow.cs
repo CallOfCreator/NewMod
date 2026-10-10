@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Il2CppInterop.Runtime.Attributes;
 using NewMod.Debugging.Tabs;
 using Reactor.Utilities.Attributes;
@@ -23,11 +22,14 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
 
     public static DebugWindow Instance { get; private set; }
 
-    [HideFromIl2Cpp] public bool Enabled { get; set; }
+    [HideFromIl2Cpp]
+    public bool Enabled { get; set; }
 
-    [HideFromIl2Cpp] public string Title { get; set; } = "NewMod Debug Window";
+    [HideFromIl2Cpp]
+    public string Title { get; set; } = "NewMod Debug Window";
 
-    [HideFromIl2Cpp] public List<IDebugTab> Tabs { get; set; } = new();
+    [HideFromIl2Cpp]
+    public List<IDebugTab> Tabs { get; set; } = [];
 
     public const KeyCode ToggleKey = KeyCode.F8;
     public const float ZoomMin = 2.5f;
@@ -96,7 +98,7 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
 
     public void OnGUI()
     {
-        if (!Enabled || !Tabs.Any()) return;
+        if (!Enabled || Tabs.Count == 0) return;
 
         if (Event.current.type == EventType.Layout) _windowRect.height = _windowRect.width = 20;
 

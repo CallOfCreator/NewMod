@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -14,6 +14,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Networking;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
@@ -55,7 +56,7 @@ public class Bounty : CrewmateRole, INewModRole
             CanUseVent = false,
             UseVanillaKillButton = false,
             TasksCountForProgress = false,
-            Icon = MiraAssets.Empty
+            Icon = MiraAssets.Empty,
         };
 
     [HideFromIl2Cpp]
@@ -69,14 +70,14 @@ public class Bounty : CrewmateRole, INewModRole
         }
 
         var target = Utils.PlayerById(contract.TargetId);
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.Contract"), target.Data.PlayerName));
-        text.AppendLine(contract.Phase == ContractPhase.Collection ? string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.CollectionCountdown"), Mathf.Max(0, Mathf.CeilToInt(CollectionExpiresAt[PlayerControl.LocalPlayer.PlayerId] - Time.time))) : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.EscortInstructions"));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.Contract"), target.Data.PlayerName));
+        text.AppendLine(contract.Phase == ContractPhase.Collection ? string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.CollectionCountdown"), Mathf.Max(0, Mathf.CeilToInt(CollectionExpiresAt[PlayerControl.LocalPlayer.PlayerId] - Time.time))) : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Bounty.Tab.EscortInstructions"));
         return text;
     }
 
-    public override bool DidWin(GameOverReason reason)
+    public override bool DidWin(GameOverReason gameOverReason)
     {
-        return reason == CustomGameOver.GameOverReason<BountyGameOver>();
+        return gameOverReason == CustomGameOver.GameOverReason<BountyGameOver>();
     }
 
     [RegisterEvent]
@@ -98,8 +99,10 @@ public class Bounty : CrewmateRole, INewModRole
             return;
 
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.Data.Role is Bounty)
                 AssignContract(player.PlayerId);
+        }
     }
 
     [RegisterEvent]
@@ -129,8 +132,10 @@ public class Bounty : CrewmateRole, INewModRole
             return;
 
         foreach (var pair in Contracts.ToArray())
+        {
             if (pair.Value.Phase == ContractPhase.Collection)
                 RpcFailContract(PlayerControl.LocalPlayer, pair.Key);
+        }
     }
 
     [RegisterEvent]
@@ -140,8 +145,10 @@ public class Bounty : CrewmateRole, INewModRole
             return;
 
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.Data.Role is Bounty && !player.Data.IsDead && !player.Data.Disconnected && !Contracts.ContainsKey(player.PlayerId))
                 AssignContract(player.PlayerId);
+        }
     }
 
     [RegisterEvent]
@@ -357,7 +364,7 @@ public class Bounty : CrewmateRole, INewModRole
     public enum ContractPhase : byte
     {
         Escort,
-        Collection
+        Collection,
     }
 
     public static bool AdvanceContract(byte ownerId, float seconds, float required)

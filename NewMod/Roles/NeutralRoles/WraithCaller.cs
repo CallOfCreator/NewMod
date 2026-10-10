@@ -1,9 +1,10 @@
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
 using UnityEngine;
@@ -28,7 +29,7 @@ public class WraithCaller : ImpostorRole, INewModRole
             UseVanillaKillButton = false,
             TasksCountForProgress = false,
             MaxRoleCount = 1,
-            Icon = NewModAsset.WraithIcon
+            Icon = NewModAsset.WraithIcon,
         };
 
     [HideFromIl2Cpp]
@@ -48,19 +49,19 @@ public class WraithCaller : ImpostorRole, INewModRole
 
         tab.AppendLine();
 
-        tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.Kills"), kills >= required ? green : cyan, kills, yellow, required));
+        tab.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.Kills"), kills >= required ? green : cyan, kills, yellow, required));
 
         if (kills < required)
         {
             var left = required - kills;
-            tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.KillsRemaining"), yellow, left, left == 1 ? "" : "s"));
+            tab.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.KillsRemaining"), yellow, left, left == 1 ? string.Empty : "s"));
         }
         else
         {
-            tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.GoalReached"), green));
+            tab.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.GoalReached"), green));
         }
 
-        tab.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.HuntDuration"), OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration));
+        tab.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.WraithCaller.Tab.HuntDuration"), OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration));
 
         return tab;
     }

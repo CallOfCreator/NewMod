@@ -28,7 +28,7 @@ public enum VerifierClaimType : byte
     DidTask,
     EnteredVent,
     NearBody,
-    UsedAbility
+    UsedAbility,
 }
 
 [Flags]
@@ -38,14 +38,14 @@ public enum VerifierFactFlags : byte
     DidTask = 1,
     EnteredVent = 2,
     NearBody = 4,
-    UsedAbility = 8
+    UsedAbility = 8,
 }
 
 public static class VerifierUtilities
 {
-    public static readonly Dictionary<byte, VerifierFactFlags> RoundFacts = new();
+    public static readonly Dictionary<byte, VerifierFactFlags> RoundFacts = [];
 
-    public static readonly HashSet<byte> BodyObservations = new();
+    public static readonly HashSet<byte> BodyObservations = [];
     public static bool SelectingPlayer;
     public static bool UsedThisMeeting;
 
@@ -230,8 +230,16 @@ public static class VerifierUtilities
         button.graphic.sprite = NewModAsset.VerifyButton.LoadAsset();
         button.graphic.SetCooldownNormalizedUvs();
 
-        button.OverrideText(UsedThisMeeting ? "USED" : SelectingPlayer ? "SELECT" : "VERIFY");
-        button.OverrideColor(UsedThisMeeting ? new Color32(90, 90, 90, 255) : SelectingPlayer ? new Color32(255, 209, 102, 255) : new Color32(88, 232, 190, 255));
+        if (UsedThisMeeting)
+        {
+            button.OverrideText("USED");
+            button.OverrideColor(new Color32(90, 90, 90, 255));
+        }
+        else
+        {
+            button.OverrideText(SelectingPlayer ? "SELECT" : "VERIFY");
+            button.OverrideColor(SelectingPlayer ? new Color32(255, 209, 102, 255) : new Color32(88, 232, 190, 255));
+        }
     }
 
     public static void OnMeetingAbilityClicked()
@@ -270,7 +278,7 @@ public static class VerifierUtilities
             VerifierClaimType.EnteredVent => VerifierFactFlags.EnteredVent,
             VerifierClaimType.NearBody => VerifierFactFlags.NearBody,
             VerifierClaimType.UsedAbility => VerifierFactFlags.UsedAbility,
-            _ => VerifierFactFlags.None
+            _ => VerifierFactFlags.None,
         };
     }
 

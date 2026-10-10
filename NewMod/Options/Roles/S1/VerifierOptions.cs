@@ -1,7 +1,6 @@
 using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.PluginLoading;
-using MiraAPI.Utilities;
 using NewMod.Roles.CrewmateRoles.S1;
 
 namespace NewMod.Options.Roles.S1;

@@ -1,14 +1,14 @@
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using NewMod.Components;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
-using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Roles.CrewmateRoles;
@@ -31,14 +31,14 @@ public class Aegis : CrewmateRole, INewModRole
             UseVanillaKillButton = false,
             TasksCountForProgress = true,
             MaxRoleCount = 1,
-            Icon = NewModAsset.ShieldIcon
+            Icon = NewModAsset.ShieldIcon,
         };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()
     {
         var options = OptionGroupSingleton<AegisOptions>.Instance;
-        return INewModRole.GetRoleTabText(this).Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Aegis.Tab.Details"), RoleColor.ToTextColor(), options.DurationSeconds, options.Radius, options.AegisCooldown, options.MaxCharges));
+        return INewModRole.GetRoleTabText(this).Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Aegis.Tab.Details"), RoleColor.ToTextColor(), options.DurationSeconds, options.Radius, options.AegisCooldown, options.MaxCharges));
     }
 
     [RegisterEvent]

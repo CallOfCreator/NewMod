@@ -1,16 +1,16 @@
-using NewMod.Modifiers.S1;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameOptions;
+using MiraAPI.Utilities;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
-using Reactor.Utilities;
-using MiraAPI.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
+using Reactor.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -19,7 +19,7 @@ namespace NewMod.Utilities;
 public static class PranksterUtilities
 {
     public const string PranksterBodyName = "PranksterCloneBody";
-    public static readonly Dictionary<byte, int> ReportCounts = new();
+    public static readonly Dictionary<byte, int> ReportCounts = [];
     public static readonly HashSet<(byte Prankster, byte Reporter)> FooledPlayers = [];
     public static readonly Dictionary<byte, float> ReportRecovery = [];
 
@@ -47,8 +47,10 @@ public static class PranksterUtilities
         var pranksterBodies = new List<DeadBody>();
 
         foreach (var body in allDeadBodies)
+        {
             if (IsPranksterBody(body))
                 pranksterBodies.Add(body);
+        }
 
         return pranksterBodies;
     }
@@ -139,12 +141,16 @@ public static class PranksterUtilities
     {
         if (!source.IsHost()) return;
         if (fake)
+        {
             foreach (var body in FindAllPranksterBodies())
+            {
                 if (body.ParentId == bodyId && Vector2.Distance(body.TruePosition, new Vector2(x, y)) <= 0.05f)
                 {
                     Object.Destroy(body.gameObject);
                     break;
                 }
+            }
+        }
 
         if (PlayerControl.LocalPlayer.PlayerId == inspectorId)
             Coroutines.Start(CoroutinesHelper.CoNotify(fake ? "Fake body removed. The Prankster earned nothing." : "This body is real."));

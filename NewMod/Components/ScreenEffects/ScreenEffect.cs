@@ -10,7 +10,7 @@ public abstract class ScreenEffect
     public ScreenEffectSystem Owner;
     public Material _mat;
     public bool Active = true;
-    public readonly List<ScreenEffectProperty> Properties = new();
+    public readonly List<ScreenEffectProperty> Properties = [];
 
     public void CreateMaterial(Shader shader, params string[] animatedProperties)
     {
@@ -30,7 +30,7 @@ public abstract class ScreenEffect
                 Type = type,
                 Range = type == ShaderPropertyType.Range ? shader.GetPropertyRangeLimits(index) : Vector2.zero,
                 Editable = name != "_MainTex" && Array.IndexOf(animatedProperties, name) < 0 &&
-                    (shader.GetPropertyFlags(index) & ShaderPropertyFlags.HideInInspector) == 0
+                    (shader.GetPropertyFlags(index) & ShaderPropertyFlags.HideInInspector) == 0,
             });
         }
     }
@@ -39,7 +39,7 @@ public abstract class ScreenEffect
     {
     }
 
-    public virtual void Tick()
+    public virtual void OnHudUpdate()
     {
     }
 

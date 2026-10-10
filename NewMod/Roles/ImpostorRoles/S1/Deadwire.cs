@@ -1,17 +1,18 @@
-using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
@@ -50,14 +51,14 @@ public class Deadwire : ImpostorRole, INewModRole
             CanUseVent = false,
             UseVanillaKillButton = true,
             TasksCountForProgress = false,
-            Icon = MiraAssets.Empty
+            Icon = MiraAssets.Empty,
         };
 
     [HideFromIl2Cpp]
     public StringBuilder SetTabText()
     {
         var text = INewModRole.GetRoleTabText(this);
-        text.AppendLine(Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record) ? string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.Captured"), MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{GetResponse(record.Category)}")) : MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.NoCategoryRecorded"));
+        text.AppendLine(Records.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var record) ? string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.Captured"), MiraLocaleManager.Get($"NewMod.Deadwire.Reward.{GetResponse(record.Category)}")) : MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.NoCategoryRecorded"));
         text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.OffensiveRewards"));
         text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.Deadwire.Tab.UtilityRewards"));
         return text;
@@ -237,7 +238,11 @@ public class Deadwire : ImpostorRole, INewModRole
     public static void Blink(PlayerControl player, float distance)
     {
         var velocity = player.MyPhysics.body.velocity;
-        var direction = velocity.sqrMagnitude > 0.01f ? velocity.normalized : player.cosmetics.currentBodySprite.BodySprite.flipX ? Vector2.left : Vector2.right;
+        Vector2 direction;
+        if (velocity.sqrMagnitude > 0.01f)
+            direction = velocity.normalized;
+        else
+            direction = player.cosmetics.currentBodySprite.BodySprite.flipX ? Vector2.left : Vector2.right;
         var hit = Physics2D.Raycast(player.GetTruePosition(), direction, distance, Constants.ShipAndObjectsMask);
         if (hit.collider)
             distance = Mathf.Max(0f, hit.distance - 0.35f);
@@ -251,7 +256,7 @@ public class Deadwire : ImpostorRole, INewModRole
         TrackActor,
         Blink,
         JamActor,
-        Barrier
+        Barrier,
     }
 
     public static float ReduceCooldown(float remaining, float reduction, float minimum)
@@ -267,7 +272,7 @@ public class Deadwire : ImpostorRole, INewModRole
             EnergyCategory.Intelligence => Response.TrackActor,
             EnergyCategory.Mobility => Response.Blink,
             EnergyCategory.Control => Response.JamActor,
-            _ => Response.Barrier
+            _ => Response.Barrier,
         };
     }
 }

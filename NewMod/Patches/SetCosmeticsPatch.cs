@@ -8,7 +8,7 @@ using UnityEngine;
 namespace NewMod.Patches;
 
 [HarmonyPatch(typeof(PlayerVoteArea), nameof(PlayerVoteArea.SetCosmetics))]
-public static class PlayerVoteArea_SetCosmetics_Patch
+public static class PlayerVoteAreaSetCosmeticsPatch
 {
     public static Dictionary<byte, string> _alias;
     public static HashSet<string> _used;
@@ -43,8 +43,8 @@ public static class PlayerVoteArea_SetCosmetics_Patch
 
             __instance.PlayerIcon.SetBodyColor(randomColor);
             __instance.PlayerIcon.SetHat("hat_Nohat", 0);
-            __instance.PlayerIcon.SetSkin("", randomColor);
-            __instance.PlayerIcon.SetVisor("", randomColor);
+            __instance.PlayerIcon.SetSkin(string.Empty, randomColor);
+            __instance.PlayerIcon.SetVisor(string.Empty, randomColor);
         }
 
         __instance.NameText.text = PlayerRoleNamePatch.FormatName(baseName, playerInfo);

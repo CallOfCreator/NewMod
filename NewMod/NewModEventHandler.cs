@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using MiraAPI.Events;
@@ -39,6 +39,7 @@ public static class NewModEventHandler
             var lines = new List<string>();
 
             if (entry.Value is IEnumerable wrappers)
+            {
                 foreach (var wrapper in wrappers)
                 {
                     if (wrapper == null) continue;
@@ -52,8 +53,9 @@ public static class NewModEventHandler
 
                     lines.Add($" [{priority}] {method.DeclaringType.FullName}.{method.Name}()");
                 }
+            }
 
-            builder.AppendLine($"{eventType.FullName}  (handlers: {lines.Count})");
+            builder.AppendLine(CultureInfo.CurrentCulture, $"{eventType.FullName}  (handlers: {lines.Count})");
             foreach (var line in lines) builder.AppendLine(line);
         }
 
@@ -81,8 +83,10 @@ public static class NewModEventHandler
         FearPulseArea.ResetState();
 
         foreach (var shield in ShieldArea._active.ToArray())
+        {
             if (shield)
                 Object.Destroy(shield.gameObject);
+        }
 
         ShieldArea._active.Clear();
 
@@ -104,11 +108,13 @@ public static class NewModEventHandler
 
         PlayerTask header = null;
         foreach (var task in evt.Player.myTasks)
+        {
             if (task && task.name == "ImpostorRole")
             {
                 header = task;
                 break;
             }
+        }
 
         if (!header)
             return;
@@ -124,6 +130,7 @@ public static class NewModEventHandler
             return;
 
         if (!PlayerControl.LocalPlayer.Data.Role.IsImpostor)
+        {
             for (var i = PlayerControl.LocalPlayer.myTasks.Count - 1; i >= 0; i--)
             {
                 var task = PlayerControl.LocalPlayer.myTasks[i];
@@ -135,6 +142,7 @@ public static class NewModEventHandler
                     TwitchManager.Instance.TwitchPopup.Show();
                 }
             }
+        }
 
         if (Application.platform == RuntimePlatform.Android)
             return;

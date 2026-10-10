@@ -3,9 +3,9 @@ using MiraAPI.Events;
 using MiraAPI.Events.Mira;
 using MiraAPI.Hud;
 using MiraAPI.Modifiers;
-using NewMod.Modifiers.S1;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
 using UnityEngine;
@@ -64,7 +64,7 @@ public class AbilityExchangeGE : IGeneralEvent
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
     }
 
-    public void Tick()
+    public void OnHudUpdate()
     {
         if (!Active || BorrowedButtonTypeName == null || PlayerControl.LocalPlayer.HasModifier<InVoid>())
             return;
@@ -92,8 +92,10 @@ public class AbilityExchangeGE : IGeneralEvent
     private static bool IsRoleButton(System.Type buttonType)
     {
         foreach (var buttonTypes in Utils.RoleToButtonsMap.Values)
+        {
             if (buttonTypes.Contains(buttonType))
                 return true;
+        }
 
         return false;
     }

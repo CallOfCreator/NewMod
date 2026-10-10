@@ -1,6 +1,7 @@
-﻿using MiraAPI.Hud;
-using NewMod.Utilities;
+﻿using System.Globalization;
+using MiraAPI.Hud;
 using NewMod.Patches;
+using NewMod.Utilities;
 using UnityEngine;
 
 namespace NewMod.Debugging.Tabs;
@@ -26,7 +27,7 @@ public class MatchTab : IDebugTab
         GUILayout.BeginHorizontal();
 
         _zoom = GUILayout.HorizontalSlider(DebugWindow.Instance.Zoom, DebugWindow.ZoomMin, DebugWindow.ZoomMax);
-        GUILayout.Label(_zoom.ToString());
+        GUILayout.Label(_zoom.ToString(CultureInfo.CurrentCulture));
 
         GUILayout.EndHorizontal();
 
@@ -44,17 +45,18 @@ public class MatchTab : IDebugTab
 
         GUILayout.Label("LOCAL ABILITIES");
 
-        //GUILayout.BeginHorizontal();
-
         if (GUILayout.Button("Reset Kill Cooldown")) PlayerControl.LocalPlayer.SetKillTimer(0f);
         if (GUILayout.Button("Reset Button Cooldowns"))
+        {
             foreach (var button in CustomButtonManager.Buttons)
                 button.ResetCooldownAndOrEffect();
+        }
+
         if (GUILayout.Button("Reset Button Uses to 3"))
+        {
             foreach (var button in CustomButtonManager.Buttons)
                 button.SetUses(3);
-
-        //GUILayout.EndHorizontal();
+        }
 
         if (meeting)
         {

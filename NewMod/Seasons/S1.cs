@@ -14,8 +14,8 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles.S1;
 using TMPro;
 using UnityEngine;
-using Type = System.Type;
 using DeadwireRole = NewMod.Roles.ImpostorRoles.S1.Deadwire;
+using Type = System.Type;
 
 namespace NewMod.Seasons;
 

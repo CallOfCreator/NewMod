@@ -24,7 +24,7 @@ public class FalseFormModifier : TimedModifier
             HatId = Player.Data.DefaultOutfit.HatId,
             SkinId = Player.Data.DefaultOutfit.SkinId,
             PetId = Player.Data.DefaultOutfit.PetId,
-            ColorId = Player.Data.DefaultOutfit.ColorId
+            ColorId = Player.Data.DefaultOutfit.ColorId,
         };
     }
 
@@ -71,7 +71,7 @@ public class FalseFormModifier : TimedModifier
     }
 }
 
-internal class AppearanceBackup
+internal sealed class AppearanceBackup
 {
     public int ColorId;
     public string HatId, SkinId, PetId;

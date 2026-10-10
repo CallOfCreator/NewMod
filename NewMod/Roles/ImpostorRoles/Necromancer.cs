@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using MiraAPI.Translation;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ namespace NewMod.Roles.ImpostorRoles;
 
 public class NecromancerRole : ImpostorRole, ICustomRole
 {
-    public static Dictionary<byte, byte> RevivedPlayers = new();
+    public static Dictionary<byte, byte> RevivedPlayers = [];
 
     public TeamIntroConfiguration TeamConfiguration => new() { IntroTeamDescription = RoleDescription, IntroTeamColor = RoleColor };
 

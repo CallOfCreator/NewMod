@@ -1,9 +1,8 @@
-using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -11,8 +10,10 @@ using MiraAPI.GameOptions;
 using MiraAPI.Networking;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -24,7 +25,7 @@ namespace NewMod.Roles.ImpostorRoles.S1;
 [MiraIgnore]
 public class MirrorBladeRole : ImpostorRole, INewModRole
 {
-    public static readonly HashSet<byte> ArmedReflections = new();
+    public static readonly HashSet<byte> ArmedReflections = [];
     public static bool Reflecting;
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.IntroBlurb");
@@ -49,7 +50,7 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
             DefaultChance = 25,
             DefaultRoleCount = 1,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -59,9 +60,9 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
         var state = ArmedReflections.Contains(PlayerControl.LocalPlayer.PlayerId) ? MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Armed") : MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Idle");
 
         tabText.AppendLine();
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.ReflectState"), state));
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.ReflectState"), state));
         var options = OptionGroupSingleton<MirrorBladeOptions>.Instance;
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Timing"), options.ReflectWindow, options.ReflectCooldown));
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.Timing"), options.ReflectWindow, options.ReflectCooldown));
         tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.S1.MirrorBladeRole.Tab.ParryRules"));
 
         return tabText;

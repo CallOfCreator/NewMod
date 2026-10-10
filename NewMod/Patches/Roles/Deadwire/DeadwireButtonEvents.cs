@@ -43,7 +43,7 @@ public static class DeadwireButtonEvents
             RoleTypes.GuardianAngel => EnergyCategory.Protection,
             RoleTypes.Shapeshifter => EnergyCategory.Control,
             RoleTypes.Viper => EnergyCategory.Aggression,
-            _ => (EnergyCategory?)null
+            _ => (EnergyCategory?)null,
         };
 
         if (!evt.IsCancelled && category.HasValue && evt.Button.isActiveAndEnabled && evt.Button.CanInteract() && !evt.Button.IsOnCooldown)

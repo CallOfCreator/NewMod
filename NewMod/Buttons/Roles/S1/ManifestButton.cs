@@ -1,6 +1,5 @@
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
-using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
 using NewMod.Roles.NeutralRoles;

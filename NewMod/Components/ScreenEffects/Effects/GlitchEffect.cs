@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace NewMod.Components.ScreenEffects.Effects;
 
 public class GlitchEffect : ScreenEffect
@@ -8,5 +6,4 @@ public class GlitchEffect : ScreenEffect
     {
         CreateMaterial(NewModAsset.GlitchShader.LoadAsset());
     }
-
 }

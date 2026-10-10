@@ -1,6 +1,5 @@
-using NewMod.Components.ScreenEffects.Effects;
 using HarmonyLib;
-using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using UnityEngine;
 
 namespace NewMod.Patches;
@@ -13,8 +12,10 @@ public static class NightTimeCameraPatch
     public static void SkeldCameras(SurveillanceMinigame __instance)
     {
         foreach (var camera in __instance.GetComponentsInChildren<Camera>(true))
+        {
             if (camera.targetTexture)
                 NightTimeCameraEffect.Attach(camera);
+        }
     }
 
     [HarmonyPostfix]

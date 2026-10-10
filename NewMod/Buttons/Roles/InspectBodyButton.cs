@@ -39,9 +39,9 @@ public class InspectBodyButton : CustomActionButton<DeadBody>
         Inspecting = Target;
     }
 
-    protected override void FixedUpdate(PlayerControl player)
+    protected override void FixedUpdate(PlayerControl playerControl)
     {
-        if (EffectActive && (!Inspecting || Vector2.Distance(player.GetTruePosition(), Inspecting.TruePosition) > Distance || MeetingHud.Instance))
+        if (EffectActive && (!Inspecting || Vector2.Distance(playerControl.GetTruePosition(), Inspecting.TruePosition) > Distance || MeetingHud.Instance))
         {
             EffectActive = false;
             Timer = Cooldown;

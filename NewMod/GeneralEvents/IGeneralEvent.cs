@@ -5,50 +5,55 @@ namespace NewMod.GeneralEvents;
 
 public interface IGeneralEvent
 {
-    /// <summary>The name shown on the GE HUD title.</summary>
+    /// <summary>
+    /// Gets the event title.
+    /// </summary>
     string Title { get; }
 
-    /// <summary>The warning text shown on the GE HUD description.</summary>
+    /// <summary>
+    /// Gets the event description.
+    /// </summary>
     string Description { get; }
 
-    /// <summary>The icon sprite shown in the GE HUD logo slot.</summary>
+    /// <summary>
+    /// Gets the event icon.
+    /// </summary>
     LoadableAsset<Sprite> Icon { get; }
 
     /// <summary>
-    ///     Accent color used for the HUD
+    /// Gets the HUD accent color.
     /// </summary>
     Color AccentColor { get; }
 
     /// <summary>
-    ///     Percentage chance (0–100) this event is selected during a random roll
+    /// Gets the event selection weight.
     /// </summary>
     int OccurrenceChance { get; }
 
-    /// <summary>How long (in seconds) the event runs before ending.</summary>
+    /// <summary>
+    /// Gets the event duration in seconds.
+    /// </summary>
     float Duration { get; }
 
     /// <summary>
-    ///     Called on all clients when the event starts.
+    /// Called on all clients when the event starts.
     /// </summary>
     void OnEventStart();
 
     /// <summary>
-    ///     Called on all clients when the event ends.
+    /// Called on all clients when the event ends.
     /// </summary>
     void OnEventEnd();
 
     /// <summary>
-    ///     Called once per rendered frame while this event is active.
-    ///     Use this for local presentation state that must be reapplied after HUD updates.
+    /// Called each frame while the event HUD is active.
     /// </summary>
-    void Tick()
+    void OnHudUpdate()
     {
     }
 
     /// <summary>
-    ///     Optional extra condition checked before this event can fire.
-    ///     Return false to skip it (e.g. if a required role isn't in the game).
-    ///     Defaults to true.
+    /// Return false to skip this event. Defaults to true.
     /// </summary>
     bool CanOccur()
     {

@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using AmongUs.GameOptions;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -12,8 +12,9 @@ using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
-using MiraAPI.Utilities.Assets;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -25,7 +26,7 @@ namespace NewMod.Roles.NeutralRoles.S1;
 public enum ArbitratorJudgmentMode : byte
 {
     Accuse,
-    Defend
+    Defend,
 }
 
 [MiraIgnore]
@@ -69,7 +70,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
             CanModifyChance = true,
             ShowInFreeplay = true,
             GhostRole = RoleTypes.Crewmate,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -82,11 +83,9 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         var defendVotes = (int)OptionGroupSingleton<ArbitratorOptions>.Instance.DefendVotesRequired;
 
         tabText.AppendLine();
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.JudgmentTokens"), tokens, required));
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.JudgmentTokens"), tokens, required));
 
-
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Defend"), defendVotes));
-
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.ArbitratorRole.Tab.Defend"), defendVotes));
 
         return tabText;
     }
@@ -250,8 +249,10 @@ public class ArbitratorRole : CrewmateRole, INewModRole
         var votesOnTarget = 0;
 
         foreach (var vote in evt.Votes)
+        {
             if (vote.Suspect == _hostTarget && vote.Voter != _hostTarget)
                 votesOnTarget++;
+        }
 
         var exiled = MeetingHud.Instance.exiledPlayer;
 
@@ -261,7 +262,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 
             ArbitratorJudgmentMode.Defend => (exiled == null || exiled.PlayerId != _hostTarget) && votesOnTarget >= OptionGroupSingleton<ArbitratorOptions>.Instance.DefendVotesRequired,
 
-            _ => false
+            _ => false,
         };
 
         JudgmentTokens.TryGetValue(arbitrator.PlayerId, out var tokens);

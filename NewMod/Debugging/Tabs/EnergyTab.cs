@@ -1,8 +1,8 @@
 ﻿using MiraAPI.GameOptions;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
-using UnityEngine;
 using NewMod.Utilities;
+using UnityEngine;
 
 namespace NewMod.Debugging.Tabs;
 
@@ -35,7 +35,9 @@ public class EnergyTab : IDebugTab
 
         var options = OptionGroupSingleton<EnergyThiefOptions>.Instance;
         var categoryText = categories.Count == 0 ? "None" : string.Join(" · ", categories);
-        var nodeState = EnergyThief.NodeOwnerId == thief.PlayerId ? EnergyThief.BreachActive ? $"Breaching · {Mathf.Max(0f, EnergyThief.BreachEndsAt - Time.time):0.0}s" : "Located" : "Not located";
+        var nodeState = "Not located";
+        if (EnergyThief.NodeOwnerId == thief.PlayerId)
+            nodeState = EnergyThief.BreachActive ? $"Breaching · {Mathf.Max(0f, EnergyThief.BreachEndsAt - Time.time):0.0}s" : "Located";
 
         GUILayout.Label($"Energy  {energy}/{(int)options.EnergyRequired}");
         GUILayout.Label($"Resonance  {categories.Count}/{(int)options.CategoriesRequired}");
@@ -55,16 +57,15 @@ public class EnergyTab : IDebugTab
 
         GUILayout.Label("POWER NODE");
 
-        if (GUILayout.Button("Go To Node"))
-            if (EnergyThief.NodeOwnerId == thief.PlayerId)
-                thief.NetTransform.RpcSnapTo(EnergyThief.GetNodePosition() + Vector3.down * 0.5f);
+        if (GUILayout.Button("Go To Node") && EnergyThief.NodeOwnerId == thief.PlayerId)
+            thief.NetTransform.RpcSnapTo(EnergyThief.GetNodePosition() + Vector3.down * 0.5f);
+
         if (GUILayout.Button("Start Breach")) EnergyThief.RpcRequestBreach(thief);
-        if (GUILayout.Button("Interrupt Breach"))
-            if (EnergyThief.BreachActive && EnergyThief.NodeOwnerId == thief.PlayerId)
-                EnergyThief.RpcResolveBreach(PlayerControl.LocalPlayer, thief.PlayerId, false);
-        if (GUILayout.Button("Complete Breach"))
-            if (EnergyThief.BreachActive && EnergyThief.NodeOwnerId == thief.PlayerId)
-                EnergyThief.RpcResolveBreach(PlayerControl.LocalPlayer, thief.PlayerId, true);
+        if (GUILayout.Button("Interrupt Breach") && EnergyThief.BreachActive && EnergyThief.NodeOwnerId == thief.PlayerId)
+            EnergyThief.RpcResolveBreach(PlayerControl.LocalPlayer, thief.PlayerId, false);
+
+        if (GUILayout.Button("Complete Breach") && EnergyThief.BreachActive && EnergyThief.NodeOwnerId == thief.PlayerId)
+            EnergyThief.RpcResolveBreach(PlayerControl.LocalPlayer, thief.PlayerId, true);
     }
 
     private static void CaptureEnergy(PlayerControl thief, EnergyCategory category, bool raw)
@@ -86,8 +87,10 @@ public class EnergyTab : IDebugTab
         var categories = new[] { EnergyCategory.Aggression, EnergyCategory.Control, EnergyCategory.Intelligence, EnergyCategory.Mobility, EnergyCategory.Protection };
 
         foreach (var category in categories)
+        {
             if (!EnergyThief.Categories.TryGetValue(thief.PlayerId, out var captured) || !captured.Contains(category))
                 CaptureEnergy(thief, category, false);
+        }
 
         EnergyThief.Energy.TryGetValue(thief.PlayerId, out var energy);
         var missingEnergy = Mathf.Max(0, (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.EnergyRequired - energy);

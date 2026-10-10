@@ -5,11 +5,11 @@ public enum NewModFaction
     Apex,
     Entropy,
     Sentinel,
-    Rift
+    Rift,
 }
 
 public enum ModifierFaction
 {
     Crew,
-    Murder
+    Murder,
 }

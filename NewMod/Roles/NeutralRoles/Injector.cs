@@ -1,11 +1,12 @@
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
+using MiraAPI.Roles;
+using MiraAPI.Translation;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
-using MiraAPI.Translation;
-using MiraAPI.GameEnd;
-using MiraAPI.Roles;
 using UnityEngine;
 
 namespace NewMod.Roles.NeutralRoles;
@@ -33,7 +34,7 @@ public class InjectorRole : ImpostorRole, INewModRole
             DefaultChance = 35,
             DefaultRoleCount = 1,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -42,7 +43,7 @@ public class InjectorRole : ImpostorRole, INewModRole
         var text = INewModRole.GetRoleTabText(this);
         text.AppendLine();
         var options = OptionGroupSingleton<InjectorOptions>.Instance;
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.Tab.Progress"), InjectorUtilities.SampleCount(PlayerControl.LocalPlayer.PlayerId), options.RequiredInjectCount, options.ObservationDuration, options.CollectionWindow, options.SubmissionDuration));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.InjectorRole.Tab.Progress"), InjectorUtilities.SampleCount(PlayerControl.LocalPlayer.PlayerId), options.RequiredInjectCount, options.ObservationDuration, options.CollectionWindow, options.SubmissionDuration));
         return text;
     }
 
@@ -54,6 +55,6 @@ public class InjectorRole : ImpostorRole, INewModRole
     public enum SerumType
     {
         Adrenaline,
-        Sedative
+        Sedative,
     }
 }

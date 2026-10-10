@@ -4,8 +4,8 @@ using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Hud;
 using MiraAPI.Modifiers;
-using NewMod.Modifiers.S1;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using UnityEngine;
 
 namespace NewMod.GeneralEvents.Season1;
@@ -52,7 +52,7 @@ public class NoMansLandGE : IGeneralEvent
             HudManager.Instance.SetHudActive(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.Data.Role, !MeetingHud.Instance);
     }
 
-    public void Tick()
+    public void OnHudUpdate()
     {
         if (!BlocksLocalPlayer)
             return;

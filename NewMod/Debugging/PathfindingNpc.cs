@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Il2CppInterop.Runtime.Attributes;
-using PathfindingAPI.Core;
-using PathfindingAPI.Compatibility;
 using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.Attributes;
+using PathfindingAPI.Compatibility;
+using PathfindingAPI.Core;
 using PathfindingAPI.Navigation;
 using PathfindingAPI.Options;
 using Reactor.Utilities.Attributes;
@@ -119,14 +119,16 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             var point = center;
             var bounds = room.roomArea.bounds;
             for (var y = bounds.min.y; y <= bounds.max.y; y += probe.options.CellSize)
-            for (var x = bounds.min.x; x <= bounds.max.x; x += probe.options.CellSize)
             {
-                var candidate = new Vector2(x, y);
-                var distance = Vector2.Distance(candidate, center);
-                if (distance >= best || !room.roomArea.OverlapPoint(candidate) || !probe.grid.bounds.Contains(candidate) || !probe.IsClear(candidate))
-                    continue;
-                best = distance;
-                point = candidate;
+                for (var x = bounds.min.x; x <= bounds.max.x; x += probe.options.CellSize)
+                {
+                    var candidate = new Vector2(x, y);
+                    var distance = Vector2.Distance(candidate, center);
+                    if (distance >= best || !room.roomArea.OverlapPoint(candidate) || !probe.grid.bounds.Contains(candidate) || !probe.IsClear(candidate))
+                        continue;
+                    best = distance;
+                    point = candidate;
+                }
             }
 
             if (best < float.MaxValue)
@@ -234,11 +236,13 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         }
 
         foreach (var step in path.Crossings)
+        {
             if (step.PointIndex == waypoint - 1)
             {
                 BeginTraversal(step);
                 return;
             }
+        }
 
         var position = visual.GetTruePosition();
         var next = Vector2.MoveTowards(position, path.Points[waypoint], Speed * Time.fixedDeltaTime);
@@ -312,11 +316,13 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             ventExit = null;
             var vent = step.Source.Cast<Vent>();
             foreach (var next in new[] { vent.Left, vent.Right, vent.Center })
+            {
                 if (next && Vector2.Distance(next.transform.position + next.Offset, path.Points[waypoint]) <= next.UsableDistance)
                 {
                     ventExit = next;
                     break;
                 }
+            }
 
             if (!PlayerControl.LocalPlayer.Data.Role.CanVent || !ventExit)
             {
@@ -361,11 +367,13 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         {
             decon = null;
             foreach (var system in ShipStatus.Instance.GetComponentsInChildren<DeconSystem>())
+            {
                 if (system.UpperDoor == step.Source || system.LowerDoor == step.Source)
                 {
                     decon = system;
                     break;
                 }
+            }
 
             if (!decon)
             {
@@ -455,7 +463,10 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         {
             if (!elevator.Ready(elevatorFromUpper))
             {
-                if (elevator.Moving()) elevatorRequested = false;
+                if (elevator.Moving())
+                {
+                    elevatorRequested = false;
+                }
                 else if (!elevatorRequested && elevator.TargetUpper() != elevatorFromUpper)
                 {
                     var console = elevatorFromUpper ? elevator.UpperConsole : elevator.LowerConsole;
@@ -514,7 +525,10 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             }
             else
             {
-                if (elevator.Moving()) elevatorRequested = false;
+                if (elevator.Moving())
+                {
+                    elevatorRequested = false;
+                }
                 else if (!elevatorRequested && elevator.TargetUpper() == elevatorFromUpper)
                 {
                     ShipStatus.Instance.RpcUpdateSystem(elevator.SystemType, (byte)2);
@@ -541,7 +555,7 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
                 UseMovingPlatforms = false,
                 UseDecontamination = false,
                 WaitForDoors = false,
-                AutoOpenDoors = false
+                AutoOpenDoors = false,
             });
             elevatorWaypoint = 0;
         }
@@ -640,16 +654,18 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 
         var target = path != null && waypoint < path.Points.Length ? path.Points[waypoint] : destination;
         var direction = (target - position).normalized;
-        var side = new Vector2(-direction.y, direction.x);
+        var side = Vector2.Perpendicular(direction);
         for (var i = 1; i <= 4; i++)
-        for (var sign = -1; sign <= 1; sign += 2)
         {
-            var candidate = position + side * (sign * i * 0.05f) - direction * 0.025f;
-            if (!request.CanMove(position, candidate) || !request.CanMove(candidate, Vector2.MoveTowards(candidate, target, 0.1f)))
-                continue;
-            lastClearPosition = position;
-            SetPosition(candidate);
-            return true;
+            for (var sign = -1; sign <= 1; sign += 2)
+            {
+                var candidate = position + side * (sign * i * 0.05f) - direction * 0.025f;
+                if (!request.CanMove(position, candidate) || !request.CanMove(candidate, Vector2.MoveTowards(candidate, target, 0.1f)))
+                    continue;
+                lastClearPosition = position;
+                SetPosition(candidate);
+                return true;
+            }
         }
 
         return false;
@@ -849,7 +865,13 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         }
 
         var position = visual.GetTruePosition();
-        var target = platformPhase == 1 ? platformStart : platformPhase == 2 ? platformEnd : platformPhase == 3 ? platformExit : path.Points[waypoint];
+        var target = platformPhase switch
+        {
+            1 => platformStart,
+            2 => platformEnd,
+            3 => platformExit,
+            _ => path.Points[waypoint],
+        };
         SetWalking(platformPhase != 2);
         var next = Vector2.MoveTowards(position, target, Speed * Time.fixedDeltaTime);
         Face(next - position);

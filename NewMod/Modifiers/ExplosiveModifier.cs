@@ -57,7 +57,7 @@ public class ExplosiveModifier : TimedModifier
             Player.SetPlayerMaterialColors(Player.cosmetics.currentBodySprite.BodySprite);
     }
 
-    public override void OnDeath(DeathReason deathReason)
+    public override void OnDeath(DeathReason reason)
     {
         if (!AmongUsClient.Instance.AmHost)
             return;

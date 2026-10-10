@@ -25,8 +25,10 @@ public class PlayerTab : IDebugTab
         var players = new List<PlayerControl>();
 
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.Data?.Role != null && !player.Data.Disconnected)
                 players.Add(player);
+        }
 
         if (players.All(player => player.PlayerId != SelectedPlayerId))
             SelectedPlayerId = players[0].PlayerId;

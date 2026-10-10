@@ -15,8 +15,8 @@ public static class NewModCosmeticsRegistry
 {
     public static string SourceId = "newmod";
     public static string GroupName = "NewMod";
-    public static readonly List<CosmeticDescriptor> Cosmetics = new();
-    public static readonly Dictionary<string, string> HatIds = new();
+    public static readonly List<CosmeticDescriptor> Cosmetics = [];
+    public static readonly Dictionary<string, string> HatIds = [];
 
     public static void RegisterHat(string name, Sprite sprite, HatMetadata? meta = null)
     {
@@ -37,7 +37,7 @@ public static class NewModCosmeticsRegistry
     public static CosmeticDescriptor Register(string name, Sprite sprite, CorsacCosmeticType type, ICosmeticMetadata metadata)
     {
         var reader = new NewModCosmeticAssetReader();
-        reader.Sprites[""] = sprite;
+        reader.Sprites[string.Empty] = sprite;
         reader.Sprites["preview"] = sprite;
         if (type == CorsacCosmeticType.Visor)
         {
@@ -69,7 +69,7 @@ public class NewModCosmeticSource : ICosmeticSource
 
 public class NewModCosmeticAssetReader : ICosmeticAssetReader
 {
-    public readonly Dictionary<string, Sprite> Sprites = new();
+    public readonly Dictionary<string, Sprite> Sprites = [];
 
     public Task<Sprite> LoadSpriteAsync(string spriteKey)
     {

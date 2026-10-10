@@ -20,18 +20,18 @@ public class VoidwalkerTransitionEffect : ScreenEffect
         CreateMaterial(shader, "_Progress", "_ExitMode");
     }
 
-    public override void Render(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture source, RenderTexture destination)
     {
         if (!_mat)
         {
-            Graphics.Blit(src, dst);
+            Graphics.Blit(source, destination);
             return;
         }
 
         _mat.SetFloat(Shader.PropertyToID("_Progress"), progress);
         _mat.SetFloat(Shader.PropertyToID("_ExitMode"), exitMode ? 1f : 0f);
 
-        Graphics.Blit(src, dst, _mat);
+        Graphics.Blit(source, destination, _mat);
     }
 
     public void SetEnter(float value)

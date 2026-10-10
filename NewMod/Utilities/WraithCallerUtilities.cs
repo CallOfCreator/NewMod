@@ -2,16 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.Modifiers;
 using MiraAPI.GameOptions;
-using NewMod.Options.Roles;
-using NewMod.Roles.NeutralRoles;
-using Reactor.Utilities;
+using MiraAPI.Modifiers;
 using MiraAPI.Utilities;
 using NewMod.Components;
 using NewMod.Modifiers.S1;
+using NewMod.Options.Roles;
+using NewMod.Roles.NeutralRoles;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
+using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Utilities;
@@ -73,11 +73,13 @@ public static class WraithCallerUtilities
     public static void ClearAll()
     {
         foreach (var npc in ActiveNpcs.Values.ToArray())
+        {
             if (npc)
             {
                 npc.HuntSucceeded = true;
                 npc.Dispose();
             }
+        }
 
         Traces.Clear();
         CollectedTraces.Clear();

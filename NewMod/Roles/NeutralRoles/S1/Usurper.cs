@@ -1,9 +1,8 @@
-using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -13,9 +12,11 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Buttons.Roles.S1;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -59,7 +60,7 @@ public class Usurper : CrewmateRole, INewModRole
             CanUseVent = false,
             UseVanillaKillButton = false,
             TasksCountForProgress = false,
-            Icon = MiraAssets.Empty
+            Icon = MiraAssets.Empty,
         };
 
     [HideFromIl2Cpp]
@@ -71,7 +72,7 @@ public class Usurper : CrewmateRole, INewModRole
 
         if (state.Phase == CrownPhase.Claimed)
         {
-            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Claimed"), Utils.PlayerById(state.TargetId).Data.PlayerName));
+            text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Claimed"), Utils.PlayerById(state.TargetId).Data.PlayerName));
         }
         else if (state.Phase == CrownPhase.Available)
         {
@@ -80,15 +81,15 @@ public class Usurper : CrewmateRole, INewModRole
         else if (state.Phase == CrownPhase.Held)
         {
             var remaining = HoldRemaining.GetValueOrDefault(PlayerControl.LocalPlayer.PlayerId);
-            text.AppendLine(remaining > 0f ? string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Hold"), Mathf.CeilToInt(remaining)) : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.SurvivalGoal"));
+            text.AppendLine(remaining > 0f ? string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.Hold"), Mathf.CeilToInt(remaining)) : MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Tab.SurvivalGoal"));
         }
 
         return text;
     }
 
-    public override bool DidWin(GameOverReason reason)
+    public override bool DidWin(GameOverReason gameOverReason)
     {
-        return reason == CustomGameOver.GameOverReason<UsurperGameOver>();
+        return gameOverReason == CustomGameOver.GameOverReason<UsurperGameOver>();
     }
 
     [RegisterEvent]
@@ -99,8 +100,10 @@ public class Usurper : CrewmateRole, INewModRole
             Reset();
 
             foreach (var player in PlayerControl.AllPlayerControls)
+            {
                 if (player.Data.Role is Usurper)
                     States[player.PlayerId] = (byte.MaxValue, CrownPhase.Unclaimed);
+            }
 
             return;
         }
@@ -179,8 +182,10 @@ public class Usurper : CrewmateRole, INewModRole
 
         var targetId = evt.ClientData.Character.PlayerId;
         foreach (var pair in States)
+        {
             if (pair.Value.Phase == CrownPhase.Claimed && pair.Value.TargetId == targetId)
                 RpcRefundClaim(PlayerControl.LocalPlayer, pair.Key, targetId);
+        }
     }
 
     [RegisterEvent]
@@ -231,8 +236,10 @@ public class Usurper : CrewmateRole, INewModRole
     public static void MarkClaimedDeath(byte targetId, Vector2 position)
     {
         foreach (var pair in States)
+        {
             if (pair.Value.Phase == CrownPhase.Claimed && pair.Value.TargetId == targetId)
                 RpcSpawnCrown(PlayerControl.LocalPlayer, pair.Key, targetId, position.x, position.y);
+        }
     }
 
     [MethodRpc((uint)CustomRPC.UsurperRequestClaim)]
@@ -288,7 +295,7 @@ public class Usurper : CrewmateRole, INewModRole
         MeetingEligible.Remove(usurperId);
         Coroutines.Start(CoHoldCrown(holder, crown));
         var color = ((Usurper)holder.Data.Role).RoleColor.ToTextColor();
-        var message = holder.AmOwner ? string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.YourCrown"), color, HoldRemaining[usurperId]) : string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.Claimed"), color, holder.Data.PlayerName);
+        var message = holder.AmOwner ? string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.YourCrown"), color, HoldRemaining[usurperId]) : string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.Claimed"), color, holder.Data.PlayerName);
         Coroutines.Start(CoroutinesHelper.CoNotify(message));
     }
 
@@ -339,7 +346,7 @@ public class Usurper : CrewmateRole, INewModRole
         Unclaimed,
         Claimed,
         Available,
-        Held
+        Held,
     }
 
     public static bool Claim(byte ownerId, byte targetId)
@@ -387,8 +394,10 @@ public class Usurper : CrewmateRole, INewModRole
     {
         MeetingEligible.Clear();
         foreach (var pair in HoldRemaining)
+        {
             if (pair.Value <= 0f && States.TryGetValue(pair.Key, out var state) && state.Phase == CrownPhase.Held)
                 MeetingEligible.Add(pair.Key);
+        }
     }
 
     public static IEnumerator CoHoldCrown(PlayerControl holder, GameObject crown)

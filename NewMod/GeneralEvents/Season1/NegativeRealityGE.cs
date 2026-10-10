@@ -1,6 +1,6 @@
-using NewMod.Components.ScreenEffects.Effects;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using UnityEngine;
 
 namespace NewMod.GeneralEvents.Season1;

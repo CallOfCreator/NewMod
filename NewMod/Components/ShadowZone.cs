@@ -1,9 +1,9 @@
-using NewMod.Components.ScreenEffects.Effects;
-using NewMod.Modifiers.S1;
 using System.Collections.Generic;
 using System.Linq;
 using MiraAPI.GameOptions;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
@@ -39,7 +39,10 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
         if (hide != concealed)
         {
             concealed = hide;
-            owner.cosmetics.SetPhantomRoleAlpha(hide ? owner.AmOwner ? 0.35f : 0f : 1f);
+            var alpha = 1f;
+            if (hide)
+                alpha = owner.AmOwner ? 0.35f : 0f;
+            owner.cosmetics.SetPhantomRoleAlpha(alpha);
             owner.cosmetics.nameText.gameObject.SetActive(!hide);
         }
 

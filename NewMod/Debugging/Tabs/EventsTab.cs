@@ -21,7 +21,9 @@ public class EventsTab : IDebugTab
         GUILayout.Label("FORCE EVENT");
 
         foreach (var generalEvent in GeneralEventManager.RegisteredEvents)
+        {
             if (GUILayout.Button(generalEvent.Title))
                 GeneralEventManager.ForceEvent(generalEvent.GetType());
+        }
     }
 }

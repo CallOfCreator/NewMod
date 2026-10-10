@@ -1,11 +1,11 @@
-﻿using NewMod.Components.ScreenEffects.Effects;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
-using UnityEngine.Rendering;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace NewMod.Debugging.Tabs;
 
@@ -14,9 +14,9 @@ public class EffectsTab : IDebugTab
     public ScreenEffect SelectedEffect;
     public ScreenEffect InspectedEffect;
     public NightTimeEffect VisibleNightTime;
-    public readonly List<ScreenEffect> VisibleEffects = new();
-    public readonly List<ScreenEffectProperty> VisibleProperties = new();
-    public readonly Dictionary<(int Property, int Component), string> Inputs = new();
+    public readonly List<ScreenEffect> VisibleEffects = [];
+    public readonly List<ScreenEffectProperty> VisibleProperties = [];
+    public readonly Dictionary<(int Property, int Component), string> Inputs = [];
     public string Name => "EFFECTS";
     public bool ShouldShow => ShipStatus.Instance != null && PlayerControl.LocalPlayer;
 
@@ -79,9 +79,13 @@ public class EffectsTab : IDebugTab
         VisibleEffects.Clear();
         var system = camera.GetComponent<ScreenEffectSystem>();
         if (system)
+        {
             foreach (var effect in system.Effects)
+            {
                 if (effect.Active && effect.Properties.Count > 0)
                     VisibleEffects.Add(effect);
+            }
+        }
 
         if (!VisibleEffects.Contains(SelectedEffect))
             SelectedEffect = null;
@@ -116,7 +120,7 @@ public class EffectsTab : IDebugTab
             switch (property.Type)
             {
                 case ShaderPropertyType.Range:
-                    var number = GUILayout.HorizontalSlider((material ? material.GetFloat(property.Id) : 0f), property.Range.x, property.Range.y);
+                    var number = GUILayout.HorizontalSlider(material ? material.GetFloat(property.Id) : 0f, property.Range.x, property.Range.y);
                     if (material) material.SetFloat(property.Id, number);
                     GUILayout.Label(number.ToString("G4", CultureInfo.InvariantCulture));
                     break;
@@ -130,8 +134,9 @@ public class EffectsTab : IDebugTab
                     break;
                 case ShaderPropertyType.Color:
                 case ShaderPropertyType.Vector:
-                    var vector = property.Type == ShaderPropertyType.Color
-                        ? (material ? (Vector4)material.GetColor(property.Id) : Vector4.zero) : (material ? material.GetVector(property.Id) : Vector4.zero);
+                    var vector = Vector4.zero;
+                    if (material)
+                        vector = property.Type == ShaderPropertyType.Color ? (Vector4)material.GetColor(property.Id) : material.GetVector(property.Id);
                     GUILayout.BeginHorizontal();
                     for (var component = 0; component < 4; component++)
                         vector[component] = DrawNumber(property.Id, component, vector[component]);

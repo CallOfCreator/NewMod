@@ -1,7 +1,6 @@
 using System;
 using System.Reflection;
 using BepInEx.Unity.IL2CPP;
-using HarmonyLib;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using NewMod.Cosmetics;
@@ -55,9 +54,9 @@ public static class ModCompatibility
             var role = kv.Value;
 
             if (role is ICustomRole customRole && customRole.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase))
+            {
                 try
                 {
-                    var config = customRole.Configuration;
                     customRole.SetChance(0);
                     customRole.SetCount(0);
                     customRole.ParentMod.PluginConfig.Save();
@@ -67,6 +66,7 @@ public static class ModCompatibility
                 {
                     Error($"Failed to disable role '{roleName}': {e.Message}");
                 }
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
-using NewMod.Components.ScreenEffects.Effects;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using NewMod.Options;
 using UnityEngine;
 

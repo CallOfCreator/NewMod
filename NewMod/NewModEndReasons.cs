@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using MiraAPI;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Player;
@@ -76,14 +75,14 @@ public class EnergyThiefGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<EnergyThief>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<EnergyThief>(manager, "Energy Thief Wins!");
+        NewModGameOver.SetPresentation<EnergyThief>(endGameManager, "Energy Thief Wins!");
     }
 }
 
@@ -96,14 +95,14 @@ public class DoubleAgentGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<DoubleAgent>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<DoubleAgent>(manager, "Double Agent Wins!");
+        NewModGameOver.SetPresentation<DoubleAgent>(endGameManager, "Double Agent Wins!");
     }
 }
 
@@ -116,14 +115,14 @@ public class PranksterGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<Prankster>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<Prankster>(manager, "Prankster Wins!");
+        NewModGameOver.SetPresentation<Prankster>(endGameManager, "Prankster Wins!");
     }
 }
 
@@ -136,14 +135,14 @@ public class EgoistGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<EgoistRole>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<EgoistRole>(manager, "Egoist Wins!");
+        NewModGameOver.SetPresentation<EgoistRole>(endGameManager, "Egoist Wins!");
     }
 }
 
@@ -156,14 +155,14 @@ public class InjectorGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<InjectorRole>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<InjectorRole>(manager, "Injector Victory");
+        NewModGameOver.SetPresentation<InjectorRole>(endGameManager, "Injector Victory");
     }
 }
 
@@ -176,14 +175,14 @@ public class TyrantGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<Tyrant>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<Tyrant>(manager, "Tyrant Victory");
+        NewModGameOver.SetPresentation<Tyrant>(endGameManager, "Tyrant Victory");
     }
 }
 
@@ -196,14 +195,14 @@ public class WraithCallerGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<WraithCaller>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<WraithCaller>(manager, "NPC Invasion Completed\nWraith Caller Wins!");
+        NewModGameOver.SetPresentation<WraithCaller>(endGameManager, "NPC Invasion Completed\nWraith Caller Wins!");
     }
 }
 
@@ -216,14 +215,14 @@ public class ShadeGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<Shade>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<Shade>(manager, "Darkness Consumes All");
+        NewModGameOver.SetPresentation<Shade>(endGameManager, "Darkness Consumes All");
     }
 }
 
@@ -236,14 +235,14 @@ public class TerminatorGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<TerminatorRole>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<TerminatorRole>(manager, "Terminator Victory");
+        NewModGameOver.SetPresentation<TerminatorRole>(endGameManager, "Terminator Victory");
     }
 }
 
@@ -256,17 +255,17 @@ public class TerminatorDefeatedGameOver : CustomGameOver
         return winners.Length > 0 && winners.All(player => player.Role is not TerminatorRole) && NewModGameOver.CaptureWinnerData(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
         var color = new Color32(117, 230, 165, 255);
-        manager.WinText.text = "Terminator Destroyed";
-        manager.WinText.color = color;
-        manager.BackgroundBar.material.SetColor(ShaderID.Color, color);
+        endGameManager.WinText.text = "Terminator Destroyed";
+        endGameManager.WinText.color = color;
+        endGameManager.BackgroundBar.material.SetColor(ShaderID.Color, color);
     }
 }
 
@@ -286,14 +285,14 @@ public class ArbitratorGameOver : CustomGameOver
         return NewModGameOver.CaptureWinnerData(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<ArbitratorRole>(manager, "Judgment Has Been Passed\nArbitrator Wins!");
+        NewModGameOver.SetPresentation<ArbitratorRole>(endGameManager, "Judgment Has Been Passed\nArbitrator Wins!");
     }
 }
 
@@ -310,7 +309,7 @@ public class WraithSiegeWraithGameOver : CustomGameOver
         return true;
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         EndGameResult.CachedWinners.Clear();
 
@@ -320,22 +319,22 @@ public class WraithSiegeWraithGameOver : CustomGameOver
         return true;
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        manager.WinText.text = "WRAITHS WIN";
-        manager.WinText.color = WraithSiege.WraithColor;
-        manager.WinText.fontSize = 4f;
-        manager.WinText.enableAutoSizing = false;
+        endGameManager.WinText.text = "WRAITHS WIN";
+        endGameManager.WinText.color = WraithSiege.WraithColor;
+        endGameManager.WinText.fontSize = 4f;
+        endGameManager.WinText.enableAutoSizing = false;
 
-        manager.BackgroundBar.material.SetColor(ShaderID.Color, WraithSiege.WraithColor);
+        endGameManager.BackgroundBar.material.SetColor(ShaderID.Color, WraithSiege.WraithColor);
 
-        var subtitle = Object.Instantiate(manager.WinText, manager.WinText.transform.parent);
+        var subtitle = Object.Instantiate(endGameManager.WinText, endGameManager.WinText.transform.parent);
         subtitle.name = "WraithSiegeSubtitle";
         subtitle.text = "BREACHED THE FLAG";
         subtitle.color = WraithSiege.WraithColor;
         subtitle.fontSize = 1.8f;
         subtitle.enableAutoSizing = false;
-        subtitle.transform.localPosition = manager.WinText.transform.localPosition + new Vector3(00f, 1.8668f, -14f);
+        subtitle.transform.localPosition = endGameManager.WinText.transform.localPosition + new Vector3(00f, 1.8668f, -14f);
     }
 }
 
@@ -352,7 +351,7 @@ public class WraithSiegeReviverGameOver : CustomGameOver
         return true;
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         EndGameResult.CachedWinners.Clear();
 
@@ -362,22 +361,22 @@ public class WraithSiegeReviverGameOver : CustomGameOver
         return true;
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        manager.WinText.text = "REVIVERS WIN";
-        manager.WinText.color = WraithSiege.ReviverColor;
-        manager.WinText.fontSize = 4f;
-        manager.WinText.enableAutoSizing = false;
+        endGameManager.WinText.text = "REVIVERS WIN";
+        endGameManager.WinText.color = WraithSiege.ReviverColor;
+        endGameManager.WinText.fontSize = 4f;
+        endGameManager.WinText.enableAutoSizing = false;
 
-        manager.BackgroundBar.material.SetColor(ShaderID.Color, WraithSiege.ReviverColor);
+        endGameManager.BackgroundBar.material.SetColor(ShaderID.Color, WraithSiege.ReviverColor);
 
-        var subtitle = Object.Instantiate(manager.WinText, manager.WinText.transform.parent);
+        var subtitle = Object.Instantiate(endGameManager.WinText, endGameManager.WinText.transform.parent);
         subtitle.name = "WraithSiegeSubtitle";
         subtitle.text = "HELD THE LINE";
         subtitle.color = WraithSiege.ReviverColor;
         subtitle.fontSize = 1.8f;
         subtitle.enableAutoSizing = false;
-        subtitle.transform.localPosition = manager.WinText.transform.localPosition + new Vector3(00f, 1.8668f, -14f);
+        subtitle.transform.localPosition = endGameManager.WinText.transform.localPosition + new Vector3(00f, 1.8668f, -14f);
     }
 }
 
@@ -390,14 +389,14 @@ public class NomadGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<Nomad>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<Nomad>(manager, "The Nomad Escaped the Pattern");
+        NewModGameOver.SetPresentation<Nomad>(endGameManager, "The Nomad Escaped the Pattern");
     }
 }
 
@@ -410,14 +409,14 @@ public class CollectorGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<Collector>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<Collector>(manager, "The Collection Is Complete");
+        NewModGameOver.SetPresentation<Collector>(endGameManager, "The Collection Is Complete");
     }
 }
 
@@ -430,14 +429,14 @@ public class BountyGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<Bounty>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<Bounty>(manager, "The Contract Was Cashed Out");
+        NewModGameOver.SetPresentation<Bounty>(endGameManager, "The Contract Was Cashed Out");
     }
 }
 
@@ -450,14 +449,14 @@ public class UsurperGameOver : CustomGameOver
         return NewModGameOver.CaptureWinners<Usurper>(winners, out _winners);
     }
 
-    public override bool BeforeEndGameSetup(EndGameManager manager)
+    public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
         return NewModGameOver.SetWinners(_winners);
     }
 
-    public override void AfterEndGameSetup(EndGameManager manager)
+    public override void AfterEndGameSetup(EndGameManager endGameManager)
     {
-        NewModGameOver.SetPresentation<Usurper>(manager, "The Usurper Stole the Ending");
+        NewModGameOver.SetPresentation<Usurper>(endGameManager, "The Usurper Stole the Ending");
     }
 }
 
@@ -481,8 +480,10 @@ public static class MatchSummaryTracker
         }
 
         if (_tracking && GameData.Instance)
+        {
             foreach (var player in GameData.Instance.AllPlayers)
                 Capture(player);
+        }
     }
 
     [RegisterEvent]
@@ -573,23 +574,32 @@ public static class MatchSummaryTracker
             var component = character.GetComponent<ModifierComponent>();
             var names = new List<string>();
             if (component)
+            {
                 foreach (var modifier in component.ActiveModifiers)
+                {
                     if (!modifier.HideOnUi)
                         names.Add(modifier.ModifierName);
+                }
+            }
+
             modifiers = string.Join(", ", names);
         }
 
         var total = 0;
         var completed = 0;
         if (!inSiege && player.Tasks != null)
+        {
             foreach (var task in player.Tasks)
             {
                 if (task == null) continue;
                 total++;
                 if (task.Complete) completed++;
             }
+        }
 
-        var status = disconnected || player.Disconnected ? "Left" : player.IsDead ? "Dead" : "Alive";
+        var status = "Left";
+        if (!disconnected && !player.Disconnected)
+            status = player.IsDead ? "Dead" : "Alive";
         Players[player.PlayerId] = new SummaryPlayer(player.PlayerId, CleanText(player.PlayerName), CleanText(roleName), roleColor, CleanText(faction), CleanText(modifiers), completed, total, status);
     }
 
@@ -628,12 +638,12 @@ public static class MatchSummaryTracker
         var text = new StringBuilder("End game summary:\n");
         foreach (var player in Snapshot)
         {
-            text.Append($"{player.Name} - <color=#{player.RoleColor}>{player.Role}</color>");
+            text.Append(CultureInfo.CurrentCulture, $"{player.Name} - <color=#{player.RoleColor}>{player.Role}</color>");
             if (player.Modifiers.Length > 0)
-                text.Append($" ({player.Modifiers})");
+                text.Append(CultureInfo.CurrentCulture, $" ({player.Modifiers})");
             if (player.TotalTasks > 0)
-                text.Append($" | Tasks: {player.CompletedTasks}/{player.TotalTasks}");
-            text.AppendLine($" | {player.Status}");
+                text.Append(CultureInfo.CurrentCulture, $" | Tasks: {player.CompletedTasks}/{player.TotalTasks}");
+            text.AppendLine(CultureInfo.CurrentCulture, $" | {player.Status}");
         }
 
         summary.text = text.ToString().TrimEnd();

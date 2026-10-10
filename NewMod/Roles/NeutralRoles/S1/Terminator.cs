@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
@@ -12,11 +12,12 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
-using NewMod.Options.Roles.S1;
 using NewMod.Buttons.Roles.S1;
 using NewMod.Components;
+using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
@@ -64,7 +65,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
             OptionsScreenshot = MiraAssets.Empty,
             Icon = NewModAsset.TerminatorIcon,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -75,14 +76,14 @@ public class TerminatorRole : CrewmateRole, INewModRole
         var left = Mathf.Max(0, required - MeetingsSurvived);
 
         tabText.AppendLine();
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsSurvived"), MeetingsSurvived, required));
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsSurvived"), MeetingsSurvived, required));
 
         if (FinalCountdownActive)
             tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.HuntActive"));
         else if (ObjectiveSpawned)
             tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.ObjectiveActive"));
         else
-            tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsRemaining"), left, left == 1 ? "" : "s"));
+            tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsRemaining"), left, left == 1 ? string.Empty : "s"));
 
         return tabText;
     }
@@ -316,7 +317,10 @@ public class TerminatorRole : CrewmateRole, INewModRole
             FinalCountdownActive = false;
 
         if (PlayerControl.LocalPlayer.PlayerId == attackerId)
-            Coroutines.Start(CoroutinesHelper.CoNotify(armor == 0 ? "<color=#75E6A5>Terminator destroyed.</color>" : $"<color=#FF8C32>Armor broken.</color> {armor} segment{(armor == 1 ? "" : "s")} remain."));
+        {
+            var suffix = armor == 1 ? string.Empty : "s";
+            Coroutines.Start(CoroutinesHelper.CoNotify(armor == 0 ? "<color=#75E6A5>Terminator destroyed.</color>" : $"<color=#FF8C32>Armor broken.</color> {armor} segment{suffix} remain."));
+        }
     }
 
     public static void CreateObjectiveArrow(Vector2 target)
@@ -362,6 +366,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
         SystemTypes[] rooms;
 
         if (ship is AirshipStatus)
+        {
             rooms =
             [
                 SystemTypes.VaultRoom,
@@ -380,7 +385,9 @@ public class TerminatorRole : CrewmateRole, INewModRole
                 SystemTypes.MainHall,
                 SystemTypes.Medical
             ];
+        }
         else
+        {
             rooms = ship.Type switch
             {
                 ShipStatus.MapType.Ship =>
@@ -435,12 +442,14 @@ public class TerminatorRole : CrewmateRole, INewModRole
                     SystemTypes.FishingDock
                 ],
 
-                _ => []
+                _ => [],
             };
+        }
 
         var positions = new List<Vector2>();
 
         if (ship.FastRooms != null)
+        {
             foreach (var roomType in rooms)
             {
                 if (!ship.FastRooms.TryGetValue(roomType, out var room) || !room)
@@ -448,8 +457,10 @@ public class TerminatorRole : CrewmateRole, INewModRole
 
                 positions.Add(room.roomArea ? room.roomArea.bounds.center : room.transform.position);
             }
+        }
 
         if (positions.Count == 0 && ship.AllRooms != null)
+        {
             foreach (var room in ship.AllRooms)
             {
                 if (!room)
@@ -460,6 +471,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
 
                 positions.Add(room.roomArea ? room.roomArea.bounds.center : room.transform.position);
             }
+        }
 
         if (positions.Count > 0)
             return positions[Random.Range(0, positions.Count)];

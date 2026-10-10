@@ -1,8 +1,8 @@
-using NewMod.Modifiers.S1;
 using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
 using NewMod.Components;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using Reactor.Networking.Attributes;

@@ -19,14 +19,14 @@ public class NegativeRealityEffect : ScreenEffect
         CreateMaterial(shader);
     }
 
-    public override void Render(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture source, RenderTexture destination)
     {
         if (_mat == null || PlayerControl.LocalPlayer.HasModifier<InVoid>())
         {
-            Graphics.Blit(src, dst);
+            Graphics.Blit(source, destination);
             return;
         }
 
-        Graphics.Blit(src, dst, _mat);
+        Graphics.Blit(source, destination, _mat);
     }
 }

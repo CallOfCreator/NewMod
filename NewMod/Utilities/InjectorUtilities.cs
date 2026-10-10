@@ -1,4 +1,3 @@
-using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,15 +5,16 @@ using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
+using MiraAPI.Utilities;
 using NewMod.Buttons.Roles;
 using NewMod.Components;
-using MiraAPI.Utilities;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 namespace NewMod.Utilities;
 
@@ -111,11 +111,13 @@ public static class InjectorUtilities
     {
         if ((!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance) return;
         foreach (var pair in Experiments)
+        {
             if (pair.Value.TargetId == source.PlayerId)
             {
                 RpcResolveExperiment(PlayerControl.LocalPlayer, pair.Key, false);
                 break;
             }
+        }
     }
 
     [MethodRpc((uint)CustomRPC.InjectorResolveExperiment)]

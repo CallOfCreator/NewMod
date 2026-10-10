@@ -8,7 +8,12 @@ namespace NewMod.Buttons.Roles.S1;
 
 public class WardenClueButton : CustomActionButton
 {
-    public override string Name => WardenRole.ClueType == 0 ? "Entry" : WardenRole.ClueType == 1 ? "Ability" : "Presence";
+    public override string Name => WardenRole.ClueType switch
+    {
+        0 => "Entry",
+        1 => "Ability",
+        _ => "Presence",
+    };
     public override float Cooldown => 0f;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.TertiaryAbility;
     public override ButtonLocation Location => ButtonLocation.BottomRight;

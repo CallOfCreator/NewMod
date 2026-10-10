@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;

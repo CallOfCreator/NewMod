@@ -14,8 +14,6 @@ public static class ModifierDisplayPatch
         var display = ModifierDisplayComponent.Instance;
         if (!display || !display.IsOpen)
             return;
-
-        // Use the game's HUD hook; do not detour Mira's managed FixedUpdate.
         foreach (var entry in display.Modifiers)
         {
             var component = entry.Value;

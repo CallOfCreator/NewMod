@@ -11,10 +11,9 @@ public class DistorationWaveEffect : ScreenEffect
         CreateMaterial(NewModAsset.DistorationWaveShader.LoadAsset());
     }
 
-    public override void Tick()
+    public override void OnHudUpdate()
     {
         if (Time.time >= expiresAt)
             Remove();
     }
-
 }

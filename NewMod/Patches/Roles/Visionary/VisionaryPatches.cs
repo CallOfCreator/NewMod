@@ -40,7 +40,9 @@ public static class VisionaryMeetingEvents
         Object.Destroy(VisionaryUtilities.PhotoPanel);
         VisionaryUtilities.PhotoPanel = null;
         foreach (var key in System.Linq.Enumerable.ToArray(VisionaryPhotoRpc.Transfers.Keys))
+        {
             if (key.Meeting >= 0)
                 VisionaryPhotoRpc.Transfers.Remove(key);
+        }
     }
 }

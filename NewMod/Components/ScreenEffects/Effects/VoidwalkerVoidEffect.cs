@@ -19,16 +19,16 @@ public class VoidwalkerVoidEffect : ScreenEffect
         CreateMaterial(shader, "_Amount");
     }
 
-    public override void Render(RenderTexture src, RenderTexture dst)
+    public override void Render(RenderTexture source, RenderTexture destination)
     {
         if (!_mat)
         {
-            Graphics.Blit(src, dst);
+            Graphics.Blit(source, destination);
             return;
         }
 
         _mat.SetFloat(Shader.PropertyToID("_Amount"), amount);
 
-        Graphics.Blit(src, dst, _mat);
+        Graphics.Blit(source, destination, _mat);
     }
 }

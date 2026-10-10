@@ -1,9 +1,9 @@
-using NewMod.Components.ScreenEffects.Effects;
 using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using NewMod.Options;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;

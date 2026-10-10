@@ -51,9 +51,9 @@ public class InjectButton : CustomActionButton<PlayerControl>, IEnergyAbility
         Target?.cosmetics.SetOutline(active, new Nullable<Color>(Palette.AcceptedGreen));
     }
 
-    protected override void FixedUpdate(PlayerControl player)
+    protected override void FixedUpdate(PlayerControl playerControl)
     {
-        OverrideName(InjectorUtilities.Experiments.ContainsKey(player.PlayerId) ? "Collect Sample" : Name);
+        OverrideName(InjectorUtilities.Experiments.ContainsKey(playerControl.PlayerId) ? "Collect Sample" : Name);
     }
 
     protected override void OnClick()

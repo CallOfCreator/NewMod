@@ -14,5 +14,4 @@ public class ShadowFluxEffect : ScreenEffect
         CreateMaterial(shader);
         _mat.SetTexture(Shader.PropertyToID("_NoiseTex"), texture);
     }
-
 }

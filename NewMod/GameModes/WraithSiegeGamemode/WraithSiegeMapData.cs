@@ -7,7 +7,7 @@ public enum WraithLane : byte
 {
     Top,
     Mid,
-    Bottom
+    Bottom,
 }
 
 public sealed class WraithSiegeMapDefinition(SystemTypes wraithBase, SystemTypes reviverBase, SystemTypes flag, SystemTypes[] top, SystemTypes[] mid, SystemTypes[] bottom)
@@ -22,7 +22,7 @@ public sealed class WraithSiegeMapDefinition(SystemTypes wraithBase, SystemTypes
         {
             WraithLane.Top => top,
             WraithLane.Mid => mid,
-            _ => bottom
+            _ => bottom,
         };
     }
 }
@@ -46,42 +46,60 @@ public static class WraithSiegeMapData
 
     private static readonly WraithSiegeMapDefinition[] Skeld =
     [
-        new(SystemTypes.Reactor, SystemTypes.Nav, SystemTypes.Admin, [
+        new(
+            SystemTypes.Reactor,
+            SystemTypes.Nav,
+            SystemTypes.Admin,
+            [
             SystemTypes.Reactor,
             SystemTypes.MedBay,
             SystemTypes.Cafeteria
-        ], [
+        ],
+            [
             SystemTypes.Reactor,
             SystemTypes.Security,
             SystemTypes.Electrical,
             SystemTypes.Storage
-        ], [
+        ],
+            [
             SystemTypes.Reactor,
             SystemTypes.Storage
         ]),
 
-        new(SystemTypes.Nav, SystemTypes.Reactor, SystemTypes.Storage, [
+        new(
+            SystemTypes.Nav,
+            SystemTypes.Reactor,
+            SystemTypes.Storage,
+            [
             SystemTypes.Nav,
             SystemTypes.Weapons,
             SystemTypes.Cafeteria,
             SystemTypes.Admin
-        ], [
+        ],
+            [
             SystemTypes.Nav,
             SystemTypes.Admin
-        ], [
+        ],
+            [
             SystemTypes.Nav,
             SystemTypes.Shields,
             SystemTypes.Comms
         ]),
 
-        new(SystemTypes.Reactor, SystemTypes.Nav, SystemTypes.Cafeteria, [
+        new(
+            SystemTypes.Reactor,
+            SystemTypes.Nav,
+            SystemTypes.Cafeteria,
+            [
             SystemTypes.Reactor,
             SystemTypes.MedBay
-        ], [
+        ],
+            [
             SystemTypes.Reactor,
             SystemTypes.Storage,
             SystemTypes.Admin
-        ], [
+        ],
+            [
             SystemTypes.Reactor,
             SystemTypes.Storage,
             SystemTypes.Shields,
@@ -91,46 +109,64 @@ public static class WraithSiegeMapData
 
     private static readonly WraithSiegeMapDefinition[] Mira =
     [
-        new(SystemTypes.MedBay, SystemTypes.Greenhouse, SystemTypes.Office, [
+        new(
+            SystemTypes.MedBay,
+            SystemTypes.Greenhouse,
+            SystemTypes.Office,
+            [
             SystemTypes.MedBay,
             SystemTypes.LockerRoom,
             SystemTypes.Laboratory,
             SystemTypes.Greenhouse
-        ], [
+        ],
+            [
             SystemTypes.MedBay,
             SystemTypes.LockerRoom,
             SystemTypes.Laboratory
-        ], [
+        ],
+            [
             SystemTypes.MedBay,
             SystemTypes.LockerRoom,
             SystemTypes.Admin,
             SystemTypes.Balcony
         ]),
 
-        new(SystemTypes.Greenhouse, SystemTypes.MedBay, SystemTypes.Cafeteria, [
+        new(
+            SystemTypes.Greenhouse,
+            SystemTypes.MedBay,
+            SystemTypes.Cafeteria,
+            [
             SystemTypes.Greenhouse,
             SystemTypes.Office,
             SystemTypes.Admin
-        ], [
+        ],
+            [
             SystemTypes.Greenhouse,
             SystemTypes.Laboratory,
             SystemTypes.LockerRoom
-        ], [
+        ],
+            [
             SystemTypes.Greenhouse,
             SystemTypes.Office,
             SystemTypes.Balcony
         ]),
 
-        new(SystemTypes.Balcony, SystemTypes.Greenhouse, SystemTypes.Laboratory, [
+        new(
+            SystemTypes.Balcony,
+            SystemTypes.Greenhouse,
+            SystemTypes.Laboratory,
+            [
             SystemTypes.Balcony,
             SystemTypes.Cafeteria,
             SystemTypes.Admin,
             SystemTypes.Office
-        ], [
+        ],
+            [
             SystemTypes.Balcony,
             SystemTypes.Cafeteria,
             SystemTypes.LockerRoom
-        ], [
+        ],
+            [
             SystemTypes.Balcony,
             SystemTypes.Admin,
             SystemTypes.Office,
@@ -140,42 +176,60 @@ public static class WraithSiegeMapData
 
     private static readonly WraithSiegeMapDefinition[] Polus =
     [
-        new(SystemTypes.Dropship, SystemTypes.Specimens, SystemTypes.Office, [
+        new(
+            SystemTypes.Dropship,
+            SystemTypes.Specimens,
+            SystemTypes.Office,
+            [
             SystemTypes.Dropship,
             SystemTypes.Electrical,
             SystemTypes.Weapons,
             SystemTypes.Comms
-        ], [
+        ],
+            [
             SystemTypes.Dropship,
             SystemTypes.Storage
-        ], [
+        ],
+            [
             SystemTypes.Dropship,
             SystemTypes.Laboratory,
             SystemTypes.Specimens
         ]),
 
-        new(SystemTypes.Specimens, SystemTypes.Dropship, SystemTypes.Electrical, [
+        new(
+            SystemTypes.Specimens,
+            SystemTypes.Dropship,
+            SystemTypes.Electrical,
+            [
             SystemTypes.Specimens,
             SystemTypes.Laboratory
-        ], [
+        ],
+            [
             SystemTypes.Specimens,
             SystemTypes.Office,
             SystemTypes.Storage
-        ], [
+        ],
+            [
             SystemTypes.Specimens,
             SystemTypes.Office,
             SystemTypes.Comms,
             SystemTypes.Weapons
         ]),
 
-        new(SystemTypes.Laboratory, SystemTypes.Weapons, SystemTypes.Office, [
+        new(
+            SystemTypes.Laboratory,
+            SystemTypes.Weapons,
+            SystemTypes.Office,
+            [
             SystemTypes.Laboratory,
             SystemTypes.Electrical,
             SystemTypes.Storage
-        ], [
+        ],
+            [
             SystemTypes.Laboratory,
             SystemTypes.Specimens
-        ], [
+        ],
+            [
             SystemTypes.Laboratory,
             SystemTypes.Dropship,
             SystemTypes.Electrical,
@@ -185,32 +239,44 @@ public static class WraithSiegeMapData
 
     private static readonly WraithSiegeMapDefinition[] Airship =
     [
-        new(SystemTypes.CargoBay, SystemTypes.Cockpit, SystemTypes.MainHall, [
+        new(
+            SystemTypes.CargoBay,
+            SystemTypes.Cockpit,
+            SystemTypes.MainHall,
+            [
             SystemTypes.CargoBay,
             SystemTypes.Records,
             SystemTypes.MeetingRoom,
             SystemTypes.GapRoom
-        ], [
+        ],
+            [
             SystemTypes.CargoBay,
             SystemTypes.Showers,
             SystemTypes.MainHall
-        ], [
+        ],
+            [
             SystemTypes.CargoBay,
             SystemTypes.Lounge,
             SystemTypes.Medical,
             SystemTypes.Electrical
         ]),
 
-        new(SystemTypes.Cockpit, SystemTypes.CargoBay, SystemTypes.MeetingRoom, [
+        new(
+            SystemTypes.Cockpit,
+            SystemTypes.CargoBay,
+            SystemTypes.MeetingRoom,
+            [
             SystemTypes.Cockpit,
             SystemTypes.VaultRoom,
             SystemTypes.GapRoom
-        ], [
+        ],
+            [
             SystemTypes.Cockpit,
             SystemTypes.Engine,
             SystemTypes.MainHall,
             SystemTypes.Records
-        ], [
+        ],
+            [
             SystemTypes.Cockpit,
             SystemTypes.Armory,
             SystemTypes.Kitchen,
@@ -218,17 +284,23 @@ public static class WraithSiegeMapData
             SystemTypes.Engine
         ]),
 
-        new(SystemTypes.Kitchen, SystemTypes.CargoBay, SystemTypes.Records, [
+        new(
+            SystemTypes.Kitchen,
+            SystemTypes.CargoBay,
+            SystemTypes.Records,
+            [
             SystemTypes.Kitchen,
             SystemTypes.Armory,
             SystemTypes.Cockpit,
             SystemTypes.VaultRoom
-        ], [
+        ],
+            [
             SystemTypes.Kitchen,
             SystemTypes.Engine,
             SystemTypes.MainHall,
             SystemTypes.Showers
-        ], [
+        ],
+            [
             SystemTypes.Kitchen,
             SystemTypes.Lounge,
             SystemTypes.CargoBay
@@ -237,43 +309,61 @@ public static class WraithSiegeMapData
 
     private static readonly WraithSiegeMapDefinition[] Fungle =
     [
-        new(SystemTypes.Beach, SystemTypes.Highlands, SystemTypes.Jungle, [
+        new(
+            SystemTypes.Beach,
+            SystemTypes.Highlands,
+            SystemTypes.Jungle,
+            [
             SystemTypes.Beach,
             SystemTypes.Lookout,
             SystemTypes.RecRoom
-        ], [
+        ],
+            [
             SystemTypes.Beach,
             SystemTypes.Kitchen,
             SystemTypes.SleepingQuarters
-        ], [
+        ],
+            [
             SystemTypes.Beach,
             SystemTypes.FishingDock,
             SystemTypes.MiningPit
         ]),
 
-        new(SystemTypes.Jungle, SystemTypes.Beach, SystemTypes.RecRoom, [
+        new(
+            SystemTypes.Jungle,
+            SystemTypes.Beach,
+            SystemTypes.RecRoom,
+            [
             SystemTypes.Jungle,
             SystemTypes.Highlands,
             SystemTypes.Lookout
-        ], [
+        ],
+            [
             SystemTypes.Jungle,
             SystemTypes.SleepingQuarters,
             SystemTypes.Kitchen
-        ], [
+        ],
+            [
             SystemTypes.Jungle,
             SystemTypes.MiningPit,
             SystemTypes.FishingDock
         ]),
 
-        new(SystemTypes.MiningPit, SystemTypes.Highlands, SystemTypes.Kitchen, [
+        new(
+            SystemTypes.MiningPit,
+            SystemTypes.Highlands,
+            SystemTypes.Kitchen,
+            [
             SystemTypes.MiningPit,
             SystemTypes.FishingDock,
             SystemTypes.Beach
-        ], [
+        ],
+            [
             SystemTypes.MiningPit,
             SystemTypes.Jungle,
             SystemTypes.SleepingQuarters
-        ], [
+        ],
+            [
             SystemTypes.MiningPit,
             SystemTypes.Jungle,
             SystemTypes.RecRoom
@@ -296,7 +386,7 @@ public static class WraithSiegeMapData
                 ShipStatus.MapType.Hq => Mira,
                 ShipStatus.MapType.Pb => Polus,
                 ShipStatus.MapType.Fungle => Fungle,
-                _ => Skeld
+                _ => Skeld,
             };
         }
     }
@@ -383,16 +473,18 @@ public static class WraithSiegeMapData
         var maxRadius = Mathf.Max(area.bounds.extents.x, area.bounds.extents.y);
 
         for (var radius = 0.35f; radius <= maxRadius; radius += 0.35f)
-        for (var i = 0; i < 20; i++)
         {
-            var angle = i * Mathf.PI * 2f / 20f;
-            var candidate = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+            for (var i = 0; i < 20; i++)
+            {
+                var angle = i * Mathf.PI * 2f / 20f;
+                var candidate = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
-            if (!IsSafePoint(candidate, area))
-                continue;
+                if (!IsSafePoint(candidate, area))
+                    continue;
 
-            RoomPointCache[roomId] = candidate;
-            return candidate;
+                RoomPointCache[roomId] = candidate;
+                return candidate;
+            }
         }
 
         var safeFallback = GetSafeNearby(room.transform.position, ship.InitialSpawnCenter);
@@ -407,13 +499,15 @@ public static class WraithSiegeMapData
             return preferred;
 
         for (var radius = 0.25f; radius <= 2.5f; radius += 0.25f)
-        for (var i = 0; i < 20; i++)
         {
-            var angle = i * Mathf.PI * 2f / 20f;
-            var candidate = preferred + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+            for (var i = 0; i < 20; i++)
+            {
+                var angle = i * Mathf.PI * 2f / 20f;
+                var candidate = preferred + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
-            if (IsSafePoint(candidate))
-                return candidate;
+                if (IsSafePoint(candidate))
+                    return candidate;
+            }
         }
 
         return fallback;
@@ -435,13 +529,15 @@ public static class WraithSiegeMapData
         var maxRadius = area ? Mathf.Max(area.bounds.extents.x, area.bounds.extents.y) : 2.5f;
 
         for (var ring = 0.4f; ring <= maxRadius; ring += 0.2f)
-        for (var i = 0; i < 16; i++)
         {
-            var angle = startAngle + i * 22.5f * Mathf.Deg2Rad;
-            var candidate = basePoint + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * ring;
+            for (var i = 0; i < 16; i++)
+            {
+                var angle = startAngle + i * 22.5f * Mathf.Deg2Rad;
+                var candidate = basePoint + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * ring;
 
-            if (IsSafePoint(candidate, area))
-                return candidate;
+                if (IsSafePoint(candidate, area))
+                    return candidate;
+            }
         }
 
         return basePoint;
@@ -452,11 +548,13 @@ public static class WraithSiegeMapData
         if (!roomArea)
         {
             foreach (var room in ShipStatus.Instance.FastRooms.Values)
+            {
                 if (room.roomArea && room.roomArea.OverlapPoint(point))
                 {
                     roomArea = room.roomArea;
                     break;
                 }
+            }
 
             if (!roomArea)
                 return false;
@@ -489,8 +587,10 @@ public static class WraithSiegeMapData
     private static bool HasSolidCollider(Vector2 point, float radius)
     {
         foreach (var collider in Physics2D.OverlapCircleAll(point, radius, Constants.ShipAndAllObjectsMask))
+        {
             if (collider && collider.enabled && !collider.isTrigger)
                 return true;
+        }
 
         return false;
     }

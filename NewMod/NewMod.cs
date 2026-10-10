@@ -1,27 +1,16 @@
-using System.Linq;
 using AchievementsAPI;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using MiraAPI;
-using MiraAPI.Events;
-using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
-using MiraAPI.Hud;
 using MiraAPI.PluginLoading;
-using MiraAPI.Roles;
 using MiraAPI.Translation;
 using MiraAPI.Utilities;
-using NewMod.Buttons.Roles;
-using NewMod.Cosmetics;
-using NewMod.Components;
 using NewMod.Debugging;
 using NewMod.Options;
-using NewMod.Options.Roles;
-using NewMod.Patches.Compatibility;
 using NewMod.Roles.ImpostorRoles;
-using NewMod.Roles.NeutralRoles;
 using NewMod.UI;
 using NewMod.Utilities;
 using PathfindingAPI;
@@ -31,7 +20,6 @@ using Reactor.Networking.Attributes;
 using Reactor.Utilities;
 using ReactUI.Plugin;
 using UnityEngine;
-using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
 namespace NewMod;
@@ -60,7 +48,7 @@ public class NewMod : BasePlugin, IMiraPlugin
     public static Harmony Harmony { get; } = new(Id);
     public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
     public static ConfigEntry<bool> ForceEnableAllSeasons { get; set; }
-    public static bool ShouldReactUIDebug { get; set; } = false;
+    public static bool ShouldReactUIDebug { get; set; }
 
     public ConfigFile GetConfigFile()
     {
@@ -83,7 +71,7 @@ public class NewMod : BasePlugin, IMiraPlugin
             ReactUIBootstrap.Initialize();
             NewModDebugStyles.Register();
             NewModDebugPanel.Mount();
-            ReactUIBehaviour.OnUpdate += NewModDebugPanel.Tick;
+            ReactUIBehaviour.OnUpdate += NewModDebugPanel.OnUpdate;
             AddComponent<DebugWindow>();
         }
         else
@@ -121,7 +109,7 @@ public class NewMod : BasePlugin, IMiraPlugin
         {
             var sys = Utils.FindSurveillanceConsole();
             var mainCam = Camera.main;
-            if (mainCam == null) return;
+            if (!sys || !mainCam || Minigame) return;
 
             Minigame = Object.Instantiate(sys.MinigamePrefab, mainCam.transform, false);
             Minigame.transform.localPosition = new Vector3(0f, 0f, -50f);
@@ -139,13 +127,13 @@ public class NewMod : BasePlugin, IMiraPlugin
             }
             else
             {
-                CoroutinesHelper.CoNotify("<b><color=#FF0000>No dead bodies nearby to teleport to.</color></b>");
+                Coroutines.Start(CoroutinesHelper.CoNotify("<b><color=#FF0000>No dead bodies nearby to teleport to.</color></b>"));
             }
         }
     }
 
     [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
-    public class KeyboardJoystickUpdatePatch
+    public static class KeyboardJoystickUpdatePatch
     {
         [HarmonyPrepare]
         public static bool Prepare()

@@ -1,5 +1,5 @@
-using MiraAPI.Translation;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using UnityEngine;
 
 namespace NewMod.Roles.ImpostorRoles;
@@ -22,6 +22,6 @@ public class Edgeveil : ImpostorRole, INewModRole
             UseVanillaKillButton = false,
             TasksCountForProgress = false,
             MaxRoleCount = 1,
-            Icon = NewModAsset.SlashIcon
+            Icon = NewModAsset.SlashIcon,
         };
 }

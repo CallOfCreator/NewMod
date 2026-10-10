@@ -2,7 +2,6 @@ using System.Collections;
 using HarmonyLib;
 using MiraAPI;
 using Reactor.Utilities;
-using Reactor.Utilities.Extensions;
 using UnityEngine;
 using MiraHudManagerPatches = MiraAPI.Patches.HudManagerPatches;
 

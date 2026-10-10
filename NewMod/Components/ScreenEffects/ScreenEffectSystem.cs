@@ -8,14 +8,17 @@ namespace NewMod.Components.ScreenEffects;
 [RegisterInIl2Cpp]
 public class ScreenEffectSystem(nint ptr) : MonoBehaviour(ptr)
 {
-    public readonly List<ScreenEffect> Effects = new();
+    public readonly List<ScreenEffect> Effects = [];
 
     [HideFromIl2Cpp]
     public T Get<T>() where T : ScreenEffect
     {
         foreach (var effect in Effects)
+        {
             if (effect is T match && effect.Active)
                 return match;
+        }
+
         return null;
     }
 
@@ -52,7 +55,7 @@ public class ScreenEffectSystem(nint ptr) : MonoBehaviour(ptr)
     public void Update()
     {
         for (var i = Effects.Count - 1; i >= 0; i--)
-            Effects[i].Tick();
+            Effects[i].OnHudUpdate();
     }
 
     public void OnDisable()

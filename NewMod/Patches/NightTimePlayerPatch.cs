@@ -1,7 +1,7 @@
-using NewMod.Components.ScreenEffects.Effects;
 using System.Collections.Generic;
 using HarmonyLib;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using UnityEngine;
 
 namespace NewMod.Patches;
@@ -9,11 +9,11 @@ namespace NewMod.Patches;
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
 public static class NightTimePlayerPatch
 {
-    public static readonly Dictionary<(Material Material, int Property), (Color Original, Color Applied)> Colors = new();
+    public static readonly Dictionary<(Material Material, int Property), (Color Original, Color Applied)> Colors = [];
     public static readonly int[] ColorProperties =
     {
         Shader.PropertyToID("_BodyColor"), Shader.PropertyToID("_BackColor"),
-        Shader.PropertyToID("_VisorColor"), Shader.PropertyToID("_Color")
+        Shader.PropertyToID("_VisorColor"), Shader.PropertyToID("_Color"),
     };
 
     public static void Postfix(PlayerControl __instance)
@@ -61,8 +61,11 @@ public static class NightTimePlayerPatch
             var current = material.GetColor(property);
             var original = Colors.TryGetValue(key, out var saved) && current == saved.Applied
                 ? saved.Original : current;
-            var brightened = new Color(original.r * brightness, original.g * brightness,
-                original.b * brightness, original.a);
+            var brightened = new Color(
+                original.r * brightness,
+                original.g * brightness,
+                original.b * brightness,
+                original.a);
             if (current != brightened)
                 material.SetColor(property, brightened);
             Colors[key] = (original, brightened);

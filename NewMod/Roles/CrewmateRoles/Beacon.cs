@@ -1,12 +1,12 @@
-using NewMod.Utilities;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using NewMod.Options.Roles;
 using UnityEngine;
@@ -35,7 +35,7 @@ public class Beacon : CrewmateRole, INewModRole
             UseVanillaKillButton = false,
             TasksCountForProgress = true,
             MaxRoleCount = 1,
-            Icon = NewModAsset.RadarIcon
+            Icon = NewModAsset.RadarIcon,
         };
 
     [HideFromIl2Cpp]
@@ -44,7 +44,7 @@ public class Beacon : CrewmateRole, INewModRole
         var tab = INewModRole.GetRoleTabText(this);
         var opts = OptionGroupSingleton<BeaconOptions>.Instance;
 
-        tab.Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.Tab.Details"), RoleColor.ToTextColor(), charges, opts.MaxCharges, opts.TasksPerCharge, opts.PulseDuration, opts.PulseCooldown));
+        tab.Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.Tab.Details"), RoleColor.ToTextColor(), charges, opts.MaxCharges, opts.TasksPerCharge, opts.PulseDuration, opts.PulseCooldown));
 
         return tab;
     }
@@ -104,8 +104,11 @@ public class Beacon : CrewmateRole, INewModRole
         var lp = PlayerControl.LocalPlayer;
         var done = 0;
         foreach (var t in lp.myTasks)
+        {
             if (t && t.IsComplete)
                 done++;
+        }
+
         return done;
     }
 }

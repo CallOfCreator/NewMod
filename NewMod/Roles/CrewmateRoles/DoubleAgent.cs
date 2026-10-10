@@ -1,12 +1,13 @@
-using NewMod.Modifiers.S1;
 using System.Collections;
-using MiraAPI.Translation;
+using System.Globalization;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -43,14 +44,14 @@ public class DoubleAgent : CrewmateRole, INewModRole
             DefaultChance = 50,
             DefaultRoleCount = 1,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [Il2CppInterop.Runtime.Attributes.HideFromIl2Cpp]
     public System.Text.StringBuilder SetTabText()
     {
         var options = OptionGroupSingleton<DoubleAgentOptions>.Instance;
-        return INewModRole.GetRoleTabText(this).Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.DoubleAgent.Tab.SabotageCommunicationsOnlyDurationS"), RoleColor.ToTextColor(), options.CounterfeitDuration, options.CounterfeitCooldown));
+        return INewModRole.GetRoleTabText(this).Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.DoubleAgent.Tab.SabotageCommunicationsOnlyDurationS"), RoleColor.ToTextColor(), options.CounterfeitDuration, options.CounterfeitCooldown));
     }
 
     [RegisterEvent]

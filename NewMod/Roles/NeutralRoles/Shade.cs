@@ -1,13 +1,14 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using NewMod.Components;
 using NewMod.Options.Roles;
@@ -19,7 +20,7 @@ namespace NewMod.Roles.NeutralRoles;
 
 public class Shade : ImpostorRole, INewModRole
 {
-    public static readonly Dictionary<byte, int> ShadeKills = new();
+    public static readonly Dictionary<byte, int> ShadeKills = [];
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.IntroBlurb");
     public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.TabDescription");
@@ -36,7 +37,7 @@ public class Shade : ImpostorRole, INewModRole
             UseVanillaKillButton = true,
             TasksCountForProgress = false,
             MaxRoleCount = 1,
-            Icon = NewModAsset.DeployZoneIcon
+            Icon = NewModAsset.DeployZoneIcon,
         };
 
     [HideFromIl2Cpp]
@@ -47,8 +48,8 @@ public class Shade : ImpostorRole, INewModRole
         var zonesActive = ShadowZone.zones.Count;
         var playersInZones = Helpers.GetAlivePlayers().Count(p => ShadowZone.IsInsideAny(p.GetTruePosition()));
 
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.ActiveShadowZones"), ColorUtility.ToHtmlStringRGBA(Color.cyan), zonesActive));
-        tabText.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.PlayersInsideZones"), ColorUtility.ToHtmlStringRGBA(Color.gray), playersInZones));
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.ActiveShadowZones"), ColorUtility.ToHtmlStringRGBA(Color.cyan), zonesActive));
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.Shade.Tab.PlayersInsideZones"), ColorUtility.ToHtmlStringRGBA(Color.gray), playersInZones));
 
         return tabText;
     }

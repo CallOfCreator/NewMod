@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameOptions;
 using MiraAPI.Networking;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
@@ -29,7 +30,7 @@ public class Revenant : ImpostorRole, INewModRole
         Revived,
         DoomActive,
         DoomSpent,
-        PermanentlyDead
+        PermanentlyDead,
     }
 
     public static readonly Dictionary<byte, Phase> Phases = [];
@@ -55,7 +56,7 @@ public class Revenant : ImpostorRole, INewModRole
             CanUseVent = false,
             UseVanillaKillButton = true,
             TasksCountForProgress = false,
-            Icon = MiraAssets.Empty
+            Icon = MiraAssets.Empty,
         };
 
     [HideFromIl2Cpp]
@@ -63,7 +64,7 @@ public class Revenant : ImpostorRole, INewModRole
     {
         var text = INewModRole.GetRoleTabText(this);
         if (Phases.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var phase))
-            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Revenant.Tab.State"), MiraLocaleManager.Get($"NewMod.Roles.ImpostorRoles.Revenant.State.{phase}")));
+            text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Revenant.Tab.State"), MiraLocaleManager.Get($"NewMod.Roles.ImpostorRoles.Revenant.State.{phase}")));
         return text;
     }
 
@@ -79,8 +80,10 @@ public class Revenant : ImpostorRole, INewModRole
         PendingDoomTargets.Clear();
 
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.Data.Role is Revenant)
                 Phases[player.PlayerId] = Phase.Ready;
+        }
     }
 
     [RegisterEvent]

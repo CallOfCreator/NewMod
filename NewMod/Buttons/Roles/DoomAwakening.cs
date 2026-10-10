@@ -15,7 +15,7 @@ namespace NewMod.Buttons.Roles;
 public sealed class DoomAwakening : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Aggression;
-    public override string Name => "";
+    public override string Name => string.Empty;
     public override float Cooldown => 0f;
     public override int MaxUses => 1;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;

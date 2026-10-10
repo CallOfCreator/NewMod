@@ -1,10 +1,9 @@
-using NewMod.Utilities;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.GameOptions;
-using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using NewMod.Options.Roles.S1;
 using UnityEngine;
 
@@ -34,7 +33,7 @@ public class VerifierRole : CrewmateRole, INewModRole
             DefaultChance = 25,
             DefaultRoleCount = 1,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -42,6 +41,6 @@ public class VerifierRole : CrewmateRole, INewModRole
     {
         var tabText = INewModRole.GetRoleTabText(this);
         var radius = OptionGroupSingleton<VerifierOptions>.Instance.NearBodyRadius;
-        return tabText.Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.VerifierRole.Tab.Details"), RoleColor.ToTextColor(), radius));
+        return tabText.Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.VerifierRole.Tab.Details"), RoleColor.ToTextColor(), radius));
     }
 }

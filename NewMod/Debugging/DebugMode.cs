@@ -3,7 +3,6 @@
 namespace NewMod.Debugging;
 
 // Thanks to Submerged
-
 public static class DebugMode
 {
     public static void Initialize(NewMod plugin)

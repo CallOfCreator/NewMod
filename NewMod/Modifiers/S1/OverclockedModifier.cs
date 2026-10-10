@@ -58,7 +58,7 @@ public class OverclockedModifier : GameModifier
 
     public static bool SupportsRole(RoleBehaviour role)
     {
-        return role is Aegis or Beacon or DoubleAgent or Specialist or TheVisionary or WardenRole or Edgeveil or PulseBlade or Deadwire or MirrorBladeRole or Voidwalker or EnergyThief or InjectorRole or Prankster or Shade or Tyrant or WraithCaller or ArbitratorRole or Collector or Nomad or Usurper || role is NecromancerRole && OptionGroupSingleton<NecromancerOption>.Instance.AbilityUses > 1;
+        return role is Aegis or Beacon or DoubleAgent or Specialist or TheVisionary or WardenRole or Edgeveil or PulseBlade or Deadwire or MirrorBladeRole or Voidwalker or EnergyThief or InjectorRole or Prankster or Shade or Tyrant or WraithCaller or ArbitratorRole or Collector or Nomad or Usurper || (role is NecromancerRole && OptionGroupSingleton<NecromancerOption>.Instance.AbilityUses > 1);
     }
 
     public static float GetCooldown(PlayerControl player, float cooldown)
@@ -89,10 +89,10 @@ public class OverclockedModifier : GameModifier
 
         var cooldown = source.Data.Role switch
         {
-            Beacon => (float)OptionGroupSingleton<BeaconOptions>.Instance.PulseCooldown,
+            Beacon => OptionGroupSingleton<BeaconOptions>.Instance.PulseCooldown,
             Specialist => 8f,
-            ArbitratorRole => (float)OptionGroupSingleton<ArbitratorOptions>.Instance.LeverageCooldown,
-            _ => 0f
+            ArbitratorRole => OptionGroupSingleton<ArbitratorOptions>.Instance.LeverageCooldown,
+            _ => 0f,
         };
         if (cooldown <= 0f)
             return;

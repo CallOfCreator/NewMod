@@ -1,4 +1,3 @@
-using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Linq;
 using MiraAPI.GameOptions;
@@ -7,6 +6,7 @@ using MiraAPI.Keybinds;
 using MiraAPI.Networking;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;

@@ -90,8 +90,10 @@ public sealed class WraithSiege : AbstractGameMode
             var count = 0;
 
             foreach (var player in PlayerControl.AllPlayerControls)
+            {
                 if (!IsWraith(player) && !player.Data.IsDead && !player.Data.Disconnected)
                     count++;
+            }
 
             return count;
         }
@@ -104,8 +106,10 @@ public sealed class WraithSiege : AbstractGameMode
             var count = 0;
 
             foreach (var player in PlayerControl.AllPlayerControls)
+            {
                 if (!IsWraith(player) && !player.Data.Disconnected)
                     count++;
+            }
 
             return count;
         }
@@ -118,8 +122,10 @@ public sealed class WraithSiege : AbstractGameMode
             var count = 0;
 
             foreach (var player in PlayerControl.AllPlayerControls)
+            {
                 if (IsWraith(player) && !player.Data.Disconnected)
                     count++;
+            }
 
             return count;
         }
@@ -441,7 +447,7 @@ public sealed class WraithSiege : AbstractGameMode
 
             _energyText.gameObject.SetActive(true);
 
-            _hudText.text = $"<b><color=#9B6CFF>WRAITHS</color></b>  {time}\n" + $"NPC Pool  <b>{NpcPool}</b>  |  " + $"Yours  <b>{activeOwned}/{maxActive}</b>\n" + $"Deliveries  <b>{_deliveries}/" + $"{(int)options.RequiredDeliveries}</b>" + (summonCooldown > 0f ? $"\n<size=70%>Summon ready in {summonCooldown:0.0}s</size>" : "");
+            _hudText.text = $"<b><color=#9B6CFF>WRAITHS</color></b>  {time}\n" + $"NPC Pool  <b>{NpcPool}</b>  |  " + $"Yours  <b>{activeOwned}/{maxActive}</b>\n" + $"Deliveries  <b>{_deliveries}/" + $"{(int)options.RequiredDeliveries}</b>" + (summonCooldown > 0f ? $"\n<size=70%>Summon ready in {summonCooldown:0.0}s</size>" : string.Empty);
 
             if (_localBurnTime > 0f)
             {
@@ -461,7 +467,7 @@ public sealed class WraithSiege : AbstractGameMode
                 return;
             }
 
-            _warningText.text = "";
+            _warningText.text = string.Empty;
             return;
         }
 
@@ -471,7 +477,16 @@ public sealed class WraithSiege : AbstractGameMode
 
         if (localPlayer.Data.IsDead)
         {
-            _warningText.text = Tickets <= 0 ? "<color=#FF4D4D><b>NO TICKETS REMAIN</b></color>" : _lastStandPending ? "<color=#FFD166><b>LAST STAND REVIVE...</b></color>" : "<color=#FFD166><b>WAITING FOR A REVIVER...</b></color>";
+            if (Tickets <= 0)
+            {
+                _warningText.text = "<color=#FF4D4D><b>NO TICKETS REMAIN</b></color>";
+            }
+            else
+            {
+                _warningText.text = _lastStandPending
+                    ? "<color=#FFD166><b>LAST STAND REVIVE...</b></color>"
+                    : "<color=#FFD166><b>WAITING FOR A REVIVER...</b></color>";
+            }
 
             return;
         }
@@ -483,7 +498,7 @@ public sealed class WraithSiege : AbstractGameMode
             return;
         }
 
-        _warningText.text = "";
+        _warningText.text = string.Empty;
     }
 
     public override void OnPlayerDeath(PlayerControl player, bool assignGhostRole)
@@ -708,8 +723,10 @@ public sealed class WraithSiege : AbstractGameMode
     private void Reset()
     {
         foreach (var npc in _activeNpcs.Values.ToArray())
+        {
             if (npc)
                 npc.Dispose();
+        }
 
         _activeNpcs.Clear();
         _deliverySlots.Clear();
@@ -924,7 +941,7 @@ public sealed class WraithSiege : AbstractGameMode
         Utils.HandleRevive(PlayerControl.LocalPlayer, targetId, RoleTypes.Crewmate, body.transform.position.x, body.transform.position.y);
     }
 
-    public override IEnumerator IntroCutscene(IntroCutscene intro)
+    public override IEnumerator IntroCutscene(IntroCutscene __instance)
     {
         var isWraith = PlayerControl.LocalPlayer.Data.Role.IsImpostor;
 
@@ -934,38 +951,38 @@ public sealed class WraithSiege : AbstractGameMode
 
         var team = GameData.Instance.AllPlayers.ToArray().Where(player => !player.Disconnected && player.Role.IsImpostor == isWraith).OrderBy(player => player.PlayerId == PlayerControl.LocalPlayer.PlayerId ? 0 : 1).ToArray();
 
-        SoundManager.Instance.PlaySound(intro.IntroStinger, false);
+        SoundManager.Instance.PlaySound(__instance.IntroStinger, false);
 
-        intro.LogPlayerRoleData();
+        __instance.LogPlayerRoleData();
 
-        intro.HideAndSeekPanels.SetActive(false);
-        intro.CrewmateRules.SetActive(false);
-        intro.ImpostorRules.SetActive(false);
-        intro.ImpostorName.gameObject.SetActive(false);
-        intro.ImpostorTitle.gameObject.SetActive(false);
-        intro.YouAreText.gameObject.SetActive(false);
-        intro.RoleText.gameObject.SetActive(false);
-        intro.RoleBlurbText.gameObject.SetActive(false);
+        __instance.HideAndSeekPanels.SetActive(false);
+        __instance.CrewmateRules.SetActive(false);
+        __instance.ImpostorRules.SetActive(false);
+        __instance.ImpostorName.gameObject.SetActive(false);
+        __instance.ImpostorTitle.gameObject.SetActive(false);
+        __instance.YouAreText.gameObject.SetActive(false);
+        __instance.RoleText.gameObject.SetActive(false);
+        __instance.RoleBlurbText.gameObject.SetActive(false);
 
-        intro.FrontMost.color = Color.clear;
+        __instance.FrontMost.color = Color.clear;
 
-        intro.Foreground.material.SetFloat("_Rad", intro.ForegroundRadius.max);
+        __instance.Foreground.material.SetFloat("_Rad", __instance.ForegroundRadius.max);
 
-        intro.TeamTitle.gameObject.SetActive(true);
-        intro.ImpostorText.gameObject.SetActive(true);
-        intro.BackgroundBar.enabled = true;
+        __instance.TeamTitle.gameObject.SetActive(true);
+        __instance.ImpostorText.gameObject.SetActive(true);
+        __instance.BackgroundBar.enabled = true;
 
-        intro.TeamTitle.text = isWraith ? "WRAITHS" : "REVIVERS";
+        __instance.TeamTitle.text = isWraith ? "WRAITHS" : "REVIVERS";
 
-        intro.TeamTitle.color = color;
-        intro.TeamTitle.fontSize = 4.5f;
+        __instance.TeamTitle.color = color;
+        __instance.TeamTitle.fontSize = 4.5f;
 
-        intro.ImpostorText.text = isWraith ? "SUMMON WRAITHS  •  PUSH THE LANES  •  BREACH THE FLAG\n" + $"<size=70%>Reach {Mathf.RoundToInt(options.RequiredDeliveries)} " + "deliveries before time runs out</size>" : "DEFEND THE FLAG  •  BANISH WRAITHS  •  REVIVE YOUR TEAM\n" + $"<size=70%>{Mathf.RoundToInt(options.Tickets)} shared tickets</size>";
+        __instance.ImpostorText.text = isWraith ? "SUMMON WRAITHS  •  PUSH THE LANES  •  BREACH THE FLAG\n" + $"<size=70%>Reach {Mathf.RoundToInt(options.RequiredDeliveries)} " + "deliveries before time runs out</size>" : "DEFEND THE FLAG  •  BANISH WRAITHS  •  REVIVE YOUR TEAM\n" + $"<size=70%>{Mathf.RoundToInt(options.Tickets)} shared tickets</size>";
 
-        intro.ImpostorText.color = Color.white;
-        intro.ImpostorText.fontSize = 1.65f;
+        __instance.ImpostorText.color = Color.white;
+        __instance.ImpostorText.fontSize = 1.65f;
 
-        intro.BackgroundBar.material.SetColor(ShaderID.Color, color);
+        __instance.BackgroundBar.material.SetColor(ShaderID.Color, color);
 
         yield return ShipStatus.Instance.CosmeticsCache.PopulateFromPlayers();
 
@@ -973,14 +990,14 @@ public sealed class WraithSiege : AbstractGameMode
 
         for (var i = 0; i < team.Length; i++)
         {
-            var display = intro.CreatePlayer(i, isWraith ? 1 : maxDepth, team[i], isWraith);
+            var display = __instance.CreatePlayer(i, isWraith ? 1 : maxDepth, team[i], isWraith);
 
             display.ToggleName(false);
         }
 
         var iconObject = new GameObject(isWraith ? "WraithSiegeIntroWraith" : "WraithSiegeIntroTicket");
 
-        iconObject.transform.SetParent(intro.transform, false);
+        iconObject.transform.SetParent(__instance.transform, false);
 
         iconObject.transform.localPosition = new Vector3(-3.25f, 1.5f, -25f);
 
@@ -1005,12 +1022,12 @@ public sealed class WraithSiege : AbstractGameMode
             yield return null;
         }
 
-        intro.gameObject.SetActive(false);
+        __instance.gameObject.SetActive(false);
 
         yield return new WaitForEndOfFrame();
 
         ShipStatus.Instance.StartSFX();
-        Object.Destroy(intro.gameObject);
+        Object.Destroy(__instance.gameObject);
     }
 
     public override bool CanReport(DeadBody body)

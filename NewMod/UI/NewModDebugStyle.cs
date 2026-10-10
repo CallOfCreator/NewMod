@@ -24,7 +24,7 @@ public static class NewModDebugStyles
             BorderWidth = Px(3f),
             BorderColor = "#FFFFFF",
             BorderRadius = Px(10f),
-            Overflow = S.Overflow.Hidden
+            Overflow = S.Overflow.Hidden,
         };
 
         sheet[".nm-debug-header"] = new S.Style
@@ -35,7 +35,7 @@ public static class NewModDebugStyles
             Padding = Edge(12f, 14f),
             Background = "#08080A",
             BorderWidth = Px(2f),
-            BorderColor = "rgba(255,255,255,0.35)"
+            BorderColor = "rgba(255,255,255,0.35)",
         };
 
         sheet[".nm-debug-brand"] = new S.Style { FlexDirection = S.FlexDirection.Row, AlignItems = S.AlignItems.Center, Gap = Px(7f) };
@@ -51,7 +51,7 @@ public static class NewModDebugStyles
             Gap = Px(6f),
             Background = "#17171C",
             BorderWidth = Px(2f),
-            BorderColor = "rgba(255,255,255,0.35)"
+            BorderColor = "rgba(255,255,255,0.35)",
         };
 
         sheet[".nm-debug-tab"] = new S.Style
@@ -66,7 +66,7 @@ public static class NewModDebugStyles
             FontSize = Px(12f),
             FontWeight = 700,
             Cursor = S.CursorType.Pointer,
-            Hover = new S.Style { BorderColor = "#FFFFFF", Color = "#FFFFFF" }
+            Hover = new S.Style { BorderColor = "#FFFFFF", Color = "#FFFFFF" },
         };
 
         sheet[".nm-debug-tab-active"] = new S.Style { Background = "#7D42A8", BorderColor = "#FFFFFF", Color = "#FFFFFF" };
@@ -86,7 +86,7 @@ public static class NewModDebugStyles
             Background = "#17171C",
             BorderWidth = Px(2f),
             BorderColor = "rgba(255,255,255,0.35)",
-            BorderRadius = Px(6f)
+            BorderRadius = Px(6f),
         };
 
         sheet[".nm-debug-section-title"] = new S.Style { FontSize = Px(13f), FontWeight = 800, Color = "#B8B8C2" };
@@ -97,7 +97,7 @@ public static class NewModDebugStyles
             FlexShrink = 0f,
             FontSize = Px(13f),
             FontWeight = 700,
-            Color = "#9A9AA6"
+            Color = "#9A9AA6",
         };
 
         sheet[".nm-debug-value"] = new S.Style { FlexGrow = 1f, FontSize = Px(13f), Color = "#FFFFFF" };
@@ -115,7 +115,7 @@ public static class NewModDebugStyles
             FontSize = Px(13f),
             FontWeight = 700,
             Cursor = S.CursorType.Pointer,
-            Hover = new S.Style { Background = "#25252B" }
+            Hover = new S.Style { Background = "#25252B" },
         };
 
         sheet[".nm-debug-button-danger"] = new S.Style { Background = "#821F2A", BorderColor = "#FFFFFF", Hover = new S.Style { Background = "#A32937" } };
@@ -132,7 +132,7 @@ public static class NewModDebugStyles
             FontSize = Px(17f),
             FontWeight = 800,
             Cursor = S.CursorType.Pointer,
-            Hover = new S.Style { Background = "#25252B" }
+            Hover = new S.Style { Background = "#25252B" },
         };
 
         sheet[".nm-debug-selector"] = new S.Style
@@ -144,7 +144,7 @@ public static class NewModDebugStyles
             BorderWidth = Px(2f),
             BorderColor = "#FFFFFF",
             Background = "#000000",
-            Overflow = S.Overflow.Hidden
+            Overflow = S.Overflow.Hidden,
         };
 
         sheet[".nm-debug-selector-button"] = new S.Style
@@ -157,7 +157,7 @@ public static class NewModDebugStyles
             FontSize = Px(22f),
             FontWeight = 800,
             Cursor = S.CursorType.Pointer,
-            Hover = new S.Style { Background = "#7D42A8" }
+            Hover = new S.Style { Background = "#7D42A8" },
         };
 
         sheet[".nm-debug-selector-value"] = new S.Style
@@ -167,7 +167,7 @@ public static class NewModDebugStyles
             TextAlign = S.TextAlign.Center,
             FontSize = Px(14f),
             FontWeight = 700,
-            Color = "#FFFFFF"
+            Color = "#FFFFFF",
         };
 
         sheet[".nm-debug-toggle"] = new S.Style { Height = S.StyleValue.Px(Px(30f)), Color = "#7D42A8", Cursor = S.CursorType.Pointer };

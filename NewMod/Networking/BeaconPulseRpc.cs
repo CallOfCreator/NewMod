@@ -1,10 +1,9 @@
-using NewMod.Components.ScreenEffects.Effects;
 using Hazel;
 using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
 using NewMod.Roles.CrewmateRoles;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
-using Reactor.Utilities;
 using UnityEngine;
 
 namespace NewMod.Networking;
@@ -28,9 +27,9 @@ public class BeaconPulseRpc : PlayerCustomRpc<NewMod, BeaconPulseRpc.Data>
         return new Data(reader.ReadSingle());
     }
 
-    public override void Handle(PlayerControl sender, Data data)
+    public override void Handle(PlayerControl source, Data data)
     {
-        if (sender.Data.Role is not Beacon || sender.Data.IsDead)
+        if (source.Data.Role is not Beacon || source.Data.IsDead)
             return;
 
         var cam = Camera.main;
@@ -40,8 +39,7 @@ public class BeaconPulseRpc : PlayerCustomRpc<NewMod, BeaconPulseRpc.Data>
         var effect = cam.GetScreenEffect<DistorationWaveEffect>() ?? cam.AddScreenEffect<DistorationWaveEffect>();
         effect.expiresAt = Time.time + data.Duration;
 
-
-        Instance.LogMessage($"Beacon pulse triggered by {sender.Data.PlayerName} for {data.Duration}s");
+        Instance.LogMessage($"Beacon pulse triggered by {source.Data.PlayerName} for {data.Duration}s");
     }
 
     public readonly record struct Data(float Duration);

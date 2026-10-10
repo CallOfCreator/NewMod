@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace NewMod.Components.ScreenEffects.Effects;
 
 public class EarthquakeEffect : ScreenEffect
@@ -8,5 +6,4 @@ public class EarthquakeEffect : ScreenEffect
     {
         CreateMaterial(NewModAsset.EarthquakeShader.LoadAsset());
     }
-
 }

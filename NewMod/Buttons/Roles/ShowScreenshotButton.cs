@@ -1,18 +1,18 @@
-using MiraAPI.Utilities.Assets;
-using MiraAPI.Hud;
 using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Keybinds;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.NeutralRoles;
-using UnityEngine;
 using NewMod.Utilities;
 using Reactor.Utilities;
-using MiraAPI.Keybinds;
+using UnityEngine;
 
 namespace NewMod.Buttons.Roles;
 
 /// <summary>
-/// Defines a custom action button for the role.
+/// Previews the Visionary's photos.
 /// </summary>
 public class ShowScreenshotButton : CustomActionButton, IEnergyAbility
 {

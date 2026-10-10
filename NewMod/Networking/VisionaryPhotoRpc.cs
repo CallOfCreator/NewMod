@@ -17,7 +17,7 @@ public class VisionaryPhotoRpc : PlayerCustomRpc<NewMod, VisionaryPhotoRpc.Data>
     public const int MaxPhotoBytes = 2 * 1024 * 1024;
     public const int ChunkSize = 700;
     public const int ChunksPerFrame = 4;
-    public static readonly Dictionary<(int Id, int Meeting), (byte[] Image, int Received)> Transfers = new();
+    public static readonly Dictionary<(int Id, int Meeting), (byte[] Image, int Received)> Transfers = [];
 
     public readonly record struct Data(int Id, int Meeting, int Total, int Offset, byte[] Bytes);
 

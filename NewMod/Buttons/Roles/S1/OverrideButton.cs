@@ -1,15 +1,15 @@
-using NewMod.Modifiers.S1;
-using NewMod.Roles.ImpostorRoles.S1;
-using MiraAPI.Translation;
+using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
-using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
+using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
-using UnityEngine;
 using NewMod.Utilities;
+using UnityEngine;
 using DeadwireRole = NewMod.Roles.ImpostorRoles.S1.Deadwire;
 
 namespace NewMod.Buttons.Roles.S1;

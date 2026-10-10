@@ -1,17 +1,17 @@
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.Events.Vanilla.Meeting.Voting;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
@@ -51,7 +51,7 @@ public class EgoistRole : CrewmateRole, INewModRole
             HideSettings = false,
             MaxRoleCount = 1,
             OptionsScreenshot = MiraAssets.Empty,
-            Icon = MiraAssets.Empty
+            Icon = MiraAssets.Empty,
         };
 
     [HideFromIl2Cpp]
@@ -60,9 +60,9 @@ public class EgoistRole : CrewmateRole, INewModRole
         var text = INewModRole.GetRoleTabText(this);
         var state = States[PlayerControl.LocalPlayer.PlayerId];
         var required = (int)OptionGroupSingleton<EgoistRoleOptions>.Instance.EgoRequired;
-        text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.Tab.Ego"), state.Ego, required));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.Tab.Ego"), state.Ego, required));
         if (state.OpponentId != byte.MaxValue)
-            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.Tab.Opponent"), Utils.PlayerById(state.OpponentId).Data.PlayerName));
+            text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EgoistRole.Tab.Opponent"), Utils.PlayerById(state.OpponentId).Data.PlayerName));
         return text;
     }
 
@@ -92,8 +92,10 @@ public class EgoistRole : CrewmateRole, INewModRole
         States.Clear();
         _selecting = false;
         foreach (var player in PlayerControl.AllPlayerControls)
+        {
             if (player.Data.Role is EgoistRole)
                 States[player.PlayerId] = (0, byte.MaxValue);
+        }
     }
 
     [RegisterEvent]
@@ -136,7 +138,6 @@ public class EgoistRole : CrewmateRole, INewModRole
             evt.AllowSelect = false;
             _selecting = false;
             RpcRequestChallenge(local, target);
-            return;
         }
     }
 
@@ -168,8 +169,10 @@ public class EgoistRole : CrewmateRole, INewModRole
 
             var votes = 0;
             foreach (var vote in evt.Votes)
+            {
                 if (vote.Suspect == pair.Key && vote.Voter != pair.Key)
                     votes++;
+            }
 
             if (votes == 0)
                 continue;
@@ -249,7 +252,10 @@ public class EgoistRole : CrewmateRole, INewModRole
         button.graphic.sprite = MiraAssets.Empty.LoadAsset();
         button.graphic.SetCooldownNormalizedUvs();
         button.OverrideColor(new Color32(204, 77, 153, 255));
-        button.OverrideText(state.OpponentId != byte.MaxValue ? "LOCKED" : _selecting ? "SELECT" : "CHALLENGE");
+        if (state.OpponentId != byte.MaxValue)
+            button.OverrideText("LOCKED");
+        else
+            button.OverrideText(_selecting ? "SELECT" : "CHALLENGE");
     }
 
     public static IEnumerator CoSetupMeetingButton(MeetingHud hud)
@@ -265,7 +271,7 @@ public class EgoistRole : CrewmateRole, INewModRole
     public enum ChallengeResult : byte
     {
         Failed,
-        Win
+        Win,
     }
     public static void AddVotes(byte ownerId, int votes, int required)
     {
@@ -288,5 +294,4 @@ public class EgoistRole : CrewmateRole, INewModRole
         States[ownerId] = (0, byte.MaxValue);
         return won ? ChallengeResult.Win : ChallengeResult.Failed;
     }
-
 }

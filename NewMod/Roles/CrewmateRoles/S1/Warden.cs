@@ -1,9 +1,8 @@
-﻿using NewMod.Modifiers.S1;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -11,9 +10,10 @@ using MiraAPI.Events.Vanilla.Map;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.Events.Vanilla.Usables;
 using MiraAPI.GameOptions;
-using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -34,7 +34,7 @@ public class WardenRole : CrewmateRole, INewModRole
     public static readonly Dictionary<byte, float> EnteredAt = [];
     public static readonly Dictionary<byte, float> AbilityUsedAt = [];
 
-    public static readonly Dictionary<byte, ( byte KillerId, bool EnteredAfterSeal, bool UsedAbilityRecently, float PresenceTime )> KillSnapshots = [];
+    public static readonly Dictionary<byte, (byte KillerId, bool EnteredAfterSeal, bool UsedAbilityRecently, float PresenceTime)> KillSnapshots = [];
 
     public static readonly Dictionary<GameObject, (bool EnteredAfterSeal, bool UsedAbilityRecently, float PresenceTime)> ResidualMarks = [];
     public static int ClueType;
@@ -65,7 +65,7 @@ public class WardenRole : CrewmateRole, INewModRole
             DefaultChance = 25,
             DefaultRoleCount = 1,
             CanModifyChance = true,
-            RoleHintType = RoleHintType.RoleTab
+            RoleHintType = RoleHintType.RoleTab,
         };
 
     [HideFromIl2Cpp]
@@ -74,7 +74,7 @@ public class WardenRole : CrewmateRole, INewModRole
         var tabText = INewModRole.GetRoleTabText(this);
         var options = OptionGroupSingleton<WardenOptions>.Instance;
 
-        tabText.Append(string.Format(MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.WardenRole.Tab.Details"), RoleColor.ToTextColor(), options.SealDuration, options.SealCooldown, MiraLocaleManager.Get($"NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.{ClueType}")));
+        tabText.Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.S1.WardenRole.Tab.Details"), RoleColor.ToTextColor(), options.SealDuration, options.SealCooldown, MiraLocaleManager.Get($"NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.{ClueType}")));
 
         return tabText;
     }
@@ -82,8 +82,10 @@ public class WardenRole : CrewmateRole, INewModRole
     public static PlainShipRoom GetRoom(Vector2 position)
     {
         foreach (var room in ShipStatus.Instance.AllRooms)
+        {
             if (room.roomArea && room.roomArea.OverlapPoint(position))
                 return room;
+        }
 
         return null;
     }
@@ -388,10 +390,9 @@ public class WardenRole : CrewmateRole, INewModRole
         {
             0 => clue.EnteredAfterSeal ? "The attacker entered after the seal was placed." : "The attacker was inside when the seal was placed.",
             1 => clue.UsedAbilityRecently ? "The attacker used an ability within 4s before the attack." : "No ability use was recorded from the attacker in the preceding 4s.",
-            _ => $"The attacker had been inside for about {clue.PresenceTime:0}s."
+            _ => $"The attacker had been inside for about {clue.PresenceTime:0}s.",
         };
         Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#3AA6FF>Residual Trace</color>\n{result}"));
-        //NewModAchievementsTab.TraceEvidence.Unlock();
     }
 
     public static void ResetState(bool preserveMarks = false)

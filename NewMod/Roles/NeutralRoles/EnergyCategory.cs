@@ -6,7 +6,7 @@ public enum EnergyCategory : byte
     Intelligence,
     Mobility,
     Control,
-    Protection
+    Protection,
 }
 
 public interface IEnergyAbility

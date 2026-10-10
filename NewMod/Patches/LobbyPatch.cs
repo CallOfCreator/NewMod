@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Text.Json;
 using HarmonyLib;
@@ -6,6 +7,7 @@ using Reactor.Utilities.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using Object = UnityEngine.Object;
 
 namespace NewMod.Patches;
 
@@ -36,39 +38,48 @@ public static class LobbyPatch
             return;
 
         Coroutines.Stop(_announcementRoutine);
+        ((IDisposable)_announcementRoutine).Dispose();
         _announcementRoutine = null;
     }
 
     private static IEnumerator CoCheckAnnouncement()
     {
         var url = NewMod.NewModBackendAPI + "/api/v1/get-announcement";
-        while (true)
+        while (LobbyBehaviour.Instance)
         {
             var req = UnityWebRequest.Get(url);
-            yield return req.SendWebRequest();
-
-            if (req.result == UnityWebRequest.Result.Success)
+            try
             {
-                var body = req.downloadHandler.text;
+                yield return req.SendWebRequest();
 
-                if (!string.IsNullOrEmpty(body))
+                if (req.result == UnityWebRequest.Result.Success)
                 {
-                    AnnouncementResponse res = null;
-                    try
-                    {
-                        res = JsonSerializer.Deserialize<AnnouncementResponse>(body);
-                    }
-                    catch
-                    {
-                    }
+                    var body = req.downloadHandler.text;
 
-                    var content = res?.content;
-                    if (!string.IsNullOrEmpty(content) && content != lastContent)
+                    if (!string.IsNullOrEmpty(body))
                     {
-                        lastContent = content;
-                        ShowPopup("New Lobby Message!", content);
+                        AnnouncementResponse res = null;
+                        try
+                        {
+                            res = JsonSerializer.Deserialize<AnnouncementResponse>(body);
+                        }
+                        catch (JsonException exception)
+                        {
+                            Warning($"Invalid lobby announcement: {exception.Message}");
+                        }
+
+                        var content = res?.content;
+                        if (!string.IsNullOrEmpty(content) && content != lastContent)
+                        {
+                            lastContent = content;
+                            ShowPopup("New Lobby Message!", content);
+                        }
                     }
                 }
+            }
+            finally
+            {
+                req.Dispose();
             }
 
             yield return new WaitForSeconds(8f);

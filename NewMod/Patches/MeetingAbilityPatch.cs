@@ -1,8 +1,8 @@
 using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
-using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.CrewmateRoles;
+using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using NewMod.Utilities;

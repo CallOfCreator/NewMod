@@ -1,7 +1,7 @@
 using AmongUs.GameOptions;
-using MiraAPI.Translation;
 using MiraAPI.GameEnd;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using UnityEngine;
 
@@ -34,7 +34,7 @@ public class Prankster : CrewmateRole, ICustomRole
             CanUseSabotage = false,
             TasksCountForProgress = false,
             HideSettings = false,
-            CanModifyChance = true
+            CanModifyChance = true,
         };
 
     public override bool DidWin(GameOverReason gameOverReason)

@@ -9,7 +9,6 @@ using MiraAPI.GameModes;
 using MiraAPI.GameOptions;
 using NewMod.GeneralEvents;
 using NewMod.Options.Roles;
-using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;

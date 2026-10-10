@@ -1,7 +1,7 @@
-using NewMod.Roles.NeutralRoles;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using NewMod.Options.Roles;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using UnityEngine;
 

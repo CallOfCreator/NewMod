@@ -12,14 +12,14 @@ public class GEOptions : AbstractOptionGroup
     {
         Easy,
         Standard,
-        Hard
+        Hard,
     }
 
     public enum VortexIntensity
     {
         Gentle,
         Standard,
-        Brutal
+        Brutal,
     }
 
     public override string GroupName => "General Events";

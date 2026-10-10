@@ -1,7 +1,6 @@
 using System.Linq;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
-using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Utilities;
 using UnityEngine;
@@ -45,7 +44,9 @@ public class CameraInteractButton : CustomActionButton
                 var offset = (Vector2)pair.Value.Object.transform.position - position;
                 return offset.magnitude <= 1.25f && !PhysicsHelpers.AnythingBetween(position, pair.Value.Object.transform.position, Constants.ShipAndObjectsMask, false, pair.Value.Object.GetComponent<Collider2D>(), pair.Value.Object.transform);
             }).OrderBy(pair => Vector2.Distance(pair.Value.Object.transform.position, position)).FirstOrDefault();
-            TargetId = EffectActive ? PendingId : nearby.Value != null ? nearby.Key : -1;
+            TargetId = nearby.Value != null ? nearby.Key : -1;
+            if (EffectActive)
+                TargetId = PendingId;
         }
 
         foreach (var (id, record) in VisionaryUtilities.Cameras)
@@ -53,7 +54,14 @@ public class CameraInteractButton : CustomActionButton
             if (!record.Object)
                 continue;
             var outlined = id == TargetId && record.Owner == playerControl.PlayerId;
-            var asset = !record.Ready ? NewModAsset.CameraOff : record.Failed ? outlined ? NewModAsset.CameraDisabledOutline : NewModAsset.CameraDisabled : outlined ? NewModAsset.CameraEnabledOutline : NewModAsset.CameraEnabled;
+            var asset = NewModAsset.CameraOff;
+            if (record.Ready)
+            {
+                if (record.Failed)
+                    asset = outlined ? NewModAsset.CameraDisabledOutline : NewModAsset.CameraDisabled;
+                else
+                    asset = outlined ? NewModAsset.CameraEnabledOutline : NewModAsset.CameraEnabled;
+            }
             record.Object.GetComponentInChildren<SpriteRenderer>().sprite = asset.LoadAsset();
         }
 

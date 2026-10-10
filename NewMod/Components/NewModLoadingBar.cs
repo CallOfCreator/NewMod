@@ -136,14 +136,20 @@ public class NewModLoadingBar(nint ptr) : MonoBehaviour(ptr)
         var width = rect.rect.width * Displayed;
         var height = rect.rect.height;
         Sheen.rectTransform.sizeDelta = new Vector2(rect.rect.width * 0.2f, height);
-        Sheen.rectTransform.anchoredPosition = new Vector2(Mathf.Lerp(-width * 0.5f - Sheen.rectTransform.sizeDelta.x,
-            width * 0.5f + Sheen.rectTransform.sizeDelta.x, Mathf.Repeat(Time.unscaledTime * 0.3f, 1f)), 0f);
+        Sheen.rectTransform.anchoredPosition = new Vector2(
+            Mathf.Lerp(
+                -width * 0.5f - Sheen.rectTransform.sizeDelta.x,
+                width * 0.5f + Sheen.rectTransform.sizeDelta.x,
+                Mathf.Repeat(Time.unscaledTime * 0.3f, 1f)),
+            0f);
         Edge.rectTransform.sizeDelta = new Vector2(height * 0.7f, height);
         Edge.rectTransform.anchoredPosition = new Vector2(width * 0.5f - height * 0.12f, 0f);
 
         var position = Bar.crewmate.position;
-        position.x = Mathf.Lerp(rect.TransformPoint(new Vector3(rect.rect.xMin, 0f, 0f)).x,
-            rect.TransformPoint(new Vector3(rect.rect.xMax, 0f, 0f)).x, Displayed);
+        position.x = Mathf.Lerp(
+            rect.TransformPoint(new Vector3(rect.rect.xMin, 0f, 0f)).x,
+            rect.TransformPoint(new Vector3(rect.rect.xMax, 0f, 0f)).x,
+            Displayed);
         Bar.crewmate.position = position;
     }
 

@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
+using NewMod.Utilities;
 using PathfindingAPI.Core;
 using PathfindingAPI.Navigation;
 using PathfindingAPI.Options;
-using NewMod.Utilities;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
 
@@ -13,14 +14,14 @@ namespace NewMod.Debugging;
 [RegisterInIl2Cpp]
 public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
 {
-    public readonly List<LineRenderer> traversalLines = new();
-    public string traversalReport = "";
+    public readonly List<LineRenderer> traversalLines = [];
+    public string traversalReport = string.Empty;
     public PathfindingNpc npc;
     public Vector2 start;
     public Vector2 goal;
     public bool hasStart;
     public bool hasGoal;
-    public readonly List<LineRenderer> routeSegments = new();
+    public readonly List<LineRenderer> routeSegments = [];
     public LineRenderer startMarker;
     public LineRenderer goalMarker;
     public MapPathRequest request;
@@ -114,8 +115,10 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         foreach (var line in routeSegments) line.positionCount = 0;
         var breaks = new HashSet<int>();
         foreach (var crossing in path.Crossings)
+        {
             if (crossing.Type == PathTraversal.Elevator)
                 breaks.Add(crossing.PointIndex);
+        }
 
         var startIndex = 0;
         var segment = 0;
@@ -149,7 +152,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         preview.hasStart = preview.hasGoal = false;
         preview.startMarker.positionCount = preview.goalMarker.positionCount = 0;
         preview.ClearTraversalLines();
-        preview.traversalReport = "";
+        preview.traversalReport = string.Empty;
         preview.message = "Path preview cleared.";
     }
 
@@ -178,8 +181,11 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
     public void ClearTraversalLines()
     {
         foreach (var line in traversalLines)
+        {
             if (line)
                 Destroy(line.gameObject);
+        }
+
         traversalLines.Clear();
     }
 
@@ -193,20 +199,20 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         var report = new StringBuilder($"Traversal scan | map: {ShipStatus.Instance.name} | player: {position} | probe: {probe.Status}\n");
         var ladders = ShipStatus.Instance.GetComponentsInChildren<Ladder>(true);
         var consoles = ShipStatus.Instance.GetComponentsInChildren<ZiplineConsole>(true);
-        report.AppendLine($"Found {ladders.Length} ladder ends and {consoles.Length} zipline consoles.");
+        report.AppendLine(CultureInfo.CurrentCulture, $"Found {ladders.Length} ladder ends and {consoles.Length} zipline consoles.");
         Component nearest = null;
         var distance = float.MaxValue;
         foreach (var console in consoles)
         {
             var from = (Vector2)console.transform.position;
-            report.AppendLine($"Zipline {console.name} top={console.atTop} active={console.isActiveAndEnabled}");
+            report.AppendLine(CultureInfo.CurrentCulture, $"Zipline {console.name} top={console.atTop} active={console.isActiveAndEnabled}");
             if (console.zipline)
             {
                 var zipline = console.zipline;
                 var landing = console.atTop ? zipline.landingPositionBottom : zipline.landingPositionTop;
                 if (landing)
                 {
-                    report.AppendLine($"  Landing world={landing.position} local={landing.localPosition} zipline origin={zipline.transform.position}");
+                    report.AppendLine(CultureInfo.CurrentCulture, $"  Landing world={landing.position} local={landing.localPosition} zipline origin={zipline.transform.position}");
                     DescribeTraversal(probe, report, console, from, zipline.transform.TransformPoint(landing.position), $"zipline active={zipline.isActiveAndEnabled}, destination active={console.destination && console.destination.isActiveAndEnabled}");
                 }
                 else
@@ -230,7 +236,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         foreach (var ladder in ladders)
         {
             var from = (Vector2)ladder.transform.position;
-            report.AppendLine($"Ladder {ladder.name} id={ladder.Id} top={ladder.IsTop} active={ladder.isActiveAndEnabled}");
+            report.AppendLine(CultureInfo.CurrentCulture, $"Ladder {ladder.name} id={ladder.Id} top={ladder.IsTop} active={ladder.isActiveAndEnabled}");
             if (ladder.Destination)
                 DescribeTraversal(probe, report, ladder, from, ladder.Destination.transform.position, $"destination active={ladder.Destination.isActiveAndEnabled}");
             else
@@ -278,23 +284,30 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         if (selected >= 0 && probe.grid != null)
         {
             foreach (var edge in probe.grid.Edges(-3 - selected * 2))
+            {
                 if (edge.Node >= 0)
                     entryNeighbours++;
+            }
+
             foreach (var edge in probe.grid.Edges(-4 - selected * 2))
+            {
                 if (edge.Node >= 0)
                     exitNeighbours++;
+            }
         }
 
-        report.AppendLine($"  {state}; included={selected >= 0}; walking neighbours entry={entryNeighbours}, exit={exitNeighbours}");
+        report.AppendLine(CultureInfo.CurrentCulture, $"  {state}; included={selected >= 0}; walking neighbours entry={entryNeighbours}, exit={exitNeighbours}");
         if (selected >= 0)
         {
-            report.AppendLine($"  Connected entry={probe.links[selected].Start}, exit={probe.links[selected].End}");
-            report.AppendLine($"  Approach offsets entry={Vector2.Distance(from, probe.links[selected].Start):0.00}, exit={Vector2.Distance(to, probe.links[selected].End):0.00}");
+            report.AppendLine(CultureInfo.CurrentCulture, $"  Connected entry={probe.links[selected].Start}, exit={probe.links[selected].End}");
+            report.AppendLine(CultureInfo.CurrentCulture, $"  Approach offsets entry={Vector2.Distance(from, probe.links[selected].Start):0.00}, exit={Vector2.Distance(to, probe.links[selected].End):0.00}");
         }
 
-        report.AppendLine($"  Entry {DescribeEndpoint(probe, from)}");
-        report.AppendLine($"  Exit  {DescribeEndpoint(probe, to)}");
-        var color = selected < 0 ? Color.red : entryNeighbours == 0 || exitNeighbours == 0 ? Color.yellow : Color.green;
+        report.AppendLine(CultureInfo.CurrentCulture, $"  Entry {DescribeEndpoint(probe, from)}");
+        report.AppendLine(CultureInfo.CurrentCulture, $"  Exit  {DescribeEndpoint(probe, to)}");
+        var color = Color.red;
+        if (selected >= 0)
+            color = entryNeighbours == 0 || exitNeighbours == 0 ? Color.yellow : Color.green;
         if (selected >= 0)
         {
             from = probe.links[selected].Start;
@@ -309,7 +322,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
     }
 
     [HideFromIl2Cpp]
-    public string DescribeEndpoint(MapPathRequest probe, Vector2 point)
+    public static string DescribeEndpoint(MapPathRequest probe, Vector2 point)
     {
         var inBounds = probe.grid == null ? "unknown" : probe.grid.bounds.Contains(point).ToString();
         if (probe.IsClear(point))
@@ -350,7 +363,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             PathStatus.InvalidEndpoint => "Start or goal overlaps a wall, or lies outside the map. Mark it in open floor space.",
             PathStatus.Obstructed => "The route became obstructed during the search. Find path again.",
             PathStatus.LimitReached => "Search limit reached. Try closer endpoints or increase the API node limit.",
-            _ => "Search cancelled."
+            _ => "Search cancelled.",
         };
 
         DrawPath(result);

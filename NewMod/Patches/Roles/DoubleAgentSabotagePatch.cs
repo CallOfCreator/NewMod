@@ -3,8 +3,8 @@ using Hazel;
 using MiraAPI.GameOptions;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
-using UnityEngine;
 using NewMod.Roles.CrewmateRoles;
+using UnityEngine;
 
 namespace NewMod.Patches;
 

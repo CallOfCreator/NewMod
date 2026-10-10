@@ -16,7 +16,7 @@ public static class MainMenuPatch
     public static SpriteRenderer LogoSprite = null!;
     public static Transform RightPanel = null!;
 
-    public static Texture2D? _cachedCursor;
+    public static Texture2D _cachedCursor;
     private static bool _contentInjected;
 
     [HarmonyPatch(nameof(MainMenuManager.Awake))]

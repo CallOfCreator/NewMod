@@ -42,12 +42,15 @@ public static class NewModCosmeticTabsPatch
         else
             __instance.PlayerPreview.UpdateFromDataManager(PlayerMaterial.MaskType.None);
 
-        SetupButtons(__instance, () =>
+        SetupButtons(
+            __instance,
+            () =>
         {
             HatPage--;
             if (HatPage < 0) HatPage = CosmeticsCatalog.Instance.HatGroups.Count;
             GenerateHats(__instance);
-        }, () =>
+        },
+            () =>
         {
             HatPage++;
             if (HatPage > CosmeticsCatalog.Instance.HatGroups.Count) HatPage = 0;
@@ -76,12 +79,15 @@ public static class NewModCosmeticTabsPatch
         else
             __instance.PlayerPreview.UpdateFromDataManager(PlayerMaterial.MaskType.None);
 
-        SetupButtons(__instance, () =>
+        SetupButtons(
+            __instance,
+            () =>
         {
             VisorPage--;
             if (VisorPage < 0) VisorPage = CosmeticsCatalog.Instance.VisorGroups.Count;
             GenerateVisors(__instance);
-        }, () =>
+        },
+            () =>
         {
             VisorPage++;
             if (VisorPage > CosmeticsCatalog.Instance.VisorGroups.Count) VisorPage = 0;
@@ -99,12 +105,15 @@ public static class NewModCosmeticTabsPatch
         __instance.PlayerPreview.gameObject.SetActive(false);
         Coroutines.Start(CoLoadNameplatePreview(__instance));
 
-        SetupButtons(__instance, () =>
+        SetupButtons(
+            __instance,
+            () =>
         {
             NameplatePage--;
             if (NameplatePage < 0) NameplatePage = CosmeticsCatalog.Instance.NameplateGroups.Count;
             GenerateNameplates(__instance);
-        }, () =>
+        },
+            () =>
         {
             NameplatePage++;
             if (NameplatePage > CosmeticsCatalog.Instance.NameplateGroups.Count) NameplatePage = 0;
@@ -225,7 +234,6 @@ public static class NewModCosmeticTabsPatch
             chip.SelectionHighlight.gameObject.SetActive(false);
             tab.ColorChips.Add(chip);
 
-            if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode()) || (hat.ProductId == ogNewModHatId && !PreseasonAchievementsTab.ThreeInARow.Unlocked)) chip.SetUnavailable();
             if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode()) || (hat.ProductId == ogNewModHatId && !PreseasonAchievementsTab.ThreeInARow.Unlocked)) chip.SetUnavailable();
         }
 

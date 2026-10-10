@@ -1,8 +1,8 @@
-using MiraAPI.Modifiers;
-using NewMod.Modifiers.S1;
 using System.Collections;
 using System.Collections.Generic;
 using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using NewMod.Modifiers.S1;
 using NewMod.Networking;
 using NewMod.Options.Roles;
 using Reactor.Networking.Rpc;
@@ -47,10 +47,12 @@ public static class BeaconShowMapPatch
             yield return null;
 
         foreach (var marker in markers)
+        {
             if (marker)
             {
                 Object.Destroy(marker.material);
                 Object.Destroy(marker.gameObject);
             }
+        }
     }
 }

@@ -1,20 +1,19 @@
-﻿using NewMod.Modifiers.S1;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using Il2CppInterop.Runtime.Attributes;
-using MiraAPI.Translation;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.Events.Vanilla.Player;
-using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -54,7 +53,7 @@ public class Collector : CrewmateRole, INewModRole
             CanUseVent = false,
             UseVanillaKillButton = false,
             TasksCountForProgress = false,
-            Icon = MiraAssets.Empty
+            Icon = MiraAssets.Empty,
         };
 
     [HideFromIl2Cpp]
@@ -64,13 +63,13 @@ public class Collector : CrewmateRole, INewModRole
         text.AppendLine();
         if (VictoryArmed.Contains(PlayerControl.LocalPlayer.PlayerId)) text.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.ManifestComplete"));
         if (Inventories.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var inventory))
-            text.AppendLine(string.Format(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.Inventory"), inventory[(int)FragmentKind.Violence], inventory[(int)FragmentKind.Ability], inventory[(int)FragmentKind.Fate], OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost));
+            text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Collector.Tab.Inventory"), inventory[(int)FragmentKind.Violence], inventory[(int)FragmentKind.Ability], inventory[(int)FragmentKind.Fate], OptionGroupSingleton<CollectorOptions>.Instance.ConversionCost));
         return text;
     }
 
-    public override bool DidWin(GameOverReason reason)
+    public override bool DidWin(GameOverReason gameOverReason)
     {
-        return reason == CustomGameOver.GameOverReason<CollectorGameOver>();
+        return gameOverReason == CustomGameOver.GameOverReason<CollectorGameOver>();
     }
 
     [RegisterEvent]
@@ -90,8 +89,10 @@ public class Collector : CrewmateRole, INewModRole
             ExilePosition = Vector2.zero;
 
             foreach (var player in PlayerControl.AllPlayerControls)
+            {
                 if (player.Data.Role is Collector)
                     Inventories[player.PlayerId] = new int[3];
+            }
         }
 
         if (!evt.TriggeredByIntro && ExilePending && AmongUsClient.Instance.AmHost)
@@ -121,7 +122,9 @@ public class Collector : CrewmateRole, INewModRole
         if (!AmongUsClient.Instance.AmHost || Inventories.Count == 0)
             return;
 
-        var kind = EnvironmentalDeaths.Remove(evt.Target.PlayerId) || evt.Source == evt.Target ? FragmentKind.Fate : evt.IsIndirectAttack ? FragmentKind.Ability : FragmentKind.Violence;
+        var kind = FragmentKind.Fate;
+        if (!EnvironmentalDeaths.Remove(evt.Target.PlayerId) && evt.Source != evt.Target)
+            kind = evt.IsIndirectAttack ? FragmentKind.Ability : FragmentKind.Violence;
         var position = evt.DeadBody ? (Vector2)evt.DeadBody.transform.position : evt.Target.GetTruePosition();
         RpcSpawnFragment(PlayerControl.LocalPlayer, ++_nextFragmentId, (byte)kind, position.x, position.y);
     }
@@ -164,7 +167,7 @@ public class Collector : CrewmateRole, INewModRole
         {
             FragmentKind.Violence => NewModAsset.ViolenceFragment,
             FragmentKind.Ability => NewModAsset.AbilityFragment,
-            _ => NewModAsset.FateFragment
+            _ => NewModAsset.FateFragment,
         }).LoadAsset();
         var size = renderer.sprite.bounds.size;
         gameObject.transform.localScale = Vector3.one * (0.6f / Mathf.Max(size.x, size.y));
@@ -317,7 +320,7 @@ public class Collector : CrewmateRole, INewModRole
     {
         Violence,
         Ability,
-        Fate
+        Fate,
     }
 
     public enum FragmentPower : byte
@@ -325,7 +328,7 @@ public class Collector : CrewmateRole, INewModRole
         None,
         Victory,
         Trace,
-        Drift
+        Drift,
     }
 
     public static bool CanConvert(int[] fragments, int cost)

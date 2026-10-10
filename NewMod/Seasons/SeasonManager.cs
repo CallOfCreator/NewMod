@@ -15,7 +15,7 @@ public enum SeasonState
 {
     Upcoming,
     Active,
-    Ended
+    Ended,
 }
 
 public static class SeasonManager
@@ -116,10 +116,15 @@ public static class SeasonManager
 
         var registerButton = GetPrivateMethod("RegisterButton", typeof(Type), typeof(MiraPluginInfo));
 
-        var registerGameMode = typeof(CustomGameModeManager).GetMethod("RegisterGameMode", BindingFlags.Static | BindingFlags.NonPublic, null, [
+        var registerGameMode = typeof(CustomGameModeManager).GetMethod(
+            "RegisterGameMode",
+            BindingFlags.Static | BindingFlags.NonPublic,
+            null,
+            [
             typeof(Type),
             typeof(MiraPluginInfo)
-        ], null);
+        ],
+            null);
 
         foreach (var season in ContentSeasons)
         {

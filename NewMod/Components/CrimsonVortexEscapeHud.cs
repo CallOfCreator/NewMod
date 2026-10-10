@@ -268,6 +268,6 @@ public class CrimsonVortexEscapeHud(nint ptr) : MonoBehaviour(ptr)
         Hidden,
         Mashing,
         Escaping,
-        Success
+        Success,
     }
 }

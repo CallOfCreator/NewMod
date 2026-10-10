@@ -24,8 +24,10 @@ public class NewModLocalSettings(ConfigFile config) : LocalSettingsTab(config)
         base.OnOptionChanged(configEntry);
 
         if (configEntry == AlwaysButtonsLeft && Application.platform == RuntimePlatform.Android)
+        {
             foreach (var btn in CustomButtonManager.Buttons)
                 btn.SetButtonLocation(ButtonLocation.BottomLeft);
+        }
 
         if (configEntry == EnableCustomCursor)
         {
