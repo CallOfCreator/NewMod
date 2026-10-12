@@ -13,7 +13,7 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
     public static readonly HashSet<byte> AffectedPlayers = [];
 
     public static readonly Dictionary<byte, int> ActivePulseCounts = [];
-    public static readonly Dictionary<byte, float> OriginalSpeeds = [];
+    public static readonly Dictionary<byte, float> AppliedSpeedMultipliers = [];
 
     public AreaBubble bubble;
     public byte ownerId;
@@ -59,7 +59,7 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
 
             if (activePulses == 0)
             {
-                OriginalSpeeds[localPlayer.PlayerId] = localPlayer.MyPhysics.Speed;
+                AppliedSpeedMultipliers[localPlayer.PlayerId] = _speedMultiplier;
                 localPlayer.MyPhysics.Speed *= _speedMultiplier;
                 AffectedPlayers.Add(localPlayer.PlayerId);
 
@@ -91,7 +91,7 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
         this.ownerId = ownerId;
         _radius = radius;
         _duration = duration;
-        _speedMultiplier = Mathf.Max(0f, 1f - speedMul / 100f);
+        _speedMultiplier = Mathf.Max(0.01f, 1f - speedMul / 100f);
         _enterClip = NewModAsset.FearSound.LoadAsset();
         _heartbeatClip = NewModAsset.HeartbeatSound.LoadAsset();
     }
@@ -116,7 +116,7 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
         ActivePulseCounts.Remove(playerId);
         AffectedPlayers.Remove(playerId);
 
-        if (!OriginalSpeeds.Remove(playerId, out var originalSpeed))
+        if (!AppliedSpeedMultipliers.Remove(playerId, out var multiplier))
             return;
 
         var player = Utils.PlayerById(playerId);
@@ -124,7 +124,7 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
         if (!player || !player.MyPhysics)
             return;
 
-        player.MyPhysics.Speed = originalSpeed;
+        player.MyPhysics.Speed /= multiplier;
 
         if (!player.AmOwner)
             return;
@@ -149,10 +149,10 @@ public class FearPulseArea(IntPtr ptr) : MonoBehaviour(ptr)
     {
         var localPlayer = PlayerControl.LocalPlayer;
 
-        if (localPlayer && OriginalSpeeds.Remove(localPlayer.PlayerId, out var originalSpeed)) localPlayer.MyPhysics.Speed = originalSpeed;
+        if (localPlayer && AppliedSpeedMultipliers.Remove(localPlayer.PlayerId, out var multiplier)) localPlayer.MyPhysics.Speed /= multiplier;
 
         ActivePulseCounts.Clear();
-        OriginalSpeeds.Clear();
+        AppliedSpeedMultipliers.Clear();
         AffectedPlayers.Clear();
     }
 }

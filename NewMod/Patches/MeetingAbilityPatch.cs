@@ -1,6 +1,7 @@
 using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.NeutralRoles;
@@ -29,7 +30,7 @@ public static class MeetingAbilityPatch
 
         switch (PlayerControl.LocalPlayer.Data.Role)
         {
-            case TheVisionary:
+            case RoleBehaviour _ when AbilityExchangeGE.HasRoleAbility<TheVisionary>(PlayerControl.LocalPlayer):
                 if (VisionaryUtilities.SelectedCamera >= 0 && !VisionaryUtilities.BroadcastOwners.Contains(PlayerControl.LocalPlayer.PlayerId))
                 {
                     VisionaryUtilities.RpcBroadcast(PlayerControl.LocalPlayer, VisionaryUtilities.SelectedCamera);
@@ -43,7 +44,7 @@ public static class MeetingAbilityPatch
                 VerifierUtilities.OnMeetingAbilityClicked();
                 return false;
 
-            case ArbitratorRole:
+            case RoleBehaviour _ when AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(PlayerControl.LocalPlayer):
                 ArbitratorRole.OnMeetingAbilityClicked();
                 return false;
 

@@ -5,6 +5,7 @@ using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
@@ -26,7 +27,7 @@ public static class PranksterUtilities
     [MethodRpc((uint)CustomRPC.FakeBody, LocalHandling = RpcLocalHandling.After)]
     public static void CreatePranksterDeadBody(PlayerControl source, byte parentId)
     {
-        if (source.Data.Role is not Prankster || source.Data.IsDead || source.Data.Disconnected || parentId != source.PlayerId || MeetingHud.Instance || ExileController.Instance || FindAllPranksterBodies().Any(body => body.ParentId == parentId)) return;
+        if (!AbilityExchangeGE.HasRoleAbility<Prankster>(source) || source.Data.IsDead || source.Data.Disconnected || parentId != source.PlayerId || MeetingHud.Instance || ExileController.Instance || FindAllPranksterBodies().Any(body => body.ParentId == parentId)) return;
         OverclockedModifier.Pulse(source);
         var deadBody = Object.Instantiate(GameManager.Instance.GetDeadBody(source.Data.Role));
         deadBody.name = PranksterBodyName;

@@ -17,7 +17,8 @@ public static class AndroidButtonLayoutPatch
     [HarmonyAfter(MiraApiPlugin.Id)]
     public static void HudManagerStartPostfix(HudManager __instance)
     {
-        Coroutines.Start(CoPositionAfterJoystickCreated(__instance));
+        if (Application.platform == RuntimePlatform.Android)
+            Coroutines.Start(CoPositionAfterJoystickCreated(__instance));
     }
 
     [HarmonyPostfix]
@@ -43,7 +44,7 @@ public static class AndroidButtonLayoutPatch
 
     private static void PositionLeftButtons(HudManager hudManager)
     {
-        if (Application.platform != RuntimePlatform.Android) return;
+        if (Application.platform != RuntimePlatform.Android || !hudManager) return;
 
         var bottomLeft = MiraHudManagerPatches.BottomLeft;
         var bottomRight = MiraHudManagerPatches.BottomRight;

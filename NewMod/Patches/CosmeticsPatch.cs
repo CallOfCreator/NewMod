@@ -45,17 +45,17 @@ public static class NewModCosmeticTabsPatch
         SetupButtons(
             __instance,
             () =>
-        {
-            HatPage--;
-            if (HatPage < 0) HatPage = CosmeticsCatalog.Instance.HatGroups.Count;
-            GenerateHats(__instance);
-        },
+            {
+                HatPage--;
+                if (HatPage < 0) HatPage = CosmeticsCatalog.Instance.HatGroups.Count;
+                GenerateHats(__instance);
+            },
             () =>
-        {
-            HatPage++;
-            if (HatPage > CosmeticsCatalog.Instance.HatGroups.Count) HatPage = 0;
-            GenerateHats(__instance);
-        });
+            {
+                HatPage++;
+                if (HatPage > CosmeticsCatalog.Instance.HatGroups.Count) HatPage = 0;
+                GenerateHats(__instance);
+            });
 
         GenerateHats(__instance);
         return false;
@@ -82,17 +82,17 @@ public static class NewModCosmeticTabsPatch
         SetupButtons(
             __instance,
             () =>
-        {
-            VisorPage--;
-            if (VisorPage < 0) VisorPage = CosmeticsCatalog.Instance.VisorGroups.Count;
-            GenerateVisors(__instance);
-        },
+            {
+                VisorPage--;
+                if (VisorPage < 0) VisorPage = CosmeticsCatalog.Instance.VisorGroups.Count;
+                GenerateVisors(__instance);
+            },
             () =>
-        {
-            VisorPage++;
-            if (VisorPage > CosmeticsCatalog.Instance.VisorGroups.Count) VisorPage = 0;
-            GenerateVisors(__instance);
-        });
+            {
+                VisorPage++;
+                if (VisorPage > CosmeticsCatalog.Instance.VisorGroups.Count) VisorPage = 0;
+                GenerateVisors(__instance);
+            });
 
         GenerateVisors(__instance);
         return false;
@@ -108,17 +108,17 @@ public static class NewModCosmeticTabsPatch
         SetupButtons(
             __instance,
             () =>
-        {
-            NameplatePage--;
-            if (NameplatePage < 0) NameplatePage = CosmeticsCatalog.Instance.NameplateGroups.Count;
-            GenerateNameplates(__instance);
-        },
+            {
+                NameplatePage--;
+                if (NameplatePage < 0) NameplatePage = CosmeticsCatalog.Instance.NameplateGroups.Count;
+                GenerateNameplates(__instance);
+            },
             () =>
-        {
-            NameplatePage++;
-            if (NameplatePage > CosmeticsCatalog.Instance.NameplateGroups.Count) NameplatePage = 0;
-            GenerateNameplates(__instance);
-        });
+            {
+                NameplatePage++;
+                if (NameplatePage > CosmeticsCatalog.Instance.NameplateGroups.Count) NameplatePage = 0;
+                GenerateNameplates(__instance);
+            });
 
         GenerateNameplates(__instance);
         return false;
@@ -301,9 +301,12 @@ public static class NewModCosmeticTabsPatch
         tab.SetScrollerBounds();
     }
 
-    public static IEnumerator CoLoadNameplatePreview(NameplatesTab tab)
+    private static IEnumerator CoLoadNameplatePreview(NameplatesTab tab)
     {
         yield return new WaitForEndOfFrame();
+        if (!tab)
+            yield break;
+
         tab.previewArea.PreviewNameplate(DataManager.Player.Customization.NamePlate);
     }
 
@@ -356,7 +359,11 @@ public static class NewModCosmeticTabsPatch
 
             var image = chip.transform.GetChild(1).GetComponent<SpriteRenderer>();
 
-            tab.StartCoroutine(tab.CoLoadAssetAsync<NamePlateViewData>(plate.GetAssetReference(), (Action<NamePlateViewData>)(viewData => image.sprite = viewData?.Image)));
+            tab.StartCoroutine(tab.CoLoadAssetAsync<NamePlateViewData>(plate.GetAssetReference(), (Action<NamePlateViewData>)(viewData =>
+            {
+                if (image)
+                    image.sprite = viewData?.Image;
+            })));
 
             chip.Tag = plate;
             chip.SelectionHighlight.gameObject.SetActive(false);
@@ -367,79 +374,51 @@ public static class NewModCosmeticTabsPatch
         tab.SetScrollerBounds();
     }
 
-    public static void SetupButtons(InventoryTab tab, Action previous, Action next)
+    private static void SetupButtons(InventoryTab tab, Action previous, Action next)
     {
         var title = tab.transform.FindChild("Text").GetComponent<TextMeshPro>();
         title.GetComponent<TextTranslatorTMP>()?.DestroyImmediate();
         title.alignment = TextAlignmentOptions.Center;
         title.transform.localPosition = new Vector3(0.86f, -0.23f, -55f);
 
-        var left = tab.transform.FindChild("NewModPageLeft");
-        GameObject leftObj;
+        SetupPageButton(tab, "NewModPageLeft", -1.19f, true, previous);
+        SetupPageButton(tab, "NewModPageRight", 2.91f, false, next);
+    }
 
-        if (!left)
+    private static void SetupPageButton(InventoryTab tab, string name, float x, bool flipX, Action onClick)
+    {
+        var buttonTransform = tab.transform.FindChild(name);
+        GameObject buttonObject;
+
+        if (!buttonTransform)
         {
-            leftObj = Object.Instantiate(PlayerCustomizationMenu.Instance.BackButton.gameObject, tab.transform);
-            leftObj.name = "NewModPageLeft";
-            leftObj.GetComponent<AspectPosition>()?.DestroyImmediate();
-            leftObj.GetComponent<CloseButtonConsoleBehaviour>()?.DestroyImmediate();
+            buttonObject = Object.Instantiate(PlayerCustomizationMenu.Instance.BackButton.gameObject, tab.transform);
+            buttonObject.name = name;
+            buttonObject.GetComponent<AspectPosition>()?.DestroyImmediate();
+            buttonObject.GetComponent<CloseButtonConsoleBehaviour>()?.DestroyImmediate();
         }
         else
         {
-            leftObj = left.gameObject;
+            buttonObject = buttonTransform.gameObject;
         }
 
-        leftObj.SetActive(true);
-        leftObj.transform.localPosition = new Vector3(-1.19f, -0.23f, -55f);
-        leftObj.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+        buttonObject.SetActive(true);
+        buttonObject.transform.localPosition = new Vector3(x, -0.23f, -55f);
+        buttonObject.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
 
-        var leftButton = leftObj.GetComponent<PassiveButton>();
-        var leftSprite = leftObj.GetComponent<SpriteRenderer>();
+        var button = buttonObject.GetComponent<PassiveButton>();
+        var sprite = buttonObject.GetComponent<SpriteRenderer>();
 
-        leftSprite.sprite = MiraAssets.NextButton.LoadAsset();
-        leftSprite.flipX = true;
+        sprite.sprite = MiraAssets.NextButton.LoadAsset();
+        sprite.flipX = flipX;
 
-        leftButton.OnClick = new Button.ButtonClickedEvent();
-        leftButton.OnClick.AddListener((UnityAction)(() => previous()));
+        button.OnClick = new Button.ButtonClickedEvent();
+        button.OnClick.AddListener((UnityAction)onClick);
 
-        leftButton.OnMouseOver = new UnityEvent();
-        leftButton.OnMouseOver.AddListener((UnityAction)(() => leftSprite.sprite = MiraAssets.NextButtonActive.LoadAsset()));
+        button.OnMouseOver = new UnityEvent();
+        button.OnMouseOver.AddListener((UnityAction)(() => sprite.sprite = MiraAssets.NextButtonActive.LoadAsset()));
 
-        leftButton.OnMouseOut = new UnityEvent();
-        leftButton.OnMouseOut.AddListener((UnityAction)(() => leftSprite.sprite = MiraAssets.NextButton.LoadAsset()));
-
-        var right = tab.transform.FindChild("NewModPageRight");
-        GameObject rightObj;
-
-        if (!right)
-        {
-            rightObj = Object.Instantiate(PlayerCustomizationMenu.Instance.BackButton.gameObject, tab.transform);
-            rightObj.name = "NewModPageRight";
-            rightObj.GetComponent<AspectPosition>()?.DestroyImmediate();
-            rightObj.GetComponent<CloseButtonConsoleBehaviour>()?.DestroyImmediate();
-        }
-        else
-        {
-            rightObj = right.gameObject;
-        }
-
-        rightObj.SetActive(true);
-        rightObj.transform.localPosition = new Vector3(2.91f, -0.23f, -55f);
-        rightObj.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
-
-        var rightButton = rightObj.GetComponent<PassiveButton>();
-        var rightSprite = rightObj.GetComponent<SpriteRenderer>();
-
-        rightSprite.sprite = MiraAssets.NextButton.LoadAsset();
-        rightSprite.flipX = false;
-
-        rightButton.OnClick = new Button.ButtonClickedEvent();
-        rightButton.OnClick.AddListener((UnityAction)(() => next()));
-
-        rightButton.OnMouseOver = new UnityEvent();
-        rightButton.OnMouseOver.AddListener((UnityAction)(() => rightSprite.sprite = MiraAssets.NextButtonActive.LoadAsset()));
-
-        rightButton.OnMouseOut = new UnityEvent();
-        rightButton.OnMouseOut.AddListener((UnityAction)(() => rightSprite.sprite = MiraAssets.NextButton.LoadAsset()));
+        button.OnMouseOut = new UnityEvent();
+        button.OnMouseOut.AddListener((UnityAction)(() => sprite.sprite = MiraAssets.NextButton.LoadAsset()));
     }
 }

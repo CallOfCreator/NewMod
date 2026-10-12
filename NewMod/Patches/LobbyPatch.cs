@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Text.Json;
 using HarmonyLib;
@@ -15,42 +14,34 @@ namespace NewMod.Patches;
 public static class LobbyPatch
 {
     public static string lastContent;
-    private static IEnumerator _announcementRoutine;
 
     [HarmonyPatch(nameof(LobbyBehaviour.Start))]
     [HarmonyPostfix]
-    public static void StartPostfix()
+    public static void StartPostfix(LobbyBehaviour __instance)
     {
-        StopAnnouncementRoutine();
-        _announcementRoutine = Coroutines.Start(CoCheckAnnouncement());
+        Coroutines.Start(CoCheckAnnouncement(__instance));
     }
 
-    [HarmonyPatch(nameof(LobbyBehaviour.OnDestroy))]
-    [HarmonyPostfix]
-    public static void OnDestroyPostfix()
+    private static IEnumerator CoCheckAnnouncement(LobbyBehaviour lobby)
     {
-        StopAnnouncementRoutine();
-    }
+        while (lobby && !HudManager.Instance)
+            yield return null;
 
-    private static void StopAnnouncementRoutine()
-    {
-        if (_announcementRoutine == null)
-            return;
-
-        Coroutines.Stop(_announcementRoutine);
-        ((IDisposable)_announcementRoutine).Dispose();
-        _announcementRoutine = null;
-    }
-
-    private static IEnumerator CoCheckAnnouncement()
-    {
         var url = NewMod.NewModBackendAPI + "/api/v1/get-announcement";
-        while (LobbyBehaviour.Instance)
+        while (lobby)
         {
             var req = UnityWebRequest.Get(url);
             try
             {
-                yield return req.SendWebRequest();
+                req.SendWebRequest();
+                while (lobby && !req.isDone)
+                    yield return null;
+
+                if (!lobby || !HudManager.Instance)
+                {
+                    req.Abort();
+                    yield break;
+                }
 
                 if (req.result == UnityWebRequest.Result.Success)
                 {
@@ -71,8 +62,8 @@ public static class LobbyPatch
                         var content = res?.content;
                         if (!string.IsNullOrEmpty(content) && content != lastContent)
                         {
-                            lastContent = content;
                             ShowPopup("New Lobby Message!", content);
+                            lastContent = content;
                         }
                     }
                 }
@@ -92,14 +83,12 @@ public static class LobbyPatch
         var template = banMenu.ReportReason.ConfirmScreen;
         var popup = Object.Instantiate(template, HudManager.Instance.transform);
 
-        popup.transform.Find("HeaderText").GetComponent<TextTranslatorTMP>().Destroy();
-        popup.transform.Find("BodyText").GetComponent<TextTranslatorTMP>().Destroy();
-
-        var headerText = popup.transform.Find("HeaderText").GetComponent<TextMeshPro>();
-        headerText.text = title;
-
-        var bodyText = popup.transform.Find("BodyText").GetComponent<TextMeshPro>();
-        bodyText.text = content;
+        var header = popup.transform.Find("HeaderText");
+        var body = popup.transform.Find("BodyText");
+        header.GetComponent<TextTranslatorTMP>().Destroy();
+        body.GetComponent<TextTranslatorTMP>().Destroy();
+        header.GetComponent<TextMeshPro>().text = title;
+        body.GetComponent<TextMeshPro>().text = content;
 
         popup.gameObject.SetActive(true);
 

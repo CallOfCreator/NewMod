@@ -2,6 +2,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.NeutralRoles;
@@ -44,6 +45,6 @@ public class ShowScreenshotButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is TheVisionary;
+        return AbilityExchangeGE.HasRoleAbility<TheVisionary>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 }

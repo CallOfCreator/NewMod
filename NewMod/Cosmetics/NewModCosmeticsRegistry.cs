@@ -21,7 +21,7 @@ public static class NewModCosmeticsRegistry
     public static void RegisterHat(string name, Sprite sprite, HatMetadata? meta = null)
     {
         var descriptor = Register(name, sprite, CorsacCosmeticType.Hat, meta ?? new HatMetadata { Name = name });
-        HatIds[name] = descriptor.Id;
+        HatIds[name] = descriptor.AssetId;
     }
 
     public static void RegisterVisor(string name, Sprite sprite, VisorMetadata? meta = null)
@@ -46,7 +46,7 @@ public static class NewModCosmeticsRegistry
         }
 
         var descriptor = new CosmeticDescriptor(SourceId, GroupName, name, type, metadata, reader);
-        var existing = Cosmetics.Find(cosmetic => cosmetic.Id == descriptor.Id);
+        var existing = Cosmetics.Find(cosmetic => cosmetic.AssetId == descriptor.AssetId);
         if (existing != null)
             return existing;
 

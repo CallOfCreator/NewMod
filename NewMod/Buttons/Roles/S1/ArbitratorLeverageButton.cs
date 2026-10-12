@@ -6,6 +6,7 @@ using MiraAPI.Modifiers;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
@@ -29,7 +30,7 @@ public class ArbitratorLeverageButton : CustomActionButton<PlayerControl>, IEner
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is ArbitratorRole;
+        return AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override PlayerControl GetTarget()

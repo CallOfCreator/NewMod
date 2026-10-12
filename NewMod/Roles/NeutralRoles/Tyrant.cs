@@ -175,8 +175,11 @@ public class Tyrant : ImpostorRole, INewModRole
 
     public static IEnumerator CoPulse(PlayerControl owner, Vector2 position)
     {
+        if (!owner || owner.Data.Role is not Tyrant tyrant)
+            yield break;
+
         var options = OptionGroupSingleton<TyrantOptions>.Instance;
-        var radius = options.FearPulseRadius + Mathf.Min(2, ((Tyrant)owner.Data.Role).Kills - 1) * 0.5f;
+        var radius = options.FearPulseRadius + Mathf.Min(2, tyrant.Kills - 1) * 0.5f;
         var bubble = Utils.CreateSphere("TyrantPulse", new Vector3(position.x, position.y, -1f), radius, Color.red, options.PulseWarning + options.FearPulseDuration);
         yield return new WaitForSeconds(options.PulseWarning);
         if (!owner || owner.Data.IsDead || owner.Data.Disconnected || owner.Data.Role is not Tyrant || MeetingHud.Instance || ExileController.Instance)

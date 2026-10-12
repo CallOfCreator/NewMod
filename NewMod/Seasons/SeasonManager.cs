@@ -135,19 +135,7 @@ public static class SeasonManager
 
                 roles.Add(type);
 
-                foreach (var method in AccessTools.GetDeclaredMethods(type))
-                {
-                    var attribute = method.GetCustomAttribute<RegisterEventAttribute>();
-
-                    if (attribute == null || !method.IsStatic)
-                        continue;
-
-                    var parameters = method.GetParameters();
-
-                    if (parameters.Length != 1 || !parameters[0].ParameterType.IsSubclassOf(typeof(MiraEvent))) continue;
-
-                    MiraEventManager.RegisterEventHandler(parameters[0].ParameterType, method, attribute.Priority);
-                }
+                RegisterSeasonEvents(type);
             }
 
             foreach (var type in season.GetSeasonModifierTypes())
@@ -155,6 +143,7 @@ public static class SeasonManager
                 if (registerModifier == null || !RegisteredSeasonContent.Add(type)) continue;
 
                 registerModifier.Invoke(null, [type, pluginInfo]);
+                RegisterSeasonEvents(type);
             }
 
             foreach (var type in season.GetSeasonOptionTypes())
@@ -177,6 +166,23 @@ public static class SeasonManager
 
                 registerGameMode.Invoke(null, [type, pluginInfo]);
             }
+        }
+    }
+
+    public static void RegisterSeasonEvents(Type type)
+    {
+        foreach (var method in AccessTools.GetDeclaredMethods(type))
+        {
+            var attribute = method.GetCustomAttribute<RegisterEventAttribute>();
+
+            if (attribute == null || !method.IsStatic)
+                continue;
+
+            var parameters = method.GetParameters();
+
+            if (parameters.Length != 1 || !parameters[0].ParameterType.IsSubclassOf(typeof(MiraEvent))) continue;
+
+            MiraEventManager.RegisterEventHandler(parameters[0].ParameterType, method, attribute.Priority);
         }
     }
 

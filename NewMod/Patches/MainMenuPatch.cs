@@ -55,9 +55,12 @@ public static class MainMenuPatch
         if (!AchievementsManager.Tabs.Any(tab => tab is PreseasonAchievementsTab))
             AchievementsManager.Tabs.Add(new PreseasonAchievementsTab());
 
-        GetCursorTexture();
-
-        if (_cachedCursor && LocalSettingsTabSingleton<NewModLocalSettings>.Instance.EnableCustomCursor.Value) Cursor.SetCursor(_cachedCursor, Vector2.zero, CursorMode.Auto);
+        if (LocalSettingsTabSingleton<NewModLocalSettings>.Instance.EnableCustomCursor.Value)
+        {
+            var cursor = GetCursorTexture();
+            if (cursor)
+                Cursor.SetCursor(cursor, Vector2.zero, CursorMode.Auto);
+        }
 
         RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
 

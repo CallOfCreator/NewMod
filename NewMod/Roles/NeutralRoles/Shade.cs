@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using AmongUs.GameOptions;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -11,6 +12,7 @@ using MiraAPI.Roles;
 using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Utilities;
@@ -65,12 +67,12 @@ public class Shade : ImpostorRole, INewModRole
         var killer = evt.Source;
         var victim = evt.Target;
 
-        Utils.RecordOnKill(killer, victim);
-
-        if (killer.Data.Role is not Shade)
+        if (!victim.Data.IsDead || !ShadowZone.zones.Any(zone => zone && zone.shadeId == killer.PlayerId && zone.Contains(killer.GetTruePosition()) && zone.Contains(victim.GetTruePosition())))
             return;
 
-        if (!victim.Data.IsDead || !ShadowZone.zones.Any(zone => zone && zone.shadeId == killer.PlayerId && zone.Contains(killer.GetTruePosition()) && zone.Contains(victim.GetTruePosition())))
+        if (killer.AmOwner && !killer.Data.Role.CanUseKillButton)
+            killer.killTimer = GameOptionsManager.Instance.CurrentGameOptions.GetFloat(FloatOptionNames.KillCooldown);
+        if (killer.Data.Role is not Shade)
             return;
 
         var id = killer.PlayerId;
@@ -86,7 +88,7 @@ public class Shade : ImpostorRole, INewModRole
     [RegisterEvent]
     public static void BeforeMurder(BeforeMurderEvent evt)
     {
-        if (evt.Source.Data.Role is not Shade) return;
+        if (!AbilityExchangeGE.HasRoleAbility<Shade>(evt.Source)) return;
         if (!ShadowZone.zones.Any(zone => zone && zone.shadeId == evt.Source.PlayerId && zone.Contains(evt.Source.GetTruePosition()) && zone.Contains(evt.Target.GetTruePosition())))
             evt.Cancel();
     }

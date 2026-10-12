@@ -29,18 +29,23 @@ public static class EnergyThiefAbilityEvents
             EnergyThief.ReportAbilityUse(ability.Category);
     }
 
-    [RegisterEvent]
-    public static void BlockVanillaBrownout(VanillaButtonClickEvent evt)
+    public static EnergyCategory? GetVanillaCategory(RoleTypes role)
     {
-        var category = PlayerControl.LocalPlayer.Data.Role.Role switch
+        return role switch
         {
             RoleTypes.Scientist or RoleTypes.Tracker or RoleTypes.Detective or RoleTypes.Judge => EnergyCategory.Intelligence,
             RoleTypes.Engineer or RoleTypes.Phantom => EnergyCategory.Mobility,
             RoleTypes.GuardianAngel => EnergyCategory.Protection,
             RoleTypes.Shapeshifter => EnergyCategory.Control,
             RoleTypes.Viper => EnergyCategory.Aggression,
-            _ => (EnergyCategory?)null,
+            _ => null,
         };
+    }
+
+    [RegisterEvent]
+    public static void BlockVanillaBrownout(VanillaButtonClickEvent evt)
+    {
+        var category = GetVanillaCategory(PlayerControl.LocalPlayer.Data.Role.Role);
 
         if (!category.HasValue || !EnergyThief.IsBrownedOut(PlayerControl.LocalPlayer.PlayerId, category.Value))
             return;
@@ -55,15 +60,7 @@ public static class EnergyThiefAbilityEvents
         if (evt.IsCancelled)
             return;
 
-        var category = PlayerControl.LocalPlayer.Data.Role.Role switch
-        {
-            RoleTypes.Scientist or RoleTypes.Tracker or RoleTypes.Detective or RoleTypes.Judge => EnergyCategory.Intelligence,
-            RoleTypes.Engineer or RoleTypes.Phantom => EnergyCategory.Mobility,
-            RoleTypes.GuardianAngel => EnergyCategory.Protection,
-            RoleTypes.Shapeshifter => EnergyCategory.Control,
-            RoleTypes.Viper => EnergyCategory.Aggression,
-            _ => (EnergyCategory?)null,
-        };
+        var category = GetVanillaCategory(PlayerControl.LocalPlayer.Data.Role.Role);
 
         if (category.HasValue)
             EnergyThief.ReportAbilityUse(category.Value);
@@ -98,7 +95,7 @@ public static class NewModHostTickPatch
         if (!AmongUsClient.Instance.AmHost && !AmongUsClient.Instance.AmLocalHost)
             return;
 
-        if (EnergyThief.TetherTargets.Count > 0 || EnergyThief.BreachActive)
+        if (EnergyThief.TetherTargets.Count > 0 || EnergyThief.BreachActive || (EnergyThief.Energy.Count > 0 && EnergyThief.NodePositionIndex < 0))
             EnergyThief.HostFixedUpdate();
 
         if (InjectorUtilities.Experiments.Count > 0)

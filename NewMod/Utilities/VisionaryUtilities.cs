@@ -6,6 +6,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Utilities;
 using NewMod.Components.Minigames;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Networking;
 using NewMod.Options.Roles;
@@ -24,6 +25,7 @@ public static class VisionaryUtilities
     public class CameraRecord
     {
         public byte Owner;
+        public bool Borrowed;
         public Vector2 Direction;
         public GameObject Object;
         public byte[] Image;
@@ -45,7 +47,7 @@ public static class VisionaryUtilities
     [MethodRpc((uint)CustomRPC.VisionaryRequestCamera, LocalHandling = RpcLocalHandling.After)]
     public static void RpcRequestCamera(PlayerControl source, float x, float y, float angle)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not TheVisionary || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance)
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<TheVisionary>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance)
             return;
         if (Cameras.Values.Count(camera => camera.Owner == source.PlayerId) >= OptionGroupSingleton<VisionaryOptions>.Instance.MaxScreenshots)
             return;
@@ -64,6 +66,9 @@ public static class VisionaryUtilities
     {
         if (!source.IsHost() || Cameras.ContainsKey(id))
             return;
+        var owner = Utils.PlayerById(ownerId);
+        if (!owner)
+            return;
         NextCameraId = Math.Max(NextCameraId, id + 1);
         var go = new GameObject("VisionaryCamera") { layer = LayerMask.NameToLayer("Ship") };
         go.transform.SetParent(ShipStatus.Instance.transform, false);
@@ -81,7 +86,7 @@ public static class VisionaryUtilities
         collider.size = bounds.size;
         collider.offset = renderer.transform.localPosition + bounds.center;
         var radians = angle * Mathf.Deg2Rad;
-        Cameras[id] = new CameraRecord { Owner = ownerId, Object = go, Direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) };
+        Cameras[id] = new CameraRecord { Owner = ownerId, Borrowed = owner.Data.Role is not TheVisionary, Object = go, Direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) };
         if (AmongUsClient.Instance.AmHost)
             Coroutines.Start(CaptureCamera(id));
     }
@@ -95,7 +100,7 @@ public static class VisionaryUtilities
         if (!Cameras.TryGetValue(id, out var current) || current != record || !record.Object)
             yield break;
         var owner = Utils.PlayerById(record.Owner);
-        if (!owner || owner.Data.Role is not TheVisionary || owner.Data.IsDead || owner.Data.Disconnected)
+        if (!owner || (owner.Data.Role is not TheVisionary && !record.Borrowed) || owner.Data.IsDead || owner.Data.Disconnected)
             yield break;
         var position = (Vector2)record.Object.transform.position;
         var jammed = Utils.IsActive(SystemTypes.Comms);
@@ -153,7 +158,7 @@ public static class VisionaryUtilities
     [MethodRpc((uint)CustomRPC.VisionaryBroadcast, LocalHandling = RpcLocalHandling.After)]
     public static void RpcBroadcast(PlayerControl source, int id)
     {
-        if (!AmongUsClient.Instance.AmHost || !MeetingHud.Instance || source.Data.Role is not TheVisionary || source.Data.IsDead || !Cameras.TryGetValue(id, out var record) || record.Owner != source.PlayerId || !record.Collected || record.Image == null || !BroadcastOwners.Add(source.PlayerId))
+        if (!AmongUsClient.Instance.AmHost || !MeetingHud.Instance || !AbilityExchangeGE.HasRoleAbility<TheVisionary>(source) || source.Data.IsDead || !Cameras.TryGetValue(id, out var record) || record.Owner != source.PlayerId || !record.Collected || record.Image == null || !BroadcastOwners.Add(source.PlayerId))
             return;
         Coroutines.Start(SendPhoto(id, -1, MeetingNumber));
     }

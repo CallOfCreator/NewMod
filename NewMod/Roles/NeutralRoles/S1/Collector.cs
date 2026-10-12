@@ -258,10 +258,12 @@ public class Collector : CrewmateRole, INewModRole
         var options = OptionGroupSingleton<CollectorOptions>.Instance;
         if (power == FragmentPower.Drift)
         {
-            var originalSpeed = player.MyPhysics.Speed;
-            player.MyPhysics.Speed *= 1f + options.DriftSpeedBonus / 100f;
+            var physics = player.MyPhysics;
+            var speedMultiplier = 1f + options.DriftSpeedBonus / 100f;
+            physics.Speed *= speedMultiplier;
             yield return new WaitForSeconds(options.DriftDuration);
-            player.MyPhysics.Speed = originalSpeed;
+            if (physics)
+                physics.Speed /= speedMultiplier;
             yield break;
         }
 

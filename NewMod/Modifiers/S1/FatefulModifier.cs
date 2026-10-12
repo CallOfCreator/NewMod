@@ -36,7 +36,7 @@ public class FatefulModifier : GameModifier, INewModModifier
     [RegisterEvent]
     public static void OnTaskComplete(CompleteTaskEvent evt)
     {
-        if (!evt.Player.HasModifier<FatefulModifier>()) return;
+        if (!evt.Player.AmOwner || !evt.Player.HasModifier<FatefulModifier>()) return;
 
         var chance = OptionGroupSingleton<FatefulModifierOptions>.Instance.DeathChance;
         var roll = Random.Range(0f, 100f);

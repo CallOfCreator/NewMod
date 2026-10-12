@@ -2,6 +2,7 @@
 using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Roles.CrewmateRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using UnityEngine;
@@ -22,7 +23,7 @@ public class InspectResidualButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is WardenRole;
+        return AbilityExchangeGE.HasRoleAbility<WardenRole>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override bool CanUse()

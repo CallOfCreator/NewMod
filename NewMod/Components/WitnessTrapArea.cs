@@ -11,7 +11,7 @@ namespace NewMod.Components;
 [RegisterInIl2Cpp]
 public class WitnessTrapArea(IntPtr ptr) : MonoBehaviour(ptr)
 {
-    public static float _duration;
+    public float _duration;
     public byte _ownerId;
     public float _radius;
     public float _freezeSeconds;

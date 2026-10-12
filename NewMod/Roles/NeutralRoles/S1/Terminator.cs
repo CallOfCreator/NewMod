@@ -10,6 +10,7 @@ using MiraAPI.Events.Vanilla.Meeting;
 using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
+using MiraAPI.Networking;
 using MiraAPI.PluginLoading;
 using MiraAPI.Roles;
 using MiraAPI.Translation;
@@ -17,6 +18,7 @@ using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Buttons.Roles.S1;
 using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -36,6 +38,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
     public static ArrowBehaviour ThreatArrow;
     public static TextMeshPro ThreatText;
     public static bool FinalCountdownActive;
+    public static byte FinalCountdownOwnerId = byte.MaxValue;
     public static Vector2 ObjectivePosition;
     public static GameObject ObjectiveMarker;
     public static int Armor = 1;
@@ -179,7 +182,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.TerminatorFinalCountdown)]
     public static void RpcStartFinalCountdown(PlayerControl source)
     {
-        if (!ObjectiveSpawned || FinalCountdownActive || source.Data.Role is not TerminatorRole || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance)
+        if (!ObjectiveSpawned || FinalCountdownActive || !AbilityExchangeGE.HasRoleAbility<TerminatorRole>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance)
             return;
 
         var radius = OptionGroupSingleton<TerminatorOptions>.Instance.FinalObjectiveRadius;
@@ -187,6 +190,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
             return;
 
         FinalCountdownActive = true;
+        FinalCountdownOwnerId = source.PlayerId;
         ObjectiveSpawned = false;
         ResetArmor((int)OptionGroupSingleton<TerminatorOptions>.Instance.ArmorSegments);
 
@@ -233,7 +237,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
         var timeLeft = duration;
         var flashTimer = 0f;
 
-        while (timeLeft > 0f && FinalCountdownActive && !terminator.Data.IsDead && !terminator.Data.Disconnected)
+        while (timeLeft > 0f && FinalCountdownActive && terminator && !terminator.Data.IsDead && !terminator.Data.Disconnected)
         {
             var inMeeting = MeetingHud.Instance || ExileController.Instance;
 
@@ -276,16 +280,19 @@ public class TerminatorRole : CrewmateRole, INewModRole
         ThreatArrow = null;
         ThreatText = null;
         FinalCountdownActive = false;
+        FinalCountdownOwnerId = byte.MaxValue;
         CustomButtonSingleton<TerminateButton>.Instance.SetActive(false, PlayerControl.LocalPlayer.Data.Role);
 
-        if (timeLeft <= 0f && !terminator.Data.IsDead && !terminator.Data.Disconnected && AmongUsClient.Instance.AmHost)
+        if (timeLeft <= 0f && terminator && terminator.Data.Role is TerminatorRole && !terminator.Data.IsDead && !terminator.Data.Disconnected && AmongUsClient.Instance.AmHost)
             CustomGameOver.Trigger<TerminatorGameOver>([terminator.Data]);
+        else if (terminator && terminator.Data.Role is not TerminatorRole && AmongUsClient.Instance.AmHost && AmongUsClient.Instance.IsGameStarted)
+            RpcSpawnObjective(PlayerControl.LocalPlayer, ObjectivePosition.x, ObjectivePosition.y);
     }
 
     [MethodRpc((uint)CustomRPC.TerminatorRequestEliminate)]
     public static void RpcRequestTerminate(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || !FinalCountdownActive || MeetingHud.Instance || ExileController.Instance || source.inVent || source.Data.IsDead || source.Data.Disconnected || source.Data.Role is TerminatorRole)
+        if (!AmongUsClient.Instance.AmHost || !FinalCountdownActive || MeetingHud.Instance || ExileController.Instance || source.inVent || source.Data.IsDead || source.Data.Disconnected || source.PlayerId == FinalCountdownOwnerId)
             return;
 
         var terminator = GetTerminator();
@@ -299,6 +306,12 @@ public class TerminatorRole : CrewmateRole, INewModRole
 
         if (Armor != 0)
             return;
+
+        if (terminator.Data.Role is not TerminatorRole)
+        {
+            terminator.RpcCustomMurder(terminator, MeetingCheck.OutsideMeeting, resetKillTimer: false);
+            return;
+        }
 
         var winners = PlayerControl.AllPlayerControls.ToArray().Where(player => !player.Data.Disconnected && player.Data.Role is not TerminatorRole).Select(player => player.Data).ToArray();
         CustomGameOver.Trigger<TerminatorDefeatedGameOver>(winners);
@@ -327,7 +340,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
     {
         DestroyObjectiveArrow();
 
-        if (PlayerControl.LocalPlayer.Data.Role is not TerminatorRole)
+        if (!AbilityExchangeGE.HasRoleAbility<TerminatorRole>(PlayerControl.LocalPlayer))
             return;
 
         var go = new GameObject("TerminatorObjectiveArrow");
@@ -353,7 +366,16 @@ public class TerminatorRole : CrewmateRole, INewModRole
 
     public static PlayerControl GetTerminator()
     {
-        return PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p && p.Data != null && p.Data.Role is TerminatorRole);
+        if (FinalCountdownOwnerId != byte.MaxValue)
+            return Utils.PlayerById(FinalCountdownOwnerId);
+
+        foreach (var player in PlayerControl.AllPlayerControls)
+        {
+            if (player && player.Data != null && player.Data.Role is TerminatorRole)
+                return player;
+        }
+
+        return null;
     }
 
     public static Vector2 PickObjectivePosition()
@@ -495,6 +517,7 @@ public class TerminatorRole : CrewmateRole, INewModRole
         MeetingsSurvived = 0;
         ObjectiveSpawned = false;
         FinalCountdownActive = false;
+        FinalCountdownOwnerId = byte.MaxValue;
         ObjectivePosition = Vector2.zero;
         ResetArmor(1);
 

@@ -19,15 +19,15 @@ public class EnergyTab : IDebugTab
             return;
         }
 
-        GUILayout.Label("STATUS");
-        GUILayout.Label($"{PlayerTab.SelectedPlayer.Data.PlayerName} #{PlayerTab.SelectedPlayerId}");
-
         var thief = Utils.PlayerById(PlayerTab.SelectedPlayerId);
         if (!thief || thief.Data.Role is not EnergyThief)
         {
             GUILayout.Label("Select a player with the Energy Thief role");
             return;
         }
+
+        GUILayout.Label("STATUS");
+        GUILayout.Label($"{thief.Data.PlayerName} #{thief.PlayerId}");
 
         EnergyThief.Energy.TryGetValue(thief.PlayerId, out var energy);
         EnergyThief.Categories.TryGetValue(thief.PlayerId, out var categories);
@@ -68,7 +68,7 @@ public class EnergyTab : IDebugTab
             EnergyThief.RpcResolveBreach(PlayerControl.LocalPlayer, thief.PlayerId, true);
     }
 
-    private static void CaptureEnergy(PlayerControl thief, EnergyCategory category, bool raw)
+    public static void CaptureEnergy(PlayerControl thief, EnergyCategory category, bool raw)
     {
         if (EnergyThief.TetherTargets.ContainsKey(thief.PlayerId))
             EnergyThief.RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, thief.PlayerId);
@@ -82,7 +82,7 @@ public class EnergyTab : IDebugTab
         EnergyThief.RpcConfirmCapture(PlayerControl.LocalPlayer, thief.PlayerId, target.PlayerId, (byte)category, raw);
     }
 
-    private static void CompleteEnergyThiefRequirements(PlayerControl thief)
+    public static void CompleteEnergyThiefRequirements(PlayerControl thief)
     {
         var categories = new[] { EnergyCategory.Aggression, EnergyCategory.Control, EnergyCategory.Intelligence, EnergyCategory.Mobility, EnergyCategory.Protection };
 

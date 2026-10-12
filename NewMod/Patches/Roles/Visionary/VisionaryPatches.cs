@@ -1,6 +1,8 @@
+using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Networking;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Utilities;
@@ -24,14 +26,27 @@ public static class VisionaryMeetingEvents
         VisionaryUtilities.BroadcastOwners.Clear();
         Object.Destroy(VisionaryUtilities.PhotoPanel);
         VisionaryUtilities.PhotoPanel = null;
-        if (PlayerControl.LocalPlayer.Data.Role is not TheVisionary || PlayerControl.LocalPlayer.Data.IsDead)
+        UpdateMeetingButton();
+    }
+
+    public static void UpdateMeetingButton()
+    {
+        if (!MeetingHud.Instance)
             return;
-        var button = evt.MeetingHud.MeetingAbilityButton;
+
+        var button = MeetingHud.Instance.MeetingAbilityButton;
+        if (!AbilityExchangeGE.HasRoleAbility<TheVisionary>(PlayerControl.LocalPlayer) || PlayerControl.LocalPlayer.Data.IsDead)
+        {
+            if (button.graphic.sprite == NewModAsset.ShowScreenshotButton.LoadAsset())
+                button.Hide();
+            return;
+        }
         button.Show();
         button.SetInfiniteUses();
         button.SetCoolDown(0f, 1f);
         button.graphic.sprite = NewModAsset.ShowScreenshotButton.LoadAsset();
-        button.OverrideText("BROADCAST");
+        button.OverrideColor(Color.white);
+        button.OverrideText(VisionaryUtilities.BroadcastOwners.Contains(PlayerControl.LocalPlayer.PlayerId) ? "SENT" : "BROADCAST");
     }
 
     [RegisterEvent]
@@ -39,7 +54,7 @@ public static class VisionaryMeetingEvents
     {
         Object.Destroy(VisionaryUtilities.PhotoPanel);
         VisionaryUtilities.PhotoPanel = null;
-        foreach (var key in System.Linq.Enumerable.ToArray(VisionaryPhotoRpc.Transfers.Keys))
+        foreach (var key in VisionaryPhotoRpc.Transfers.Keys.ToArray())
         {
             if (key.Meeting >= 0)
                 VisionaryPhotoRpc.Transfers.Remove(key);

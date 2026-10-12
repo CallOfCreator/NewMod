@@ -21,7 +21,7 @@ public class TerminateButton : CustomActionButton<PlayerControl>
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return Button && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.Data && role is not TerminatorRole;
+        return Button && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.Data && TerminatorRole.FinalCountdownActive && PlayerControl.LocalPlayer.PlayerId != TerminatorRole.FinalCountdownOwnerId;
     }
 
     public override void SetActive(bool visible, RoleBehaviour role)

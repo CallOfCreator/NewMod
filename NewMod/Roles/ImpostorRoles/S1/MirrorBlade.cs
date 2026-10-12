@@ -13,6 +13,7 @@ using MiraAPI.Roles;
 using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
@@ -80,7 +81,7 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
         if (Reflecting || !PlayerControl.LocalPlayer.IsHost())
             return;
 
-        if (evt.Target.Data.Role is not MirrorBladeRole || !ArmedReflections.Remove(evt.Target.PlayerId))
+        if (!ArmedReflections.Remove(evt.Target.PlayerId))
             return;
 
         evt.Cancel();
@@ -114,7 +115,7 @@ public class MirrorBladeRole : ImpostorRole, INewModRole
     [MethodRpc((uint)CustomRPC.MirrorBladeArm)]
     public static void RpcArmReflection(PlayerControl source)
     {
-        if (source.Data.Role is not MirrorBladeRole || source.Data.IsDead || source.inVent || MeetingHud.Instance || !ArmedReflections.Add(source.PlayerId))
+        if (!AbilityExchangeGE.HasRoleAbility<MirrorBladeRole>(source) || source.Data.IsDead || source.inVent || MeetingHud.Instance || !ArmedReflections.Add(source.PlayerId))
             return;
         OverclockedModifier.Pulse(source);
         Coroutines.Start(CoDisarmReflection(source, OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectWindow));

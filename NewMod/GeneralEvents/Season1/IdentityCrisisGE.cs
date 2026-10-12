@@ -17,9 +17,17 @@ public class IdentityCrisisGE : IGeneralEvent
 
     public bool CanOccur()
     {
-        var players = PlayerControl.AllPlayerControls.ToArray().Where(player => !player.Data.IsDead && !player.Data.Disconnected && !player.HasModifier<InVoid>()).ToArray();
+        var count = 0;
+        foreach (var player in PlayerControl.AllPlayerControls)
+        {
+            if (player.Data.IsDead || player.Data.Disconnected || player.HasModifier<InVoid>())
+                continue;
+            if (player.CurrentOutfitType != PlayerOutfitType.Default)
+                return false;
+            count++;
+        }
 
-        return players.Length > 1 && players.All(player => player.CurrentOutfitType == PlayerOutfitType.Default);
+        return count > 1;
     }
 
     public void OnEventStart()

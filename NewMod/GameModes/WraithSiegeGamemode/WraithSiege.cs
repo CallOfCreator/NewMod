@@ -637,7 +637,7 @@ public sealed class WraithSiege : AbstractGameMode
 
     private IEnumerator CoDelivery(int npcId)
     {
-        while (!Ended && _activeNpcs.TryGetValue(npcId, out var npc) && npc.Active && !npc.AtDeliverySlot) yield return null;
+        while (!Ended && _activeNpcs.TryGetValue(npcId, out var npc) && npc.Active && npc.status != WraithSiegeNpc.WraithStatus.Done) yield return null;
 
         if (Ended || !_activeNpcs.ContainsKey(npcId)) yield break;
 

@@ -107,7 +107,7 @@ public static class GeneralEventManager
         if (!AmongUsClient.Instance.AmHost || !OptionGroupSingleton<GEOptions>.Instance.EnableGeneralEvents || GameManager.Instance.IsHideAndSeek() || (CustomGameModeManager.ActiveMode != null && !CustomGameModeManager.IsClassic()))
             return;
 
-        if (!TypeToIdMap.TryGetValue(type, out var id))
+        if (!TypeToIdMap.TryGetValue(type, out var id) || !Registered.First(ge => ge.GetType() == type).CanOccur())
             return;
 
         _issuedSequence++;

@@ -9,7 +9,7 @@ public static class CollectorExilePatch
     [HarmonyPrefix]
     public static void Prefix(NetworkedPlayerInfo player, bool voteTie)
     {
-        if (!AmongUsClient.Instance.AmHost || player == null || voteTie)
+        if (!AmongUsClient.Instance.AmHost || !player || !player.Object || voteTie)
             return;
 
         if (Collector.Inventories.Count > 0)

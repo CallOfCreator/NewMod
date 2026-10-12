@@ -40,9 +40,12 @@ public static class SelectRolePatch
         var opts = OptionGroupSingleton<GeneralOption>.Instance;
         var target = Mathf.RoundToInt(opts.TotalNeutrals);
 
-        var allInfos = GameData.Instance.AllPlayers.ToArray().Where(p => p != null && p.Object != null && !p.Disconnected).ToList();
-
-        var allPlayers = allInfos.Select(p => p.Object).ToList();
+        var allPlayers = new List<PlayerControl>();
+        foreach (var player in GameData.Instance.AllPlayers)
+        {
+            if (player && player.Object && !player.Disconnected)
+                allPlayers.Add(player.Object);
+        }
 
         Instance.LogMessage("-------------- NEUTRAL ADJUST: START --------------");
         Instance.LogMessage($"Players={allPlayers.Count}, TotalNeutrals={opts.TotalNeutrals} target={target}, KeepCrewMajority={opts.KeepCrewMajority}, PreferVariety={opts.PreferVariety}");
@@ -134,15 +137,15 @@ public static class SelectRolePatch
             if (r is not INewModRole role)
                 continue;
 
-            if (role.Team != ModdedRoleTeams.Custom)
+            if (role.Team != ModdedRoleTeams.Custom || r.Configuration.HideSettings)
                 continue;
 
             var roleType = (RoleTypes)RoleId.Get(r.GetType());
             var already = active.Count(x => x && x.Role == roleType);
-            var left = r.Configuration.MaxRoleCount - already;
+            var left = r.GetCount().GetValueOrDefault() - already;
             if (left <= 0) continue;
 
-            var chance = r.GetChance().Value;
+            var chance = r.GetChance().GetValueOrDefault();
             if (chance <= 0) continue;
 
             candidates.Add(new Candidate { Role = r, Left = left, Weight = chance, RoleType = roleType });

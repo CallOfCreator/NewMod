@@ -169,7 +169,7 @@ public static class InjectorUtilities
         flash.gameObject.SetActive(false);
         var end = Time.time + duration;
         var nextFlash = 0f;
-        while (owner && Submitting.Contains(owner.PlayerId) && !MeetingHud.Instance && !ExileController.Instance && (AmongUsClient.Instance.IsGameStarted || DestroyableSingleton<TutorialManager>.InstanceExists))
+        while (hud && owner && Submitting.Contains(owner.PlayerId) && !MeetingHud.Instance && !ExileController.Instance && (AmongUsClient.Instance.IsGameStarted || DestroyableSingleton<TutorialManager>.InstanceExists))
         {
             var seconds = Mathf.Max(0, Mathf.CeilToInt(end - Time.time));
             text.text = owner.AmOwner ? $"STAY STILL AND SURVIVE - {seconds}s" : $"STOP THE INJECTOR - {seconds}s";
@@ -186,8 +186,10 @@ public static class InjectorUtilities
 
         if (bubble)
             bubble.GetComponent<AreaBubble>().Break();
-        Object.Destroy(text.gameObject);
-        Object.Destroy(flash.gameObject);
+        if (text)
+            Object.Destroy(text.gameObject);
+        if (flash)
+            Object.Destroy(flash.gameObject);
     }
 
     [MethodRpc((uint)CustomRPC.InjectorFinishSubmission)]

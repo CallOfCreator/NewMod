@@ -4,6 +4,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
@@ -24,7 +25,23 @@ public sealed class DrainButton : CustomActionButton
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is EnergyThief;
+        return AbilityExchangeGE.HasRoleAbility<EnergyThief>(role, PlayerControl.LocalPlayer.PlayerId);
+    }
+
+    public override void SetActive(bool visible, RoleBehaviour role)
+    {
+        base.SetActive(visible, role);
+        if (visible && Enabled(role))
+            return;
+
+        if (_target)
+            _target.cosmetics.SetOutline(false, new Nullable<Color>(Color.magenta));
+        _target = null;
+        if (_breachMode)
+        {
+            _breachMode = false;
+            OverrideName(Name);
+        }
     }
 
     public override bool CanUse()
@@ -49,7 +66,7 @@ public sealed class DrainButton : CustomActionButton
                 _target = null;
             }
 
-            return EnergyThief.NodeOwnerId == player.PlayerId && Vector2.Distance(player.GetTruePosition(), EnergyThief.GetNodePosition()) <= OptionGroupSingleton<EnergyThiefOptions>.Instance.GridBreachRadius;
+            return EnergyThief.NodePositionIndex >= 0 && Vector2.Distance(player.GetTruePosition(), EnergyThief.GetNodePosition()) <= OptionGroupSingleton<EnergyThiefOptions>.Instance.GridBreachRadius;
         }
 
         if (EnergyThief.TetherTargets.ContainsKey(player.PlayerId))

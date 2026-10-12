@@ -1,5 +1,4 @@
 using System.Collections;
-using AmongUs.GameOptions;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -36,15 +35,7 @@ public static class DeadwireButtonEvents
             return;
         }
 
-        var category = PlayerControl.LocalPlayer.Data.Role.Role switch
-        {
-            RoleTypes.Scientist or RoleTypes.Tracker or RoleTypes.Detective or RoleTypes.Judge => EnergyCategory.Intelligence,
-            RoleTypes.Engineer or RoleTypes.Phantom => EnergyCategory.Mobility,
-            RoleTypes.GuardianAngel => EnergyCategory.Protection,
-            RoleTypes.Shapeshifter => EnergyCategory.Control,
-            RoleTypes.Viper => EnergyCategory.Aggression,
-            _ => (EnergyCategory?)null,
-        };
+        var category = EnergyThiefAbilityEvents.GetVanillaCategory(PlayerControl.LocalPlayer.Data.Role.Role);
 
         if (!evt.IsCancelled && category.HasValue && evt.Button.isActiveAndEnabled && evt.Button.CanInteract() && !evt.Button.IsOnCooldown)
             DeadwireRole.RpcRequestCapture(PlayerControl.LocalPlayer, (byte)category.Value);

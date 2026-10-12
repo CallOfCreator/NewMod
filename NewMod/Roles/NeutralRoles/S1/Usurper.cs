@@ -283,18 +283,21 @@ public class Usurper : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.UsurperTakeCrown, LocalHandling = RpcLocalHandling.After)]
     public static void RpcTakeCrown(PlayerControl source, byte usurperId)
     {
-        if (!source.IsHost() || !TakeCrown(usurperId))
+        if (!source.IsHost())
+            return;
+
+        var holder = Utils.PlayerById(usurperId);
+        if (!holder || holder.Data.Role is not Usurper usurper || !TakeCrown(usurperId))
             return;
 
         Pickup.Remove(usurperId);
         CrownPositions.Remove(usurperId);
-        var holder = Utils.PlayerById(usurperId);
         var crown = CrownObjects[usurperId];
         crown.transform.SetParent(holder.transform, false);
         HoldRemaining[usurperId] = Mathf.Max(20f, OptionGroupSingleton<UsurperOptions>.Instance.HoldDuration);
         MeetingEligible.Remove(usurperId);
         Coroutines.Start(CoHoldCrown(holder, crown));
-        var color = ((Usurper)holder.Data.Role).RoleColor.ToTextColor();
+        var color = usurper.RoleColor.ToTextColor();
         var message = holder.AmOwner ? string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.YourCrown"), color, HoldRemaining[usurperId]) : string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.Usurper.Notice.Claimed"), color, holder.Data.PlayerName);
         Coroutines.Start(CoroutinesHelper.CoNotify(message));
     }

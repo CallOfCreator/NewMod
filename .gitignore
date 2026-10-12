@@ -1,7 +1,6 @@
 bin/
 obj/
 References/
-NewMod/Components/Minigames
 NewMod/Components/Hidden.cs
 NewMod/Private
 /packages/

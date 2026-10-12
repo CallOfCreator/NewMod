@@ -32,8 +32,8 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
     public List<IDebugTab> Tabs { get; set; } = [];
 
     public const KeyCode ToggleKey = KeyCode.F8;
-    public const float ZoomMin = 2.5f;
-    public const float ZoomMax = 15f;
+    public const float ZoomMin = global::NewMod.DebugWindow.ZoomMin;
+    public const float ZoomMax = global::NewMod.DebugWindow.ZoomMax;
     public const float ZoomDefault = 3f;
 
     public bool CameraControlsOpen => Enabled && _activeTabIdx < Tabs.Count && Tabs[_activeTabIdx].GetType() == typeof(MatchTab);
@@ -130,19 +130,13 @@ public class DebugWindow(nint ptr) : MonoBehaviour(ptr)
 
         GUILayout.EndHorizontal();
         GUILayout.Space(5f);
-        Tabs[_activeTabIdx].BuildGUI();
+        if (Tabs[_activeTabIdx].ShouldShow)
+            Tabs[_activeTabIdx].BuildGUI();
     }
 
     [HideFromIl2Cpp]
     public void ApplyZoom(float size)
     {
-        Zoom = Mathf.Clamp(size, ZoomMin, ZoomMax);
-
-        foreach (var camera in Camera.allCameras)
-            camera.orthographicSize = Zoom;
-
-        ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen);
-
-        HudManager.Instance.ShadowQuad.gameObject.SetActive(Zoom <= 3f);
+        Zoom = global::NewMod.DebugWindow.SetCameraZoom(size);
     }
 }

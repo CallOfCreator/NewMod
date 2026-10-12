@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using AmongUs.GameOptions;
 using MiraAPI.GameOptions;
 using NewMod.Components.ScreenEffects;
 using NewMod.Components.ScreenEffects.Effects;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
@@ -25,11 +27,12 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
     public float activationDelay;
     public bool concealed;
     public PlayerControl owner;
+    public readonly Il2CppSystem.Collections.Generic.List<PlayerControl> PlayersInRange = new();
 
     public void Update()
     {
         timer += Time.deltaTime;
-        if (!owner || owner.Data.IsDead || owner.Data.Disconnected || owner.Data.Role is not Shade || timer >= duration + activationDelay || MeetingHud.Instance || ExileController.Instance)
+        if (!owner || owner.Data.IsDead || owner.Data.Disconnected || !AbilityExchangeGE.HasRoleAbility<Shade>(owner) || timer >= duration + activationDelay || MeetingHud.Instance || ExileController.Instance)
         {
             Destroy(gameObject);
             return;
@@ -48,7 +51,7 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
 
         var local = PlayerControl.LocalPlayer;
         var camera = Camera.main;
-        if (zones.Any(zone => zone && zone.Contains(local.GetTruePosition())))
+        if (IsInsideAny(local.GetTruePosition()))
         {
             if (camera.GetScreenEffect<ShadowFluxEffect>() == null) camera.AddScreenEffect<ShadowFluxEffect>();
         }
@@ -59,14 +62,25 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
 
         if (!owner.AmOwner) return;
         var killButton = HudManager.Instance.KillButton;
+        if (!owner.Data.Role.CanUseKillButton)
+        {
+            owner.killTimer = Mathf.Max(0f, owner.killTimer - Time.deltaTime);
+            killButton.SetCoolDown(owner.killTimer, GameOptionsManager.Instance.CurrentGameOptions.GetFloat(FloatOptionNames.KillCooldown));
+        }
         var canKill = Contains(owner.GetTruePosition());
         killButton.gameObject.SetActive(canKill);
         PlayerControl target = null;
         if (canKill)
         {
-            var players = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            owner.Data.Role.GetPlayersInAbilityRangeSorted(players);
-            target = players.ToArray().FirstOrDefault(player => player != owner && !player.Data.IsDead && !player.Data.Disconnected && !player.inVent && Contains(player.GetTruePosition()) && !PhysicsHelpers.AnythingBetween(owner.GetTruePosition(), player.GetTruePosition(), Constants.ShipAndObjectsMask, false));
+            owner.Data.Role.GetPlayersInAbilityRangeSorted(PlayersInRange);
+            foreach (var player in PlayersInRange)
+            {
+                if (player == owner || player.Data.IsDead || player.Data.Disconnected || player.inVent || !Contains(player.GetTruePosition()) || PhysicsHelpers.AnythingBetween(owner.GetTruePosition(), player.GetTruePosition(), Constants.ShipAndObjectsMask, false))
+                    continue;
+
+                target = player;
+                break;
+            }
         }
 
         killButton.SetTarget(target);
@@ -86,7 +100,10 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
         if (owner && owner.AmOwner && HudManager.Instance)
         {
             HudManager.Instance.KillButton.SetTarget(null);
-            HudManager.Instance.KillButton.Hide();
+            if (owner.Data.Role is Shade)
+                HudManager.Instance.KillButton.Hide();
+            else
+                HudManager.Instance.SetHudActive(owner, owner.Data.Role, !owner.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance);
         }
 
         if (Camera.main && PlayerControl.LocalPlayer && !IsInsideAny(PlayerControl.LocalPlayer.GetTruePosition()))
@@ -118,7 +135,7 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
     [MethodRpc((uint)CustomRPC.DeployZone)]
     public static void RpcDeployZone(PlayerControl source, Vector2 position, float radius, float duration)
     {
-        if (source.Data.Role is Shade && !source.Data.IsDead && !source.Data.Disconnected && !MeetingHud.Instance)
+        if (AbilityExchangeGE.HasRoleAbility<Shade>(source) && !source.Data.IsDead && !source.Data.Disconnected && !MeetingHud.Instance)
         {
             OverclockedModifier.Pulse(source);
             Create(source.PlayerId, position, radius, duration);
@@ -127,6 +144,12 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
 
     public static bool IsInsideAny(Vector2 position)
     {
-        return zones.Any(zone => zone && zone.Contains(position));
+        foreach (var zone in zones)
+        {
+            if (zone && zone.Contains(position))
+                return true;
+        }
+
+        return false;
     }
 }

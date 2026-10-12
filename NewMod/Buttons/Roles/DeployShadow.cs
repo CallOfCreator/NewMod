@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
@@ -21,7 +22,7 @@ public class DeployShadow : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is Shade;
+        return AbilityExchangeGE.HasRoleAbility<Shade>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     protected override void OnClick()

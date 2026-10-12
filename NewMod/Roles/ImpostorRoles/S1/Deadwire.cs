@@ -232,7 +232,8 @@ public class Deadwire : ImpostorRole, INewModRole
     {
         deadwire.StartPlayerTracking(actor, actor.Data.DefaultOutfit.ColorId);
         yield return new WaitForSeconds(duration);
-        deadwire.CancelPlayerTracking();
+        if (deadwire)
+            deadwire.CancelPlayerTracking();
     }
 
     public static void Blink(PlayerControl player, float distance)

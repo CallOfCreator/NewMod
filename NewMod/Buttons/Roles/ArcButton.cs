@@ -4,6 +4,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
@@ -48,7 +49,7 @@ public class ArcButton : CustomActionButton, IEnergyAbility
     [MethodRpc((uint)CustomRPC.EdgeveilArc)]
     public static void RpcArc(PlayerControl source, Vector2 direction)
     {
-        if (source.Data.Role is not Edgeveil || source.Data.IsDead || source.inVent || MeetingHud.Instance)
+        if (!AbilityExchangeGE.HasRoleAbility<Edgeveil>(source) || source.Data.IsDead || source.inVent || MeetingHud.Instance)
             return;
         OverclockedModifier.Pulse(source);
         Coroutines.Start(CoArc(source, direction.normalized));
@@ -90,6 +91,6 @@ public class ArcButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is Edgeveil;
+        return AbilityExchangeGE.HasRoleAbility<Edgeveil>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 }

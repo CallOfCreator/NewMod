@@ -7,6 +7,8 @@ namespace NewMod.Modifiers;
 
 public class AdrenalineModifier : GameModifier
 {
+    public float AppliedMultiplier = 1f;
+
     public override string ModifierName => "Adrenaline";
     public override bool HideOnUi => false;
 
@@ -27,16 +29,18 @@ public class AdrenalineModifier : GameModifier
 
     public override void OnActivate()
     {
-        Player.MyPhysics.Speed *= OptionGroupSingleton<AdrenalineModifierOptions>.Instance.SpeedMultiplier;
+        AppliedMultiplier = OptionGroupSingleton<AdrenalineModifierOptions>.Instance.SpeedMultiplier;
+        Player.MyPhysics.Speed *= AppliedMultiplier;
     }
 
     public override void OnDeactivate()
     {
-        Player.MyPhysics.Speed /= OptionGroupSingleton<AdrenalineModifierOptions>.Instance.SpeedMultiplier;
+        Player.MyPhysics.Speed /= AppliedMultiplier;
+        AppliedMultiplier = 1f;
     }
 
     public override void OnDeath(DeathReason reason)
     {
-        Player.MyPhysics.Speed /= OptionGroupSingleton<AdrenalineModifierOptions>.Instance.SpeedMultiplier;
+        OnDeactivate();
     }
 }

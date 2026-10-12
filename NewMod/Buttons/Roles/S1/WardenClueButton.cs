@@ -1,6 +1,7 @@
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Roles.CrewmateRoles.S1;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ public class WardenClueButton : CustomActionButton
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is WardenRole;
+        return AbilityExchangeGE.HasRoleAbility<WardenRole>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     protected override void OnClick()

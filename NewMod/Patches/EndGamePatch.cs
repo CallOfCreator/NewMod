@@ -42,7 +42,12 @@ public static class CustomEndGame
         if (!IsMatchReady || !AmongUsClient.Instance.AmHost || !GameManager.Instance.ShouldCheckForGameEnd)
             return false;
 
-        var alivePlayers = PlayerControl.AllPlayerControls.ToArray().Where(player => !player.Data.IsDead && !player.Data.Disconnected).ToArray();
+        var alivePlayers = new List<PlayerControl>();
+        foreach (var player in PlayerControl.AllPlayerControls)
+        {
+            if (!player.Data.IsDead && !player.Data.Disconnected)
+                alivePlayers.Add(player);
+        }
 
         var wraithRequired = (int)OptionGroupSingleton<WraithCallerOptions>.Instance.RequiredNPCsToSend;
         var wraithCaller = alivePlayers.FirstOrDefault(player => player.Data.Role is WraithCaller && WraithCallerUtilities.GetKillsNPC(player.PlayerId) >= wraithRequired);
@@ -68,7 +73,7 @@ public static class CustomEndGame
             return true;
         }
 
-        if ((Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet) || (alivePlayers.Length == 1 && alivePlayers[0].Data.Role is Tyrant))
+        if ((Tyrant.ApexThroneReady && Tyrant.ApexThroneOutcomeSet) || (alivePlayers.Count == 1 && alivePlayers[0].Data.Role is Tyrant))
         {
             var tyrant = alivePlayers.FirstOrDefault(player => player.Data.Role is Tyrant);
 

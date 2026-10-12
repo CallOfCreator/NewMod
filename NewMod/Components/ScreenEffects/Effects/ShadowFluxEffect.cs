@@ -9,7 +9,12 @@ public class ShadowFluxEffect : ScreenEffect
         var shader = NewModAsset.ShadowFluxShader.LoadAsset();
         var texture = NewModAsset.NoiseTex.LoadAsset();
 
-        if (shader == null) Error("ShadowFluxEffect - Shader null");
+        if (!shader)
+        {
+            Error("ShadowFluxEffect - Shader null");
+            Active = false;
+            return;
+        }
 
         CreateMaterial(shader);
         _mat.SetTexture(Shader.PropertyToID("_NoiseTex"), texture);

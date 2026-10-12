@@ -22,8 +22,6 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     public int WaypointIndex;
 
     public bool Active;
-    public bool Delivering;
-    public bool AtDeliverySlot;
 
     public WraithStatus status;
 
@@ -88,7 +86,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     [HideFromIl2Cpp]
     private IEnumerator CoMove()
     {
-        while (Active)
+        while (this && Active && Visual)
         {
             if (status == WraithStatus.Delivering)
             {
@@ -190,6 +188,13 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
             Destroy(Visual.gameObject);
 
         Destroy(gameObject);
+    }
+
+    public void OnDestroy()
+    {
+        Active = false;
+        if (Visual)
+            Destroy(Visual.gameObject);
     }
 
     public enum WraithStatus

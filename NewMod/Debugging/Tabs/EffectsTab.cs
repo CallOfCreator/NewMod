@@ -174,7 +174,7 @@ public class EffectsTab : IDebugTab
         Camera.main.AddScreenEffect<T>();
     }
 
-    private static void PlayEnergyThiefBreak()
+    public static void PlayEnergyThiefBreak()
     {
         var effect = Camera.main.GetScreenEffect<EnergyThiefBreakEffect>();
 

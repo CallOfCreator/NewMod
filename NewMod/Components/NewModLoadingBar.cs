@@ -1,5 +1,7 @@
 using System;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Reactor.Utilities.Attributes;
+using Reactor.Utilities.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -77,6 +79,10 @@ public class NewModLoadingBar(nint ptr) : MonoBehaviour(ptr)
         LightTexture = new Texture2D(64, 32, TextureFormat.RGBA32, false);
         FillTexture.wrapMode = LightTexture.wrapMode = TextureWrapMode.Clamp;
         FillTexture.filterMode = LightTexture.filterMode = FilterMode.Bilinear;
+        var fillPixels = new Il2CppStructArray<Color>(256 * 32);
+        var lightPixels = new Il2CppStructArray<Color>(64 * 32);
+        var fill = fillPixels.ToSpan();
+        var light = lightPixels.ToSpan();
         var accent = new Color32(167, 2, 172, 255);
         for (var y = 0; y < 32; y++)
         {
@@ -88,17 +94,19 @@ public class NewModLoadingBar(nint ptr) : MonoBehaviour(ptr)
                 var gloss = Mathf.Exp(-Mathf.Pow((height - 0.78f) / 0.16f, 2f)) * 0.32f;
                 color = Color.Lerp(color, new Color(0.95f, 0.65f, 1f), gloss);
                 color.a = 1f;
-                FillTexture.SetPixel(x, y, color);
+                fill[y * 256 + x] = color;
             }
 
             for (var x = 0; x < 64; x++)
             {
                 var band = (x / 63f - 0.5f + (height - 0.5f) * 0.3f) / 0.2f;
                 var alpha = Mathf.Exp(-band * band * 2f) * Mathf.Sin(height * Mathf.PI);
-                LightTexture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                light[y * 64 + x] = new Color(1f, 1f, 1f, alpha);
             }
         }
 
+        FillTexture.SetPixels(fillPixels);
+        LightTexture.SetPixels(lightPixels);
         FillTexture.Apply(false);
         LightTexture.Apply(false);
         FillSprite = Sprite.Create(FillTexture, new Rect(0f, 0f, 256f, 32f), new Vector2(0.5f, 0.5f));

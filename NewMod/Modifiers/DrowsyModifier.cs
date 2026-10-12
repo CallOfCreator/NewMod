@@ -8,6 +8,8 @@ namespace NewMod.Modifiers;
 
 public sealed class DrowsyModifier : GameModifier
 {
+    public float AppliedMultiplier = 1f;
+
     public override string ModifierName => "Drowsy";
     public override bool ShowInFreeplay => true;
     public override Color FreeplayFileColor => new(0.6f, 0.7f, 1f);
@@ -29,16 +31,18 @@ public sealed class DrowsyModifier : GameModifier
 
     public override void OnActivate()
     {
-        Player.MyPhysics.Speed *= OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier;
+        AppliedMultiplier = OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier;
+        Player.MyPhysics.Speed *= AppliedMultiplier;
     }
 
     public override void OnDeactivate()
     {
-        Player.MyPhysics.Speed /= OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier;
+        Player.MyPhysics.Speed /= AppliedMultiplier;
+        AppliedMultiplier = 1f;
     }
 
     public override void OnDeath(DeathReason reason)
     {
-        Player.MyPhysics.Speed /= OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier;
+        OnDeactivate();
     }
 }

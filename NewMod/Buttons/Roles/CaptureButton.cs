@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Linq;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
@@ -73,6 +75,7 @@ public class CaptureButton : CustomActionButton, IEnergyAbility
         arrow.sharedMaterial = Utils.GetCircleMat();
         arrow.useWorldSpace = true;
         arrow.positionCount = 5;
+        var arrowPoints = new Il2CppStructArray<Vector3>(5);
         arrow.startWidth = arrow.endWidth = 0.04f;
         var aiming = false;
         var confirmed = false;
@@ -83,7 +86,7 @@ public class CaptureButton : CustomActionButton, IEnergyAbility
         {
             while (preview && player && !MeetingHud.Instance && (Input.GetMouseButton(0) || Input.touchCount > 0))
                 yield return null;
-            while (preview && player && player.Data.Role is TheVisionary && !player.Data.IsDead && player.CanMove && !player.inVent && !MeetingHud.Instance && ShipStatus.Instance)
+            while (preview && player && AbilityExchangeGE.HasRoleAbility<TheVisionary>(player) && !player.Data.IsDead && player.CanMove && !player.inVent && !MeetingHud.Instance && ShipStatus.Instance)
             {
                 if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
                     break;
@@ -108,7 +111,12 @@ public class CaptureButton : CustomActionButton, IEnergyAbility
                 var direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
                 var tip = PlacementPosition + direction;
                 var side = Vector2.Perpendicular(direction) * 0.15f;
-                arrow.SetPositions(new Vector3[] { PlacementPosition, tip, tip - direction * 0.25f + side, tip, tip - direction * 0.25f - side });
+                arrowPoints[0] = PlacementPosition;
+                arrowPoints[1] = tip;
+                arrowPoints[2] = tip - direction * 0.25f + side;
+                arrowPoints[3] = tip;
+                arrowPoints[4] = tip - direction * 0.25f - side;
+                arrow.SetPositions(arrowPoints);
                 var color = valid ? new Color(0.6f, 0.6f, 0.6f, 0.6f) : new Color(1f, 0.3f, 0.3f, 0.6f);
                 sprite.color = color;
                 arrow.startColor = arrow.endColor = color;
@@ -134,6 +142,6 @@ public class CaptureButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is TheVisionary;
+        return AbilityExchangeGE.HasRoleAbility<TheVisionary>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 }

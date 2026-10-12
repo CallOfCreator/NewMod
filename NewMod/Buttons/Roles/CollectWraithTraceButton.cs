@@ -4,6 +4,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
@@ -22,7 +23,7 @@ public class CollectWraithTraceButton : CustomActionButton<DeadBody>
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is WraithCaller;
+        return AbilityExchangeGE.HasRoleAbility<WraithCaller>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override DeadBody GetTarget()

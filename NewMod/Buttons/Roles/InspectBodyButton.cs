@@ -21,7 +21,17 @@ public class InspectBodyButton : CustomActionButton<DeadBody>
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return Button && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.Data && !PlayerControl.LocalPlayer.Data.IsDead && PlayerControl.AllPlayerControls.ToArray().Any(player => player.Data && player.Data.Role is Prankster);
+        var local = PlayerControl.LocalPlayer;
+        if (!Button || !local || !local.Data || local.Data.IsDead)
+            return false;
+
+        foreach (var player in PlayerControl.AllPlayerControls)
+        {
+            if (player.Data && player.Data.Role is Prankster)
+                return true;
+        }
+
+        return false;
     }
 
     public override DeadBody GetTarget()

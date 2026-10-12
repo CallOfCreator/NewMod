@@ -5,6 +5,7 @@ using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
+using MiraAPI.Utilities;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
 using NewMod.Utilities;
@@ -182,21 +183,22 @@ public class StickyModifier : GameModifier
     }
 
     [MethodRpc((uint)CustomRPC.StickyEndLink)]
-    public static void RpcEndSticky(PlayerControl source, byte targetId)
+    public static void RpcEndSticky(PlayerControl source, byte ownerId, byte targetId)
     {
-        if (!source)
+        if (!source.IsHost() || !ActiveLinks.TryGetValue(ownerId, out var currentTarget) || currentTarget != targetId)
             return;
 
-        if (ActiveLinks.TryGetValue(source.PlayerId, out var currentTarget) && currentTarget == targetId) ActiveLinks.Remove(source.PlayerId);
-
+        ActiveLinks.Remove(ownerId);
         LinkedTargets.Remove(targetId);
 
-        if (source.AmOwner && source.HasModifier<StickyModifier>())
-            source.RpcRemoveModifier<StickyModifier>();
+        var owner = Utils.PlayerById(ownerId);
+        if (owner && owner.AmOwner && owner.HasModifier<StickyModifier>())
+            owner.RpcRemoveModifier<StickyModifier>();
     }
 
     private static IEnumerator CoHostStickyTimer(PlayerControl source, byte targetId, float duration)
     {
+        var ownerId = source.PlayerId;
         var timer = 0f;
 
         while (timer < duration)
@@ -206,9 +208,9 @@ public class StickyModifier : GameModifier
 
             var target = Utils.PlayerById(targetId);
 
-            if (source.Data.IsDead || source.Data.Disconnected || target.Data.IsDead || target.Data.Disconnected || source.inVent || target.inVent || MeetingHud.Instance) break;
+            if (!source || !target || source.Data.IsDead || source.Data.Disconnected || target.Data.IsDead || target.Data.Disconnected || source.inVent || target.inVent || MeetingHud.Instance) break;
 
-            if (!ActiveLinks.TryGetValue(source.PlayerId, out var linkedId) || linkedId != targetId) yield break;
+            if (!ActiveLinks.TryGetValue(ownerId, out var linkedId) || linkedId != targetId) yield break;
 
             timer += Time.deltaTime;
             yield return null;
@@ -217,7 +219,7 @@ public class StickyModifier : GameModifier
         if (!AmongUsClient.Instance.AmHost)
             yield break;
 
-        if (ActiveLinks.TryGetValue(source.PlayerId, out var linkedTarget) && linkedTarget == targetId) RpcEndSticky(source, targetId);
+        if (ActiveLinks.TryGetValue(ownerId, out var linkedTarget) && linkedTarget == targetId) RpcEndSticky(PlayerControl.LocalPlayer, ownerId, targetId);
     }
 
     public static void ResetState()

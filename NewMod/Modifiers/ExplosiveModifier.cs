@@ -1,9 +1,11 @@
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.Networking;
 using MiraAPI.Utilities;
 using NewMod.Options.Modifiers;
-using NewMod.Utilities;
 using UnityEngine;
 
 namespace NewMod.Modifiers;
@@ -57,24 +59,20 @@ public class ExplosiveModifier : TimedModifier
             Player.SetPlayerMaterialColors(Player.cosmetics.currentBodySprite.BodySprite);
     }
 
-    public override void OnDeath(DeathReason reason)
+    [RegisterEvent]
+    public static void OnAfterMurder(AfterMurderEvent evt)
     {
-        if (!AmongUsClient.Instance.AmHost)
+        if (!AmongUsClient.Instance.AmHost || !evt.Target.HasModifier<ExplosiveModifier>() || !evt.Target.Data.IsDead)
             return;
 
-        var murderer = Utils.GetKiller(Player);
-
-        if (murderer == null)
-            return;
-
-        var closestPlayers = Helpers.GetClosestPlayers(Player.GetTruePosition(), OptionGroupSingleton<ExplosiveModifierOptions>.Instance.KillDistance);
+        var closestPlayers = Helpers.GetClosestPlayers(evt.Target.GetTruePosition(), OptionGroupSingleton<ExplosiveModifierOptions>.Instance.KillDistance);
 
         foreach (var player in closestPlayers)
         {
             if (player.Data.IsDead || player.Data.Disconnected)
                 continue;
 
-            murderer.RpcCustomMurder(player, true, createDeadBody: true, teleportMurderer: false, showKillAnim: false, playKillSound: true);
+            evt.Source.RpcCustomMurder(player, true, createDeadBody: true, teleportMurderer: false, showKillAnim: false, playKillSound: true);
 
             Info($"{player.Data.PlayerName} has been killed by the explosion.");
         }

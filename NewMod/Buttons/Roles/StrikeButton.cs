@@ -1,11 +1,11 @@
 using System.Collections;
-using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Networking;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
@@ -29,7 +29,7 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is PulseBlade;
+        return AbilityExchangeGE.HasRoleAbility<PulseBlade>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override PlayerControl GetTarget()
@@ -57,7 +57,7 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
     [MethodRpc((uint)CustomRPC.Dash)]
     public static void RpcPulseStrike(PlayerControl source, Vector2 direction)
     {
-        if (source.Data.Role is not PulseBlade || source.Data.IsDead || source.inVent || MeetingHud.Instance || ExileController.Instance)
+        if (!AbilityExchangeGE.HasRoleAbility<PulseBlade>(source) || source.Data.IsDead || source.inVent || MeetingHud.Instance || ExileController.Instance)
             return;
 
         OverclockedModifier.Pulse(source);
@@ -89,7 +89,7 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
             yield break;
 
         var remaining = options.StrikeRange;
-        while (!player.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance && remaining > 0f)
+        while (player && !player.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance && remaining > 0f)
         {
             var step = Mathf.Min(options.DashSpeed * Time.fixedDeltaTime, remaining);
             var position = player.GetTruePosition();
@@ -98,7 +98,15 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
 
             player.MyPhysics.body.velocity = direction * (step / Time.fixedDeltaTime);
             remaining -= step;
-            var target = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p != player && !p.Data.IsDead && !p.Data.Disconnected && !p.inVent && !p.Data.Role.IsImpostor && Vector2.Distance(position, p.GetTruePosition()) <= 0.4f && !PhysicsHelpers.AnythingBetween(position, p.GetTruePosition(), Constants.ShipAndObjectsMask, false));
+            PlayerControl target = null;
+            foreach (var candidate in PlayerControl.AllPlayerControls)
+            {
+                if (candidate == player || candidate.Data.IsDead || candidate.Data.Disconnected || candidate.inVent || candidate.Data.Role.IsImpostor || Vector2.Distance(position, candidate.GetTruePosition()) > 0.4f || PhysicsHelpers.AnythingBetween(position, candidate.GetTruePosition(), Constants.ShipAndObjectsMask, false))
+                    continue;
+
+                target = candidate;
+                break;
+            }
             if (target)
             {
                 player.RpcCustomMurder(target, MeetingCheck.OutsideMeeting, resetKillTimer: false, teleportMurderer: false, showKillAnim: false);
@@ -108,11 +116,14 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
             yield return new WaitForFixedUpdate();
         }
 
+        if (!player)
+            yield break;
+
         player.MyPhysics.body.velocity = Vector2.zero;
         end = Time.time + options.RecoveryDuration;
-        while (!player.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance && Time.time < end)
+        while (player && !player.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance && Time.time < end)
             yield return null;
-        if (!MeetingHud.Instance && !ExileController.Instance)
+        if (player && !MeetingHud.Instance && !ExileController.Instance)
             player.moveable = true;
     }
 }

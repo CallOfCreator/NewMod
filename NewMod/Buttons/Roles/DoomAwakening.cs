@@ -3,6 +3,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
@@ -24,7 +25,7 @@ public sealed class DoomAwakening : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is Revenant;
+        return AbilityExchangeGE.HasRoleAbility<Revenant>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override bool CanUse()
@@ -44,14 +45,14 @@ public sealed class DoomAwakening : CustomActionButton, IEnergyAbility
 
         var options = OptionGroupSingleton<RevenantOptions>.Instance;
         var physics = player.MyPhysics;
-        var originalSpeed = physics.Speed;
+        var speedMultiplier = 1f + options.DoomSpeedBonus / 100f;
         var overlay = HudManager.Instance.FullScreen;
         var originalColor = overlay.color;
         var overlayWasActive = overlay.gameObject.activeSelf;
         var sound = NewModAsset.DoomAwakeningSound.LoadAsset();
         var interval = new WaitForSeconds(0.25f);
 
-        physics.Speed *= 1f + options.DoomSpeedBonus / 100f;
+        physics.Speed *= speedMultiplier;
         overlay.color = new Color(0.55f, 0f, 0.08f, 0.24f);
         overlay.gameObject.SetActive(true);
         SoundManager.Instance.PlaySound(sound, true);
@@ -78,7 +79,7 @@ public sealed class DoomAwakening : CustomActionButton, IEnergyAbility
 
             foreach (var target in PlayerControl.AllPlayerControls)
             {
-                if (!target || target.Data.IsDead || target.Data.Disconnected || target.inVent || target.Data.Role.IsImpostor)
+                if (!target || target == player || target.Data.IsDead || target.Data.Disconnected || target.inVent || target.Data.Role.IsImpostor)
                     continue;
 
                 if (Vector2.Distance(player.GetTruePosition(), target.GetTruePosition()) > options.DoomContactRadius)
@@ -92,7 +93,7 @@ public sealed class DoomAwakening : CustomActionButton, IEnergyAbility
         }
 
         if (physics)
-            physics.Speed = originalSpeed;
+            physics.Speed /= speedMultiplier;
         if (overlay)
         {
             overlay.color = originalColor;

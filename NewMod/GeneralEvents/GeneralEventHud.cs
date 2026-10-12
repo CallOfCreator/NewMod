@@ -283,6 +283,14 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
         Destroy(gameObject);
     }
 
+    public void OnDestroy()
+    {
+        if (_showCoro != null)
+            Coroutines.Stop(_showCoro);
+        if (_hideCoro != null)
+            Coroutines.Stop(_hideCoro);
+    }
+
     [HideFromIl2Cpp]
     public static GeneralEventHud Create()
     {

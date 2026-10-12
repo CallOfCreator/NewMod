@@ -40,7 +40,6 @@ public class NewModLocalSettings(ConfigFile config) : LocalSettingsTab(config)
                     Cursor.SetCursor(tex, Vector2.zero, CursorMode.Auto);
                     Cursor.visible = true;
                     Cursor.lockState = CursorLockMode.None;
-                    MainMenuPatch._cachedCursor = tex;
                 }
             }
             else

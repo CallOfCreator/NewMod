@@ -12,7 +12,7 @@ namespace NewMod.Roles.CrewmateRoles;
 
 public class TheVisionary : CrewmateRole, INewModRole
 {
-    public RoleOptionsGroup RoleOptionGroup { get; } = RoleOptionsGroup.Crewmate;
+    public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Crewmate;
     public NewModFaction Faction => NewModFaction.Sentinel;
     public string RoleName => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.TheVisionary");
     public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.TheVisionary.IntroBlurb");

@@ -10,6 +10,7 @@ using MiraAPI.Roles;
 using NewMod.Components.ScreenEffects;
 using NewMod.Components.ScreenEffects.Effects;
 using NewMod.Debugging;
+using NewMod.Debugging.Tabs;
 using NewMod.GeneralEvents;
 using NewMod.Options.Roles;
 using NewMod.Patches;
@@ -239,7 +240,7 @@ public static class NewModDebugPanel
         if (EnergyThief.NodeOwnerId == thief.PlayerId)
             nodeState = EnergyThief.BreachActive ? $"Breaching · {Mathf.Max(0f, EnergyThief.BreachEndsAt - Time.time):0.0}s" : "Located";
 
-        return Div(ClassName("nm-debug-stack"), Section("STATUS", Text($"{thief.Data.PlayerName}  #{thief.PlayerId}", ClassName("nm-debug-value")), Text($"Energy  {energy}/{(int)options.EnergyRequired}", ClassName("nm-debug-label")), Text($"Resonance  {categories.Count}/{(int)options.CategoriesRequired}", ClassName("nm-debug-label")), Text(categoryText, ClassName("nm-debug-muted")), Text($"Node  {nodeState}", ClassName("nm-debug-label"))), Section("CAPTURE", MutatingActions(("Capture aggression", () => CaptureEnergy(thief, EnergyCategory.Aggression, false), false), ("Capture control", () => CaptureEnergy(thief, EnergyCategory.Control, false), false), ("Capture intelligence", () => CaptureEnergy(thief, EnergyCategory.Intelligence, false), false), ("Capture mobility", () => CaptureEnergy(thief, EnergyCategory.Mobility, false), false), ("Capture protection", () => CaptureEnergy(thief, EnergyCategory.Protection, false), false), ("Add raw energy", () => CaptureEnergy(thief, EnergyCategory.Aggression, true), false), ("Complete requirements", () => CompleteEnergyThiefRequirements(thief), false), ("Cancel siphon", () => EnergyThief.RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, thief.PlayerId), false))), Section("POWER NODE", MutatingActions(
+        return Div(ClassName("nm-debug-stack"), Section("STATUS", Text($"{thief.Data.PlayerName}  #{thief.PlayerId}", ClassName("nm-debug-value")), Text($"Energy  {energy}/{(int)options.EnergyRequired}", ClassName("nm-debug-label")), Text($"Resonance  {categories.Count}/{(int)options.CategoriesRequired}", ClassName("nm-debug-label")), Text(categoryText, ClassName("nm-debug-muted")), Text($"Node  {nodeState}", ClassName("nm-debug-label"))), Section("CAPTURE", MutatingActions(("Capture aggression", () => EnergyTab.CaptureEnergy(thief, EnergyCategory.Aggression, false), false), ("Capture control", () => EnergyTab.CaptureEnergy(thief, EnergyCategory.Control, false), false), ("Capture intelligence", () => EnergyTab.CaptureEnergy(thief, EnergyCategory.Intelligence, false), false), ("Capture mobility", () => EnergyTab.CaptureEnergy(thief, EnergyCategory.Mobility, false), false), ("Capture protection", () => EnergyTab.CaptureEnergy(thief, EnergyCategory.Protection, false), false), ("Add raw energy", () => EnergyTab.CaptureEnergy(thief, EnergyCategory.Aggression, true), false), ("Complete requirements", () => EnergyTab.CompleteEnergyThiefRequirements(thief), false), ("Cancel siphon", () => EnergyThief.RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, thief.PlayerId), false))), Section("POWER NODE", MutatingActions(
             ("Go to node", () =>
         {
             if (EnergyThief.NodeOwnerId == thief.PlayerId)
@@ -270,7 +271,7 @@ public static class NewModDebugPanel
     private static VNode EffectsPage()
     {
         var camera = Camera.main;
-        var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Energy breach", PlayEnergyThiefBreak, false), ("Glitch", AddEffect<GlitchEffect>, false), ("Earthquake", AddEffect<EarthquakeEffect>, false), ("Pulse hue", AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", AddEffect<DistorationWaveEffect>, false), ("Shadow flux", AddEffect<ShadowFluxEffect>, false), ("Negative reality", AddEffect<NegativeRealityEffect>, false), ("Glitch V2", AddEffect<ScrDesyncEffect>, false), ("Remove all", RemoveEffects, true))) };
+        var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Energy breach", EffectsTab.PlayEnergyThiefBreak, false), ("Glitch", AddEffect<GlitchEffect>, false), ("Earthquake", AddEffect<EarthquakeEffect>, false), ("Pulse hue", AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", AddEffect<DistorationWaveEffect>, false), ("Shadow flux", AddEffect<ShadowFluxEffect>, false), ("Negative reality", AddEffect<NegativeRealityEffect>, false), ("Glitch V2", AddEffect<ScrDesyncEffect>, false), ("Remove all", RemoveEffects, true))) };
         var system = camera.GetComponent<ScreenEffectSystem>();
         if (system)
         {
@@ -322,38 +323,6 @@ public static class NewModDebugPanel
             button.ResetCooldownAndOrEffect();
     }
 
-    private static void CaptureEnergy(PlayerControl thief, EnergyCategory category, bool raw)
-    {
-        if (EnergyThief.TetherTargets.ContainsKey(thief.PlayerId))
-            EnergyThief.RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, thief.PlayerId);
-
-        var target = Utils.GetRandomPlayer(player => player != thief && !player.Data.IsDead && !player.Data.Disconnected);
-
-        if (!target)
-            return;
-
-        EnergyThief.RpcConfirmSiphon(PlayerControl.LocalPlayer, thief.PlayerId, target.PlayerId, OptionGroupSingleton<EnergyThiefOptions>.Instance.SiphonDuration);
-        EnergyThief.RpcConfirmCapture(PlayerControl.LocalPlayer, thief.PlayerId, target.PlayerId, (byte)category, raw);
-    }
-
-    private static void CompleteEnergyThiefRequirements(PlayerControl thief)
-    {
-        var categories = new[] { EnergyCategory.Aggression, EnergyCategory.Control, EnergyCategory.Intelligence, EnergyCategory.Mobility, EnergyCategory.Protection };
-
-        foreach (var category in categories)
-        {
-            if (!EnergyThief.Categories.TryGetValue(thief.PlayerId, out var captured) || !captured.Contains(category))
-                CaptureEnergy(thief, category, false);
-        }
-
-        EnergyThief.Energy.TryGetValue(thief.PlayerId, out var energy);
-        var missingEnergy = Mathf.Max(0, (int)OptionGroupSingleton<EnergyThiefOptions>.Instance.EnergyRequired - energy);
-        var rawCaptures = Mathf.CeilToInt(missingEnergy / (float)EnergyThief.RawEnergyGain);
-
-        for (var i = 0; i < rawCaptures; i++)
-            CaptureEnergy(thief, EnergyCategory.Aggression, true);
-    }
-
     private static void CastRandomVote(MeetingHud meeting)
     {
         var target = Utils.GetRandomPlayer(player => !player.Data.IsDead && !player.Data.Disconnected);
@@ -365,16 +334,6 @@ public static class NewModDebugPanel
     private static void AddEffect<T>() where T : ScreenEffect, new()
     {
         Camera.main.AddScreenEffect<T>();
-    }
-
-    private static void PlayEnergyThiefBreak()
-    {
-        var effect = Camera.main.GetScreenEffect<EnergyThiefBreakEffect>();
-
-        if (effect != null && effect.Active)
-            effect.Restart();
-        else
-            Camera.main.AddScreenEffect<EnergyThiefBreakEffect>();
     }
 
     private static void RemoveEffects()

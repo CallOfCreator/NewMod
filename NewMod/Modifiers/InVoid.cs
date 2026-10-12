@@ -104,7 +104,7 @@ public class InVoid : BaseModifier
                 Coroutines.Start(CoExitVoidEffect(voidEffect, transition));
             }
 
-            HudManager.Instance.KillButton.Show();
+            HudManager.Instance.SetHudActive(Player, Player.Data.Role, !Player.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance);
 
             foreach (var door in ShipStatus.Instance.AllDoors)
                 door.gameObject.SetActive(true);
@@ -129,11 +129,12 @@ public class InVoid : BaseModifier
 
     public IEnumerator CoEnterVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
     {
+        var hud = HudManager.Instance;
         var duration = OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterTransitionDuration;
 
         var timer = 0f;
 
-        while (VoidActive && timer < duration)
+        while (hud && VoidActive && timer < duration)
         {
             timer += Time.unscaledDeltaTime;
             var progress = Mathf.Clamp01(timer / duration);
@@ -141,7 +142,7 @@ public class InVoid : BaseModifier
             var easedProgress = Mathf.SmoothStep(0f, 1f, progress);
 
             if (Application.platform == RuntimePlatform.Android)
-                HudManager.Instance.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f * easedProgress);
+                hud.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f * easedProgress);
             else if (voidEffect != null && voidEffect.Active)
                 voidEffect.amount = easedProgress;
 
@@ -151,11 +152,11 @@ public class InVoid : BaseModifier
             yield return null;
         }
 
-        if (!VoidActive)
+        if (!hud || !VoidActive)
             yield break;
 
         if (Application.platform == RuntimePlatform.Android)
-            HudManager.Instance.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f);
+            hud.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f);
         else if (voidEffect != null && voidEffect.Active)
             voidEffect.amount = 1f;
 
@@ -165,11 +166,12 @@ public class InVoid : BaseModifier
 
     public static IEnumerator CoExitVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
     {
+        var hud = HudManager.Instance;
         var duration = OptionGroupSingleton<VoidwalkerOptions>.Instance.ExitTransitionDuration;
 
         var timer = 0f;
 
-        while (timer < duration)
+        while (hud && timer < duration)
         {
             timer += Time.unscaledDeltaTime;
             var progress = Mathf.Clamp01(timer / duration);
@@ -177,7 +179,7 @@ public class InVoid : BaseModifier
             var easedProgress = Mathf.SmoothStep(1f, 0f, progress);
 
             if (Application.platform == RuntimePlatform.Android)
-                HudManager.Instance.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f * easedProgress);
+                hud.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f * easedProgress);
             else if (voidEffect != null && voidEffect.Active)
                 voidEffect.amount = easedProgress;
 
@@ -187,9 +189,12 @@ public class InVoid : BaseModifier
             yield return null;
         }
 
+        if (!hud)
+            yield break;
+
         if (Application.platform == RuntimePlatform.Android)
         {
-            var fullScreen = HudManager.Instance.FullScreen;
+            var fullScreen = hud.FullScreen;
             fullScreen.color = Color.clear;
             fullScreen.gameObject.SetActive(false);
             fullScreen.transform.localPosition = new Vector3(0f, 0f, -500f);
@@ -203,7 +208,7 @@ public class InVoid : BaseModifier
     }
 
     [RegisterEvent]
-    public static void BeforeMurderEventThing(BeforeMurderEvent @event)
+    public static void OnBeforeMurder(BeforeMurderEvent @event)
     {
         if (@event.Source.HasModifier<InVoid>() || @event.Target.HasModifier<InVoid>())
             @event.Cancel();

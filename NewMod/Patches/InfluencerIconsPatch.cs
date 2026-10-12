@@ -78,7 +78,11 @@ public static class InfluencerIconsPatch
     public static void RefreshIcons()
     {
         var player = PlayerControl.LocalPlayer;
-        if (!player || player.Data?.Role is not SpiritGuideRole role || role.SendingImage)
+        if (!player || !player.Data?.Role)
+            return;
+
+        var role = player.Data.Role.TryCast<SpiritGuideRole>();
+        if (!role || role.SendingImage)
             return;
 
         role.imagesGenerated = false;

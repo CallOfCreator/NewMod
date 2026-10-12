@@ -2,6 +2,7 @@ using System.Linq;
 using MiraAPI.GameOptions;
 using MiraAPI.Utilities;
 using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.CrewmateRoles;
@@ -16,7 +17,7 @@ public static class AegisUtilities
     [MethodRpc((uint)CustomRPC.AegisRequestWard, LocalHandling = RpcLocalHandling.After)]
     public static void RpcRequestWard(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Aegis || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ShieldArea._active.Any(area => area.ownerId == source.PlayerId))
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<Aegis>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ShieldArea._active.Any(area => area.ownerId == source.PlayerId))
             return;
         OverclockedModifier.Pulse(source);
         var position = source.GetTruePosition();

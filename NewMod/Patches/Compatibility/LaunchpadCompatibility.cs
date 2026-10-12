@@ -54,7 +54,6 @@ public static class LaunchpadHackTextPatch
         if (player != null && hackedText != null && Revenant.Phases.TryGetValue(player.PlayerId, out var phase) && phase == Revenant.Phase.Feigning)
         {
             hackedText.SetText(string.Empty);
-            Debug($"hackedText: {hackedText.text}");
         }
     }
 }

@@ -2,6 +2,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
 using NewMod.Roles.NeutralRoles;
@@ -22,7 +23,7 @@ public sealed class FeignDeathButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is Revenant;
+        return AbilityExchangeGE.HasRoleAbility<Revenant>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override bool CanUse()

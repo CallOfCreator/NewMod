@@ -17,7 +17,6 @@ public static class PlayerVoteAreaSetCosmeticsPatch
     {
         var opts = OptionGroupSingleton<GeneralOption>.Instance;
         var anonNames = opts.EnableAnonymousNamesInMeetings;
-        var anonIcons = anonNames;
 
         _alias ??= [];
         _used ??= [];
@@ -34,10 +33,10 @@ public static class PlayerVoteAreaSetCosmeticsPatch
                 _alias[playerId] = code;
             }
 
-            baseName = _alias[playerId];
+            baseName = code;
         }
 
-        if (anonIcons && __instance.PlayerIcon != null)
+        if (anonNames && __instance.PlayerIcon != null)
         {
             var randomColor = Random.Range(0, Palette.PlayerColors.Length);
 

@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Modifiers;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.ImpostorRoles.S1;
@@ -26,7 +27,7 @@ public class EnterVoid : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is Voidwalker;
+        return AbilityExchangeGE.HasRoleAbility<Voidwalker>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override float EffectDuration => OptionGroupSingleton<VoidwalkerOptions>.Instance.VoidTime;

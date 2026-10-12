@@ -311,12 +311,7 @@ public class WraithSiegeWraithGameOver : CustomGameOver
 
     public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
-        EndGameResult.CachedWinners.Clear();
-
-        foreach (var winner in _winners)
-            EndGameResult.CachedWinners.Add(winner);
-
-        return true;
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager endGameManager)
@@ -353,12 +348,7 @@ public class WraithSiegeReviverGameOver : CustomGameOver
 
     public override bool BeforeEndGameSetup(EndGameManager endGameManager)
     {
-        EndGameResult.CachedWinners.Clear();
-
-        foreach (var winner in _winners)
-            EndGameResult.CachedWinners.Add(winner);
-
-        return true;
+        return NewModGameOver.SetWinners(_winners);
     }
 
     public override void AfterEndGameSetup(EndGameManager endGameManager)

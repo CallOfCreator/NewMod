@@ -1,4 +1,3 @@
-using System.Linq;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
@@ -37,14 +36,17 @@ public class CameraInteractButton : CustomActionButton
         if (canInteract)
         {
             var position = playerControl.GetTruePosition();
-            var nearby = VisionaryUtilities.Cameras.Where(pair =>
+            var closestDistance = float.MaxValue;
+            foreach (var (id, record) in VisionaryUtilities.Cameras)
             {
-                if (!pair.Value.Object || (pair.Value.Owner == playerControl.PlayerId && !pair.Value.Ready))
-                    return false;
-                var offset = (Vector2)pair.Value.Object.transform.position - position;
-                return offset.magnitude <= 1.25f && !PhysicsHelpers.AnythingBetween(position, pair.Value.Object.transform.position, Constants.ShipAndObjectsMask, false, pair.Value.Object.GetComponent<Collider2D>(), pair.Value.Object.transform);
-            }).OrderBy(pair => Vector2.Distance(pair.Value.Object.transform.position, position)).FirstOrDefault();
-            TargetId = nearby.Value != null ? nearby.Key : -1;
+                if (!record.Object || (record.Owner == playerControl.PlayerId && !record.Ready))
+                    continue;
+                var distance = Vector2.Distance(record.Object.transform.position, position);
+                if (distance > 1.25f || distance >= closestDistance || PhysicsHelpers.AnythingBetween(position, record.Object.transform.position, Constants.ShipAndObjectsMask, false, record.Object.GetComponent<Collider2D>(), record.Object.transform))
+                    continue;
+                closestDistance = distance;
+                TargetId = id;
+            }
             if (EffectActive)
                 TargetId = PendingId;
         }

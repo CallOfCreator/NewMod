@@ -27,15 +27,18 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
     public PlayerAnimations animations;
     public LightSource ownerLight;
     public int NpcId;
+    public byte OwnerId;
     public bool isActive;
     public bool Reflected;
     public bool ResolvingKill;
     public bool HuntSucceeded;
+    public IEnumerator MoveCoroutine;
 
     [HideFromIl2Cpp]
     public void Initialize(PlayerControl owner, PlayerControl target, Vector2 start, int npcId)
     {
         Owner = owner;
+        OwnerId = owner.PlayerId;
         Target = target;
         NpcId = npcId;
 
@@ -73,7 +76,7 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
         noShadow.hitOverride = Visual.Collider;
 
         isActive = true;
-        Coroutines.Start(CoMove());
+        MoveCoroutine = Coroutines.Start(CoMove());
 
         if (Owner.AmOwner && OptionGroupSingleton<WraithCallerOptions>.Instance.ShouldSwitchCamToNPC)
         {
@@ -105,12 +108,13 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
     [HideFromIl2Cpp]
     public IEnumerator CoMove()
     {
+        var borrowedAbility = Owner.Data.Role is not WraithCaller;
         var speed = OptionGroupSingleton<WraithCallerOptions>.Instance.NPCSpeed;
         var endsAt = Time.time + OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration;
         if (Target.AmOwner)
             Coroutines.Start(CoroutinesHelper.CoNotify($"A Wraith is hunting you.\nStay away for {OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration:0} seconds."));
 
-        while (isActive && !MeetingHud.Instance && !ExileController.Instance && Time.time < endsAt && !Owner.Data.IsDead && !Owner.Data.Disconnected && Owner.Data.Role is WraithCaller)
+        while (isActive && Owner && Target && Visual && !MeetingHud.Instance && !ExileController.Instance && Time.time < endsAt && !Owner.Data.IsDead && !Owner.Data.Disconnected && (Owner.Data.Role is WraithCaller || borrowedAbility))
         {
             if (Target.Data.IsDead || Target.Data.Disconnected || Target.HasModifier<InVoid>())
                 break;
@@ -123,7 +127,7 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
                 body.velocity = Vector2.zero;
                 UpdateWalkAnimation(Vector2.zero);
 
-                if (!Reflected && Target.Data.Role is MirrorBladeRole && MirrorBladeRole.ArmedReflections.Remove(Target.PlayerId))
+                if (!Reflected && MirrorBladeRole.ArmedReflections.Remove(Target.PlayerId))
                 {
                     var mirror = Target;
                     RedirectToOwner(mirror);
@@ -154,8 +158,6 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
             yield return new WaitForFixedUpdate();
         }
 
-        body.velocity = Vector2.zero;
-        UpdateWalkAnimation(Vector2.zero);
         Dispose();
     }
 
@@ -197,11 +199,12 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
             return;
 
         isActive = false;
-        if (AmongUsClient.Instance.AmHost && !HuntSucceeded && !Owner.Data.IsDead && !Owner.Data.Disconnected)
+        Coroutines.Stop(MoveCoroutine);
+        if (Owner && AmongUsClient.Instance && AmongUsClient.Instance.AmHost && !HuntSucceeded && !Owner.Data.IsDead && !Owner.Data.Disconnected)
             WraithCallerUtilities.RpcRestoreTrace(PlayerControl.LocalPlayer, Owner.PlayerId);
-        WraithCallerUtilities.ActiveNpcs.Remove(((uint)Owner.PlayerId << 16) | (uint)NpcId);
+        WraithCallerUtilities.ActiveNpcs.Remove(((uint)OwnerId << 16) | (uint)NpcId);
 
-        if (Owner.AmOwner && OptionGroupSingleton<WraithCallerOptions>.Instance.ShouldSwitchCamToNPC)
+        if (Owner && Owner.AmOwner && ownerLight && Camera.main)
         {
             Camera.main.GetComponent<FollowerCamera>().SetTarget(Owner);
             ownerLight.transform.SetParent(Owner.transform, false);
@@ -211,7 +214,8 @@ public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
         if (body)
             body.velocity = Vector2.zero;
 
-        Destroy(Visual.gameObject);
+        if (Visual)
+            Destroy(Visual.gameObject);
         Destroy(gameObject);
     }
 }

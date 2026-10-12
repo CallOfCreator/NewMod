@@ -12,6 +12,7 @@ using MiraAPI.Roles;
 using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -149,7 +150,7 @@ public class Revenant : ImpostorRole, INewModRole
     [MethodRpc((uint)CustomRPC.RevenantRequestFeign)]
     public static void RpcRequestFeign(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Revenant || source.Data.IsDead)
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<Revenant>(source) || source.Data.IsDead)
             return;
 
         if (!Phases.TryGetValue(source.PlayerId, out var phase))
@@ -229,6 +230,12 @@ public class Revenant : ImpostorRole, INewModRole
             Destroy(body.gameObject);
 
         var player = Utils.PlayerById(playerId);
+        if (!player || player.Data.Disconnected)
+        {
+            Phases.Remove(playerId);
+            return;
+        }
+
         player.Visible = true;
         player.moveable = true;
         player.MyPhysics.inputHandler.enabled = true;
@@ -248,7 +255,16 @@ public class Revenant : ImpostorRole, INewModRole
         Phases[playerId] = Phase.Revived;
         PhaseExpiresAt.Remove(playerId);
 
+        if (Bodies.Remove(playerId, out var body))
+            Destroy(body.gameObject);
+
         var player = Utils.PlayerById(playerId);
+        if (!player || player.Data.Disconnected)
+        {
+            Phases.Remove(playerId);
+            return;
+        }
+
         player.Visible = true;
         player.moveable = true;
         player.NetTransform.SnapTo(new Vector2(x, y));
@@ -256,17 +272,16 @@ public class Revenant : ImpostorRole, INewModRole
         player.MyPhysics.inputHandler.enabled = true;
         player.Collider.enabled = true;
 
-        if (Bodies.Remove(playerId, out var body))
-            Destroy(body.gameObject);
-
         if (player.AmOwner)
             HudManager.Instance.SetHudActive(player, player.Data.Role, true);
+        if (!AbilityExchangeGE.HasRoleAbility<Revenant>(player))
+            Phases.Remove(playerId);
     }
 
     [MethodRpc((uint)CustomRPC.RevenantRequestDoom)]
     public static void RpcRequestDoom(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Revenant || source.Data.IsDead || !Phases.TryGetValue(source.PlayerId, out var phase) || phase != Phase.Revived)
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<Revenant>(source) || source.Data.IsDead || !Phases.TryGetValue(source.PlayerId, out var phase) || phase != Phase.Revived)
             return;
 
         var duration = OptionGroupSingleton<RevenantOptions>.Instance.DoomDuration;
@@ -303,7 +318,7 @@ public class Revenant : ImpostorRole, INewModRole
         if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost || !AmongUsClient.Instance.IsGameStarted || MeetingHud.Instance || ExileController.Instance)
             return;
 
-        if (!source || !source.Data || source.Data.Role is not Revenant || source.Data.IsDead || source.Data.Disconnected || source.inVent)
+        if (!source || !source.Data || source.Data.IsDead || source.Data.Disconnected || source.inVent)
             return;
 
         if (!target || target == source || !target.Data || !target.Data.Role || target.Data.IsDead || target.Data.Disconnected || target.inVent || target.Data.Role.IsImpostor)
@@ -330,5 +345,8 @@ public class Revenant : ImpostorRole, INewModRole
         Phases[playerId] = Phase.DoomSpent;
         PhaseExpiresAt.Remove(playerId);
         PendingDoomTargets.Remove(playerId);
+        var player = Utils.PlayerById(playerId);
+        if (player && !AbilityExchangeGE.HasRoleAbility<Revenant>(player))
+            Phases.Remove(playerId);
     }
 }

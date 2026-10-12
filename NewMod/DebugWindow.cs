@@ -41,13 +41,19 @@ public sealed class DebugWindow(nint ptr) : MonoBehaviour(ptr)
     [HideFromIl2Cpp]
     public void ApplyZoom(float size)
     {
-        Zoom = Mathf.Clamp(size, ZoomMin, ZoomMax);
+        Zoom = SetCameraZoom(size);
+    }
+
+    public static float SetCameraZoom(float size)
+    {
+        var zoom = Mathf.Clamp(size, ZoomMin, ZoomMax);
 
         foreach (var camera in Camera.allCameras)
-            camera.orthographicSize = Zoom;
+            camera.orthographicSize = zoom;
 
         ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen);
 
-        HudManager.Instance.ShadowQuad.gameObject.SetActive(Zoom <= 3f);
+        HudManager.Instance.ShadowQuad.gameObject.SetActive(zoom <= 3f);
+        return zoom;
     }
 }

@@ -30,6 +30,13 @@ public class PlayerTab : IDebugTab
                 players.Add(player);
         }
 
+        if (players.Count == 0)
+        {
+            SelectedPlayer = null;
+            SelectedPlayerId = byte.MaxValue;
+            return;
+        }
+
         if (players.All(player => player.PlayerId != SelectedPlayerId))
             SelectedPlayerId = players[0].PlayerId;
 
@@ -111,7 +118,7 @@ public class PlayerTab : IDebugTab
 
         GUILayout.EndHorizontal();
 
-        if (GUILayout.Button("Assign Role"))
+        if (roles.Length > 0 && GUILayout.Button("Assign Role"))
         {
             var role = (RoleBehaviour)roles.First(candidate => candidate.RoleName == SelectedRole);
             SelectedPlayer.RpcSetRole(role.Role);

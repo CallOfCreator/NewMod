@@ -3,6 +3,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.PluginLoading;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
@@ -23,7 +24,7 @@ public class ObjectiveButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is TerminatorRole;
+        return AbilityExchangeGE.HasRoleAbility<TerminatorRole>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override bool CanUse()

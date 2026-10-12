@@ -34,7 +34,6 @@ public sealed class EnergyGroundButton : CustomActionButton
 
     protected override void OnClick()
     {
-        // indeed nothing
     }
 
     public override void OnEffectEnd()

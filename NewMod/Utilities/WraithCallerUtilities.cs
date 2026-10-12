@@ -6,6 +6,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Utilities;
 using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
@@ -97,7 +98,7 @@ public static class WraithCallerUtilities
     [MethodRpc((uint)CustomRPC.RequestSummon)]
     public static void RpcRequestSummonNPC(PlayerControl source, byte targetId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not WraithCaller || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || !Traces.Contains(source.PlayerId) || NextSummon.GetValueOrDefault(source.PlayerId) > Time.time || ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<WraithCaller>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || !Traces.Contains(source.PlayerId) || NextSummon.GetValueOrDefault(source.PlayerId) > Time.time || ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
             return;
 
         var target = Utils.PlayerById(targetId);
@@ -135,7 +136,7 @@ public static class WraithCallerUtilities
     [MethodRpc((uint)CustomRPC.WraithCollectTrace)]
     public static void RpcCollectTrace(PlayerControl source, byte bodyId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not WraithCaller || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Traces.Contains(source.PlayerId) || CollectedTraces.Contains((source.PlayerId, bodyId)) || ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<WraithCaller>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Traces.Contains(source.PlayerId) || CollectedTraces.Contains((source.PlayerId, bodyId)) || ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
             return;
 
         var body = Helpers.GetBodyById(bodyId);

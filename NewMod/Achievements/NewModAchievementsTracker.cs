@@ -14,9 +14,12 @@ public static class NewModAchievementTracker
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
     {
+        if (!evt.TriggeredByIntro)
+            return;
+
         _onlineMatchActive = false;
 
-        if (!evt.TriggeredByIntro || Application.platform == RuntimePlatform.Android)
+        if (Application.platform == RuntimePlatform.Android)
             return;
 
         if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))

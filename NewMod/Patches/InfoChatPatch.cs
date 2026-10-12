@@ -142,12 +142,12 @@ public static class InfoChatPatch
 
     public static bool TryParse(string text, out string name, out string query)
     {
-        text = text.Trim();
+        var input = text.AsSpan().Trim();
         var separator = 0;
-        while (separator < text.Length && !char.IsWhiteSpace(text[separator]))
+        while (separator < input.Length && !char.IsWhiteSpace(input[separator]))
             separator++;
 
-        name = text[..separator].ToLowerInvariant();
+        name = input[..separator].ToString().ToLowerInvariant();
         query = string.Empty;
         if (name is not ("/help" or "/roles" or "/role" or "/r" or "/gamemodes" or "/gamemode" or "/factions" or "/faction"))
         {
@@ -155,10 +155,10 @@ public static class InfoChatPatch
         }
 
         var queryText = new StringBuilder();
-        for (var index = separator; index < text.Length; index++)
+        for (var index = separator; index < input.Length; index++)
         {
-            if (!char.IsWhiteSpace(text[index]))
-                queryText.Append(text[index]);
+            if (!char.IsWhiteSpace(input[index]))
+                queryText.Append(input[index]);
         }
 
         query = queryText.ToString();

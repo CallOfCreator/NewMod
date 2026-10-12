@@ -66,7 +66,8 @@ public class RevivedKillButton : CustomActionButton<PlayerControl>, IEnergyAbili
         local.RpcCustomMurder(Target, MeetingCheck.OutsideMeeting);
 
         NecromancerRole.RevivedPlayers.Remove(local.PlayerId);
-        ResetTarget();
+        SetOutline(false);
+        Target = null;
         Button?.ToggleVisible(false);
     }
 }

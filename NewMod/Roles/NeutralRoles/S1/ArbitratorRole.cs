@@ -15,6 +15,7 @@ using MiraAPI.Roles;
 using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
@@ -127,7 +128,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 
         var player = PlayerControl.LocalPlayer;
 
-        if (player.Data.IsDead || player.Data.Role is not ArbitratorRole)
+        if (player.Data.IsDead || (player.Data.Role is not ArbitratorRole && !AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(player)))
             return;
 
         Coroutines.Start(CoSetupMeetingButton(evt.MeetingHud));
@@ -136,7 +137,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnMeetingSelect(MeetingSelectEvent evt)
     {
-        if (_localLocked || PlayerControl.LocalPlayer.Data.IsDead || PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole || !IsJudgmentOpen())
+        if (_localLocked || PlayerControl.LocalPlayer.Data.IsDead || !AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(PlayerControl.LocalPlayer) || !IsJudgmentOpen())
             return;
 
         evt.AllowSelect = false;
@@ -178,10 +179,11 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 
         yield return new WaitForSeconds(0.25f);
 
-        if (!hud || PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole)
+        if (!hud || (PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole && !AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(PlayerControl.LocalPlayer)))
             yield break;
 
-        Coroutines.Start(CoroutinesHelper.CoNotify("Choose ACCUSE or DEFEND, then select a player now.\nAfter locking your judgment, vote normally."));
+        if (AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(PlayerControl.LocalPlayer))
+            Coroutines.Start(CoroutinesHelper.CoNotify("Choose ACCUSE or DEFEND, then select a player now.\nAfter locking your judgment, vote normally."));
         UpdateMeetingButton();
         while (hud && hud.CurrentState is not (MeetingHud.MeetingStates.Results or MeetingHud.MeetingStates.Proceeding))
         {
@@ -197,10 +199,16 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 
     public static void UpdateMeetingButton()
     {
-        if (!MeetingHud.Instance || PlayerControl.LocalPlayer.Data.Role is not ArbitratorRole)
+        if (!MeetingHud.Instance)
             return;
 
         var button = MeetingHud.Instance.MeetingAbilityButton;
+        if (!AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(PlayerControl.LocalPlayer) || PlayerControl.LocalPlayer.Data.IsDead)
+        {
+            if (button.graphic.sprite == NewModAsset.AccuseButton.LoadAsset() || button.graphic.sprite == NewModAsset.DefendButton.LoadAsset())
+                button.Hide();
+            return;
+        }
 
         button.Show();
         button.SetInfiniteUses();
@@ -295,7 +303,7 @@ public class ArbitratorRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.ArbitratorJudgment)]
     public static void RpcSetJudgment(PlayerControl source, byte mode, byte targetId)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not ArbitratorRole || source.Data.IsDead || source.Data.Disconnected || !IsJudgmentOpen() || _hostOwner != byte.MaxValue || mode > (byte)ArbitratorJudgmentMode.Defend || ScoredTargets.Contains(targetId))
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(source) || source.Data.IsDead || source.Data.Disconnected || !IsJudgmentOpen() || _hostOwner != byte.MaxValue || mode > (byte)ArbitratorJudgmentMode.Defend || ScoredTargets.Contains(targetId))
             return;
 
         var target = Utils.PlayerById(targetId);

@@ -8,9 +8,9 @@ namespace NewMod.Patches.Compatibility;
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.CoStartGame))]
 public static class StartGamePatch
 {
-    public static bool Prefix(AmongUsClient __instance)
+    public static void Prefix(AmongUsClient __instance)
     {
-        if (!ModCompatibility.IsLaunchpadLoaded()) return true;
+        if (!ModCompatibility.IsLaunchpadLoaded()) return;
 
         var settings = OptionGroupSingleton<CompatibilityOptions>.Instance;
 
@@ -27,7 +27,5 @@ public static class StartGamePatch
                     ModCompatibility.DisableRole("Revenant", NewMod.Id);
             }
         }
-
-        return true;
     }
 }

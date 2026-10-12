@@ -5,6 +5,7 @@ using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.ImpostorRoles;
@@ -110,6 +111,6 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
     /// <returns>True for Necromancer.</returns>
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is NecromancerRole;
+        return AbilityExchangeGE.HasRoleAbility<NecromancerRole>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 }

@@ -14,6 +14,7 @@ using MiraAPI.Roles;
 using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Utilities;
@@ -225,6 +226,24 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
                 RpcConfirmCapture(PlayerControl.LocalPlayer, pair.Key, pair.Value, byte.MaxValue, true);
         }
 
+        if (!BreachActive && NodePositionIndex < 0)
+        {
+            foreach (var playerId in Energy.Keys)
+            {
+                if (!IsReady(playerId))
+                    continue;
+
+                var player = Utils.PlayerById(playerId);
+                if (!player || player.Data.IsDead || player.Data.Disconnected || !AbilityExchangeGE.HasRoleAbility<EnergyThief>(player))
+                    continue;
+
+                var positions = CurrentMapNodePositions;
+                if (positions.Length > 0)
+                    RpcSelectNode(PlayerControl.LocalPlayer, player.PlayerId, Random.Range(0, positions.Length));
+                break;
+            }
+        }
+
         if (!BreachActive || _breachResolved)
             return;
 
@@ -255,13 +274,13 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
     [RegisterEvent]
     public static void OnMeetingStart(StartMeetingEvent evt)
     {
+        HarvestedTargets.Clear();
+
         if (!AmongUsClient.Instance.AmHost)
             return;
 
         foreach (var thiefId in TetherTargets.Keys.ToArray())
             RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, thiefId);
-
-        HarvestedTargets.Clear();
     }
 
     [RegisterEvent]
@@ -271,13 +290,30 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
             return;
 
         var playerId = evt.Player.PlayerId;
+        RemoveBorrowedState(playerId);
+        BrownoutCategories.Remove(playerId);
+        BrownoutExpiresAt.Remove(playerId);
+    }
+
+    public static void RemoveBorrowedState(byte playerId)
+    {
+        if (AmongUsClient.Instance.AmHost && TetherTargets.ContainsKey(playerId))
+            RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, playerId);
+
         Energy.Remove(playerId);
         Categories.Remove(playerId);
         TetherTargets.Remove(playerId);
         TetherExpiresAt.Remove(playerId);
         HarvestedTargets.Remove(playerId);
-        BrownoutCategories.Remove(playerId);
-        BrownoutExpiresAt.Remove(playerId);
+
+        if (NodeOwnerId != playerId)
+            return;
+
+        NodeOwnerId = byte.MaxValue;
+        NodePositionIndex = -1;
+        BreachActive = false;
+        BreachEndsAt = 0f;
+        EnergyPowerNode.DestroyCurrent();
     }
 
     [RegisterEvent]
@@ -303,7 +339,7 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.EnergyThiefRequestSiphon)]
     public static void RpcRequestSiphon(PlayerControl source, PlayerControl target)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not EnergyThief || source.Data.IsDead || target.Data.IsDead || target.Data.Disconnected || source == target || IsReady(source.PlayerId) || TetherTargets.ContainsKey(source.PlayerId))
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<EnergyThief>(source) || source.Data.IsDead || target.Data.IsDead || target.Data.Disconnected || source == target || IsReady(source.PlayerId) || TetherTargets.ContainsKey(source.PlayerId))
             return;
 
         var options = OptionGroupSingleton<EnergyThiefOptions>.Instance;
@@ -335,23 +371,19 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.EnergyThiefRequestCapture)]
     public static void RpcRequestCapture(PlayerControl source, byte categoryId, bool raw)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.IsDead || source.Data.Disconnected)
+        if (!AmongUsClient.Instance.AmHost || source.Data.IsDead || source.Data.Disconnected || (!raw && categoryId >= (byte)EnergyCategory.Protection + 1))
             return;
 
-        foreach (var pair in TetherTargets)
+        foreach (var pair in TetherTargets.ToArray())
         {
             if (pair.Value != source.PlayerId)
                 continue;
 
             var thief = Utils.PlayerById(pair.Key);
-            if (!thief || thief.Data.Role is not EnergyThief || thief.Data.IsDead || thief.Data.Disconnected || !TetherExpiresAt.TryGetValue(pair.Key, out var expiresAt) || Time.time >= expiresAt)
-                return;
-
-            if (!raw && categoryId >= (byte)EnergyCategory.Protection + 1)
-                return;
+            if (!thief || thief.Data.IsDead || thief.Data.Disconnected || !TetherExpiresAt.TryGetValue(pair.Key, out var expiresAt) || Time.time >= expiresAt)
+                continue;
 
             RpcConfirmCapture(PlayerControl.LocalPlayer, pair.Key, source.PlayerId, categoryId, raw);
-            return;
         }
     }
 
@@ -404,20 +436,12 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
 
         if (PlayerControl.LocalPlayer.PlayerId == targetId && !raw)
             Helpers.CreateAndShowNotification($"{category} abilities disrupted", new Color(0.85f, 0.42f, 1f), spr: categoryIcon);
-
-        if (AmongUsClient.Instance.AmHost && IsReady(thiefId) && NodePositionIndex < 0)
-        {
-            var positions = CurrentMapNodePositions;
-
-            if (positions.Length > 0)
-                RpcSelectNode(PlayerControl.LocalPlayer, thiefId, Random.Range(0, positions.Length));
-        }
     }
 
     [MethodRpc((uint)CustomRPC.EnergyThiefRequestCancelSiphon)]
     public static void RpcRequestCancelSiphon(PlayerControl source)
     {
-        if (AmongUsClient.Instance.AmHost && source.Data.Role is EnergyThief && TetherTargets.ContainsKey(source.PlayerId))
+        if (AmongUsClient.Instance.AmHost && AbilityExchangeGE.HasRoleAbility<EnergyThief>(source) && TetherTargets.ContainsKey(source.PlayerId))
             RpcConfirmCancelSiphon(PlayerControl.LocalPlayer, source.PlayerId);
     }
 
@@ -452,7 +476,7 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.EnergyThiefRequestBreach)]
     public static void RpcRequestBreach(PlayerControl source)
     {
-        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not EnergyThief || source.Data.IsDead || source.PlayerId != NodeOwnerId || BreachActive || !IsReady(source.PlayerId))
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<EnergyThief>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || NodePositionIndex < 0 || BreachActive || !IsReady(source.PlayerId))
             return;
 
         var options = OptionGroupSingleton<EnergyThiefOptions>.Instance;
@@ -465,9 +489,10 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.EnergyThiefConfirmBreach, LocalHandling = RpcLocalHandling.After)]
     public static void RpcConfirmBreach(PlayerControl host, byte ownerId, float duration)
     {
-        if (!host.IsHost() || ownerId != NodeOwnerId || BreachActive)
+        if (!host.IsHost() || NodePositionIndex < 0 || BreachActive)
             return;
 
+        NodeOwnerId = ownerId;
         BreachActive = true;
         BreachEndsAt = Time.time + duration;
         _breachResolved = false;
@@ -501,10 +526,15 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
 
         if (succeeded)
         {
-            if (AmongUsClient.Instance.AmHost)
+            var winner = Utils.PlayerById(ownerId);
+            if (winner && winner.Data.Role is EnergyThief)
             {
-                var winner = Utils.PlayerById(ownerId);
-                CustomGameOver.Trigger<EnergyThiefGameOver>([winner.Data]);
+                if (AmongUsClient.Instance.AmHost)
+                    CustomGameOver.Trigger<EnergyThiefGameOver>([winner.Data]);
+            }
+            else
+            {
+                RemoveBorrowedState(ownerId);
             }
 
             return;
@@ -519,6 +549,10 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
         NodeOwnerId = byte.MaxValue;
         NodePositionIndex = -1;
         EnergyPowerNode.DestroyCurrent();
+
+        var owner = Utils.PlayerById(ownerId);
+        if (!owner || (owner.Data.Role is not EnergyThief && !AbilityExchangeGE.HasRoleAbility<EnergyThief>(owner)))
+            RemoveBorrowedState(ownerId);
 
         if (PlayerControl.LocalPlayer.PlayerId == ownerId)
             Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FF5CEA>Grid Breach interrupted.</color> Oldest resonance lost."));

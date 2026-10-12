@@ -8,6 +8,7 @@ using MiraAPI.Translation;
 using NewMod.Buttons.Roles;
 using NewMod.Buttons.Roles.S1;
 using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers;
 using NewMod.Modifiers.S1;
 using NewMod.Roles;
@@ -18,6 +19,7 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using Reactor.Networking.Attributes;
+using Reactor.Utilities.Extensions;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
@@ -25,7 +27,7 @@ using Random = UnityEngine.Random;
 namespace NewMod.Utilities;
 
 /// <summary>
-/// Shared utilities for NewMod.
+/// Various utilities.
 /// </summary>
 public static class Utils
 {
@@ -42,34 +44,11 @@ public static class Utils
     public static Material _circleMat;
 
     /// <summary>
-    /// Ability button types for each role.
-    /// </summary>
-    public static readonly Dictionary<Type, List<Type>> RoleToButtonsMap = new()
-    {
-        { typeof(EnergyThief), new List<Type> { typeof(DrainButton) } },
-        { typeof(NecromancerRole), new List<Type> { typeof(ReviveButton) } },
-        { typeof(Prankster), new List<Type> { typeof(FakeBodyButton) } },
-        { typeof(Revenant), new List<Type> { typeof(FeignDeathButton), typeof(DoomAwakening) } },
-        { typeof(TheVisionary), new List<Type> { typeof(CaptureButton), typeof(ShowScreenshotButton) } },
-        { typeof(PulseBlade), new List<Type> { typeof(StrikeButton) } },
-        { typeof(WraithCaller), new List<Type> { typeof(CallWraithButton) } },
-        { typeof(Edgeveil), new List<Type> { typeof(ArcButton) } },
-        { typeof(Aegis), new List<Type> { typeof(AegisButton) } },
-        { typeof(WardenRole), new List<Type> { typeof(WardenSealButton), typeof(InspectResidualButton) } },
-        { typeof(Voidwalker), new List<Type> { typeof(EnterVoid) } },
-        { typeof(TerminatorRole), new List<Type> { typeof(ObjectiveButton) } },
-        { typeof(ArbitratorRole), new List<Type> { typeof(ArbitratorLeverageButton) } },
-        { typeof(MirrorBladeRole), new List<Type> { typeof(MirrorReflectButton) } },
-        { typeof(Shade), new List<Type> { typeof(DeployShadow) } },
-        // Verifier is excluded since it uses a meeting ability.
-    };
-
-    /// <summary>
     /// Finds a player by ID.
     /// </summary>
     /// <param name="id">The player's ID.</param>
     /// <returns>The player, or null if not found.</returns>
-// Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
+    // Thanks to: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/Utils.cs#L219
     public static PlayerControl PlayerById(byte id)
     {
         foreach (var player in PlayerControl.AllPlayerControls)
@@ -80,6 +59,29 @@ public static class Utils
 
         return null;
     }
+
+    /// <summary>
+    /// Ability button types for each role.
+    /// </summary>
+    public static readonly Dictionary<Type, List<Type>> RoleToButtonsMap = new()
+    {
+        { typeof(EnergyThief), new List<Type> { typeof(DrainButton) } },
+        { typeof(NecromancerRole), new List<Type> { typeof(ReviveButton) } },
+        { typeof(Prankster), new List<Type> { typeof(FakeBodyButton) } },
+        { typeof(Revenant), new List<Type> { typeof(FeignDeathButton), typeof(DoomAwakening) } },
+        { typeof(TheVisionary), new List<Type> { typeof(CaptureButton), typeof(ShowScreenshotButton) } },
+        { typeof(PulseBlade), new List<Type> { typeof(StrikeButton) } },
+        { typeof(WraithCaller), new List<Type> { typeof(CallWraithButton), typeof(CollectWraithTraceButton) } },
+        { typeof(Edgeveil), new List<Type> { typeof(ArcButton) } },
+        { typeof(Aegis), new List<Type> { typeof(AegisButton) } },
+        { typeof(WardenRole), new List<Type> { typeof(WardenSealButton), typeof(InspectResidualButton), typeof(WardenClueButton) } },
+        { typeof(Voidwalker), new List<Type> { typeof(EnterVoid) } },
+        { typeof(TerminatorRole), new List<Type> { typeof(ObjectiveButton) } },
+        { typeof(ArbitratorRole), new List<Type> { typeof(ArbitratorLeverageButton) } },
+        { typeof(MirrorBladeRole), new List<Type> { typeof(MirrorReflectButton) } },
+        { typeof(Shade), new List<Type> { typeof(DeployShadow) } },
+        // Verifier is excluded since it uses a meeting ability.
+    };
 
     /// <summary>
     /// Records who killed the victim.
@@ -106,34 +108,6 @@ public static class Utils
         PlayerKiller.Clear();
     }
 
-    /// <summary>
-    /// Finds the nearest body within the local player's kill distance.
-    /// </summary>
-    /// <returns>The nearest body, or null if none is in range.</returns>
-    public static DeadBody GetClosestBody()
-    {
-        var allocs = Physics2D.OverlapCircleAll(PlayerControl.LocalPlayer.GetTruePosition(), GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, Constants.PlayersOnlyMask);
-
-        DeadBody closestBody = null;
-        var closestDistance = float.MaxValue;
-
-        foreach (var collider2D in allocs)
-        {
-            if (PlayerControl.LocalPlayer.Data.IsDead || collider2D.tag != "DeadBody") continue;
-
-            var component = collider2D.GetComponent<DeadBody>();
-            var distance = Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), component.TruePosition);
-
-            if (distance <= GameOptionsManager.Instance.currentNormalGameOptions.KillDistance && distance < closestDistance)
-            {
-                closestBody = component;
-                closestDistance = distance;
-            }
-        }
-
-        return closestBody;
-    }
-
     // Thanks to: https://github.com/Rabek009/MoreGamemodes/blob/master/Modules/Utils.cs#L66
 
     /// <summary>
@@ -145,42 +119,42 @@ public static class Utils
     {
         int mapId = GameOptionsManager.Instance.CurrentGameOptions.MapId;
 
-        if (!ShipStatus.Instance.Systems.ContainsKey(type)) return false;
+        if (!ShipStatus.Instance.Systems.TryGetValue(type, out var system)) return false;
 
         switch (type)
         {
             case SystemTypes.Electrical:
                 if (mapId == 5) return false;
-                var switchSystem = ShipStatus.Instance.Systems[type].TryCast<SwitchSystem>();
+                var switchSystem = system.TryCast<SwitchSystem>();
                 return switchSystem != null && switchSystem.IsActive;
             case SystemTypes.Reactor:
                 if (mapId == 2) return false;
-                var reactorSystemType = ShipStatus.Instance.Systems[type].TryCast<ReactorSystemType>();
+                var reactorSystemType = system.TryCast<ReactorSystemType>();
                 return reactorSystemType != null && reactorSystemType.IsActive;
             case SystemTypes.Laboratory:
                 if (mapId != 2) return false;
-                var reactorSystemType2 = ShipStatus.Instance.Systems[type].TryCast<ReactorSystemType>();
+                var reactorSystemType2 = system.TryCast<ReactorSystemType>();
                 return reactorSystemType2 != null && reactorSystemType2.IsActive;
             case SystemTypes.LifeSupp:
                 if (mapId is 2 or 4 or 5) return false;
-                var lifeSuppSystemType = ShipStatus.Instance.Systems[type].TryCast<LifeSuppSystemType>();
+                var lifeSuppSystemType = system.TryCast<LifeSuppSystemType>();
                 return lifeSuppSystemType != null && lifeSuppSystemType.IsActive;
             case SystemTypes.HeliSabotage:
                 if (mapId != 4) return false;
-                var heliSabotageSystem = ShipStatus.Instance.Systems[type].TryCast<HeliSabotageSystem>();
+                var heliSabotageSystem = system.TryCast<HeliSabotageSystem>();
                 return heliSabotageSystem != null && heliSabotageSystem.IsActive;
             case SystemTypes.Comms:
                 if (mapId is 1 or 5)
                 {
-                    var hqHudSystemType = ShipStatus.Instance.Systems[type].TryCast<HqHudSystemType>();
+                    var hqHudSystemType = system.TryCast<HqHudSystemType>();
                     return hqHudSystemType != null && hqHudSystemType.IsActive;
                 }
 
-                var hudOverrideSystemType = ShipStatus.Instance.Systems[type].TryCast<HudOverrideSystemType>();
+                var hudOverrideSystemType = system.TryCast<HudOverrideSystemType>();
                 return hudOverrideSystemType != null && hudOverrideSystemType.IsActive;
             case SystemTypes.MushroomMixupSabotage:
                 if (mapId != 5) return false;
-                var mushroomMixupSabotageSystem = ShipStatus.Instance.Systems[type].TryCast<MushroomMixupSabotageSystem>();
+                var mushroomMixupSabotageSystem = system.TryCast<MushroomMixupSabotageSystem>();
                 return mushroomMixupSabotageSystem != null && mushroomMixupSabotageSystem.IsActive;
             default:
                 return false;
@@ -202,6 +176,7 @@ public static class Utils
     [MethodRpc((uint)CustomRPC.HandleRevive)]
     public static IEnumerator HandleRevive(PlayerControl source, byte revivedId, RoleTypes roleToSet, float reviveX, float reviveY)
     {
+        var necromancer = AbilityExchangeGE.HasRoleAbility<NecromancerRole>(source);
         var revived = PlayerById(revivedId);
 
         if (!revived || revived.Data.Disconnected)
@@ -215,9 +190,11 @@ public static class Utils
         var revivePos = new Vector2(reviveX, reviveY);
         var inMeetingOrExile = MeetingHud.Instance || ExileController.Instance;
 
-        if (revived.Data.Role is NoisemakerRole noisemaker && noisemaker.deathArrowPrefab != null) Object.Destroy(noisemaker.deathArrowPrefab.gameObject);
+        var noisemaker = revived.Data.Role.TryCast<NoisemakerRole>();
+        if (noisemaker && noisemaker.deathArrow)
+            Object.Destroy(noisemaker.deathArrow.gameObject);
 
-        if (source.Data.Role is NecromancerRole)
+        if (necromancer)
         {
             OverclockedModifier.Pulse(source);
             NecromancerRole.RevivedPlayers[revivedId] = source.PlayerId;
@@ -269,9 +246,10 @@ public static class Utils
     /// <param name="role">The role to save.</param>
     public static void SavePlayerRole(byte playerId, RoleBehaviour role)
     {
-        if (!savedPlayerRoles.ContainsKey(playerId)) savedPlayerRoles[playerId] = [];
+        if (!savedPlayerRoles.TryGetValue(playerId, out var roles))
+            savedPlayerRoles[playerId] = roles = [];
 
-        savedPlayerRoles[playerId].Add(role);
+        roles.Add(role);
     }
 
     // Thanks to: https://github.com/yanpla/yanplaRoles/blob/master/Utils.cs#L64
@@ -293,11 +271,14 @@ public static class Utils
     /// <returns>A matching player, or null if none match.</returns>
     public static PlayerControl GetRandomPlayer(Predicate<PlayerControl> match)
     {
-        var players = PlayerControl.AllPlayerControls.ToArray().Where(p => match(p)).ToList();
+        var players = new List<PlayerControl>();
+        foreach (var player in PlayerControl.AllPlayerControls)
+        {
+            if (match(player))
+                players.Add(player);
+        }
 
-        if (players.Count > 0) return players[Random.RandomRange(0, players.Count)];
-
-        return null;
+        return players.Random();
     }
 
     public static string GetModifierFactionDisplay(INewModModifier modifier)
@@ -352,10 +333,10 @@ public static class Utils
     public static IEnumerator CoShakeCamera(FollowerCamera cam, float duration)
     {
         var timeElapsed = 0f;
-        var originalPos = cam.transform.position;
+        var originalPos = cam.transform.localPosition;
         var shakeThreshold = 1.5f;
 
-        while (timeElapsed < duration)
+        while (cam && timeElapsed < duration)
         {
             timeElapsed += Time.deltaTime;
             if (duration - timeElapsed <= shakeThreshold)
@@ -372,7 +353,8 @@ public static class Utils
             yield return null;
         }
 
-        cam.transform.localPosition = originalPos;
+        if (cam)
+            cam.transform.localPosition = originalPos;
     }
 
     public static string FormatSpan(TimeSpan t)
@@ -430,7 +412,6 @@ public static class Utils
             if (customRole != null && customRole.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase))
                 return customRole.GetChance() > 0 && customRole.GetCount() > 0;
         }
-
         return false;
     }
 }

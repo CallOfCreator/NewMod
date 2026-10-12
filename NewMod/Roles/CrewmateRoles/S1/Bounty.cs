@@ -318,19 +318,20 @@ public class Bounty : CrewmateRole, INewModRole
     public static IEnumerator CoTrackContract(uint contractId)
     {
         var local = PlayerControl.LocalPlayer;
-        while (!local.Data.IsDead && Contracts.TryGetValue(local.PlayerId, out var current) && current.Id == contractId)
+        while (local && !local.Data.IsDead && Contracts.TryGetValue(local.PlayerId, out var current) && current.Id == contractId)
         {
             var target = Utils.PlayerById(current.TargetId);
             if (!target || target.Data.IsDead || target.Data.Disconnected) break;
             if (!MeetingHud.Instance && !ExileController.Instance)
                 local.StartPlayerTracking(target, target.Data.DefaultOutfit.ColorId);
             yield return new WaitForSeconds(0.5f);
-            if (!Contracts.TryGetValue(local.PlayerId, out current) || current.Id != contractId) yield break;
+            if (!local || !Contracts.TryGetValue(local.PlayerId, out current) || current.Id != contractId) yield break;
             local.CancelPlayerTracking();
             yield return new WaitForSeconds(OptionGroupSingleton<BountyOptions>.Instance.TrackingInterval);
         }
 
-        local.CancelPlayerTracking();
+        if (local)
+            local.CancelPlayerTracking();
     }
 
     public static void ShowCollectionArrow(PlayerControl bounty)
@@ -348,7 +349,7 @@ public class Bounty : CrewmateRole, INewModRole
 
     public static IEnumerator CoFollowBounty(ArrowBehaviour arrow, PlayerControl bounty)
     {
-        while (_collectionArrow && !bounty.Data.Disconnected)
+        while (arrow && bounty && !bounty.Data.Disconnected)
         {
             arrow.target = bounty.transform.position;
             yield return null;

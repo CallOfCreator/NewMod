@@ -7,6 +7,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
@@ -38,7 +39,7 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return role is Wraith;
+        return AbilityExchangeGE.HasRoleAbility<Wraith>(role, PlayerControl.LocalPlayer.PlayerId);
     }
 
     public override void ClickHandler()

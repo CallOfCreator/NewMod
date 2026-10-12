@@ -23,7 +23,7 @@ public class TyrantPulseButton : CustomActionButton
 
     public override bool CanUse()
     {
-        return base.CanUse() && ((Tyrant)PlayerControl.LocalPlayer.Data.Role).Kills >= 1;
+        return base.CanUse() && PlayerControl.LocalPlayer.Data.Role is Tyrant { Kills: >= 1 };
     }
 
     protected override void OnClick()

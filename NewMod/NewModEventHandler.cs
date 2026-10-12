@@ -1,9 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
-using System.Text;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using NewMod.Components;
@@ -15,53 +9,12 @@ using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Roles.NeutralRoles.S1;
 using NewMod.Utilities;
-using Twitch;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace NewMod;
 
 public static class NewModEventHandler
 {
-    public static void RegisterEventsLogs()
-    {
-        var type = typeof(MiraEventManager);
-        var field = type.GetField("EventWrappers", BindingFlags.NonPublic | BindingFlags.Static);
-        var wrappersObject = field.GetValue(null);
-        if (wrappersObject is not IDictionary wrappersByEvent || wrappersByEvent.Count == 0) return;
-
-        var builder = new StringBuilder();
-        builder.AppendLine("=== Registered NewMod Events ===");
-
-        foreach (DictionaryEntry entry in wrappersByEvent)
-        {
-            var eventType = entry.Key as Type;
-            var lines = new List<string>();
-
-            if (entry.Value is IEnumerable wrappers)
-            {
-                foreach (var wrapper in wrappers)
-                {
-                    if (wrapper == null) continue;
-
-                    var wrapperType = wrapper.GetType();
-                    var eventHandlerProperty = wrapperType.GetProperty("EventHandler", BindingFlags.Public | BindingFlags.Instance);
-                    var priorityProperty = wrapperType.GetProperty("Priority", BindingFlags.Public | BindingFlags.Instance);
-                    var handler = eventHandlerProperty.GetValue(wrapper) as Delegate;
-                    var priority = priorityProperty.GetValue(wrapper) as int? ?? 0;
-                    var method = handler.Method;
-
-                    lines.Add($" [{priority}] {method.DeclaringType.FullName}.{method.Name}()");
-                }
-            }
-
-            builder.AppendLine(CultureInfo.CurrentCulture, $"{eventType.FullName}  (handlers: {lines.Count})");
-            foreach (var line in lines) builder.AppendLine(line);
-        }
-
-        Info(builder.ToString());
-    }
-
     public static void ResetMatchState()
     {
         Utils.ResetKillTracking();
@@ -138,16 +91,9 @@ public static class NewModEventHandler
                 {
                     PlayerControl.LocalPlayer.myTasks.RemoveAt(i);
                     Object.Destroy(task.gameObject);
-
-                    TwitchManager.Instance.TwitchPopup.Show();
                 }
             }
         }
-
-        if (Application.platform == RuntimePlatform.Android)
-            return;
-
-        VisionaryUtilities.DeleteAllScreenshots();
     }
 
     [RegisterEvent]

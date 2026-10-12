@@ -13,6 +13,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
 using NewMod.Utilities;
@@ -99,7 +100,7 @@ public class WardenRole : CrewmateRole, INewModRole
     [MethodRpc((uint)CustomRPC.WardenSeal)]
     public static void RpcStartSeal(PlayerControl source, byte roomId)
     {
-        if (source.Data.Role is not WardenRole || source.Data.IsDead || MeetingHud.Instance || SealActive)
+        if (!AbilityExchangeGE.HasRoleAbility<WardenRole>(source) || source.Data.IsDead || MeetingHud.Instance || SealActive)
             return;
         var currentRoom = GetRoom(source.GetTruePosition());
         if (!currentRoom || currentRoom.RoomId != (SystemTypes)roomId)
