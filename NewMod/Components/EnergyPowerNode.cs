@@ -1,3 +1,4 @@
+using NewMod.GeneralEvents.Season1;
 using NewMod.Roles.NeutralRoles;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
@@ -54,7 +55,7 @@ public sealed class EnergyPowerNode(nint ptr) : MonoBehaviour(ptr)
     public void Update()
     {
         var localPlayer = PlayerControl.LocalPlayer;
-        var isOwner = localPlayer && localPlayer.PlayerId == EnergyThief.NodeOwnerId;
+        var isOwner = localPlayer && (EnergyThief.BreachActive ? localPlayer.PlayerId == EnergyThief.NodeOwnerId : AbilityExchangeGE.HasRoleAbility<EnergyThief>(localPlayer));
         _renderer.enabled = isOwner || EnergyThief.BreachActive;
 
         if (_overcharged != EnergyThief.BreachActive)

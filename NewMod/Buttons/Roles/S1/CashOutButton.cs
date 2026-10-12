@@ -19,7 +19,7 @@ public class CashOutButton : CustomActionButton, IEnergyAbility
     public override float Cooldown => OptionGroupSingleton<BountyOptions>.Instance.CashOutCooldown;
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-    public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.CashOut;
 
     public override bool Enabled(RoleBehaviour role)
     {

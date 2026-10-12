@@ -13,7 +13,7 @@ public class ConvertFragmentsButton : CustomActionButton
 {
     public override string Name => "Convert";
     public override float Cooldown => 1f;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.LeverageButton;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.ArbitratorLeverage;
 
     public override bool Enabled(RoleBehaviour role)
     {

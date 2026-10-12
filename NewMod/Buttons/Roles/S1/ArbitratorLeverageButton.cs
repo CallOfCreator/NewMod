@@ -26,7 +26,7 @@ public class ArbitratorLeverageButton : CustomActionButton<PlayerControl>, IEner
     public override float Distance => OptionGroupSingleton<ArbitratorOptions>.Instance.LeverageRange;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override ButtonLocation Location => ButtonLocation.BottomRight;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.LeverageButton;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.ArbitratorLeverage;
 
     public override bool Enabled(RoleBehaviour role)
     {

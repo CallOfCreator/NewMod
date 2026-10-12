@@ -35,7 +35,13 @@ public static class NewModAsset
     public static LoadableResourceAsset Camera { get; } = new("NewMod.Resources.cam.png");
     public static LoadableAsset<Sprite> CameraOff { get; } = new LoadableBundleAsset<Sprite>("cam_off.png", Bundle);
 
-    public static LoadableAsset<Sprite> CameraOffOutline { get; } = new LoadableBundleAsset<Sprite>("cam_off.png", Bundle);
+    public static LoadableAsset<Sprite> ArbitratorLeverage { get; } = new LoadableBundleAsset<Sprite>("ArbitratorLeverage.png", Bundle);
+    public static LoadableAsset<Sprite> CashOut { get; } = new LoadableBundleAsset<Sprite>("BountyCashOut.png", Bundle);
+    public static LoadableAsset<Sprite> Siphon { get; } = new LoadableBundleAsset<Sprite>("EnergyThiefSiphon.png", Bundle);
+    public static LoadableAsset<Sprite> DeployShadow { get; } = new LoadableBundleAsset<Sprite>("ShadeDeployShadow.png", Bundle);
+    public static LoadableAsset<Sprite> UsurperClaim { get; } = new LoadableBundleAsset<Sprite>("UsurperClaim.png", Bundle);
+    public static LoadableAsset<Sprite> SendWraith { get; } = new LoadableBundleAsset<Sprite>("WraithCallerWraith.png", Bundle);
+    public static LoadableAsset<Sprite> TerminateButton { get; } = new LoadableBundleAsset<Sprite>("TerminatorTerminate.png", Bundle);
     public static LoadableAsset<Sprite> CameraEnabled { get; } = new LoadableBundleAsset<Sprite>("cam_enabled.png", Bundle);
     public static LoadableAsset<Sprite> CameraEnabledOutline { get; } = new LoadableBundleAsset<Sprite>("cam_enabled.png", Bundle);
     public static LoadableAsset<Sprite> CameraDisabled { get; } = new LoadableBundleAsset<Sprite>("cam_disabled.png", Bundle);
@@ -43,10 +49,8 @@ public static class NewModAsset
     public static LoadableAsset<Sprite> TyrantAlliance { get; } = new LoadableBundleAsset<Sprite>("tyrantAlliance.png", Bundle);
     public static LoadableAsset<Sprite> TyrantIntimidate { get; } = new LoadableBundleAsset<Sprite>("tyrantIntimidate.png", Bundle);
     public static LoadableResourceAsset StrikeButton { get; } = new("NewMod.Resources.Strike.png");
-    public static LoadableResourceAsset CallWraith { get; } = new("NewMod.Resources.callwraith.png");
     public static LoadableResourceAsset Shield { get; } = new("NewMod.Resources.Shield.png");
     public static LoadableResourceAsset Slash { get; } = new("NewMod.Resources.Slash.png");
-    public static LoadableResourceAsset DeployZone { get; } = new("NewMod.Resources.deployzone.png");
     public static LoadableResourceAsset VerifyButton { get; } = new("NewMod.Resources.verifier.png");
     public static LoadableResourceAsset VanillaKillButton { get; } = new("NewMod.Resources.killbutton.png");
     public static LoadableResourceAsset EnterVoid { get; } = new("NewMod.Resources.EnterVoid.png");
@@ -54,8 +58,6 @@ public static class NewModAsset
     public static LoadableResourceAsset WardenInvestigate { get; } = new("NewMod.Resources.investigate.png");
     public static LoadableResourceAsset AccuseButton { get; } = new("NewMod.Resources.Accuse.png");
     public static LoadableResourceAsset DefendButton { get; } = new("NewMod.Resources.Defend.png");
-    public static LoadableResourceAsset LeverageButton { get; } = new("NewMod.Resources.leverage.png");
-    public static LoadableResourceAsset TerminateButton { get; } = new("NewMod.Resources.RoleIcons.Terminate.png");
     public static LoadableResourceAsset ReflectButton { get; } = new("NewMod.Resources.RoleIcons.Reflect.png");
     public static LoadableResourceAsset DeadlockButton { get; } = new("NewMod.Resources.deadlock.png");
     public static LoadableResourceAsset OverrideButton { get; } = new("NewMod.Resources.override.png");

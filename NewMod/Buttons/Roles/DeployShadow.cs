@@ -18,7 +18,7 @@ public class DeployShadow : CustomActionButton, IEnergyAbility
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<ShadeOptions>.Instance.Cooldown);
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.DeployZone;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.DeployShadow;
 
     public override bool Enabled(RoleBehaviour role)
     {

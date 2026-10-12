@@ -21,7 +21,7 @@ public sealed class DrainButton : CustomActionButton
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<EnergyThiefOptions>.Instance.SiphonCooldown);
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-    public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.Siphon;
 
     public override bool Enabled(RoleBehaviour role)
     {

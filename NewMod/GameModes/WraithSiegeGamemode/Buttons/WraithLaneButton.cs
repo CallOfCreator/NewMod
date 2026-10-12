@@ -17,7 +17,7 @@ public abstract class WraithLaneButton : CustomActionButton
     public override int MaxUses => 0;
     public override float EffectDuration => 0f;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.CallWraith;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.SendWraith;
 
     public override bool Enabled(RoleBehaviour role)
     {

@@ -35,7 +35,7 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override float EffectDuration => 0f;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.CallWraith;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.SendWraith;
 
     public override bool Enabled(RoleBehaviour role)
     {
