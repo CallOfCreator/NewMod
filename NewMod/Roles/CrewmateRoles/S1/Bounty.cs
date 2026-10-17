@@ -271,13 +271,13 @@ public class Bounty : CrewmateRole, INewModRole
         var local = PlayerControl.LocalPlayer;
 
         if (local.PlayerId == bountyId)
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FFB14F>Contract ready:</color> give your target a head start,\nthen catch them before time runs out."));
+            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FFB14F>Contract ready:</color> you are held still for the head start,\nthen catch them before time runs out."));
 
         if (local.PlayerId != contract.TargetId)
             return;
 
         ShowCollectionArrow(Utils.PlayerById(bountyId));
-        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FFB14F>Collection:</color> Your Bounty is coming for you."));
+        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#FFB14F>Collection:</color> Run! Your Bounty is held still briefly."));
     }
 
     [MethodRpc((uint)CustomRPC.BountyFailContract, LocalHandling = RpcLocalHandling.After)]

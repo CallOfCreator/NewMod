@@ -16,7 +16,7 @@ public sealed class BountyOptions : AbstractOptionGroup<Bounty>
     public float TrackingInterval { get; set; } = 4f;
 
     [ModdedNumberOption("Lost Contact Grace", 2f, 15f, 1f, MiraNumberSuffixes.Seconds)]
-    public float ContactGrace { get; set; } = 5f;
+    public float ContactGrace { get; set; } = 2f;
 
     public override string GroupName => "Bounty Settings";
 
@@ -24,7 +24,7 @@ public sealed class BountyOptions : AbstractOptionGroup<Bounty>
     public float CashOutCooldown { get; set; } = 15f;
 
     [ModdedNumberOption("Cash Out Range", 0.75f, 2.5f, 0.25f)]
-    public float CashOutRange { get; set; } = 1.5f;
+    public float CashOutRange { get; set; } = 1f;
 
     [ModdedNumberOption("Escort Range", 1f, 4f, 0.25f)]
     public float EscortRange { get; set; } = 2f;
