@@ -13,6 +13,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Roles;
 using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
+using NewMod.Achievements;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles.S1;
@@ -386,6 +387,8 @@ public class WardenRole : CrewmateRole, INewModRole
             return;
 
         Destroy(mark);
+        if (Application.platform != RuntimePlatform.Android)
+            NewModAchievementsTab.TraceEvidence.Unlock();
 
         var result = ClueType switch
         {

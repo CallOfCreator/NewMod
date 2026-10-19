@@ -30,7 +30,7 @@ namespace NewMod;
 [BepInDependency(PathfindingPlugin.Id)]
 [BepInDependency(CorsacPluginId, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(LaunchpadReloadedId, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency(AchievementsAPIPlugin.Id)]
+[BepInDependency(AchievementsAPIPlugin.Id, "2.0.1")]
 [ReactorModFlags(ModFlags.RequireOnAllClients)]
 [BepInProcess("Among Us.exe")]
 public class NewMod : BasePlugin, IMiraPlugin

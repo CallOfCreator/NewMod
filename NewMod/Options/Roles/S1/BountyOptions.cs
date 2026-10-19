@@ -23,10 +23,10 @@ public sealed class BountyOptions : AbstractOptionGroup<Bounty>
     [ModdedNumberOption("Cash Out Cooldown", 10f, 30f, 5f, MiraNumberSuffixes.Seconds)]
     public float CashOutCooldown { get; set; } = 15f;
 
-    [ModdedNumberOption("Cash Out Range", 0.75f, 2.5f, 0.25f)]
+    [ModdedNumberOption("Cash Out Range", 0.75f, 2.5f, 0.25f, MiraNumberSuffixes.Distance)]
     public float CashOutRange { get; set; } = 1f;
 
-    [ModdedNumberOption("Escort Range", 1f, 4f, 0.25f)]
+    [ModdedNumberOption("Escort Range", 1f, 4f, 0.25f, MiraNumberSuffixes.Distance)]
     public float EscortRange { get; set; } = 2f;
 
     [ModdedNumberOption("Escort Duration", 10f, 45f, 5f, MiraNumberSuffixes.Seconds)]

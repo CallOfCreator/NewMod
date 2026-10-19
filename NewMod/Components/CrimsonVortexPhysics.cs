@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MiraAPI.GameOptions;
+﻿using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Networking;
 using NewMod.Achievements;
@@ -7,7 +6,6 @@ using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options;
 using NewMod.Roles.NeutralRoles.S1;
-using NewMod.Seasons;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
 
@@ -317,7 +315,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var escapePosition = _lastSafePositionReady ? _lastSafePosition : ShipStatus.Instance.InitialSpawnCenter;
         _player.NetTransform.RpcSnapTo(escapePosition);
-        if (SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab))) PreseasonAchievementsTab.EventHorizonDenied.Unlock();
+        NewModAchievementsTab.EventHorizonDenied.Unlock();
 
         if (_collisionDisabled)
         {

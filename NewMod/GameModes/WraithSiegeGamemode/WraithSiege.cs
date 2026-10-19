@@ -941,7 +941,7 @@ public sealed class WraithSiege : AbstractGameMode
         Utils.HandleRevive(PlayerControl.LocalPlayer, targetId, RoleTypes.Crewmate, body.transform.position.x, body.transform.position.y);
     }
 
-    public override IEnumerator IntroCutscene(IntroCutscene __instance)
+    public override IEnumerator IntroCutscene(IntroCutscene introCutscene)
     {
         var isWraith = PlayerControl.LocalPlayer.Data.Role.IsImpostor;
 
@@ -951,38 +951,38 @@ public sealed class WraithSiege : AbstractGameMode
 
         var team = GameData.Instance.AllPlayers.ToArray().Where(player => !player.Disconnected && player.Role.IsImpostor == isWraith).OrderBy(player => player.PlayerId == PlayerControl.LocalPlayer.PlayerId ? 0 : 1).ToArray();
 
-        SoundManager.Instance.PlaySound(__instance.IntroStinger, false);
+        SoundManager.Instance.PlaySound(introCutscene.IntroStinger, false);
 
-        __instance.LogPlayerRoleData();
+        introCutscene.LogPlayerRoleData();
 
-        __instance.HideAndSeekPanels.SetActive(false);
-        __instance.CrewmateRules.SetActive(false);
-        __instance.ImpostorRules.SetActive(false);
-        __instance.ImpostorName.gameObject.SetActive(false);
-        __instance.ImpostorTitle.gameObject.SetActive(false);
-        __instance.YouAreText.gameObject.SetActive(false);
-        __instance.RoleText.gameObject.SetActive(false);
-        __instance.RoleBlurbText.gameObject.SetActive(false);
+        introCutscene.HideAndSeekPanels.SetActive(false);
+        introCutscene.CrewmateRules.SetActive(false);
+        introCutscene.ImpostorRules.SetActive(false);
+        introCutscene.ImpostorName.gameObject.SetActive(false);
+        introCutscene.ImpostorTitle.gameObject.SetActive(false);
+        introCutscene.YouAreText.gameObject.SetActive(false);
+        introCutscene.RoleText.gameObject.SetActive(false);
+        introCutscene.RoleBlurbText.gameObject.SetActive(false);
 
-        __instance.FrontMost.color = Color.clear;
+        introCutscene.FrontMost.color = Color.clear;
 
-        __instance.Foreground.material.SetFloat("_Rad", __instance.ForegroundRadius.max);
+        introCutscene.Foreground.material.SetFloat("_Rad", introCutscene.ForegroundRadius.max);
 
-        __instance.TeamTitle.gameObject.SetActive(true);
-        __instance.ImpostorText.gameObject.SetActive(true);
-        __instance.BackgroundBar.enabled = true;
+        introCutscene.TeamTitle.gameObject.SetActive(true);
+        introCutscene.ImpostorText.gameObject.SetActive(true);
+        introCutscene.BackgroundBar.enabled = true;
 
-        __instance.TeamTitle.text = isWraith ? "WRAITHS" : "REVIVERS";
+        introCutscene.TeamTitle.text = isWraith ? "WRAITHS" : "REVIVERS";
 
-        __instance.TeamTitle.color = color;
-        __instance.TeamTitle.fontSize = 4.5f;
+        introCutscene.TeamTitle.color = color;
+        introCutscene.TeamTitle.fontSize = 4.5f;
 
-        __instance.ImpostorText.text = isWraith ? "SUMMON WRAITHS  •  PUSH THE LANES  •  BREACH THE FLAG\n" + $"<size=70%>Reach {Mathf.RoundToInt(options.RequiredDeliveries)} " + "deliveries before time runs out</size>" : "DEFEND THE FLAG  •  BANISH WRAITHS  •  REVIVE YOUR TEAM\n" + $"<size=70%>{Mathf.RoundToInt(options.Tickets)} shared tickets</size>";
+        introCutscene.ImpostorText.text = isWraith ? "SUMMON WRAITHS  •  PUSH THE LANES  •  BREACH THE FLAG\n" + $"<size=70%>Reach {Mathf.RoundToInt(options.RequiredDeliveries)} " + "deliveries before time runs out</size>" : "DEFEND THE FLAG  •  BANISH WRAITHS  •  REVIVE YOUR TEAM\n" + $"<size=70%>{Mathf.RoundToInt(options.Tickets)} shared tickets</size>";
 
-        __instance.ImpostorText.color = Color.white;
-        __instance.ImpostorText.fontSize = 1.65f;
+        introCutscene.ImpostorText.color = Color.white;
+        introCutscene.ImpostorText.fontSize = 1.65f;
 
-        __instance.BackgroundBar.material.SetColor(ShaderID.Color, color);
+        introCutscene.BackgroundBar.material.SetColor(ShaderID.Color, color);
 
         yield return ShipStatus.Instance.CosmeticsCache.PopulateFromPlayers();
 
@@ -990,14 +990,14 @@ public sealed class WraithSiege : AbstractGameMode
 
         for (var i = 0; i < team.Length; i++)
         {
-            var display = __instance.CreatePlayer(i, isWraith ? 1 : maxDepth, team[i], isWraith);
+            var display = introCutscene.CreatePlayer(i, isWraith ? 1 : maxDepth, team[i], isWraith);
 
             display.ToggleName(false);
         }
 
         var iconObject = new GameObject(isWraith ? "WraithSiegeIntroWraith" : "WraithSiegeIntroTicket");
 
-        iconObject.transform.SetParent(__instance.transform, false);
+        iconObject.transform.SetParent(introCutscene.transform, false);
 
         iconObject.transform.localPosition = new Vector3(-3.25f, 1.5f, -25f);
 
@@ -1022,12 +1022,12 @@ public sealed class WraithSiege : AbstractGameMode
             yield return null;
         }
 
-        __instance.gameObject.SetActive(false);
+        introCutscene.gameObject.SetActive(false);
 
         yield return new WaitForEndOfFrame();
 
         ShipStatus.Instance.StartSFX();
-        Object.Destroy(__instance.gameObject);
+        Object.Destroy(introCutscene.gameObject);
     }
 
     public override bool CanReport(DeadBody body)

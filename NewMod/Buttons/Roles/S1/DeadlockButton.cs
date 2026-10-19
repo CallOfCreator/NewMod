@@ -21,7 +21,7 @@ public class DeadlockButton : CustomActionButton<PlayerControl>, IEnergyAbility
     public override string Name => "Deadlock";
     public override float InitialCooldown => 0f;
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<DeadwireOptions>.Instance.DeadlockCooldown);
-    public override int MaxUses => (int)OptionGroupSingleton<DeadwireOptions>.Instance.DeadlockUses;
+    public override int MaxUses => OptionGroupSingleton<DeadwireOptions>.Instance.DeadlockUses;
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override LoadableAsset<Sprite> Sprite => NewModAsset.DeadlockButton;

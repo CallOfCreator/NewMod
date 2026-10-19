@@ -65,7 +65,7 @@ public static class NewModCosmeticTabsPatch
     [HarmonyPrefix]
     public static bool HatsClickEquip(HatsTab __instance)
     {
-        return __instance.GetCurrentProdID() != NewModCosmeticsRegistry.HatIds["og_newmod"] || PreseasonAchievementsTab.ThreeInARow.Unlocked;
+        return __instance.GetCurrentProdID() != NewModCosmeticsRegistry.HatIds["og_newmod"] || NewModAchievementsTab.ThreeInARow.Unlocked;
     }
 
     [HarmonyPatch(typeof(VisorsTab), nameof(VisorsTab.OnEnable))]
@@ -234,7 +234,7 @@ public static class NewModCosmeticTabsPatch
             chip.SelectionHighlight.gameObject.SetActive(false);
             tab.ColorChips.Add(chip);
 
-            if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode()) || (hat.ProductId == ogNewModHatId && !PreseasonAchievementsTab.ThreeInARow.Unlocked)) chip.SetUnavailable();
+            if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode()) || (hat.ProductId == ogNewModHatId && !NewModAchievementsTab.ThreeInARow.Unlocked)) chip.SetUnavailable();
         }
 
         tab.currentHatIsEquipped = true;

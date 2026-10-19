@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using BepInEx.Unity.IL2CPP.Utils.Collections;
+using PathfindingAPI.Movement;
 using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
@@ -17,6 +19,8 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
     public readonly List<LineRenderer> traversalLines = [];
     public string traversalReport = string.Empty;
     public PathfindingNpc npc;
+    public GameObject go;
+    public Coroutine goMovement;
     public Vector2 start;
     public Vector2 goal;
     public bool hasStart;
@@ -65,6 +69,57 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         preview.request = new MapPathRequest(ShipStatus.Instance, preview.start, preview.goal, new PathOptions { UseVents = PlayerControl.LocalPlayer.Data.Role.CanVent }, PlayerControl.LocalPlayer);
     }
 
+    public static void SendGameObject()
+    {
+        var preview = GetOrCreate();
+        if (!preview.hasStart || !preview.hasGoal)
+        {
+            preview.message = "Mark both the start and goal first.";
+            return;
+        }
+
+        var sprites = new List<Sprite>();
+        foreach (var console in ShipStatus.Instance.AllConsoles)
+            if (console && console.Image && console.Image.sprite)
+                sprites.Add(console.Image.sprite);
+        if (sprites.Count == 0)
+        {
+            preview.message = "No task console sprites found.";
+            return;
+        }
+
+        preview.StopGameObject();
+        preview.StopSearch();
+        preview.go = new GameObject("PathfindingSprite");
+        preview.go.transform.SetParent(preview.transform, false);
+        preview.go.transform.position = new Vector3(preview.start.x, preview.start.y, -1f);
+        var renderer = preview.go.AddComponent<SpriteRenderer>();
+        renderer.sprite = sprites[Random.Range(0, sprites.Count)];
+        preview.go.transform.localScale = Vector3.one * (0.5f / Mathf.Max(renderer.sprite.bounds.size.x, renderer.sprite.bounds.size.y));
+        preview.message = "GameObject moving to goal.";
+        preview.goMovement = preview.StartCoroutine(preview.go.CoMoveTo(preview.goal, 2.5f, result =>
+        {
+            if (result.Path != null) preview.DrawPath(result.Path);
+            preview.message = $"GameObject: {result.Status}";
+            preview.goMovement = null;
+        }).WrapToIl2Cpp());
+    }
+
+    public void StopGameObject()
+    {
+        if (goMovement != null) StopCoroutine(goMovement);
+        goMovement = null;
+        if (!go) return;
+        GameObjectPathExtensions.MovingObjects.Remove(go);
+        Destroy(go);
+        go = null;
+    }
+
+    public static void SendTaskNpc()
+    {
+        GetOrCreate().StartNpc(false, true);
+    }
+
     public static void SendNpc()
     {
         GetOrCreate().StartNpc(false);
@@ -85,15 +140,33 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         preview.message = "Debug NPC stopped.";
     }
 
-    public void StartNpc(bool tour)
+    public void StartNpc(bool tour, bool doTask = false)
     {
-        if (!hasStart || (!tour && !hasGoal))
+        if (!hasStart || (!tour && !doTask && !hasGoal))
         {
-            message = tour ? "Mark the start first." : "Mark both the start and goal first.";
+            message = tour || doTask ? "Mark the start first." : "Mark both the start and goal first.";
             return;
         }
 
-        var probe = MapPathfinding.CreateRequest(start, tour ? start : goal);
+        NormalPlayerTask task = null;
+        if (doTask)
+        {
+            var tasks = new List<NormalPlayerTask>();
+            foreach (var candidate in PlayerControl.LocalPlayer.myTasks)
+            {
+                var normal = candidate.TryCast<NormalPlayerTask>();
+                if (normal && normal.MaxStep == 1 && !normal.IsComplete && normal.Owner == PlayerControl.LocalPlayer && normal.Owner.Data.FindTaskById(normal.Id) != null)
+                    tasks.Add(normal);
+            }
+            if (tasks.Count == 0)
+            {
+                message = "Assign an unfinished single-step task first.";
+                return;
+            }
+            task = tasks[Random.Range(0, tasks.Count)];
+        }
+
+        var probe = MapPathfinding.CreateRequest(start, tour || doTask ? start : goal);
         if (probe.Status == PathStatus.InvalidEndpoint)
         {
             message = "NPC start or goal is not on clear floor.";
@@ -106,7 +179,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         var holder = new GameObject("NewModPathfindingNpc");
         holder.transform.SetParent(transform, false);
         npc = holder.AddComponent<PathfindingNpc>();
-        npc.Initialize(this, tour);
+        npc.Initialize(this, tour, task);
     }
 
     [HideFromIl2Cpp]
@@ -149,6 +222,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
             return;
         preview.StopSearch();
         StopNpc();
+        preview.StopGameObject();
         preview.hasStart = preview.hasGoal = false;
         preview.startMarker.positionCount = preview.goalMarker.positionCount = 0;
         preview.ClearTraversalLines();
@@ -250,11 +324,10 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         }
 
         traversalReport = report.ToString();
-        Info(traversalReport);
         probe.Cancel();
         if (test == null)
         {
-            message = "Traversal scan complete. Green: connected | Yellow: isolated | Red: rejected. Details below and in the log.";
+            message = "Traversal scan complete. Green: connected | Yellow: isolated | Red: rejected. Details below.";
             return;
         }
 
@@ -340,6 +413,7 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
 
     public void OnDisable()
     {
+        StopGameObject();
         if (npc) npc.Dispose();
         npc = null;
         request?.Cancel();

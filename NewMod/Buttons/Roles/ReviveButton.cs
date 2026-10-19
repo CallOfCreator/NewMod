@@ -35,7 +35,7 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
     /// <summary>
     /// Gets the number of revives allowed by the role options.
     /// </summary>
-    public override int MaxUses => (int)OptionGroupSingleton<NecromancerOption>.Instance.AbilityUses;
+    public override int MaxUses => OptionGroupSingleton<NecromancerOption>.Instance.AbilityUses;
 
     /// <summary>
     /// Gets zero duration since reviving is immediate.

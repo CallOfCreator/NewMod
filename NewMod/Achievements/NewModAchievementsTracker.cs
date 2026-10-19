@@ -1,15 +1,13 @@
-﻿using System.Linq;
-using HarmonyLib;
+﻿using HarmonyLib;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using NewMod.Seasons;
 using UnityEngine;
 
 namespace NewMod.Achievements;
 
 public static class NewModAchievementTracker
 {
-    private static bool _onlineMatchActive;
+    public static bool OnlineMatchActive;
 
     [RegisterEvent]
     public static void OnRoundStart(RoundStartEvent evt)
@@ -17,33 +15,29 @@ public static class NewModAchievementTracker
         if (!evt.TriggeredByIntro)
             return;
 
-        _onlineMatchActive = false;
+        OnlineMatchActive = false;
 
         if (Application.platform == RuntimePlatform.Android)
             return;
 
-        if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
-            return;
-
-        PreseasonAchievementsTab.WelcomeToNewMod.Unlock();
-        _onlineMatchActive = AmongUsClient.Instance.NetworkMode == NetworkModes.OnlineGame;
+        OnlineMatchActive = AmongUsClient.Instance.NetworkMode == NetworkModes.OnlineGame;
+        if (OnlineMatchActive)
+            NewModAchievementsTab.WelcomeToNewMod.Unlock();
     }
 
     [RegisterEvent]
     public static void OnGameEnd(GameEndEvent evt)
     {
-        if (!_onlineMatchActive)
+        if (!OnlineMatchActive)
             return;
 
-        _onlineMatchActive = false;
+        OnlineMatchActive = false;
 
         if (Application.platform == RuntimePlatform.Android)
             return;
 
-        if (!SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab))) return;
-
-        if (!PreseasonAchievementsTab.ThreeInARow.Unlocked)
-            PreseasonAchievementsTab.ThreeInARow.Increment(1, false);
+        if (!NewModAchievementsTab.ThreeInARow.Unlocked)
+            NewModAchievementsTab.ThreeInARow.Increment(1, false);
     }
 
     [HarmonyPatch(typeof(GameData), nameof(GameData.OnDisconnected))]
@@ -52,13 +46,13 @@ public static class NewModAchievementTracker
         [HarmonyPostfix]
         public static void Postfix()
         {
-            if (!_onlineMatchActive)
+            if (!OnlineMatchActive)
                 return;
 
-            _onlineMatchActive = false;
+            OnlineMatchActive = false;
 
-            if (!PreseasonAchievementsTab.ThreeInARow.Unlocked)
-                PreseasonAchievementsTab.ThreeInARow.SetValue(0, false);
+            if (!NewModAchievementsTab.ThreeInARow.Unlocked)
+                NewModAchievementsTab.ThreeInARow.SetValue(0, false);
         }
     }
 }

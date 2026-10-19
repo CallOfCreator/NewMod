@@ -24,19 +24,19 @@ public class OfferChampionButton : CustomActionButton
 
     public override bool CanUse()
     {
-        return base.CanUse() && !ActiveMenu && Tyrant.ApexThroneReady && Tyrant.ChampionId == byte.MaxValue;
+        return base.CanUse() && !ActiveMenu?.Component && Tyrant.ApexThroneReady && Tyrant.ChampionId == byte.MaxValue;
     }
 
     [RegisterEvent]
     public static void OnMeetingStart(StartMeetingEvent evt)
     {
-        if (ActiveMenu) ActiveMenu.ForceClose();
+        if (ActiveMenu?.Component) ActiveMenu.ForceClose();
     }
 
     [RegisterEvent]
     public static void OnGameEnd(GameEndEvent evt)
     {
-        if (ActiveMenu) ActiveMenu.ForceClose();
+        if (ActiveMenu?.Component) ActiveMenu.ForceClose();
     }
 
     protected override void OnClick()

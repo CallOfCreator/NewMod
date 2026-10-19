@@ -1,16 +1,12 @@
-﻿/*using AchievementsAPI.API;
+﻿using AchievementsAPI.API;
+using Reactor.Localization.Utilities;
 using UnityEngine;
 
 namespace NewMod.Achievements;
 
-public sealed class NewModAchievementsTab : AchievementsTab
+public class NewModAchievementsTab : AchievementsTab
 {
-    public override string Name => "NewMod";
-
-    public override Color GetTabColor()
-    {
-        return new Color32(69, 38, 105, 255);
-    }
+    public override StringNames Name { get; } = CustomStringName.CreateAndRegister("NewMod");
 
     public override Sprite GetIcon()
     {
@@ -19,7 +15,7 @@ public sealed class NewModAchievementsTab : AchievementsTab
 
     public static BaseAchievement WelcomeToNewMod { get; } = new(
         "Welcome to NewMod",
-        "Start a Freeplay or online NewMod match.",
+        "Start an online NewMod match.",
         NewModAsset.NMIcon.LoadAsset());
 
     public static CountAchievement ThreeInARow { get; } = new(
@@ -35,19 +31,21 @@ public sealed class NewModAchievementsTab : AchievementsTab
         "Trace Evidence",
         "As Warden, seal a location and investigate its Residual Trace.",
         NewModAsset.ResidualTrace.LoadAsset(),
-        rarity: 2);
+        rarity: 2,
+        tags: ["Warden"]) { Category = AchievementCategories.Crewmate };
 
     public static BaseAchievement EventHorizonDenied { get; } = new(
         "Event Horizon Denied",
         "Enter the Crimson Vortex and successfully escape it.",
         NewModAsset.CrismonIcon.LoadAsset(),
-        rarity: 2);
+        rarity: 2,
+        tags: ["Crimson Vortex", "General Events"]);
 
     public static BaseAchievement TrustButVerify { get; } = new(
         "Trust, But Verify",
         "As Verifier, receive a Confirmed or Denied result.",
         NewModAsset.VerifyIcon.LoadAsset(),
-        rarity: 1);
+        rarity: 1,
+        tags: ["Verifier"]) { Category = AchievementCategories.Crewmate };
 }
-*/
 

@@ -14,6 +14,9 @@ namespace NewMod.Debugging;
 public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 {
     public float Speed = 2.5f;
+    public NormalPlayerTask task;
+    public Console taskConsole;
+    public readonly Queue<Console> taskConsoles = new();
     public SubmergedElevator elevator;
     public Behaviour elevatorMover;
     public MapPathRequest elevatorRequest;
@@ -61,9 +64,10 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     public DeconSystem decon;
 
     [HideFromIl2Cpp]
-    public void Initialize(PathfindingPreview owner, bool tour)
+    public void Initialize(PathfindingPreview owner, bool tour, NormalPlayerTask task = null)
     {
         preview = owner;
+        this.task = task;
         traversalAudio = gameObject.AddComponent<AudioSource>();
         traversalAudio.playOnAwake = false;
         traversalAudio.outputAudioMixerGroup = SoundManager.Instance.SfxChannel;
@@ -93,11 +97,35 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         shadow.hitOverride = visual.Collider;
         SetPosition(owner.start);
         lastClearPosition = owner.start;
+        if (task)
+        {
+            foreach (var console in ShipStatus.Instance.AllConsoles)
+                if (console && console.isActiveAndEnabled && task.ValidConsole(console))
+                    taskConsoles.Enqueue(console);
+            NextTaskConsole();
+            return;
+        }
         if (tour && !BuildTour(owner.start))
             return;
         if (!tour)
             stops.Enqueue(owner.goal);
         NextStop();
+    }
+
+    public void NextTaskConsole()
+    {
+        if (taskConsoles.Count == 0)
+        {
+            preview.message = $"NPC {task.TaskType}: no reachable console.";
+            Finish();
+            return;
+        }
+
+        taskConsole = taskConsoles.Dequeue();
+        destination = taskConsole.transform.position;
+        retries = 0;
+        Plan();
+        preview.message = $"NPC walking to {task.TaskType}.";
     }
 
     public bool BuildTour(Vector2 start)
@@ -142,6 +170,21 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 
     public void NextStop()
     {
+        if (task)
+        {
+            if (request.CanUseConsole(visual.GetTruePosition()) && task.ValidConsole(request.console))
+            {
+                task.Owner.RpcCompleteTask(task.Id);
+                preview.message = $"NPC {task.TaskType} | Complete: {task.IsComplete && task.Owner.Data.FindTaskById(task.Id)?.Complete == true}";
+            }
+            else
+            {
+                preview.message = $"NPC {task.TaskType}: console unavailable.";
+            }
+            Finish();
+            return;
+        }
+
         if (stops.Count == 0)
         {
             Finish();
@@ -157,7 +200,7 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     public void Plan()
     {
         request?.Cancel();
-        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = retries > 0 ? 0.2f : 0.35f, WaitForDoors = true, UseVents = PlayerControl.LocalPlayer.Data.Role.CanVent && !MapPathfinding.IsSubmergedMap() }, PlayerControl.LocalPlayer);
+        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = retries > 0 ? 0.2f : 0.35f, WaitForDoors = true, UseVents = PlayerControl.LocalPlayer.Data.Role.CanVent && !MapPathfinding.IsSubmergedMap() }, PlayerControl.LocalPlayer, taskConsole);
         path = null;
         SetWalking(false);
     }
@@ -167,6 +210,13 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         if (!visual || !preview || MeetingHud.Instance || !ShipStatus.Instance)
         {
             Dispose();
+            return;
+        }
+
+        if (task && (task.Owner != PlayerControl.LocalPlayer || !task.Owner.AmOwner || !task.Owner.myTasks.Contains(task) || task.IsComplete))
+        {
+            preview.message = "NPC task interrupted.";
+            Finish();
             return;
         }
 
@@ -207,6 +257,10 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
                     RecoverPath();
                     recoveryWait = 0.25f;
                     Plan();
+                }
+                else if (task)
+                {
+                    NextTaskConsole();
                 }
                 else if (!request.IsClear(visual.GetTruePosition()))
                 {
@@ -653,22 +707,11 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         }
 
         var target = path != null && waypoint < path.Points.Length ? path.Points[waypoint] : destination;
-        var direction = (target - position).normalized;
-        var side = Vector2.Perpendicular(direction);
-        for (var i = 1; i <= 4; i++)
-        {
-            for (var sign = -1; sign <= 1; sign += 2)
-            {
-                var candidate = position + side * (sign * i * 0.05f) - direction * 0.025f;
-                if (!request.CanMove(position, candidate) || !request.CanMove(candidate, Vector2.MoveTowards(candidate, target, 0.1f)))
-                    continue;
-                lastClearPosition = position;
-                SetPosition(candidate);
-                return true;
-            }
-        }
-
-        return false;
+        if (!request.FindRecoveryPoint(position, target, out var point))
+            return false;
+        lastClearPosition = position;
+        SetPosition(point);
+        return true;
     }
 
     public void TraverseZipline()
@@ -836,7 +879,7 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             if (!AmongUsClient.Instance.AmHost || !available)
             {
                 if (platform.InUse && crossingTime < 5f) return;
-                platformAlternative ??= new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = request.options.CellSize, WaitForDoors = request.options.WaitForDoors, UseVents = request.options.UseVents, UseMovingPlatforms = false }, PlayerControl.LocalPlayer);
+                platformAlternative ??= new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = request.options.CellSize, WaitForDoors = request.options.WaitForDoors, UseVents = request.options.UseVents, UseMovingPlatforms = false }, PlayerControl.LocalPlayer, taskConsole);
                 platformAlternative.Step();
                 if (platformAlternative.Status == PathStatus.Found)
                 {
@@ -970,6 +1013,9 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         request?.Cancel();
         request = null;
         crossing = false;
+        task = null;
+        taskConsole = null;
+        taskConsoles.Clear();
         if (visual)
         {
             visual.cosmetics.Visible = true;
@@ -980,7 +1026,10 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
     public void ReleaseNpc()
     {
         Finish();
-        if (visual) Destroy(visual.gameObject);
+        if (visual)
+        {
+            Destroy(visual.gameObject);
+        }
         visual = null;
     }
 

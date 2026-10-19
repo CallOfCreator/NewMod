@@ -12,6 +12,6 @@ public class NecromancerOption : AbstractOptionGroup<NecromancerRole>
     [ModdedNumberOption("Revive Cooldown", 15, 60, suffixType: MiraNumberSuffixes.Seconds)]
     public float ButtonCooldown { get; set; } = 30f;
 
-    [ModdedNumberOption("Revive Uses", 1, 3)]
-    public float AbilityUses { get; set; } = 1f;
+    [ModdedNumberOption("Revive Uses", 1, 3, 1, "#", "#")]
+    public int AbilityUses { get; set; } = 1;
 }

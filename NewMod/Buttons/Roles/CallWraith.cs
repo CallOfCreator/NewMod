@@ -106,7 +106,7 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
         var menu = ActiveMenu;
         ActiveMenu = null;
 
-        if (menu)
+        if (menu?.Component)
             menu.ForceClose();
     }
 }

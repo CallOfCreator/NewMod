@@ -1,8 +1,5 @@
-using System.Linq;
-using AchievementsAPI.API;
 using HarmonyLib;
 using MiraAPI.LocalSettings;
-using NewMod.Achievements;
 using NewMod.LocalSettings;
 using NewMod.Seasons;
 using UnityEngine;
@@ -52,9 +49,6 @@ public static class MainMenuPatch
     [HarmonyPostfix]
     public static void StartPostfix(MainMenuManager __instance)
     {
-        if (!AchievementsManager.Tabs.Any(tab => tab is PreseasonAchievementsTab))
-            AchievementsManager.Tabs.Add(new PreseasonAchievementsTab());
-
         if (LocalSettingsTabSingleton<NewModLocalSettings>.Instance.EnableCustomCursor.Value)
         {
             var cursor = GetCursorTexture();

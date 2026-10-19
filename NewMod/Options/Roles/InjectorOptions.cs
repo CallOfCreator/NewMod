@@ -1,5 +1,6 @@
 using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
+using MiraAPI.Utilities;
 using NewMod.Roles.NeutralRoles;
 
 namespace NewMod.Options.Roles;
@@ -11,10 +12,10 @@ public class InjectorOptions : AbstractOptionGroup<InjectorRole>
     [ModdedNumberOption("Serum Cooldown", 5f, 60f)]
     public float SerumCooldown { get; set; } = 20f;
 
-    [ModdedNumberOption("Samples Required To Win", 1f, 10f)]
-    public float RequiredInjectCount { get; set; } = 3f;
+    [ModdedNumberOption("Samples Required To Win", 1, 10, 1, "#", "#")]
+    public int RequiredInjectCount { get; set; } = 3;
 
-    [ModdedNumberOption("Injection And Collection Range", 0.5f, 2f, 0.25f)]
+    [ModdedNumberOption("Injection And Collection Range", 0.5f, 2f, 0.25f, MiraNumberSuffixes.Distance)]
     public float InjectionRange { get; set; } = 1.25f;
 
     [ModdedNumberOption("Observation Duration", 2f, 10f)]

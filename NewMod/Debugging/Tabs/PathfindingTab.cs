@@ -16,6 +16,9 @@ public sealed class PathfindingTab : IDebugTab
         if (GUILayout.Button("Mark start here")) PathfindingPreview.MarkStart();
         if (GUILayout.Button("Mark goal here")) PathfindingPreview.MarkGoal();
         if (GUILayout.Button("Find path")) PathfindingPreview.FindPath();
+        if (GUILayout.Button("Send GameObject")) PathfindingPreview.SendGameObject();
+        if (GUILayout.Button("Stop GameObject") && preview) preview.StopGameObject();
+        if (GUILayout.Button("NPC: do a task")) PathfindingPreview.SendTaskNpc();
         if (GUILayout.Button("Send NPC")) PathfindingPreview.SendNpc();
         if (GUILayout.Button("Tour map and return")) PathfindingPreview.TourMap();
         if (GUILayout.Button("Stop NPC")) PathfindingPreview.StopNpc();

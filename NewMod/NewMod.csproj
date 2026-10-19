@@ -39,8 +39,7 @@
         </PackageReference>
         <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.735"/>
         <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34" PrivateAssets="all"/>
-        <PackageReference Include="AllOfUs.MiraAPI" Version="0.5.0" PrivateAssets="all"/>
-        <PackageReference Include="CallOfCreator.PathfindingAPI" Version="1.0.2" PrivateAssets="all" />
+        <PackageReference Include="CallOfCreator.PathfindingAPI" Version="1.0.3" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
@@ -52,12 +51,16 @@
             <HintPath>Resources/Dlls/CorsacCosmetics.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="Reactor">
-            <HintPath>Resources/Dlls/Reactor.dll</HintPath>
+        <Reference Include="MiraAPI">
+            <HintPath>Resources/Dlls/MiraAPI.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="AchievementsAPI">
             <HintPath>Resources/Dlls/AchievementsAPI.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Reactor">
+            <HintPath>Resources/Dlls/Reactor.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="ReactUI">

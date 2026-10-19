@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Mira;
 using MiraAPI.Events.Vanilla.Gameplay;
@@ -15,7 +14,6 @@ using NewMod.Achievements;
 using NewMod.Components.Minigames;
 using NewMod.Options.Roles.S1;
 using NewMod.Roles.CrewmateRoles.S1;
-using NewMod.Seasons;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
 using UnityEngine;
@@ -264,8 +262,8 @@ public static class VerifierUtilities
         RoundFacts.TryGetValue(target.PlayerId, out var facts);
         var happened = (facts & GetFlag(claim)) != 0;
 
-        if (Application.platform != RuntimePlatform.Android && SeasonManager.AvailableAchievementTabTypes.Contains(typeof(PreseasonAchievementsTab)))
-            PreseasonAchievementsTab.TrustButVerify.Unlock();
+        if (Application.platform != RuntimePlatform.Android)
+            NewModAchievementsTab.TrustButVerify.Unlock();
 
         return happened == expected ? "<color=#58E8BE>Confirmed</color>" : "<color=#FF4D4D>Denied</color>";
     }

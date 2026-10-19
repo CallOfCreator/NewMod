@@ -16,10 +16,10 @@ public class DeadwireOptions : AbstractOptionGroup<global::NewMod.Roles.Impostor
     [ModdedNumberOption("Deadlock Duration", 6f, 15f, 1f, MiraNumberSuffixes.Seconds)]
     public float DeadlockDuration { get; set; } = 10f;
 
-    [ModdedNumberOption("Deadlock Uses", 1f, 3f)]
-    public float DeadlockUses { get; set; } = 2f;
+    [ModdedNumberOption("Deadlock Uses", 1, 3, 1, "#", "#")]
+    public int DeadlockUses { get; set; } = 2;
 
-    [ModdedNumberOption("Deadlock Range", 0.75f, 2.5f, 0.25f)]
+    [ModdedNumberOption("Deadlock Range", 0.75f, 2.5f, 0.25f, MiraNumberSuffixes.Distance)]
     public float DeadlockRange { get; set; } = 1.5f;
 
     [ModdedNumberOption("Override Cooldown", 3f, 15f, 1f, MiraNumberSuffixes.Seconds)]
@@ -34,7 +34,7 @@ public class DeadwireOptions : AbstractOptionGroup<global::NewMod.Roles.Impostor
     [ModdedNumberOption("Tracking Duration", 3f, 12f, 1f, MiraNumberSuffixes.Seconds)]
     public float TrackingDuration { get; set; } = 6f;
 
-    [ModdedNumberOption("Blink Distance", 1f, 4f, 0.25f)]
+    [ModdedNumberOption("Blink Distance", 1f, 4f, 0.25f, MiraNumberSuffixes.Distance)]
     public float BlinkDistance { get; set; } = 2.5f;
 
     [ModdedNumberOption("Jam Duration", 3f, 12f, 1f, MiraNumberSuffixes.Seconds)]
