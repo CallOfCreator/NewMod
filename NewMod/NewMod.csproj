@@ -37,6 +37,7 @@
         <PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.0.1" PrivateAssets="all" ExcludeAssets="runtime">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="AllOfUs.MiraAPI" Version="0.6.0" PrivateAssets="all" />
         <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.735"/>
         <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34" PrivateAssets="all"/>
         <PackageReference Include="CallOfCreator.PathfindingAPI" Version="1.0.3" PrivateAssets="all" />
@@ -49,10 +50,6 @@
     <ItemGroup>
         <Reference Include="CorsacCosmetics">
             <HintPath>Resources/Dlls/CorsacCosmetics.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="MiraAPI">
-            <HintPath>Resources/Dlls/MiraAPI.dll</HintPath>
             <Private>false</Private>
         </Reference>
         <Reference Include="AchievementsAPI">
