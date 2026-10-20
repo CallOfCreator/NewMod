@@ -6,8 +6,6 @@ using CorsacCosmetics.Cosmetics;
 using HarmonyLib;
 using Innersloth.Assets;
 using MiraAPI.Utilities.Assets;
-using NewMod.Achievements;
-using NewMod.Cosmetics;
 using Reactor.Utilities;
 using Reactor.Utilities.Extensions;
 using TMPro;
@@ -59,13 +57,6 @@ public static class NewModCosmeticTabsPatch
 
         GenerateHats(__instance);
         return false;
-    }
-
-    [HarmonyPatch(typeof(HatsTab), nameof(HatsTab.ClickEquip))]
-    [HarmonyPrefix]
-    public static bool HatsClickEquip(HatsTab __instance)
-    {
-        return __instance.GetCurrentProdID() != NewModCosmeticsRegistry.HatIds["og_newmod"] || NewModAchievementsTab.ThreeInARow.Unlocked;
     }
 
     [HarmonyPatch(typeof(VisorsTab), nameof(VisorsTab.OnEnable))]
@@ -194,7 +185,6 @@ public static class NewModCosmeticTabsPatch
 
         var pageCount = CosmeticsCatalog.Instance.HatGroups.Count + 1;
         title.text = HatPage == 0 ? $"Hats ({HatPage + 1}/{pageCount})" : $"{CosmeticsCatalog.Instance.HatGroups.GetGroupNameByIndex(HatPage - 1)} ({HatPage + 1}/{pageCount})";
-        var ogNewModHatId = NewModCosmeticsRegistry.HatIds["og_newmod"];
 
         var hats = HatManager.Instance.GetUnlockedHats().Where(h =>
         {
@@ -234,7 +224,7 @@ public static class NewModCosmeticTabsPatch
             chip.SelectionHighlight.gameObject.SetActive(false);
             tab.ColorChips.Add(chip);
 
-            if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode()) || (hat.ProductId == ogNewModHatId && !NewModAchievementsTab.ThreeInARow.Unlocked)) chip.SetUnavailable();
+            if (!HatManager.Instance.CheckLongModeValidCosmetic(hat.ProdId, tab.PlayerPreview.GetIgnoreLongMode())) chip.SetUnavailable();
         }
 
         tab.currentHatIsEquipped = true;

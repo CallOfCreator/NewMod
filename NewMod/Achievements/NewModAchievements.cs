@@ -13,20 +13,6 @@ public class NewModAchievementsTab : AchievementsTab
         return NewModAsset.NMIcon.LoadAsset();
     }
 
-    public static BaseAchievement WelcomeToNewMod { get; } = new(
-        "Welcome to NewMod",
-        "Start an online NewMod match.",
-        NewModAsset.NMIcon.LoadAsset());
-
-    public static CountAchievement ThreeInARow { get; } = new(
-        "Three in a Row",
-        "Complete three online NewMod matches in one session.",
-        NewModAsset.OG_NewModHat.LoadAsset(),
-        0,
-        3,
-        AchPersistence.ThroughoutSessions,
-        rarity: 3);
-
     public static BaseAchievement TraceEvidence { get; } = new(
         "Trace Evidence",
         "As Warden, seal a location and investigate its Residual Trace.",
