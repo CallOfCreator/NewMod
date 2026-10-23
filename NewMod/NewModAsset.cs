@@ -40,6 +40,16 @@ public static class NewModAsset
     public static LoadableAsset<Sprite> Siphon { get; } = new LoadableBundleAsset<Sprite>("EnergyThiefSiphon.png", Bundle);
     public static LoadableAsset<Sprite> DeployShadow { get; } = new LoadableBundleAsset<Sprite>("ShadeDeployShadow.png", Bundle);
     public static LoadableAsset<Sprite> UsurperClaim { get; } = new LoadableBundleAsset<Sprite>("UsurperClaim.png", Bundle);
+    public static LoadableAsset<Sprite> CollectTraceButton { get; } = new LoadableBundleAsset<Sprite>("CollectTrace.png", Bundle);
+    public static LoadableAsset<Sprite> HarvestButton { get; } = new LoadableBundleAsset<Sprite>("Harvest.png", Bundle);
+    public static LoadableAsset<Sprite> ManifestButton { get; } = new LoadableBundleAsset<Sprite>("Manifest.png", Bundle);
+    public static LoadableAsset<Sprite> StickyIcon { get; } = new LoadableBundleAsset<Sprite>("stickyIcon.png", Bundle);
+    public static LoadableAsset<Sprite> MomentumIcon { get; } = new LoadableBundleAsset<Sprite>("momentumIcon.png", Bundle);
+    public static LoadableAsset<Sprite> MarkedIcon { get; } = new LoadableBundleAsset<Sprite>("markedIcon.png", Bundle);
+    public static LoadableAsset<Sprite> LazyIcon { get; } = new LoadableBundleAsset<Sprite>("lazyIcon.png", Bundle);
+    public static LoadableAsset<Sprite> ExplosiveIcon { get; } = new LoadableBundleAsset<Sprite>("ExplosiveIcon.png", Bundle);
+    public static LoadableAsset<Sprite> DrowsyIcon { get; } = new LoadableBundleAsset<Sprite>("drowsyIcon.png", Bundle);
+
     public static LoadableAsset<Sprite> SendWraith { get; } = new LoadableBundleAsset<Sprite>("WraithCallerWraith.png", Bundle);
     public static LoadableAsset<Sprite> TerminateButton { get; } = new LoadableBundleAsset<Sprite>("TerminatorTerminate.png", Bundle);
     public static LoadableAsset<Sprite> CameraEnabled { get; } = new LoadableBundleAsset<Sprite>("cam_enabled.png", Bundle);

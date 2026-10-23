@@ -104,7 +104,7 @@ public class DoubleAgent : CrewmateRole, INewModRole
     {
         var ship = ShipStatus.Instance;
         var endsAt = Time.time + duration;
-        while (ShipStatus.Instance == ship && CounterfeitActive && Time.time < endsAt && Utils.IsActive(SystemTypes.Comms))
+        while (ShipStatus.Instance == ship && CounterfeitActive && Time.time < endsAt)
             yield return null;
 
         if (ShipStatus.Instance == ship && CounterfeitActive)
@@ -119,7 +119,7 @@ public class DoubleAgent : CrewmateRole, INewModRole
 
         if (AmongUsClient.Instance.AmHost && CounterfeitActive)
         {
-            if (ShipStatus.Instance.Type is ShipStatus.MapType.Hq or ShipStatus.MapType.Fungle)
+            if (ShipStatus.Instance.Systems[SystemTypes.Comms].TryCast<HqHudSystemType>() != null)
             {
                 ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Comms, 16);
                 ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Comms, 17);

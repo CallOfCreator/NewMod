@@ -57,7 +57,7 @@ public sealed class DoomAwakening : CustomActionButton, IEnergyAbility
         overlay.gameObject.SetActive(true);
         SoundManager.Instance.PlaySound(sound, true);
 
-        while (player && !player.Data.IsDead && !player.Data.Disconnected && AmongUsClient.Instance.IsGameStarted && !MeetingHud.Instance && !ExileController.Instance && Time.time < expiresAt && Revenant.Phases.TryGetValue(player.PlayerId, out var phase) && phase == Revenant.Phase.DoomActive)
+        while (player && !player.Data.IsDead && !player.Data.Disconnected && (AmongUsClient.Instance.IsGameStarted || AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay) && !MeetingHud.Instance && !ExileController.Instance && Time.time < expiresAt && Revenant.Phases.TryGetValue(player.PlayerId, out var phase) && phase == Revenant.Phase.DoomActive)
         {
             if (physics.GetVelocity().sqrMagnitude > 0.01f)
             {
@@ -101,7 +101,7 @@ public sealed class DoomAwakening : CustomActionButton, IEnergyAbility
         }
 
         SoundManager.Instance.StopSound(sound);
-        if (player && !player.Data.IsDead && AmongUsClient.Instance.IsGameStarted)
+        if (player && !player.Data.IsDead && (AmongUsClient.Instance.IsGameStarted || AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay))
             SoundManager.Instance.PlaySoundImmediate(NewModAsset.DoomAwakeningEndSound.LoadAsset(), false, 1f, 1f, null);
     }
 }

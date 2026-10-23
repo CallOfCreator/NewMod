@@ -23,7 +23,7 @@ public class FakeBodyButton : CustomActionButton, IEnergyAbility
 
     public override bool CanUse()
     {
-        return base.CanUse() && !PranksterUtilities.FindAllPranksterBodies().Any(body => body.ParentId == PlayerControl.LocalPlayer.PlayerId);
+        return base.CanUse() && !Utils.IsActive(SystemTypes.Comms) && !PranksterUtilities.FindAllPranksterBodies().Any(body => body.ParentId == PlayerControl.LocalPlayer.PlayerId);
     }
 
     protected override void OnClick()

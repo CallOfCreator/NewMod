@@ -16,7 +16,7 @@ public class ManifestButton : CustomActionButton, IEnergyAbility
     public override float Cooldown => 5f;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
-    public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.ManifestButton;
 
     public override bool Enabled(RoleBehaviour role)
     {

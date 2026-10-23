@@ -1,5 +1,6 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers.Types;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
 using UnityEngine;
@@ -11,6 +12,7 @@ public sealed class DrowsyModifier : GameModifier
     public float AppliedMultiplier = 1f;
 
     public override string ModifierName => "Drowsy";
+    public override LoadableAsset<Sprite> ModifierIcon => NewModAsset.DrowsyIcon;
     public override bool ShowInFreeplay => true;
     public override Color FreeplayFileColor => new(0.6f, 0.7f, 1f);
 

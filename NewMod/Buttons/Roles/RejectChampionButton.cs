@@ -9,7 +9,7 @@ public class RejectChampionButton : CustomActionButton
 {
     public override string Name => "Reject Alliance";
     public override float Cooldown => 0f;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.CrownIcon;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.TyrantAlliance;
 
     public override bool Enabled(RoleBehaviour role)
     {

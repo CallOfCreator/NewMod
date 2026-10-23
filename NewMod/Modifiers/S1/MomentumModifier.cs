@@ -1,6 +1,7 @@
 ﻿using MiraAPI.GameOptions;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.PluginLoading;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
 using UnityEngine;
@@ -14,6 +15,7 @@ public class MomentumModifier : GameModifier, INewModModifier
     private float _movingTime;
 
     public override string ModifierName => "Momentum";
+    public override LoadableAsset<Sprite> ModifierIcon => NewModAsset.MomentumIcon;
     public override bool HideOnUi => false;
     public override bool ShowInFreeplay => true;
     public ModifierFaction Faction => ModifierFaction.Crew;

@@ -19,7 +19,7 @@ public class CollectWraithTraceButton : CustomActionButton<DeadBody>
     public override float Distance => OptionGroupSingleton<WraithCallerOptions>.Instance.TraceRange;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.WraithIcon;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.CollectTraceButton;
 
     public override bool Enabled(RoleBehaviour role)
     {

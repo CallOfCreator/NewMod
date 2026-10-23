@@ -315,7 +315,7 @@ public class Revenant : ImpostorRole, INewModRole
     [MethodRpc((uint)CustomRPC.RevenantRequestContact)]
     public static void RpcRequestDoomContact(PlayerControl source, PlayerControl target)
     {
-        if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost || !AmongUsClient.Instance.IsGameStarted || MeetingHud.Instance || ExileController.Instance)
+        if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost || (!AmongUsClient.Instance.IsGameStarted && AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay) || MeetingHud.Instance || ExileController.Instance)
             return;
 
         if (!source || !source.Data || source.Data.IsDead || source.Data.Disconnected || source.inVent)

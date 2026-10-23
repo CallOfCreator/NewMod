@@ -27,7 +27,7 @@ public static class PranksterUtilities
     [MethodRpc((uint)CustomRPC.FakeBody, LocalHandling = RpcLocalHandling.After)]
     public static void CreatePranksterDeadBody(PlayerControl source, byte parentId)
     {
-        if (!AbilityExchangeGE.HasRoleAbility<Prankster>(source) || source.Data.IsDead || source.Data.Disconnected || parentId != source.PlayerId || MeetingHud.Instance || ExileController.Instance || FindAllPranksterBodies().Any(body => body.ParentId == parentId)) return;
+        if (!AbilityExchangeGE.HasRoleAbility<Prankster>(source) || source.Data.IsDead || source.Data.Disconnected || parentId != source.PlayerId || Utils.IsActive(SystemTypes.Comms) || MeetingHud.Instance || ExileController.Instance || FindAllPranksterBodies().Any(body => body.ParentId == parentId)) return;
         OverclockedModifier.Pulse(source);
         var deadBody = Object.Instantiate(GameManager.Instance.GetDeadBody(source.Data.Role));
         deadBody.name = PranksterBodyName;
@@ -71,7 +71,7 @@ public static class PranksterUtilities
     [MethodRpc((uint)CustomRPC.PranksterRequestFakeReport, LocalHandling = RpcLocalHandling.Before)]
     public static void RpcRequestFakeReport(PlayerControl source, byte pranksterId, float x, float y)
     {
-        if (!AmongUsClient.Instance.AmHost || !AmongUsClient.Instance.IsGameStarted || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance)
+        if (!AmongUsClient.Instance.AmHost || (!AmongUsClient.Instance.IsGameStarted && AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance)
             return;
 
         if (Time.time < ReportRecovery.GetValueOrDefault(source.PlayerId)) return;

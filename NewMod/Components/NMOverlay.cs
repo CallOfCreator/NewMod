@@ -2,6 +2,7 @@ using HarmonyLib;
 using Reactor.Utilities.Attributes;
 using TMPro;
 using UnityEngine;
+using NewBotController = NewMod.NewBot.NewBot; // NewBot, NewBot… need to change that later
 
 namespace NewMod.Components;
 
@@ -35,7 +36,7 @@ public class NMOverlay(nint ptr) : MonoBehaviour(ptr)
     public void Update()
     {
         var client = AmongUsClient.Instance;
-        var visible = client && PlayerControl.LocalPlayer;
+        var visible = client && PlayerControl.LocalPlayer && !NewBotController.Instance;
         Label.gameObject.SetActive(visible);
         if (!visible)
         {

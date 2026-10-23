@@ -100,8 +100,10 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         if (task)
         {
             foreach (var console in ShipStatus.Instance.AllConsoles)
+            {
                 if (console && console.isActiveAndEnabled && task.ValidConsole(console))
                     taskConsoles.Enqueue(console);
+            }
             NextTaskConsole();
             return;
         }

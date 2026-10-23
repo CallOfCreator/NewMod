@@ -1,7 +1,9 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.PluginLoading;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options;
+using UnityEngine;
 
 namespace NewMod.Modifiers.S1;
 
@@ -9,6 +11,7 @@ namespace NewMod.Modifiers.S1;
 public class LazyModifier : GameModifier, INewModModifier
 {
     public override string ModifierName => "Lazy";
+    public override LoadableAsset<Sprite> ModifierIcon => NewModAsset.LazyIcon;
     public override bool HideOnUi => false;
     public ModifierFaction Faction => ModifierFaction.Crew;
 

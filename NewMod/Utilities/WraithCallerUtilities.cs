@@ -9,6 +9,7 @@ using NewMod.Components;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
+using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.Roles.NeutralRoles;
 using Reactor.Networking.Attributes;
 using Reactor.Networking.Rpc;
@@ -131,6 +132,8 @@ public static class WraithCallerUtilities
         ActiveNpcs[((uint)ownerId << 16) | (uint)npcId] = npc;
 
         npc.Initialize(owner, target, new Vector2(x, y), npcId);
+        if (owner.AmOwner)
+            Deadwire.RpcRequestCapture(owner, (byte)EnergyCategory.Control);
     }
 
     [MethodRpc((uint)CustomRPC.WraithCollectTrace)]

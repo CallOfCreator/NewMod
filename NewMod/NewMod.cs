@@ -28,9 +28,10 @@ namespace NewMod;
 [BepInDependency(ReactorPlugin.Id)]
 [BepInDependency(MiraApiPlugin.Id)]
 [BepInDependency(PathfindingPlugin.Id)]
+[BepInDependency(DialogAPI.DialogAPIPlugin.Id)]
 [BepInDependency(CorsacPluginId, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(LaunchpadReloadedId, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency(AchievementsAPIPlugin.Id, "2.0.1")]
+[BepInDependency(AchievementsAPIPlugin.Id)]
 [ReactorModFlags(ModFlags.RequireOnAllClients)]
 [BepInProcess("Among Us.exe")]
 public class NewMod : BasePlugin, IMiraPlugin
@@ -79,7 +80,7 @@ public class NewMod : BasePlugin, IMiraPlugin
             DebugMode.Initialize(this);
         }
 
-        ReactorCredits.Register("NewMod", ModVersion + " DEV BUILD", true, ReactorCredits.AlwaysShow);
+        ReactorCredits.Register("NewMod", ModVersion + " DEV", true, ReactorCredits.AlwaysShow);
         Harmony.PatchAll();
 
         ModCompatibility.Initialize();
@@ -88,13 +89,7 @@ public class NewMod : BasePlugin, IMiraPlugin
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
 
         ForceEnableAllSeasons = Config.Bind("NewMod", "ForceEnableAllSeasons", false, "Force all seasons as started");
-
-        var bundle = NewModAsset.Bundle;
-        var assetNames = bundle.GetAllAssetNames();
-
-        Message($"AssetBundle '{bundle.name}' contains {assetNames.Length} assets");
-
-        foreach (var name in assetNames) Message($"{name}");
+        
         Message($"Loaded Successfully NewMod v{ModVersion} DEV With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 

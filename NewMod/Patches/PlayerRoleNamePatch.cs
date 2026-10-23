@@ -1,3 +1,4 @@
+using AmongUs.GameOptions;
 using HarmonyLib;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
@@ -29,7 +30,12 @@ public static class PlayerRoleNamePatch
         if (!canSeeRole)
             return name;
 
-        var roleName = player.Role.NiceName;
+        var roleName = player.Role.Role switch
+        {
+            RoleTypes.CrewmateGhost => TranslationController.Instance.GetString(StringNames.CrewmateGhostRole),
+            RoleTypes.ImpostorGhost => TranslationController.Instance.GetString(StringNames.ImpostorGhostRole),
+            _ => player.Role.NiceName,
+        };
         var color = player.Role.TeamColor;
         if (CustomRoleManager.GetCustomRoleBehaviour(player.Role.Role, out var role))
         {

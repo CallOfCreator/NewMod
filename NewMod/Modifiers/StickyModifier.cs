@@ -6,6 +6,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.Utilities;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
 using NewMod.Utilities;
@@ -23,6 +24,7 @@ public class StickyModifier : GameModifier
     private float _nextRequestAt;
 
     public override string ModifierName => "Sticky";
+    public override LoadableAsset<Sprite> ModifierIcon => NewModAsset.StickyIcon;
     public override bool HideOnUi => false;
     public override bool ShowInFreeplay => true;
 

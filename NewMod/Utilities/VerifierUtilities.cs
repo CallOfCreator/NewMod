@@ -152,7 +152,7 @@ public static class VerifierUtilities
 
     public static void PublishFact(PlayerControl player, VerifierClaimType claim)
     {
-        if (!player || !player.AmOwner || !player.Data || player.Data.IsDead || player.Data.Disconnected || !AmongUsClient.Instance || !AmongUsClient.Instance.IsGameStarted || MeetingHud.Instance || ExileController.Instance)
+        if (!player || !player.AmOwner || !player.Data || player.Data.IsDead || player.Data.Disconnected || !AmongUsClient.Instance || (!AmongUsClient.Instance.IsGameStarted && AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay) || MeetingHud.Instance || ExileController.Instance)
             return;
 
         var flag = GetFlag(claim);

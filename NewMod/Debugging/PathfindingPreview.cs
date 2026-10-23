@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using BepInEx.Unity.IL2CPP.Utils.Collections;
-using PathfindingAPI.Movement;
 using System.Globalization;
 using System.Text;
+using BepInEx.Unity.IL2CPP.Utils.Collections;
 using Il2CppInterop.Runtime.Attributes;
 using NewMod.Utilities;
 using PathfindingAPI.Core;
+using PathfindingAPI.Movement;
 using PathfindingAPI.Navigation;
 using PathfindingAPI.Options;
 using Reactor.Utilities.Attributes;
@@ -80,8 +80,10 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
 
         var sprites = new List<Sprite>();
         foreach (var console in ShipStatus.Instance.AllConsoles)
+        {
             if (console && console.Image && console.Image.sprite)
                 sprites.Add(console.Image.sprite);
+        }
         if (sprites.Count == 0)
         {
             preview.message = "No task console sprites found.";

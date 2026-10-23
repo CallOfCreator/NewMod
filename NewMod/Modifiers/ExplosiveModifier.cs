@@ -5,6 +5,7 @@ using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.Networking;
 using MiraAPI.Utilities;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options.Modifiers;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace NewMod.Modifiers;
 public class ExplosiveModifier : TimedModifier
 {
     public override string ModifierName => "Explosive";
+    public override LoadableAsset<Sprite> ModifierIcon => NewModAsset.ExplosiveIcon;
     public override bool HideOnUi => false;
     public override bool AutoStart => true;
     public override bool ShowInFreeplay => true;

@@ -60,6 +60,10 @@
             <HintPath>Resources/Dlls/Reactor.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="DialogAPI">
+            <HintPath>Resources/Dlls/DialogAPI.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="ReactUI">
             <HintPath>Resources/Dlls/ReactUI.dll</HintPath>
             <Private>false</Private>

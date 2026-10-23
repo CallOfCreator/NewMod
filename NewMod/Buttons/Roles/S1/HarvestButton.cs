@@ -21,7 +21,7 @@ public class HarvestButton : CustomActionButton, IEnergyAbility
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<CollectorOptions>.Instance.HarvestCooldown);
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-    public override LoadableAsset<Sprite> Sprite => MiraAssets.Empty;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.HarvestButton;
 
     public override bool Enabled(RoleBehaviour role)
     {

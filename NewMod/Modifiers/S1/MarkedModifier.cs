@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MiraAPI.GameOptions;
 using MiraAPI.Modifiers.Types;
 using MiraAPI.PluginLoading;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
 using Reactor.Networking.Attributes;
@@ -20,6 +21,7 @@ public class MarkedModifier : GameModifier, INewModModifier
     private readonly HashSet<byte> _triggered = [];
 
     public override string ModifierName => "Marked";
+    public override LoadableAsset<Sprite> ModifierIcon => NewModAsset.MarkedIcon;
     public override bool HideOnUi => false;
     public override bool ShowInFreeplay => true;
     public ModifierFaction Faction => ModifierFaction.Murder;
