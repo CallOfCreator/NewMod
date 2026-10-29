@@ -169,7 +169,7 @@ public class EffectsTab : IDebugTab
             ? number : value;
     }
 
-    private static void AddEffect<T>() where T : ScreenEffect, new()
+    public static void AddEffect<T>() where T : ScreenEffect, new()
     {
         Camera.main.AddScreenEffect<T>();
     }
@@ -178,13 +178,13 @@ public class EffectsTab : IDebugTab
     {
         var effect = Camera.main.GetScreenEffect<EnergyThiefBreakEffect>();
 
-        if (effect != null && effect.Active)
+        if (effect != null)
             effect.Restart();
         else
             Camera.main.AddScreenEffect<EnergyThiefBreakEffect>();
     }
 
-    private static void RemoveEffects()
+    public static void RemoveEffects()
     {
         Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 0f));
     }

@@ -86,6 +86,8 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
     [HideFromIl2Cpp]
     private IEnumerator CoMove()
     {
+        var tick = new WaitForFixedUpdate();
+
         while (this && Active && Visual)
         {
             if (status == WraithStatus.Delivering)
@@ -103,7 +105,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
                     Move(delta);
                 }
 
-                yield return new WaitForFixedUpdate();
+                yield return tick;
                 continue;
             }
 
@@ -119,7 +121,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
 
                 Move(delta);
 
-                yield return new WaitForFixedUpdate();
+                yield return tick;
                 continue;
             }
 
@@ -129,7 +131,7 @@ public sealed class WraithSiegeNpc(IntPtr ptr) : MonoBehaviour(ptr)
             if (AmongUsClient.Instance.AmHost)
                 WraithSiege.Instance.StartDelivery(this);
 
-            yield return new WaitForFixedUpdate();
+            yield return tick;
         }
     }
 

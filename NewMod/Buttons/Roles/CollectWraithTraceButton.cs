@@ -33,14 +33,17 @@ public class CollectWraithTraceButton : CustomActionButton<DeadBody>
             return null;
 
         var position = player.GetTruePosition();
-        return Helpers.GetNearestDeadBodies(position, Distance, Helpers.CreateFilter(Constants.NotShipMask)).Where(body => !body.Reported && !PranksterUtilities.IsPranksterBody(body) && !WraithCallerUtilities.CollectedTraces.Contains((player.PlayerId, body.ParentId)) && !PhysicsHelpers.AnythingBetween(position, body.TruePosition, Constants.ShipAndObjectsMask, false)).OrderBy(body => Vector2.Distance(position, body.TruePosition)).FirstOrDefault();
+        return Helpers.GetNearestDeadBodies(position, Distance, Helpers.CreateFilter(Constants.NotShipMask))
+            .Where(body => !body.Reported && !PranksterUtilities.IsPranksterBody(body) && !WraithCallerUtilities.CollectedTraces.Contains((player.PlayerId, body.ParentId)) && !PhysicsHelpers.AnythingBetween(position, body.TruePosition, Constants.ShipAndObjectsMask, false))
+            .OrderBy(body => Vector2.Distance(position, body.TruePosition))
+            .FirstOrDefault();
     }
 
     public override void SetOutline(bool active)
     {
         if (!Target) return;
         foreach (var renderer in Target.bodyRenderers)
-            renderer.material.SetFloat("_Outline", active ? 1f : 0f);
+            renderer.material.SetFloat(ShaderID.Outline, active ? 1f : 0f);
     }
 
     protected override void OnClick()

@@ -107,25 +107,16 @@ public class MarkedModifier : GameModifier, INewModModifier
 
         _toRemove.Clear();
 
-        foreach (var pair in _nearTimers)
+        foreach (var playerId in _nearTimers.Keys)
         {
-            if (!_nearby.Contains(pair.Key))
-                _toRemove.Add(pair.Key);
+            if (!_nearby.Contains(playerId))
+                _toRemove.Add(playerId);
         }
 
         foreach (var id in _toRemove)
             _nearTimers.Remove(id);
 
-        _toRemove.Clear();
-
-        foreach (var id in _triggered)
-        {
-            if (!_nearby.Contains(id))
-                _toRemove.Add(id);
-        }
-
-        foreach (var id in _toRemove)
-            _triggered.Remove(id);
+        _triggered.IntersectWith(_nearby);
     }
 
     [MethodRpc((uint)CustomRPC.MarkedReveal)]
@@ -139,12 +130,12 @@ public class MarkedModifier : GameModifier, INewModModifier
 
     private static IEnumerator CoShowMarkedIndicator(PlayerControl source, float duration)
     {
-        var go = new GameObject($"MarkedIndicator_{source.PlayerId}") { layer = 5 };
+        var indicatorObject = new GameObject($"MarkedIndicator_{source.PlayerId}") { layer = 5 };
 
-        var renderer = go.AddComponent<SpriteRenderer>();
+        var renderer = indicatorObject.AddComponent<SpriteRenderer>();
         renderer.sprite = NewModAsset.Arrow.LoadAsset();
 
-        var arrow = go.AddComponent<ArrowBehaviour>();
+        var arrow = indicatorObject.AddComponent<ArrowBehaviour>();
         arrow.image = renderer;
         arrow.MaxScale = 0.8f;
         arrow.alwaysMaxSize = true;
@@ -163,6 +154,6 @@ public class MarkedModifier : GameModifier, INewModModifier
             yield return null;
         }
 
-        Object.Destroy(go);
+        Object.Destroy(indicatorObject);
     }
 }

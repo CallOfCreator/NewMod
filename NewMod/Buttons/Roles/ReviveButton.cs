@@ -60,9 +60,12 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
     public static DeadBody GetReviveTarget()
     {
         var local = PlayerControl.LocalPlayer;
-        var localPos = local.GetTruePosition();
+        var localPosition = local.GetTruePosition();
 
-        return Helpers.GetNearestDeadBodies(localPos, ShipStatus.Instance.MaxLightRadius, Helpers.CreateFilter(Constants.NotShipMask)).Where(body => body != null && IsValidReviveTarget(local, body)).OrderBy(body => Vector2.Distance(localPos, body.TruePosition)).FirstOrDefault();
+        return Helpers.GetNearestDeadBodies(localPosition, ShipStatus.Instance.MaxLightRadius, Helpers.CreateFilter(Constants.NotShipMask))
+            .Where(body => body != null && IsValidReviveTarget(local, body))
+            .OrderBy(body => Vector2.Distance(localPosition, body.TruePosition))
+            .FirstOrDefault();
     }
 
     public static bool IsValidReviveTarget(PlayerControl local, DeadBody body)

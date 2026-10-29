@@ -359,11 +359,11 @@ public static class Utils
 
     public static string FormatSpan(TimeSpan t)
     {
-        var dd = Mathf.Max(0, t.Days);
-        var hh = Mathf.Clamp(t.Hours, 0, 99);
-        var mm = Mathf.Clamp(t.Minutes, 0, 59);
-        var ss = Mathf.Clamp(t.Seconds, 0, 59);
-        return $"{dd:D1}:{hh:D2}:{mm:D2}:{ss:D2}";
+        var days = Mathf.Max(0, t.Days);
+        var hours = Mathf.Clamp(t.Hours, 0, 99);
+        var minutes = Mathf.Clamp(t.Minutes, 0, 59);
+        var seconds = Mathf.Clamp(t.Seconds, 0, 59);
+        return $"{days:D1}:{hours:D2}:{minutes:D2}:{seconds:D2}";
     }
 
     /// <summary>

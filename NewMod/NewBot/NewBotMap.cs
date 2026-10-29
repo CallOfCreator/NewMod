@@ -244,8 +244,9 @@ public sealed class NewBotMap(NewBot bot)
         AmongUsClient.Instance.Spawn(info, -2, SpawnFlags.None);
         AmongUsClient.Instance.Spawn(dummy, -2, SpawnFlags.None);
         dummy.isDummy = true;
-        dummy.GetComponent<DummyBehaviour>().enabled = true;
-        dummy.GetComponent<DummyBehaviour>().PlayerIdToVoteFor = 253;
+        var dummyBehaviour = dummy.GetComponent<DummyBehaviour>();
+        dummyBehaviour.enabled = true;
+        dummyBehaviour.PlayerIdToVoteFor = 253;
         dummy.NetTransform.enabled = false;
         dummy.NetTransform.SnapTo(position - dummy.Collider.offset);
         dummy.SetName(label);

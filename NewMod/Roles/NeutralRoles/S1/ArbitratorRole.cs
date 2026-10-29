@@ -327,10 +327,8 @@ public class ArbitratorRole : CrewmateRole, INewModRole
 
         var required = (int)OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin;
 
-        if (success)
-            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD166>Judgment upheld.</color>\nJudgment Tokens: {tokens}/{required}"));
-        else
-            Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#B7B7B7>Judgment failed.</color>\nJudgment Tokens: {tokens}/{required}"));
+        var verdict = success ? "<color=#FFD166>Judgment upheld.</color>" : "<color=#B7B7B7>Judgment failed.</color>";
+        Coroutines.Start(CoroutinesHelper.CoNotify($"{verdict}\nJudgment Tokens: {tokens}/{required}"));
     }
 
     public static void ResetState()

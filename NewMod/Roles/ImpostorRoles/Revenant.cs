@@ -92,15 +92,10 @@ public class Revenant : ImpostorRole, INewModRole
     {
         var playerId = evt.Player.PlayerId;
         if (evt.Player.Data.Role is Revenant)
-        {
             Phases[playerId] = Phase.Ready;
-            PhaseExpiresAt.Remove(playerId);
-            Bodies.Remove(playerId);
-            PendingDoomTargets.Remove(playerId);
-            return;
-        }
+        else
+            Phases.Remove(playerId);
 
-        Phases.Remove(playerId);
         PhaseExpiresAt.Remove(playerId);
         Bodies.Remove(playerId);
         PendingDoomTargets.Remove(playerId);

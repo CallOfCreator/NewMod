@@ -33,18 +33,18 @@ public class HarvestButton : CustomActionButton, IEnergyAbility
         if (!base.CanUse())
             return false;
 
-        var range = OptionGroupSingleton<CollectorOptions>.Instance.HarvestRange;
+        var nearestDistance = OptionGroupSingleton<CollectorOptions>.Instance.HarvestRange;
         foreach (var pair in Collector.Fragments)
         {
             var distance = Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), pair.Value.Position);
-            if (distance >= range)
+            if (distance >= nearestDistance)
                 continue;
 
-            range = distance;
+            nearestDistance = distance;
             _fragmentId = pair.Key;
         }
 
-        return range < OptionGroupSingleton<CollectorOptions>.Instance.HarvestRange;
+        return nearestDistance < OptionGroupSingleton<CollectorOptions>.Instance.HarvestRange;
     }
 
     protected override void OnClick()

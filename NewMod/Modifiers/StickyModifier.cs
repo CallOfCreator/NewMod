@@ -53,10 +53,9 @@ public class StickyModifier : GameModifier
 
     public override void OnDeactivate()
     {
-        if (!ActiveLinks.TryGetValue(Player.PlayerId, out var targetId))
+        if (!ActiveLinks.Remove(Player.PlayerId, out var targetId))
             return;
 
-        ActiveLinks.Remove(Player.PlayerId);
         LinkedTargets.Remove(targetId);
     }
 

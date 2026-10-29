@@ -37,7 +37,10 @@ public class InspectBodyButton : CustomActionButton<DeadBody>
     public override DeadBody GetTarget()
     {
         var position = PlayerControl.LocalPlayer.GetTruePosition();
-        return Helpers.GetNearestDeadBodies(position, Distance, Helpers.CreateFilter(Constants.NotShipMask)).Where(body => !body.Reported && !PhysicsHelpers.AnythingBetween(position, body.TruePosition, Constants.ShipAndObjectsMask, false)).OrderBy(body => Vector2.Distance(position, body.TruePosition)).FirstOrDefault();
+        return Helpers.GetNearestDeadBodies(position, Distance, Helpers.CreateFilter(Constants.NotShipMask))
+            .Where(body => !body.Reported && !PhysicsHelpers.AnythingBetween(position, body.TruePosition, Constants.ShipAndObjectsMask, false))
+            .OrderBy(body => Vector2.Distance(position, body.TruePosition))
+            .FirstOrDefault();
     }
 
     public override void SetOutline(bool active)

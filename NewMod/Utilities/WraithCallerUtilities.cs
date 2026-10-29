@@ -29,12 +29,12 @@ public static class WraithCallerUtilities
 
     public static int GetSentNPC(byte ownerId)
     {
-        return Sent.TryGetValue(ownerId, out var value) ? value : 0;
+        return Sent.GetValueOrDefault(ownerId);
     }
 
     public static int GetKillsNPC(byte ownerId)
     {
-        return Kills.TryGetValue(ownerId, out var value) ? value : 0;
+        return Kills.GetValueOrDefault(ownerId);
     }
 
     public static void AddSentNPC(byte ownerId, int amount = 1)

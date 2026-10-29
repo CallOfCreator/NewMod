@@ -73,8 +73,8 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
             player.MyPhysics.body.velocity = Vector2.zero;
         }
 
-        var end = Time.time + options.ChargeDuration;
-        while (player && !player.Data.IsDead && !MeetingHud.Instance && Time.time < end)
+        var chargeEndsAt = Time.time + options.ChargeDuration;
+        while (player && !player.Data.IsDead && !MeetingHud.Instance && Time.time < chargeEndsAt)
         {
             player.cosmetics.currentBodySprite.BodySprite.UpdateOutline(Color.red);
             yield return null;
@@ -120,8 +120,8 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
             yield break;
 
         player.MyPhysics.body.velocity = Vector2.zero;
-        end = Time.time + options.RecoveryDuration;
-        while (player && !player.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance && Time.time < end)
+        var recoveryEndsAt = Time.time + options.RecoveryDuration;
+        while (player && !player.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance && Time.time < recoveryEndsAt)
             yield return null;
         if (player && !MeetingHud.Instance && !ExileController.Instance)
             player.moveable = true;

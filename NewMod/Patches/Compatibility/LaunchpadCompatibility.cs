@@ -9,12 +9,11 @@ public static class LaunchpadCompatibility
 {
     public static MethodInfo TargetMethod()
     {
-        if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
+        if (!ModCompatibility.LaunchpadLoaded(out var assembly))
             return null;
 
-        var type = asm.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
-        var method = type?.GetMethod("OnTimerComplete", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        return method;
+        var type = assembly.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
+        return type?.GetMethod("OnTimerComplete", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
     }
 
     public static bool Prefix(object __instance)
@@ -38,12 +37,11 @@ public static class LaunchpadHackTextPatch
 {
     public static MethodInfo TargetMethod()
     {
-        if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
+        if (!ModCompatibility.LaunchpadLoaded(out var assembly))
             return null;
 
-        var type = asm.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
-        var method = type?.GetMethod("FixedUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        return method;
+        var type = assembly.GetType("LaunchpadReloaded.Modifiers.HackedModifier");
+        return type?.GetMethod("FixedUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
     }
 
     public static void Postfix(object __instance)
@@ -62,12 +60,11 @@ public static class LaunchpadTagSpacingPatch
 {
     public static MethodInfo TargetMethod()
     {
-        if (!ModCompatibility.LaunchpadLoaded(out var asm) || asm == null)
+        if (!ModCompatibility.LaunchpadLoaded(out var assembly))
             return null;
 
-        var type = asm.GetType("LaunchpadReloaded.Components.PlayerTagManager");
-        var method = type?.GetMethod("UpdatePosition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        return method;
+        var type = assembly.GetType("LaunchpadReloaded.Components.PlayerTagManager");
+        return type?.GetMethod("UpdatePosition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
     }
 
     public static void Postfix(object __instance)

@@ -200,10 +200,10 @@ public class Deadwire : ImpostorRole, INewModRole
         var deadwire = Utils.PlayerById(deadwireId);
         OverclockedModifier.Pulse(deadwire);
         var actor = Utils.PlayerById(actorId);
-        var record = (ActorId: actorId, Category: (EnergyCategory)categoryId);
+        var category = (EnergyCategory)categoryId;
         var options = OptionGroupSingleton<DeadwireOptions>.Instance;
 
-        switch (GetResponse(record.Category))
+        switch (GetResponse(category))
         {
             case Response.ReduceKillCooldown:
                 if (deadwire.AmOwner)

@@ -120,25 +120,25 @@ public class EgoistRole : CrewmateRole, INewModRole
     public static void OnMeetingSelect(MeetingSelectEvent evt)
     {
         var local = PlayerControl.LocalPlayer;
-        if (_selecting && !local.Data.IsDead && local.Data.Role is EgoistRole && States[local.PlayerId].OpponentId == byte.MaxValue)
+        if (!_selecting || local.Data.IsDead || local.Data.Role is not EgoistRole || States[local.PlayerId].OpponentId != byte.MaxValue)
+            return;
+
+        if (evt.TargetId < 0)
+            return;
+
+        if (evt.TargetId == local.PlayerId)
         {
-            if (evt.TargetId < 0)
-                return;
-
-            if (evt.TargetId == local.PlayerId)
-            {
-                evt.AllowSelect = false;
-                return;
-            }
-
-            var target = Utils.PlayerById((byte)evt.TargetId);
-            if (target.Data.IsDead || target.Data.Disconnected)
-                return;
-
             evt.AllowSelect = false;
-            _selecting = false;
-            RpcRequestChallenge(local, target);
+            return;
         }
+
+        var target = Utils.PlayerById((byte)evt.TargetId);
+        if (target.Data.IsDead || target.Data.Disconnected)
+            return;
+
+        evt.AllowSelect = false;
+        _selecting = false;
+        RpcRequestChallenge(local, target);
     }
 
     [RegisterEvent]

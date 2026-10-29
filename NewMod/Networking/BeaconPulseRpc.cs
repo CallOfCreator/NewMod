@@ -32,11 +32,11 @@ public class BeaconPulseRpc : PlayerCustomRpc<NewMod, BeaconPulseRpc.Data>
         if (source.Data.Role is not Beacon || source.Data.IsDead)
             return;
 
-        var cam = Camera.main;
-        if (!cam)
+        var camera = Camera.main;
+        if (!camera)
             return;
 
-        var effect = cam.GetScreenEffect<DistorationWaveEffect>() ?? cam.AddScreenEffect<DistorationWaveEffect>();
+        var effect = camera.AddScreenEffect<DistorationWaveEffect>();
         effect.expiresAt = Time.time + data.Duration;
 
         Instance.LogMessage($"Beacon pulse triggered by {source.Data.PlayerName} for {data.Duration}s");

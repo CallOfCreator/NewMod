@@ -233,8 +233,7 @@ public class Nomad : CrewmateRole, INewModRole
         if (!source.IsHost() || !CanWander.Remove(playerId))
             return;
 
-        Scores.TryGetValue(playerId, out var score);
-        Scores[playerId] = score + 1;
+        Scores[playerId] = Scores.GetValueOrDefault(playerId) + 1;
         if (Scores[playerId] >= OptionGroupSingleton<NomadOptions>.Instance.ScoreGoal)
             Coroutines.Start(CoroutinesHelper.CoNotify("A Nomad has finished their journeys.\nThe next meeting can decide their win."));
         NextWander[playerId] = Time.time + OverclockedModifier.GetCooldown(Utils.PlayerById(playerId), OptionGroupSingleton<NomadOptions>.Instance.WanderCooldown);

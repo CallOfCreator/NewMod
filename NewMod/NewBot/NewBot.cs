@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using DialogAPI;
@@ -78,11 +79,15 @@ public sealed class NewBot : MonoBehaviour
     [HideFromIl2Cpp]
     public NewBotLessons Lessons { get; }
 
+    [HideFromIl2Cpp]
+    public NewBotEvents Events { get; }
+
     public NewBot(nint ptr) : base(ptr)
     {
         Map = new NewBotMap(this);
         Challenges = new NewBotChallenges(this);
         Lessons = new NewBotLessons(this);
+        Events = new NewBotEvents(this);
     }
 
     public static void Open()
@@ -112,9 +117,9 @@ public sealed class NewBot : MonoBehaviour
             yield return null;
         }
 
-        yield return Say("Welcome to NewMod! I'm NewBot. Pick a role and we'll learn it together, one action at a time. This is Freeplay: you can take your time and try again.");
-        yield return Say("Learn the role at your own pace, or work through harder rounds. Extreme starts with the toughest opponents. Mistakes reset the trial so you can try again.");
-        var relaxed = new NewBotMenu.Choice("Learn the role", Color.white);
+        yield return Say("Welcome to NewMod! I'm NewBot. Pick a role or a general event and we'll try it together. This is Freeplay: you can take your time and try again.");
+        yield return Say("For role practice, take your time or work through harder rounds. Extreme starts with the toughest opponents. Mistakes reset the trial so you can try again.");
+        var relaxed = new NewBotMenu.Choice("Guided practice", Color.white);
         var progressive = new NewBotMenu.Choice("Harder rounds", new Color(1f, 0.75f, 0.3f));
         var extreme = new NewBotMenu.Choice("Extreme", new Color(1f, 0.35f, 0.35f));
         Menu = NewBotMenu.Open("Choose your pace", [relaxed, progressive, extreme]);
@@ -151,17 +156,24 @@ public sealed class NewBot : MonoBehaviour
         var crew = new NewBotMenu.Choice("Crewmate", new Color(0.4f, 0.85f, 1f));
         var impostor = new NewBotMenu.Choice("Impostor", Palette.ImpostorRed);
         var neutral = new NewBotMenu.Choice("Neutral", new Color(0.85f, 0.6f, 1f));
+        var events = new NewBotMenu.Choice("General events", new Color(1f, 0.65f, 0.3f));
         var previous = new NewBotMenu.Choice("Previous page", Color.white);
         var next = new NewBotMenu.Choice("Next page", Color.white);
         var back = new NewBotMenu.Choice("Categories", Color.white);
         while (true)
         {
-            Menu = NewBotMenu.Open("Pick a team", [crew, impostor, neutral]);
+            Menu = NewBotMenu.Open("Choose what to learn", [crew, impostor, neutral, events]);
             while (Menu.Component)
                 yield return null;
             var category = Menu.Selected;
             if (category == null)
                 yield break;
+            if (category == events)
+            {
+                yield return Events.CoBrowse();
+                continue;
+            }
+
             var team = ModdedRoleTeams.Custom;
             if (category == crew)
                 team = ModdedRoleTeams.Crewmate;
@@ -171,7 +183,11 @@ public sealed class NewBot : MonoBehaviour
             var page = 0;
             while (true)
             {
-                var choices = roles.Skip(page * 9).Take(9).ToList();
+                var choices = new List<NewBotMenu.Choice>(12);
+                var pageStart = page * 9;
+                var pageEnd = System.Math.Min(pageStart + 9, roles.Length);
+                for (var index = pageStart; index < pageEnd; index++)
+                    choices.Add(roles[index]);
                 if (page > 0)
                     choices.Add(previous);
                 choices.Add(back);
@@ -207,6 +223,7 @@ public sealed class NewBot : MonoBehaviour
         if (LessonRunning)
             Coroutines.Stop(LessonCoro);
         LessonRunning = false;
+        Events.Clear();
         if (GoalMarker)
             Destroy(GoalMarker.gameObject);
         Map.StopMovements();

@@ -42,9 +42,9 @@ public class Beacon : CrewmateRole, INewModRole
     public StringBuilder SetTabText()
     {
         var tab = INewModRole.GetRoleTabText(this);
-        var opts = OptionGroupSingleton<BeaconOptions>.Instance;
+        var options = OptionGroupSingleton<BeaconOptions>.Instance;
 
-        tab.Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.Tab.Details"), RoleColor.ToTextColor(), charges, opts.MaxCharges, opts.TasksPerCharge, opts.PulseDuration, opts.PulseCooldown));
+        tab.Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.Tab.Details"), RoleColor.ToTextColor(), charges, options.MaxCharges, options.TasksPerCharge, options.PulseDuration, options.PulseCooldown));
 
         return tab;
     }
@@ -87,8 +87,8 @@ public class Beacon : CrewmateRole, INewModRole
         if (completed == lastCompletedTasks) return;
 
         lastCompletedTasks = completed;
-        var per = (int)settings.TasksPerCharge;
-        var earned = completed / per;
+        var tasksPerCharge = (int)settings.TasksPerCharge;
+        var earned = completed / tasksPerCharge;
         var delta = Mathf.Min(earned - grantedFromTasks, (int)settings.MaxCharges - charges);
         grantedFromTasks = earned;
 
@@ -101,14 +101,14 @@ public class Beacon : CrewmateRole, INewModRole
 
     public static int GetCompletedTasks()
     {
-        var lp = PlayerControl.LocalPlayer;
-        var done = 0;
-        foreach (var t in lp.myTasks)
+        var localPlayer = PlayerControl.LocalPlayer;
+        var completedTasks = 0;
+        foreach (var task in localPlayer.myTasks)
         {
-            if (t && t.IsComplete)
-                done++;
+            if (task && task.IsComplete)
+                completedTasks++;
         }
 
-        return done;
+        return completedTasks;
     }
 }

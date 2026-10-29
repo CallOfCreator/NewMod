@@ -46,12 +46,12 @@ public class SlashTray(nint ptr) : MonoBehaviour(ptr)
     {
         if (!Owner || HitPlayers.Count >= (int)OptionGroupSingleton<EdgeveilOptions>.Instance.PlayersToKill)
             return;
-        var pc = other.GetComponentInParent<PlayerControl>();
-        if (!pc || pc == Owner || pc.Data.IsDead || pc.Data.Disconnected || pc.inVent || pc.Data.Role.IsImpostor || PhysicsHelpers.AnythingBetween(transform.position, pc.GetTruePosition(), Constants.ShipAndObjectsMask, false) || !HitPlayers.Add(pc.PlayerId))
+        var player = other.GetComponentInParent<PlayerControl>();
+        if (!player || player == Owner || player.Data.IsDead || player.Data.Disconnected || player.inVent || player.Data.Role.IsImpostor || PhysicsHelpers.AnythingBetween(transform.position, player.GetTruePosition(), Constants.ShipAndObjectsMask, false) || !HitPlayers.Add(player.PlayerId))
             return;
 
         if (Owner.AmOwner)
-            Owner.RpcCustomMurder(pc, MeetingCheck.OutsideMeeting, teleportMurderer: false);
+            Owner.RpcCustomMurder(player, MeetingCheck.OutsideMeeting, teleportMurderer: false);
 
         if (HitPlayers.Count >= (int)OptionGroupSingleton<EdgeveilOptions>.Instance.PlayersToKill) Destroy(gameObject);
     }
@@ -59,8 +59,7 @@ public class SlashTray(nint ptr) : MonoBehaviour(ptr)
     public static SlashTray CreateTray()
     {
         var gameObject = Instantiate(NewModAsset.SlashTray.LoadAsset(), ShipStatus.Instance.transform);
-        var tray = gameObject.GetComponent<SlashTray>() ?? gameObject.AddComponent<SlashTray>();
-        return tray;
+        return gameObject.GetComponent<SlashTray>() ?? gameObject.AddComponent<SlashTray>();
     }
 
     public void SetMotion(Vector2 dir, float speed)

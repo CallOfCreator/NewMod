@@ -35,17 +35,17 @@ public class ClaimButton : CustomActionButton, IEnergyAbility
             return false;
 
         _target = null;
-        var range = OptionGroupSingleton<UsurperOptions>.Instance.ClaimRange;
+        var nearestDistance = OptionGroupSingleton<UsurperOptions>.Instance.ClaimRange;
         foreach (var player in PlayerControl.AllPlayerControls)
         {
             if (player == PlayerControl.LocalPlayer || player.Data.IsDead || player.Data.Disconnected || player.Data.Role is Usurper)
                 continue;
 
             var distance = Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), player.GetTruePosition());
-            if (distance >= range)
+            if (distance >= nearestDistance)
                 continue;
 
-            range = distance;
+            nearestDistance = distance;
             _target = player;
         }
 

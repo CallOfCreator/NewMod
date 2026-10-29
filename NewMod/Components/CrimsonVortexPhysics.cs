@@ -2,6 +2,7 @@
 using MiraAPI.Modifiers;
 using MiraAPI.Networking;
 using NewMod.Achievements;
+using NewMod.GeneralEvents;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
 using NewMod.Options;
@@ -14,6 +15,8 @@ namespace NewMod.Components;
 [RegisterInIl2Cpp]
 public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 {
+    public int EscapeCount;
+
     private bool _collisionDisabled;
     private bool _deathRequested;
 
@@ -63,21 +66,22 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
         var escapeRadius = options.CrimsonRadius.Value * 0.75f;
-        var progressPerPress = options.CrimsonEscapeDifficulty.Value switch
+        var difficulty = (GeneralEventManager.CurrentEvent as CrismonVortexGE)?.PracticeEscapeDifficulty ?? options.CrimsonEscapeDifficulty.Value;
+        var progressPerPress = difficulty switch
         {
             GEOptions.EscapeDifficulty.Easy => 0.12f,
             GEOptions.EscapeDifficulty.Standard => 0.09f,
             GEOptions.EscapeDifficulty.Hard => 0.07f,
             _ => 0.09f,
         };
-        var decayDelay = options.CrimsonEscapeDifficulty.Value switch
+        var decayDelay = difficulty switch
         {
             GEOptions.EscapeDifficulty.Easy => 0.25f,
             GEOptions.EscapeDifficulty.Standard => 0.15f,
             GEOptions.EscapeDifficulty.Hard => 0.1f,
             _ => 0.15f,
         };
-        var decayRate = options.CrimsonEscapeDifficulty.Value switch
+        var decayRate = difficulty switch
         {
             GEOptions.EscapeDifficulty.Easy => 0.35f,
             GEOptions.EscapeDifficulty.Standard => 0.55f,
@@ -147,11 +151,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             _escapeProgress = 0f;
             _lastPressTime = float.NegativeInfinity;
 
-            if (_collisionDisabled)
-            {
-                _player.Collider.enabled = true;
-                _collisionDisabled = false;
-            }
+            RestoreCollision();
 
             return;
         }
@@ -174,11 +174,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             _escaping = false;
             _escapedThisEntry = false;
 
-            if (_collisionDisabled)
-            {
-                _player.Collider.enabled = true;
-                _collisionDisabled = false;
-            }
+            RestoreCollision();
         }
 
         if (AmongUsClient.Instance.AmHost && !_deathRequested && !_escaping && !_player.inVent && distance <= killRadius)
@@ -196,6 +192,15 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             _player.Collider.enabled = true;
             _collisionDisabled = false;
         }
+    }
+
+    public void RestoreCollision()
+    {
+        if (!_collisionDisabled)
+            return;
+
+        _player.Collider.enabled = true;
+        _collisionDisabled = false;
     }
 
     public void OnDestroy()
@@ -220,11 +225,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         if (_player.inVent)
         {
-            if (_collisionDisabled)
-            {
-                _player.Collider.enabled = true;
-                _collisionDisabled = false;
-            }
+            RestoreCollision();
 
             if (_physics.AmOwner && Vent.currentVent)
                 _physics.RpcBootFromVent(Vent.currentVent.Id);
@@ -234,22 +235,14 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         if (distance >= options.CrimsonRadius.Value)
         {
-            if (_collisionDisabled)
-            {
-                _player.Collider.enabled = true;
-                _collisionDisabled = false;
-            }
+            RestoreCollision();
 
             return;
         }
 
         if (!_player.CanMove)
         {
-            if (_collisionDisabled)
-            {
-                _player.Collider.enabled = true;
-                _collisionDisabled = false;
-            }
+            RestoreCollision();
 
             return;
         }
@@ -277,6 +270,7 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             GEOptions.VortexIntensity.Brutal => 1.3f,
             _ => 1f,
         };
+        intensity = (GeneralEventManager.CurrentEvent as CrismonVortexGE)?.PracticePullStrength ?? intensity;
         var pull = Mathf.Lerp(0.55f, 4.25f, pullProgress) * intensity;
         var orbit = 2.25f * intensity * (1f - pullProgress);
 
@@ -313,15 +307,12 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         if (!_physics.AmOwner)
             return;
 
+        EscapeCount++;
         var escapePosition = _lastSafePositionReady ? _lastSafePosition : ShipStatus.Instance.InitialSpawnCenter;
         _player.NetTransform.RpcSnapTo(escapePosition);
         NewModAchievementsTab.EventHorizonDenied.Unlock();
 
-        if (_collisionDisabled)
-        {
-            _player.Collider.enabled = true;
-            _collisionDisabled = false;
-        }
+        RestoreCollision();
 
         if (CrimsonVortexEscapeHud.Instance)
             CrimsonVortexEscapeHud.Instance.ShowSuccess();

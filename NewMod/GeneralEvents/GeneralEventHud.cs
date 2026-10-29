@@ -65,11 +65,9 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
     {
         gameObject.SetActive(true);
 
-        if (_showCoro != null)
-            Coroutines.Stop(_showCoro);
+        Coroutines.Stop(_showCoro);
 
-        if (_hideCoro != null)
-            Coroutines.Stop(_hideCoro);
+        Coroutines.Stop(_hideCoro);
 
         var accent = ge.AccentColor;
         var accentHex = ColorUtility.ToHtmlStringRGB(accent);
@@ -285,20 +283,18 @@ public class GeneralEventHud(IntPtr ptr) : MonoBehaviour(ptr)
 
     public void OnDestroy()
     {
-        if (_showCoro != null)
-            Coroutines.Stop(_showCoro);
-        if (_hideCoro != null)
-            Coroutines.Stop(_hideCoro);
+        Coroutines.Stop(_showCoro);
+        Coroutines.Stop(_hideCoro);
     }
 
     [HideFromIl2Cpp]
     public static GeneralEventHud Create()
     {
-        var go = Instantiate(NewModAsset.GeneralEventHud.LoadAsset(), HudManager.Instance.transform);
+        var hudObject = Instantiate(NewModAsset.GeneralEventHud.LoadAsset(), HudManager.Instance.transform);
 
-        go.transform.localPosition = new Vector3(0.1018f, 2.1127f, -20f);
-        go.transform.localScale = Vector3.one;
+        hudObject.transform.localPosition = new Vector3(0.1018f, 2.1127f, -20f);
+        hudObject.transform.localScale = Vector3.one;
 
-        return go.AddComponent<GeneralEventHud>();
+        return hudObject.AddComponent<GeneralEventHud>();
     }
 }

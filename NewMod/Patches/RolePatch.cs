@@ -37,42 +37,40 @@ public static class SelectRolePatch
         yield return null;
         yield return new WaitForSeconds(0.05f);
 
-        var opts = OptionGroupSingleton<GeneralOption>.Instance;
-        var target = Mathf.RoundToInt(opts.TotalNeutrals);
+        if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost || !CustomGameModeManager.IsClassic())
+            yield break;
+
+        var options = OptionGroupSingleton<GeneralOption>.Instance;
+        var target = Mathf.RoundToInt(options.TotalNeutrals);
 
         var allPlayers = new List<PlayerControl>();
         foreach (var player in GameData.Instance.AllPlayers)
         {
-            if (player && player.Object && !player.Disconnected)
+            if (player && player.Object && !player.Disconnected && !player.IsDead && !player.Object.notRealPlayer)
                 allPlayers.Add(player.Object);
         }
 
         Instance.LogMessage("-------------- NEUTRAL ADJUST: START --------------");
-        Instance.LogMessage($"Players={allPlayers.Count}, TotalNeutrals={opts.TotalNeutrals} target={target}, KeepCrewMajority={opts.KeepCrewMajority}, PreferVariety={opts.PreferVariety}");
+        Instance.LogMessage($"Players={allPlayers.Count}, TotalNeutrals={options.TotalNeutrals} target={target}, KeepCrewMajority={options.KeepCrewMajority}, PreferVariety={options.PreferVariety}");
 
-        var neutrals = allPlayers.Where(pc =>
+        var neutrals = allPlayers.Where(player => player.Data?.Role is INewModRole { Team: ModdedRoleTeams.Custom }).ToList();
+
+        var eligibleCrew = allPlayers.Where(player =>
         {
-            var rb = pc.Data?.Role;
-            if (rb is ICustomRole cr && cr is INewModRole nm)
-                return nm.Team == ModdedRoleTeams.Custom;
-            return false;
+            var playerRole = player.Data?.Role;
+            if (playerRole == null || playerRole is ICustomRole { Team: ModdedRoleTeams.Custom })
+                return false;
+
+            return playerRole is CrewmateRole || (!playerRole.IsImpostor && playerRole.TeamType == RoleTeamTypes.Crewmate);
         }).ToList();
 
-        if (opts.KeepCrewMajority)
+        if (options.KeepCrewMajority)
         {
-            var crewCount = allPlayers.Count(pc =>
-            {
-                var rb = pc.Data?.Role;
-                if (rb == null) return false;
-                if (rb is INewModRole role && role.Team == ModdedRoleTeams.Custom)
-                    return false;
-                return rb is CrewmateRole || (!rb.IsImpostor && rb.TeamType == RoleTeamTypes.Crewmate);
-            });
-
-            var maxAllowed = Math.Max(0, (int)Math.Floor((crewCount - 1) / 2.0));
+            var crewAndNeutralCount = eligibleCrew.Count + neutrals.Count;
+            var maxAllowed = Math.Max(0, (crewAndNeutralCount - 1) / 2);
             var before = target;
             target = Math.Min(target, maxAllowed);
-            Instance.LogMessage($"KeepCrewMajority applied -> crewCount={crewCount}, maxNeutrals={maxAllowed}, adjustedTarget={target} (was {before})");
+            Instance.LogMessage($"KeepCrewMajority applied -> crewAndNeutralCount={crewAndNeutralCount}, maxNeutrals={maxAllowed}, adjustedTarget={target} (was {before})");
         }
 
         var have = neutrals.Count;
@@ -93,43 +91,29 @@ public static class SelectRolePatch
             neutrals.Shuffle();
             for (var i = 0; i < remove && i < neutrals.Count; i++)
             {
-                var pc = neutrals[i];
-                if (pc == null) continue;
+                var player = neutrals[i];
+                if (player == null) continue;
 
-                Instance.LogMessage($"→ Demoting {pc.Data.PlayerName} to Crewmate");
-                pc.RpcSetRole(RoleTypes.Crewmate, true);
+                Instance.LogMessage($"→ Demoting {player.Data.PlayerName} to Crewmate");
+                player.RpcSetRole(RoleTypes.Crewmate, true);
             }
 
             Instance.LogMessage("-------------- NEUTRAL ADJUST: END (demotions) --------------");
             yield break;
         }
 
-        var need = target - have;
+        var need = Math.Min(target - have, eligibleCrew.Count);
         Instance.LogMessage($"Need to assign {need} more neutrals.");
 
-        var crewElig = allPlayers.Where(pc =>
-        {
-            var rb = pc.Data?.Role;
-            if (rb == null) return false;
-
-            var isCrew = rb is CrewmateRole || (!rb.IsImpostor && rb.TeamType == RoleTeamTypes.Crewmate);
-            if (!isCrew) return false;
-
-            if (rb is INewModRole nm2)
-                return nm2.Team != ModdedRoleTeams.Custom;
-
-            return true;
-        }).ToList();
-
-        Instance.LogMessage($"Crew eligible for neutral conversion: {crewElig.Count}");
-        if (crewElig.Count == 0)
+        Instance.LogMessage($"Crew eligible for neutral conversion: {eligibleCrew.Count}");
+        if (eligibleCrew.Count == 0)
         {
             Instance.LogMessage("No eligible crew found, aborting.");
             Instance.LogMessage("-------------- NEUTRAL ADJUST: END (no candidates) --------------");
             yield break;
         }
 
-        var active = CustomRoleUtils.GetActiveRoles().ToList();
+        var active = allPlayers.Select(player => player.Data.Role).ToList();
         var candidates = new List<Candidate>();
 
         foreach (var r in CustomRoleManager.CustomMiraRoles)
@@ -138,6 +122,9 @@ public static class SelectRolePatch
                 continue;
 
             if (role.Team != ModdedRoleTeams.Custom || r.Configuration.HideSettings)
+                continue;
+
+            if (r is not RoleBehaviour roleBehaviour || RoleManager.IsGhostRole(roleBehaviour.Role) || !CustomRoleUtils.CanSpawnOnCurrentMode(roleBehaviour))
                 continue;
 
             var roleType = (RoleTypes)RoleId.Get(r.GetType());
@@ -161,7 +148,7 @@ public static class SelectRolePatch
 
         var picks = new List<ICustomRole>();
 
-        if (opts.PreferVariety)
+        if (options.PreferVariety)
         {
             var ordered = candidates.OrderByDescending(x => x.Weight).ToList();
             for (var i = 0; i < ordered.Count && picks.Count < need; i++)
@@ -182,14 +169,14 @@ public static class SelectRolePatch
             if (available.Count == 0) break;
 
             var total = available.Sum(c => c.Weight);
-            var rnum = Random.Range(0f, total);
-            var acc = 0f;
+            var roll = Random.Range(0f, total);
+            var cumulativeWeight = 0f;
             var chosen = available[0];
 
             foreach (var c in available)
             {
-                acc += c.Weight;
-                if (rnum <= acc)
+                cumulativeWeight += c.Weight;
+                if (roll <= cumulativeWeight)
                 {
                     chosen = c;
                     break;
@@ -198,12 +185,12 @@ public static class SelectRolePatch
 
             picks.Add(chosen.Role);
 
-            var idx = candidates.FindIndex(x => x.RoleType == chosen.RoleType);
-            if (idx >= 0)
+            var index = candidates.FindIndex(x => x.RoleType == chosen.RoleType);
+            if (index >= 0)
             {
-                var tmp = candidates[idx];
-                tmp.Left--;
-                candidates[idx] = tmp;
+                var candidate = candidates[index];
+                candidate.Left--;
+                candidates[index] = candidate;
             }
         }
 
@@ -211,14 +198,14 @@ public static class SelectRolePatch
 
         foreach (var role in picks)
         {
-            if (crewElig.Count == 0) break;
+            if (eligibleCrew.Count == 0) break;
 
-            var idx = HashRandom.FastNext(crewElig.Count);
-            var pc = crewElig[idx];
-            crewElig.RemoveAt(idx);
+            var index = HashRandom.FastNext(eligibleCrew.Count);
+            var player = eligibleCrew[index];
+            eligibleCrew.RemoveAt(index);
 
-            var rt = (RoleTypes)RoleId.Get(role.GetType());
-            pc.RpcSetRole(rt, true);
+            var roleType = (RoleTypes)RoleId.Get(role.GetType());
+            player.RpcSetRole(roleType, true);
         }
 
         Instance.LogMessage("Neutral assignment complete.");

@@ -30,24 +30,24 @@ public class WitnessTrapArea(IntPtr ptr) : MonoBehaviour(ptr)
 
         var center = (Vector2)transform.position;
 
-        foreach (var p in PlayerControl.AllPlayerControls)
+        foreach (var player in PlayerControl.AllPlayerControls)
         {
-            if (!p || p.PlayerId == _ownerId || p.Data == null || p.Data.IsDead || p.Data.Disconnected) continue;
+            if (!player || player.PlayerId == _ownerId || player.Data == null || player.Data.IsDead || player.Data.Disconnected) continue;
 
-            if (Vector2.Distance(p.GetTruePosition(), center) <= _radius)
+            if (Vector2.Distance(player.GetTruePosition(), center) <= _radius)
             {
                 _consumed = true;
                 _duration = _freezeSeconds + 0.1f;
 
-                if (p.AmOwner)
+                if (player.AmOwner)
                 {
                     if (Constants.ShouldPlaySfx() && _enterClip && !SoundManager.Instance.SoundIsPlaying(_enterClip))
                         SoundManager.Instance.PlaySound(_enterClip, false);
 
-                    if (p.MyPhysics.Velocity.sqrMagnitude > 0.0001f && !SoundManager.Instance.SoundIsPlaying(_heartbeatClip))
+                    if (player.MyPhysics.Velocity.sqrMagnitude > 0.0001f && !SoundManager.Instance.SoundIsPlaying(_heartbeatClip))
                         SoundManager.Instance.PlaySound(_heartbeatClip, false);
 
-                    Coroutines.Start(Freeze(p, _freezeSeconds));
+                    Coroutines.Start(Freeze(player, _freezeSeconds));
                 }
 
                 break;
@@ -76,14 +76,14 @@ public class WitnessTrapArea(IntPtr ptr) : MonoBehaviour(ptr)
         if (p.AmOwner)
         {
             Coroutines.Start(Utils.CoShakeCamera(Camera.main.GetComponent<FollowerCamera>(), 0.5f));
-            var notif = Helpers.CreateAndShowNotification("You have entered the Intimation Protocol Area. You are frozen!", Color.cyan, spr: NewModAsset.Freeze.LoadAsset());
-            notif.Text.SetOutlineThickness(0.36f);
+            var notification = Helpers.CreateAndShowNotification("You have entered the Intimation Protocol Area. You are frozen!", Color.cyan, spr: NewModAsset.Freeze.LoadAsset());
+            notification.Text.SetOutlineThickness(0.36f);
         }
 
-        var t = 0f;
-        while (t < seconds)
+        var elapsed = 0f;
+        while (elapsed < seconds)
         {
-            t += Time.deltaTime;
+            elapsed += Time.deltaTime;
             yield return null;
         }
 

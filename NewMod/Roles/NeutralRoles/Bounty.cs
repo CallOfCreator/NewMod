@@ -388,10 +388,10 @@ public class Bounty : CrewmateRole, INewModRole
         if (contract.Phase != ContractPhase.Escort)
             return;
 
-        var previous = contract.AwayTime;
+        var previousAwayTime = contract.AwayTime;
         contract.AwayTime += seconds;
-        var lost = Math.Max(0f, contract.AwayTime - grace) - Math.Max(0f, previous - grace);
-        contract.Progress = Math.Max(0f, contract.Progress - lost);
+        var lostProgress = Math.Max(0f, contract.AwayTime - grace) - Math.Max(0f, previousAwayTime - grace);
+        contract.Progress = Math.Max(0f, contract.Progress - lostProgress);
         Contracts[ownerId] = contract;
     }
 

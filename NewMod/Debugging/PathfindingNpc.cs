@@ -145,7 +145,7 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
             if (!room.roomArea)
                 continue;
             var center = (Vector2)room.roomArea.bounds.center;
-            var best = float.MaxValue;
+            var nearestDistance = float.MaxValue;
             var point = center;
             var bounds = room.roomArea.bounds;
             for (var y = bounds.min.y; y <= bounds.max.y; y += probe.options.CellSize)
@@ -154,14 +154,14 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
                 {
                     var candidate = new Vector2(x, y);
                     var distance = Vector2.Distance(candidate, center);
-                    if (distance >= best || !room.roomArea.OverlapPoint(candidate) || !probe.grid.bounds.Contains(candidate) || !probe.IsClear(candidate))
+                    if (distance >= nearestDistance || !room.roomArea.OverlapPoint(candidate) || !probe.grid.bounds.Contains(candidate) || !probe.IsClear(candidate))
                         continue;
-                    best = distance;
+                    nearestDistance = distance;
                     point = candidate;
                 }
             }
 
-            if (best < float.MaxValue)
+            if (nearestDistance < float.MaxValue)
                 stops.Enqueue(point);
         }
 
@@ -752,10 +752,10 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
         }
         else if (zipPhase == 1)
         {
-            var t = Mathf.Clamp01(zipTime / Mathf.Max(zipline.timeJump, 0.01f));
+            var phaseProgress = Mathf.Clamp01(zipTime / Mathf.Max(zipline.timeJump, 0.01f));
             var curve = top ? zipline.jumpZiplineCurve : zipline.jumpZiplineCurveBottom;
-            SetPosition(zipStart + Vector2.up * curve.Evaluate(t));
-            zipHand.transform.position = handStart + Vector3.up * zipline.jumpZiplineHandCurve.Evaluate(t);
+            SetPosition(zipStart + Vector2.up * curve.Evaluate(phaseProgress));
+            zipHand.transform.position = handStart + Vector3.up * zipline.jumpZiplineHandCurve.Evaluate(phaseProgress);
             if (zipTime < zipline.timeJump + 0.1f) return;
             zipStart = visual.GetTruePosition();
             handStart = zipHand.transform.position - visual.transform.position;
@@ -775,10 +775,10 @@ public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
 
             var drop = (Vector2)(top ? zipline.dropPositionBottom : zipline.dropPositionTop).position + visual.Collider.offset;
             var seconds = top ? zipline.downTravelTime : zipline.upTravelTime;
-            var t = Mathf.Clamp01(zipTime / Mathf.Max(seconds, 0.1f));
-            SetPosition(Vector2.Lerp(zipStart, drop, Mathf.SmoothStep(0f, 1f, t)));
+            var phaseProgress = Mathf.Clamp01(zipTime / Mathf.Max(seconds, 0.1f));
+            SetPosition(Vector2.Lerp(zipStart, drop, Mathf.SmoothStep(0f, 1f, phaseProgress)));
             zipHand.transform.position = visual.transform.position + handStart;
-            if (t < 1f) return;
+            if (phaseProgress < 1f) return;
             traversalAudio.Stop();
             PlayEffect(zipline.detachSound, false);
             if (top) zipHand.StartDownOutroAnimation();

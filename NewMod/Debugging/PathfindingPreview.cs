@@ -382,9 +382,8 @@ public sealed class PathfindingPreview(nint ptr) : MonoBehaviour(ptr)
         report.AppendLine(CultureInfo.CurrentCulture, $"  Exit  {DescribeEndpoint(probe, to)}");
         var color = Color.red;
         if (selected >= 0)
-            color = entryNeighbours == 0 || exitNeighbours == 0 ? Color.yellow : Color.green;
-        if (selected >= 0)
         {
+            color = entryNeighbours == 0 || exitNeighbours == 0 ? Color.yellow : Color.green;
             from = probe.links[selected].Start;
             to = probe.links[selected].End;
         }

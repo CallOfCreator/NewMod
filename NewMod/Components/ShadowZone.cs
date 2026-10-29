@@ -53,7 +53,7 @@ public class ShadowZone(nint ptr) : MonoBehaviour(ptr)
         var camera = Camera.main;
         if (IsInsideAny(local.GetTruePosition()))
         {
-            if (camera.GetScreenEffect<ShadowFluxEffect>() == null) camera.AddScreenEffect<ShadowFluxEffect>();
+            camera.AddScreenEffect<ShadowFluxEffect>();
         }
         else
         {

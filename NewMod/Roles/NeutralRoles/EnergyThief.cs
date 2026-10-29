@@ -122,13 +122,13 @@ public sealed class EnergyThief : CrewmateRole, INewModRole
         var playerId = PlayerControl.LocalPlayer.PlayerId;
         Energy.TryGetValue(playerId, out var energy);
         Categories.TryGetValue(playerId, out var categories);
-        categories ??= [];
+        var categoryCount = categories?.Count ?? 0;
 
         var options = OptionGroupSingleton<EnergyThiefOptions>.Instance;
         text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Energy"), energy, (int)options.EnergyRequired));
-        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Categories"), categories.Count, (int)options.CategoriesRequired));
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.EnergyThief.Tab.Categories"), categoryCount, (int)options.CategoriesRequired));
 
-        if (categories.Count > 0)
+        if (categoryCount > 0)
             text.AppendLine(CultureInfo.CurrentCulture, $"<size=60%><color=#BEBEBE>{string.Join(" • ", categories.Select(category => MiraLocaleManager.Get($"NewMod.EnergyCategory.{category}")))}</color></size>");
 
         if (BreachActive && NodeOwnerId == playerId)

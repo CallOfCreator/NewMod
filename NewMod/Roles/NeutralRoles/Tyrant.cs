@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
@@ -108,7 +107,16 @@ public class Tyrant : ImpostorRole, INewModRole
     {
         if (evt.TriggeredByIntro || !GameManager.Instance.ShouldCheckForGameEnd || !AmongUsClient.Instance.AmHost || !ChampionMeeting) return;
         var champion = Utils.PlayerById(ChampionId);
-        var tyrant = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(player => player.Data.Role is Tyrant);
+        PlayerControl tyrant = null;
+        foreach (var player in PlayerControl.AllPlayerControls)
+        {
+            if (player.Data.Role is not Tyrant)
+                continue;
+
+            tyrant = player;
+            break;
+        }
+
         ApexThroneOutcomeSet = champion && tyrant && !champion.Data.IsDead && !champion.Data.Disconnected && !tyrant.Data.IsDead && !tyrant.Data.Disconnected;
     }
 

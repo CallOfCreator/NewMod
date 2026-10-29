@@ -60,15 +60,8 @@ public class MomentumModifier : GameModifier, INewModModifier
 
         var baseSpeed = Player.MyPhysics.Speed / Mathf.Max(_appliedMultiplier, 0.01f);
 
-        if (Player.Data.IsDead || Player.Data.Disconnected || !Player.CanMove || Player.inVent || MeetingHud.Instance)
-        {
-            Player.MyPhysics.Speed = baseSpeed;
-            _movingTime = 0f;
-            _appliedMultiplier = 1f;
-            return;
-        }
-
-        if (Player.MyPhysics.body.velocity.sqrMagnitude <= 0.01f)
+        if (Player.Data.IsDead || Player.Data.Disconnected || !Player.CanMove || Player.inVent || MeetingHud.Instance ||
+            Player.MyPhysics.body.velocity.sqrMagnitude <= 0.01f)
         {
             Player.MyPhysics.Speed = baseSpeed;
             _movingTime = 0f;

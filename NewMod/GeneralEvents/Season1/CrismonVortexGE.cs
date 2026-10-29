@@ -19,6 +19,8 @@ public class CrismonVortexGE : IGeneralEvent
     public static Vector2 VortexPosition { get; private set; }
     public static float StartedAt { get; private set; }
     public static float WarningDuration;
+    public float? PracticePullStrength;
+    public GEOptions.EscapeDifficulty? PracticeEscapeDifficulty;
 
     public string Title => "Crimson Vortex";
     public string Description => "ESCAPE THE SINGULARITY!";
@@ -74,7 +76,7 @@ public class CrismonVortexGE : IGeneralEvent
 
         var effect = Camera.main.GetScreenEffect<CrimsonVortexEffect>();
 
-        if (effect != null && effect.Active)
+        if (effect != null)
             effect.Remove();
     }
 
@@ -85,7 +87,7 @@ public class CrismonVortexGE : IGeneralEvent
         PositionReady = true;
         StartedAt = Time.time + WarningDuration;
 
-        if (Camera.main.GetScreenEffect<CrimsonVortexEffect>() == null) Camera.main.AddScreenEffect<CrimsonVortexEffect>();
+        Camera.main.AddScreenEffect<CrimsonVortexEffect>();
     }
 
     [MethodRpc((uint)CustomRPC.CrismonVortexEscape, LocalHandling = RpcLocalHandling.After)]

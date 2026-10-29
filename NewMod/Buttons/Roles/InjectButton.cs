@@ -39,7 +39,14 @@ public class InjectButton : CustomActionButton<PlayerControl>, IEnergyAbility
         if (InjectorUtilities.Experiments.TryGetValue(player.PlayerId, out var sample))
         {
             var target = Utils.PlayerById(sample.TargetId);
-            return target && !target.Data.IsDead && !target.Data.Disconnected && !target.inVent && Time.time >= sample.ReadyAt && Vector2.Distance(player.GetTruePosition(), target.GetTruePosition()) <= Distance && !PhysicsHelpers.AnythingBetween(player.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false) ? target : null;
+            if (!target || target.Data.IsDead || target.Data.Disconnected || target.inVent)
+                return null;
+
+            return Time.time >= sample.ReadyAt &&
+                   Vector2.Distance(player.GetTruePosition(), target.GetTruePosition()) <= Distance &&
+                   !PhysicsHelpers.AnythingBetween(player.GetTruePosition(), target.GetTruePosition(), Constants.ShipAndObjectsMask, false)
+                ? target
+                : null;
         }
 
         if (Time.time < InjectorUtilities.NextInjection.GetValueOrDefault(player.PlayerId)) return null;

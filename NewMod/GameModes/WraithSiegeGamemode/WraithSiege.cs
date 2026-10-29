@@ -350,13 +350,8 @@ public sealed class WraithSiege : AbstractGameMode
         {
             var player = GameData.Instance.GetPlayerById(playerId)?.Object;
 
-            if (!player || player.Data.IsDead || player.Data.Disconnected)
-            {
-                _burnTimers.Remove(playerId);
-                continue;
-            }
-
-            if (Vector2.Distance(player.GetTruePosition(), _flagPosition) > options.FlagRadius)
+            if (!player || player.Data.IsDead || player.Data.Disconnected ||
+                Vector2.Distance(player.GetTruePosition(), _flagPosition) > options.FlagRadius)
             {
                 _burnTimers.Remove(playerId);
                 continue;
@@ -439,7 +434,7 @@ public sealed class WraithSiege : AbstractGameMode
 
             _energyText.text = "<color=#9B6CFF><b>TEAM WRAITH ENERGY</b></color>\n" + $"<color=#9B6CFF>{new string('█', filled)}</color>" + $"<color=#39323F>{new string('█', 16 - filled)}</color>\n" + $"<size=70%>{Mathf.CeilToInt(WraithEnergy)}/" + $"{Mathf.CeilToInt(options.MaxEnergy)}  •  " + $"Summon: {Mathf.CeilToInt(options.SummonCost)}</size>";
 
-            var summonCooldown = _summonCooldowns.TryGetValue(localPlayer.PlayerId, out var cooldown) ? cooldown : 0f;
+            var summonCooldown = _summonCooldowns.GetValueOrDefault(localPlayer.PlayerId);
 
             var activeOwned = GetActiveNpcCount(localPlayer.PlayerId);
 
@@ -966,7 +961,7 @@ public sealed class WraithSiege : AbstractGameMode
 
         introCutscene.FrontMost.color = Color.clear;
 
-        introCutscene.Foreground.material.SetFloat("_Rad", introCutscene.ForegroundRadius.max);
+        introCutscene.Foreground.material.SetFloat(ShaderID.Rad, introCutscene.ForegroundRadius.max);
 
         introCutscene.TeamTitle.gameObject.SetActive(true);
         introCutscene.ImpostorText.gameObject.SetActive(true);

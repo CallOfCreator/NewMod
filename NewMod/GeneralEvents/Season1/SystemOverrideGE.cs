@@ -28,9 +28,9 @@ public class SystemOverrideGE : IGeneralEvent
     {
         Active = true;
 
-        var cam = Camera.main;
-        if (cam && cam.GetScreenEffect<SystemOverrideEffect>() == null)
-            cam.AddScreenEffect<SystemOverrideEffect>();
+        var camera = Camera.main;
+        if (camera)
+            camera.AddScreenEffect<SystemOverrideEffect>();
 
         if (AmongUsClient.Instance.AmHost) OverrideRoutine = Coroutines.Start(CoOverrideSystems());
     }
@@ -42,12 +42,12 @@ public class SystemOverrideGE : IGeneralEvent
         Coroutines.Stop(OverrideRoutine);
         OverrideRoutine = null;
 
-        var cam = Camera.main;
-        if (!cam)
+        var camera = Camera.main;
+        if (!camera)
             return;
 
-        var effect = cam.GetScreenEffect<SystemOverrideEffect>();
-        if (effect != null && effect.Active)
+        var effect = camera.GetScreenEffect<SystemOverrideEffect>();
+        if (effect != null)
             effect.Remove();
     }
 

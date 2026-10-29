@@ -25,28 +25,28 @@ public sealed class SuppressionDomeArea(IntPtr ptr) : MonoBehaviour(ptr)
             return;
         }
 
-        var lp = PlayerControl.LocalPlayer;
-        if (!lp || lp.Data == null) return;
-        if (lp.PlayerId == _ownerId) return;
+        var localPlayer = PlayerControl.LocalPlayer;
+        if (!localPlayer || localPlayer.Data == null) return;
+        if (localPlayer.PlayerId == _ownerId) return;
 
-        var nowInside = Vector2.Distance(lp.GetTruePosition(), transform.position) <= _radius;
+        var nowInside = Vector2.Distance(localPlayer.GetTruePosition(), transform.position) <= _radius;
         if (nowInside == _inside) return;
 
         _inside = nowInside;
         var hud = HudManager.Instance;
-        hud.SetHudActive(lp, lp.Data.Role, !_inside);
+        hud.SetHudActive(localPlayer, localPlayer.Data.Role, !_inside);
 
         if (_inside)
         {
             Coroutines.Start(Utils.CoShakeCamera(Camera.main.GetComponent<FollowerCamera>(), 0.5f));
 
-            if (!lp.Data.IsDead && Constants.ShouldPlaySfx() && !SoundManager.Instance.SoundIsPlaying(_enterClip))
+            if (!localPlayer.Data.IsDead && Constants.ShouldPlaySfx() && !SoundManager.Instance.SoundIsPlaying(_enterClip))
                 SoundManager.Instance.PlaySound(_enterClip, false);
 
-            var notif = Helpers.CreateAndShowNotification("You’ve stepped into the Suppression Dome! All your abilities are LOCKED", Color.red);
-            notif.Text.SetOutlineThickness(0.36f);
+            var notification = Helpers.CreateAndShowNotification("You’ve stepped into the Suppression Dome! All your abilities are LOCKED", Color.red);
+            notification.Text.SetOutlineThickness(0.36f);
 
-            if (lp.MyPhysics.Velocity.sqrMagnitude > 0.0001f && !SoundManager.Instance.SoundIsPlaying(_heartbeatClip))
+            if (localPlayer.MyPhysics.Velocity.sqrMagnitude > 0.0001f && !SoundManager.Instance.SoundIsPlaying(_heartbeatClip))
                 SoundManager.Instance.PlaySound(_heartbeatClip, false);
         }
     }
@@ -54,9 +54,9 @@ public sealed class SuppressionDomeArea(IntPtr ptr) : MonoBehaviour(ptr)
     public void OnDestroy()
     {
         if (!_inside) return;
-        var lp = PlayerControl.LocalPlayer;
-        if (!lp || lp.Data == null) return;
-        HudManager.Instance.SetHudActive(lp, lp.Data.Role, true);
+        var localPlayer = PlayerControl.LocalPlayer;
+        if (!localPlayer || localPlayer.Data == null) return;
+        HudManager.Instance.SetHudActive(localPlayer, localPlayer.Data.Role, true);
         _inside = false;
     }
 

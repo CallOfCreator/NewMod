@@ -16,7 +16,6 @@ using NewMod.Options.Roles;
 using NewMod.Patches;
 using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
-using Reactor.Utilities;
 using ReactUI.Core;
 using ReactUI.Hooks;
 using UnityEngine;
@@ -132,10 +131,12 @@ public static class NewModDebugPanel
         if (players.Count == 0)
             return Section("TARGET", Text("No initialized players.", ClassName("nm-debug-muted")));
 
-        if (players.All(player => player.PlayerId != _selectedPlayerId))
-            _selectedPlayerId = players[0].PlayerId;
-
         var selectedPlayerIndex = players.FindIndex(player => player.PlayerId == _selectedPlayerId);
+        if (selectedPlayerIndex < 0)
+        {
+            selectedPlayerIndex = 0;
+            _selectedPlayerId = players[0].PlayerId;
+        }
         var selectedPlayer = players[selectedPlayerIndex];
         var roles = CustomRoleManager.CustomMiraRoles.Where(role => role.GetType().Assembly == typeof(NewMod).Assembly).OrderBy(role => role.RoleName).ToArray();
 
@@ -147,10 +148,12 @@ public static class NewModDebugPanel
         }
         else
         {
-            if (roles.All(role => role.RoleName != _selectedRole))
-                _selectedRole = roles[0].RoleName;
-
             var selectedRoleIndex = Array.FindIndex(roles, role => role.RoleName == _selectedRole);
+            if (selectedRoleIndex < 0)
+            {
+                selectedRoleIndex = 0;
+                _selectedRole = roles[0].RoleName;
+            }
 
             roleSection = Section(
                 "ASSIGN ROLE",
@@ -271,7 +274,7 @@ public static class NewModDebugPanel
     private static VNode EffectsPage()
     {
         var camera = Camera.main;
-        var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Energy breach", EffectsTab.PlayEnergyThiefBreak, false), ("Glitch", AddEffect<GlitchEffect>, false), ("Earthquake", AddEffect<EarthquakeEffect>, false), ("Pulse hue", AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", AddEffect<DistorationWaveEffect>, false), ("Shadow flux", AddEffect<ShadowFluxEffect>, false), ("Negative reality", AddEffect<NegativeRealityEffect>, false), ("Glitch V2", AddEffect<ScrDesyncEffect>, false), ("Remove all", RemoveEffects, true))) };
+        var sections = new List<VNode> { Section("EFFECTS", MutatingActions(("Energy breach", EffectsTab.PlayEnergyThiefBreak, false), ("Glitch", EffectsTab.AddEffect<GlitchEffect>, false), ("Earthquake", EffectsTab.AddEffect<EarthquakeEffect>, false), ("Pulse hue", EffectsTab.AddEffect<SlowPulseHueEffect>, false), ("Distortion wave", EffectsTab.AddEffect<DistorationWaveEffect>, false), ("Shadow flux", EffectsTab.AddEffect<ShadowFluxEffect>, false), ("Negative reality", EffectsTab.AddEffect<NegativeRealityEffect>, false), ("Glitch V2", EffectsTab.AddEffect<ScrDesyncEffect>, false), ("Remove all", EffectsTab.RemoveEffects, true))) };
         var system = camera.GetComponent<ScreenEffectSystem>();
         if (system)
         {
@@ -329,16 +332,6 @@ public static class NewModDebugPanel
 
         if (target)
             meeting.CmdCastVote(PlayerControl.LocalPlayer.PlayerId, target.PlayerId);
-    }
-
-    private static void AddEffect<T>() where T : ScreenEffect, new()
-    {
-        Camera.main.AddScreenEffect<T>();
-    }
-
-    private static void RemoveEffects()
-    {
-        Coroutines.Start(CoroutinesHelper.RemoveCameraEffect(Camera.main, 0f));
     }
 
     private enum Page

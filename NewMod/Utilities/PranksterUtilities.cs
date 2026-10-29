@@ -44,16 +44,7 @@ public static class PranksterUtilities
 
     public static List<DeadBody> FindAllPranksterBodies()
     {
-        var allDeadBodies = Object.FindObjectsOfType<DeadBody>();
-        var pranksterBodies = new List<DeadBody>();
-
-        foreach (var body in allDeadBodies)
-        {
-            if (IsPranksterBody(body))
-                pranksterBodies.Add(body);
-        }
-
-        return pranksterBodies;
+        return Object.FindObjectsOfType<DeadBody>().Where(IsPranksterBody).ToList();
     }
 
     [RegisterEvent]
@@ -121,7 +112,7 @@ public static class PranksterUtilities
 
     public static int GetReportCount(byte playerId)
     {
-        return ReportCounts.TryGetValue(playerId, out var value) ? value : 0;
+        return ReportCounts.GetValueOrDefault(playerId);
     }
 
     [MethodRpc((uint)CustomRPC.PranksterInspectBody)]

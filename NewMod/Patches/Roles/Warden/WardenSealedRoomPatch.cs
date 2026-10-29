@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using MiraAPI.Utilities;
 using NewMod.Roles.CrewmateRoles.S1;
 
 namespace NewMod.Patches;
@@ -15,7 +16,7 @@ public static class WardenSealedRoomDoorUiPatch
         var sealedRoom = WardenRole.SealActive && __instance.room == WardenRole.SealedRoom;
 
         if (sealedRoom)
-            __instance.door.material.SetFloat("_Percent", 1f);
+            __instance.door.material.SetFloat(ShaderID.Percent, 1f);
 
         var button = __instance.door.GetComponent<ButtonBehavior>();
 

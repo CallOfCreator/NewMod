@@ -29,11 +29,11 @@ public class DeployShadow : CustomActionButton, IEnergyAbility
     {
         var player = PlayerControl.LocalPlayer;
 
-        var pos = player.GetTruePosition();
+        var position = player.GetTruePosition();
 
         var radius = OptionGroupSingleton<ShadeOptions>.Instance.Radius;
-        var dur = OptionGroupSingleton<ShadeOptions>.Instance.Duration;
+        var duration = OptionGroupSingleton<ShadeOptions>.Instance.Duration;
 
-        ShadowZone.RpcDeployZone(player, pos, radius, dur);
+        ShadowZone.RpcDeployZone(player, position, radius, duration);
     }
 }

@@ -44,7 +44,7 @@ public class InVoid : BaseModifier
 
             HudManager.Instance.KillButton.Hide();
 
-            var cam = Camera.main;
+            var camera = Camera.main;
 
             if (Application.platform == RuntimePlatform.Android)
             {
@@ -54,16 +54,16 @@ public class InVoid : BaseModifier
                 fullScreen.gameObject.SetActive(true);
                 Coroutines.Start(CoEnterVoidEffect(null, null));
             }
-            else if (cam)
+            else if (camera)
             {
-                var oldTransition = cam.GetScreenEffect<VoidwalkerTransitionEffect>();
+                var oldTransition = camera.GetScreenEffect<VoidwalkerTransitionEffect>();
 
-                if (oldTransition != null && oldTransition.Active)
+                if (oldTransition != null)
                     oldTransition.Remove();
 
-                var voidEffect = cam.GetScreenEffect<VoidwalkerVoidEffect>() ?? cam.AddScreenEffect<VoidwalkerVoidEffect>();
+                var voidEffect = camera.AddScreenEffect<VoidwalkerVoidEffect>();
 
-                var transition = cam.AddScreenEffect<VoidwalkerTransitionEffect>();
+                var transition = camera.AddScreenEffect<VoidwalkerTransitionEffect>();
 
                 voidEffect.amount = 0f;
                 transition.SetEnter(0f);
@@ -92,12 +92,10 @@ public class InVoid : BaseModifier
             }
             else
             {
-                var cam = Camera.main;
-                var voidEffect = cam.GetScreenEffect<VoidwalkerVoidEffect>();
+                var camera = Camera.main;
+                var voidEffect = camera.GetScreenEffect<VoidwalkerVoidEffect>();
 
-                var transition = cam.GetScreenEffect<VoidwalkerTransitionEffect>();
-
-                if (transition == null || !transition.Active) transition = cam.AddScreenEffect<VoidwalkerTransitionEffect>();
+                var transition = camera.AddScreenEffect<VoidwalkerTransitionEffect>();
 
                 transition.SetExit(0f);
 

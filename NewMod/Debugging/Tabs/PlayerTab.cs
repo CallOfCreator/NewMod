@@ -37,10 +37,12 @@ public class PlayerTab : IDebugTab
             return;
         }
 
-        if (players.All(player => player.PlayerId != SelectedPlayerId))
-            SelectedPlayerId = players[0].PlayerId;
-
         var selectedPlayerIndex = players.FindIndex(player => player.PlayerId == SelectedPlayerId);
+        if (selectedPlayerIndex < 0)
+        {
+            selectedPlayerIndex = 0;
+            SelectedPlayerId = players[0].PlayerId;
+        }
         SelectedPlayer = players[selectedPlayerIndex];
         var roles = CustomRoleManager.CustomMiraRoles.Where(role => role.GetType().Assembly == typeof(NewMod).Assembly).OrderBy(role => role.RoleName).ToArray();
 
@@ -94,10 +96,12 @@ public class PlayerTab : IDebugTab
         }
         else
         {
-            if (roles.All(role => role.RoleName != SelectedRole))
-                SelectedRole = roles[0].RoleName;
-
             var selectedRoleIndex = Array.FindIndex(roles, role => role.RoleName == SelectedRole);
+            if (selectedRoleIndex < 0)
+            {
+                selectedRoleIndex = 0;
+                SelectedRole = roles[0].RoleName;
+            }
 
             if (GUILayout.Button("<"))
             {

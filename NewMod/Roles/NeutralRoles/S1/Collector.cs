@@ -267,27 +267,27 @@ public class Collector : CrewmateRole, INewModRole
             yield break;
         }
 
-        GameObject nearest = null;
-        var distance = float.MaxValue;
+        GameObject nearestFragment = null;
+        var nearestDistance = float.MaxValue;
         foreach (var fragment in Fragments.Values)
         {
-            var candidate = Vector2.Distance(player.GetTruePosition(), fragment.Position);
-            if (candidate >= distance)
+            var distance = Vector2.Distance(player.GetTruePosition(), fragment.Position);
+            if (distance >= nearestDistance)
                 continue;
 
-            distance = candidate;
-            nearest = fragment.Object;
+            nearestDistance = distance;
+            nearestFragment = fragment.Object;
         }
 
-        if (!nearest)
+        if (!nearestFragment)
             yield break;
 
-        var renderer = nearest.GetComponent<SpriteRenderer>();
-        var start = renderer.color;
+        var renderer = nearestFragment.GetComponent<SpriteRenderer>();
+        var originalColor = renderer.color;
         renderer.color = Color.yellow;
         yield return new WaitForSeconds(options.TraceDuration);
         if (renderer)
-            renderer.color = start;
+            renderer.color = originalColor;
     }
 
     public static IEnumerator CoRevealCollector(PlayerControl collector, float duration)

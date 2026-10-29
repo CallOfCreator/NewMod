@@ -572,7 +572,7 @@ public static class WraithSiegeMapData
         {
             var exit = point + direction * ExitProbeDistance;
 
-            if (PhysicsHelpers.AnythingBetween(point, point + direction * ExitProbeDistance, Constants.ShipAndAllObjectsMask, false))
+            if (PhysicsHelpers.AnythingBetween(point, exit, Constants.ShipAndAllObjectsMask, false))
                 continue;
 
             if (HasSolidCollider(exit, SafeRadius))

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using BepInEx.Configuration;
 using MiraAPI.Hud;
 using MiraAPI.LocalSettings;
@@ -19,14 +20,29 @@ public class NewModLocalSettings(ConfigFile config) : LocalSettingsTab(config)
     [LocalToggleSetting("Always Buttons on Left (Only for Android)", "Places all custom buttons on the left side (recommended for Android devices)")]
     public ConfigEntry<bool> AlwaysButtonsLeft { get; } = config.Bind("Features", "AlwaysButtonsLeft", true, "Place all custom buttons on the left side");
 
+    public readonly Dictionary<CustomActionButton, ButtonLocation> OriginalButtonLocations = [];
+
     public override void OnOptionChanged(ConfigEntryBase configEntry)
     {
         base.OnOptionChanged(configEntry);
 
         if (configEntry == AlwaysButtonsLeft && Application.platform == RuntimePlatform.Android)
         {
-            foreach (var btn in CustomButtonManager.Buttons)
-                btn.SetButtonLocation(ButtonLocation.BottomLeft);
+            if (AlwaysButtonsLeft.Value)
+            {
+                foreach (var button in CustomButtonManager.Buttons)
+                {
+                    OriginalButtonLocations.TryAdd(button, button.Location);
+                    button.SetButtonLocation(ButtonLocation.BottomLeft);
+                }
+            }
+            else
+            {
+                foreach (var (button, location) in OriginalButtonLocations)
+                    button.SetButtonLocation(location);
+
+                OriginalButtonLocations.Clear();
+            }
         }
 
         if (configEntry == EnableCustomCursor)

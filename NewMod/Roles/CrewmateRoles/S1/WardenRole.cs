@@ -201,11 +201,11 @@ public class WardenRole : CrewmateRole, INewModRole
 
     public static IEnumerator CoShowPulse(Vector2 position, bool entering)
     {
-        var go = new GameObject("WardenRoomPulse") { layer = PlayerControl.LocalPlayer.gameObject.layer };
+        var pulseObject = new GameObject("WardenRoomPulse") { layer = PlayerControl.LocalPlayer.gameObject.layer };
 
-        go.transform.position = position;
+        pulseObject.transform.position = position;
 
-        var renderer = go.AddComponent<SpriteRenderer>();
+        var renderer = pulseObject.AddComponent<SpriteRenderer>();
         renderer.sprite = NewModAsset.RadarIcon.LoadAsset();
         renderer.sortingOrder = 100;
 
@@ -220,14 +220,14 @@ public class WardenRole : CrewmateRole, INewModRole
 
             var progress = Mathf.Clamp01(timer / duration);
 
-            go.transform.localScale = Vector3.one * Mathf.Lerp(0.2f, 0.85f, progress);
+            pulseObject.transform.localScale = Vector3.one * Mathf.Lerp(0.2f, 0.85f, progress);
 
             renderer.color = new Color(pulseColor.r, pulseColor.g, pulseColor.b, pulseColor.a * (1f - progress));
 
             yield return null;
         }
 
-        Destroy(go);
+        Destroy(pulseObject);
     }
 
     [RegisterEvent]
@@ -364,18 +364,18 @@ public class WardenRole : CrewmateRole, INewModRole
         GameObject nearest = null;
         var nearestDistance = range;
 
-        foreach (var pair in ResidualMarks)
+        foreach (var mark in ResidualMarks.Keys)
         {
-            if (!pair.Key)
+            if (!mark)
                 continue;
 
-            var distance = Vector2.Distance(position, pair.Key.transform.position);
+            var distance = Vector2.Distance(position, mark.transform.position);
 
             if (distance >= nearestDistance)
                 continue;
 
             nearestDistance = distance;
-            nearest = pair.Key;
+            nearest = mark;
         }
 
         return nearest;
