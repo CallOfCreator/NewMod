@@ -114,7 +114,7 @@ If you’d like to contribute, feel free to join and improve the project!
 - **Ramcette**: [Ram's Discord](ramcetteau) - For providing some nameplate cosmetics
 - **Raly**: [Raly's Discord](dpanimating) - For providing the "Cosmic Visor" cosmetic
 - **WanderingPix**: [WanderingPixel](https://github.com/WanderingPix) - For providing the "Do worry" & "Dance and Fire" cosmetics
----
+- **Denis Volkow**: [Background Artwork](https://www.behance.net/gallery/161972373/Landscapes-in-ProCreate) – Used as the background for the new main menu
 
 # ⚠️ Disclaimer
 
