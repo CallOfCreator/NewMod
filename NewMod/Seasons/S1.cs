@@ -33,29 +33,50 @@ public class S1 : ISeason
 
     public void HandleMainMenu(MainMenuManager menuManager)
     {
-        var now = AmongUsDateTime.UtcNow;
-        if (now < SeasonStartDate.ToUniversalTime() || now >= SeasonEndDate.ToUniversalTime())
-            return;
-
         var seasonText = new GameObject("NewMod_Season");
-        seasonText.transform.SetParent(menuManager.transform.Find("MainUI/AspectScaler/RightPanel"), false);
-        seasonText.transform.localPosition = new Vector3(-6.552f, 0.1f, 0f);
+        seasonText.transform.SetParent(menuManager.transform.Find("MainUI/NewModMenu/Home"), false);
+        seasonText.transform.localPosition = new Vector3(0f, 1.8f, -1f);
+        seasonText.transform.localScale = new Vector3(1f, 1.15f, 1f);
 
         var text = seasonText.AddComponent<TextMeshPro>();
-        text.alignment = TextAlignmentOptions.TopRight;
-        text.fontSize = 2.2f;
-        Coroutines.Start(CoSeasonText(text));
+        text.font = NewModAsset.BrookFont.LoadAsset();
+        text.fontSharedMaterial = text.font.material;
+        text.rectTransform.pivot = new Vector2(0.5f, 1f);
+        text.rectTransform.sizeDelta = new Vector2(10f, 2.2f);
+        text.alignment = TextAlignmentOptions.Top;
+        text.fontSize = 15f;
+        text.characterSpacing = 4f;
+        text.color = Color.white;
+        text.enableVertexGradient = true;
+        var topColor = new Color32(255, 246, 200, 255);
+        var bottomColor = new Color32(255, 205, 80, 255);
+        text.colorGradient = new VertexGradient(topColor, topColor, bottomColor, bottomColor);
+        text.outlineColor = new Color32(255, 170, 40, 255);
+        text.outlineWidth = 0.01f;
+        var material = text.fontMaterial;
+        material.SetFloat(ShaderUtilities.ID_FaceDilate, 0.05f);
+        material.EnableKeyword(ShaderUtilities.Keyword_Glow);
+        material.SetColor(ShaderUtilities.ID_GlowColor, new Color32(255, 170, 40, 255));
+        material.SetFloat(ShaderUtilities.ID_GlowOffset, 0f);
+        material.SetFloat(ShaderUtilities.ID_GlowInner, 0.2f);
+        material.SetFloat(ShaderUtilities.ID_GlowOuter, 0.5f);
+        material.SetFloat(ShaderUtilities.ID_GlowPower, 0.7f);
+        material.EnableKeyword(ShaderUtilities.Keyword_Underlay);
+        material.SetColor(ShaderUtilities.ID_UnderlayColor, new Color32(10, 3, 40, 153));
+        material.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, 0f);
+        material.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, -0.15f);
+        material.SetFloat(ShaderUtilities.ID_UnderlayDilate, 0.05f);
+        material.SetFloat(ShaderUtilities.ID_UnderlaySoftness, 0.3f);
+        text.UpdateMeshPadding();
+        Coroutines.Start(CoSeasonText(text, material));
     }
 
-    public IEnumerator CoSeasonText(TextMeshPro text)
+    public IEnumerator CoSeasonText(TextMeshPro text, Material material)
     {
+        var startDate = SeasonStartDate.ToUniversalTime();
         var endDate = SeasonEndDate.ToUniversalTime();
-        var color = ColorUtility.ToHtmlStringRGB(SeasonMainColor);
-        var labelTransform = text.transform;
-        var position = labelTransform.localPosition;
-        var startedAt = Time.unscaledTime;
-        var nextUpdate = startedAt;
-        var lastCountdown = string.Empty;
+        var nextUpdate = Time.unscaledTime;
+        var lastCaption = string.Empty;
 
         while (text)
         {
@@ -63,34 +84,31 @@ public class S1 : ISeason
             if (now >= nextUpdate)
             {
                 nextUpdate = now + 1f;
-                var remaining = endDate - AmongUsDateTime.UtcNow;
-                if (remaining.TotalSeconds <= 0)
+                var date = AmongUsDateTime.UtcNow;
+                var caption = "CONTENT AVAILABLE";
+                if (date >= startDate && date < endDate)
                 {
-                    UnityEngine.Object.Destroy(text.gameObject);
-                    yield break;
+                    var seconds = (int)Math.Ceiling((endDate - date).TotalSeconds);
+                    caption = seconds switch
+                    {
+                        >= 86400 => $"{seconds / 86400}d {seconds % 86400 / 3600:00}h left",
+                        >= 3600 => $"{seconds / 3600}h {seconds % 3600 / 60:00}m left",
+                        >= 60 => $"{seconds / 60}m {seconds % 60:00}s left",
+                        _ => $"{seconds}s left",
+                    };
                 }
 
-                var seconds = (int)Math.Ceiling(remaining.TotalSeconds);
-                var countdown = seconds switch
+                if (caption != lastCaption)
                 {
-                    >= 86400 => $"{seconds / 86400}d {seconds % 86400 / 3600:00}h",
-                    >= 3600 => $"{seconds / 3600}h {seconds % 3600 / 60:00}m",
-                    >= 60 => $"{seconds / 60}m {seconds % 60:00}s",
-                    _ => $"{seconds}s",
-                };
-
-                if (countdown != lastCountdown)
-                {
-                    lastCountdown = countdown;
-                    text.text = $"<color=#00FF00>Active season:</color> <color=#{color}>{Name}</color>\n<size=70%><color=#{color}>{countdown}</color> left</size>";
+                    lastCaption = caption;
+                    text.text = $"{Name.ToUpperInvariant()}\n<size=30%>{caption}</size>";
                 }
             }
 
-            var elapsed = now - startedAt;
-            text.alpha = 0.96f + 0.04f * Mathf.Cos(elapsed * 1.5f);
-            labelTransform.localPosition = position + Vector3.up * (0.025f * Mathf.Sin(elapsed * 1.5f));
             yield return null;
         }
+
+        UnityEngine.Object.Destroy(material);
     }
 
     public IReadOnlyList<Type> GetSeasonRoleTypes()

@@ -89,7 +89,7 @@ public class NewMod : BasePlugin, IMiraPlugin
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
 
         ForceEnableAllSeasons = Config.Bind("NewMod", "ForceEnableAllSeasons", false, "Force all seasons as started");
-        
+
         Message($"Loaded Successfully NewMod v{ModVersion} DEV With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 

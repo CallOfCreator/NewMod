@@ -1,5 +1,6 @@
 using HarmonyLib;
 using MiraAPI.LocalSettings;
+using NewMod.Components;
 using NewMod.LocalSettings;
 using NewMod.Seasons;
 using UnityEngine;
@@ -15,23 +16,6 @@ public static class MainMenuPatch
 
     public static Texture2D _cachedCursor;
     private static bool _contentInjected;
-
-    [HarmonyPatch(nameof(MainMenuManager.Awake))]
-    [HarmonyPostfix]
-    public static void AwakePostfix(MainMenuManager __instance)
-    {
-        // Inspired by: https://github.com/Reach-For-Stars-Team/Stargazer/blob/master/Stargazer/Features/MainMenu/ReworkedMainMenu.cs#L7
-        var background = __instance.transform.Find("MainUI/AspectScaler/BackgroundTexture").GetComponent<SpriteRenderer>();
-        background.color = new Color32(69, 38, 105, 255);
-
-        foreach (var btn in __instance.GetComponentsInChildren<PassiveButton>())
-        {
-            btn.inactiveSprites.GetComponent<SpriteRenderer>().material.color = new Color(1.15f, 0.1f, 0.75f, 1f);
-            btn.activeSprites.GetComponent<SpriteRenderer>().material.color = new Color(1.5f, 0.25f, 1.05f, 1f);
-        }
-
-        __instance.mainButtons[0].transform.parent.parent.GetComponent<SpriteRenderer>().material.color = new Color(1.1f, 0.08f, 0.75f, 1f);
-    }
 
     [HarmonyPatch(nameof(MainMenuManager.Start))]
     [HarmonyPrefix]
@@ -56,19 +40,55 @@ public static class MainMenuPatch
                 Cursor.SetCursor(cursor, Vector2.zero, CursorMode.Auto);
         }
 
-        RightPanel = __instance.transform.Find("MainUI/AspectScaler/RightPanel");
-
-        var logoObject = new GameObject("NewModLogo");
-        logoObject.transform.SetParent(__instance.transform.Find("MainCanvas/MainPanel/RightPanel"), false);
-
-        logoObject.transform.localPosition = new Vector3(2.14f, -0.7136f, 1f);
-        logoObject.transform.localScale = new Vector3(0.7f, 0.9f, 0.9f);
-
-        LogoSprite = logoObject.AddComponent<SpriteRenderer>();
-        LogoSprite.sprite = NewModAsset.NewModLogo.LoadAsset();
+        var layout = __instance.gameObject.AddComponent<MainMenuLayout>();
+        layout.Initialize(__instance);
+        RightPanel = layout.RightPanel;
+        LogoSprite = layout.Logo;
 
         SeasonManager.InitializeSeasons(__instance);
         ModCompatibility.Initialize();
+    }
+
+    [HarmonyPatch(nameof(MainMenuManager.OpenGameModeMenu))]
+    [HarmonyPostfix]
+    public static void OpenGameModeMenuPostfix(MainMenuManager __instance)
+    {
+        var selection = __instance.howToPlayButton;
+        if (__instance.playLocalButton.gameObject.activeSelf)
+            selection = __instance.playLocalButton;
+        else if (__instance.PlayOnlineButton.enabled)
+            selection = __instance.PlayOnlineButton;
+        __instance.GetComponent<MainMenuLayout>().OpenSubmenu(selection);
+    }
+
+    [HarmonyPatch(nameof(MainMenuManager.OpenAccountMenu))]
+    [HarmonyPostfix]
+    public static void OpenAccountMenuPostfix(MainMenuManager __instance)
+    {
+        __instance.GetComponent<MainMenuLayout>().OpenSubmenu(__instance.accountCTAButton);
+    }
+
+    [HarmonyPatch(nameof(MainMenuManager.OpenCredits))]
+    [HarmonyPostfix]
+    public static void OpenCreditsPostfix(MainMenuManager __instance)
+    {
+        var layout = __instance.GetComponent<MainMenuLayout>();
+        layout.OpenSubmenu(layout.BackButton);
+    }
+
+    [HarmonyPatch(nameof(MainMenuManager.OpenEnterCodeMenu))]
+    [HarmonyPostfix]
+    public static void OpenEnterCodeMenuPostfix(MainMenuManager __instance)
+    {
+        if (__instance.enterCodeButtons.activeSelf)
+            ControllerManager.Instance.SetBackButton(__instance.enterCodeButtons.transform.Find("Header/BackButton").GetComponent<PassiveButton>());
+    }
+
+    [HarmonyPatch(nameof(MainMenuManager.OpenRedeemCodeMenu))]
+    [HarmonyPostfix]
+    public static void OpenRedeemCodeMenuPostfix(MainMenuManager __instance)
+    {
+        ControllerManager.Instance.SetBackButton(__instance.redeemCodeContainer.Find("Header/BackButton").GetComponent<PassiveButton>());
     }
 
     public static Texture2D GetCursorTexture()

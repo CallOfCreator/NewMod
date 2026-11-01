@@ -79,7 +79,7 @@ public static class SeasonManager
         foreach (var season in ContentSeasons)
             RegisterSeasonGeneralEvents(season);
 
-        foreach (var season in CurrentActiveSeasons)
+        foreach (var season in ContentSeasons)
             season.HandleMainMenu(menuManager);
     }
 

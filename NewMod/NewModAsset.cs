@@ -1,5 +1,6 @@
 using MiraAPI.Utilities.Assets;
 using Reactor.Utilities;
+using TMPro;
 using UnityEngine;
 
 namespace NewMod;
@@ -8,9 +9,19 @@ public static class NewModAsset
 {
     public static AssetBundle Bundle = AssetBundleManager.Load("newmod");
 
+    // Fonts
+    public static LoadableAsset<TMP_FontAsset> BrookFont { get; } = new LoadableBundleAsset<TMP_FontAsset>("Brook-FREE SDF", Bundle);
+
     // Miscellaneous
     public static LoadableAsset<Sprite> Arrow { get; } = new LoadableBundleAsset<Sprite>("arrow.png", Bundle);
     public static LoadableResourceAsset NewModLogo { get; } = new("NewMod.Resources.NewModLogo.png");
+    public static LoadableResourceAsset MainMenuBackground { get; } = new("NewMod.Resources.nm_bg_mainmenu.png");
+    public static LoadableResourceAsset DiscordNormal { get; } = new("NewMod.Resources.DiscordNormal.png");
+    public static LoadableResourceAsset DiscordHover { get; } = new("NewMod.Resources.DiscordHover.png");
+    public static LoadableResourceAsset DiscordPressed { get; } = new("NewMod.Resources.DiscordPressed.png");
+    public static LoadableResourceAsset WebsiteNormal { get; } = new("NewMod.Resources.WebsiteNormal.png");
+    public static LoadableResourceAsset WebsiteHover { get; } = new("NewMod.Resources.WebsiteHover.png");
+    public static LoadableResourceAsset WebsitePressed { get; } = new("NewMod.Resources.WebsitePressed.png");
     public static LoadableAsset<Sprite> NMIcon { get; } = new LoadableBundleAsset<Sprite>("nm", Bundle);
     public static LoadableAsset<Sprite> CustomCursor { get; } = new LoadableBundleAsset<Sprite>("cursor.png", Bundle);
     public static LoadableAsset<GameObject> Toast { get; } = new LoadableBundleAsset<GameObject>("Toast", Bundle);
