@@ -1,16 +1,17 @@
 using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
+using MiraAPI.Translation;
 using NewMod.Modifiers;
 
 namespace NewMod.Options.Modifiers;
 
 public class ExplosiveModifierOptions : AbstractOptionGroup<ExplosiveModifier>
 {
-    public override string GroupName => "Explosive Settings";
+    public override string GroupName => MiraLocaleManager.Get("NewMod.Options.Group.ExplosiveModifier");
 
-    [ModdedNumberOption("Kill Distance", 5f, 20f)]
+    [ModdedNumberOption("NewMod.Options.ExplosiveModifier.KillDistance", 5f, 20f)]
     public float KillDistance { get; set; } = 10f;
 
-    [ModdedNumberOption("Explosive duration", 40f, 60f)]
+    [ModdedNumberOption("NewMod.Options.ExplosiveModifier.Duration", 40f, 60f)]
     public float Duration { get; set; } = 50f;
 }

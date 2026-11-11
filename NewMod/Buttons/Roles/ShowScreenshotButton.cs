@@ -1,6 +1,7 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
@@ -19,7 +20,7 @@ public class ShowScreenshotButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Intelligence;
 
-    public override string Name => "Preview";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.TheVisionary.Preview");
 
     public override float Cooldown => 1f;
 

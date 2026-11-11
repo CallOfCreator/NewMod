@@ -1,5 +1,6 @@
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.NeutralRoles;
@@ -11,7 +12,7 @@ public class SpecialistModeButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Intelligence;
     public bool CaptureOnClick => false;
-    public override string Name => "Scan Mode";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.Specialist.ScanMode");
     public override float Cooldown => 0f;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.SecondaryAbility;

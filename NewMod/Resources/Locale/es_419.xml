@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<!--
+  
+    || GUÍA DE TEXTOS (para evitar desbordamientos y biblias, y facilitar la localización) ||
+    
+    - Las descripciones breves deben tener menos de 42 caracteres (de lo contrario, se salen de la pantalla).
+    
+    - Evita bloques de texto largos en MedDescription. Se muestra en los ajustes de roles y en la vista previa de la wiki.
+    
+    - Usa [nl] o saltos de línea en TabDescription y textos de pestañas. De lo contrario, la pestaña ocupará TODA LA PANTALLA.
+    
+    - WikiDescription es el texto que aparece al pulsar el icono de un rol en la nueva wiki de Mira API.
+    
+    - Al crear o traducir ajustes y grupos de ajustes, evita las frases largas. El texto se reduce para caber y termina siendo ilegible.
+    
+    - POR FAVOR, conserva todo en su lugar o añade el contenido al final del documento, en la sección "Otros", para moverlo después.
+-->
+
+<!-- Textos generales -->
+    
+<!-- Roles y sus ajustes -->
+    <!-- Égida -->
+    <string name="NewMod.Roles.CrewmateRoles.Aegis">Égida</string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.IntroBlurb">Escuda a jugadores cercanos.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.MedDescription">Coloca un escudo a tu alrededor. Bloquea el primer ataque mortal contra cualquier jugador dentro y luego se rompe.[nl]El escudo permanece en su lugar hasta romperse o agotarse.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.TabDescription">Coloca un escudo para proteger a la tripulación.[nl] Bloquea el primer intento de asesinato y se rompe.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Aegis.WikiDescription">Coloca un escudo a tu alrededor. Bloquea el primer ataque mortal contra cualquier jugador dentro y luego se rompe.[nl]El escudo permanece en su lugar hasta romperse o agotarse.</string>
+    <string name="NewMod.Button.Aegis.SentinelWard">Colocar Escudo</string>
+     <!-- Ajustes de Égida -->
+    <string name="NewMod.Options.Group.Aegis">Ajustes de Égida</string>
+        <string name="NewMod.Options.Aegis.AegisCooldown">Recarga de Barrera</string>
+        <string name="NewMod.Options.Aegis.MaxCharges">Usos Máx de Barrera</string>
+        <string name="NewMod.Options.Aegis.DurationSeconds">Duración de Barrera</string>
+        <string name="NewMod.Options.Aegis.Radius">Radio de Barrera</string>
+
+    <!-- Baliza -->
+    <string name="NewMod.Roles.CrewmateRoles.Beacon">Baliza</string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.IntroBlurb">Localiza jugadores en el mapa.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.MedDescription">Escanea el mapa para ver la ubicación de los jugadores vivos en ese momento. Los jugadores en conductos no aparecen. Completa tareas para obtener más escaneos.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.TabDescription">Escanea el mapa para ver la ubicación de los jugadores vivos en ese momento. Los jugadores en conductos no aparecen.[nl]Los marcadores permanecen fijos y no muestran nombres. Completa tareas para obtener más escaneos.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.WikiDescription">Escanea el mapa para ver la ubicación de los jugadores vivos en ese momento. Los jugadores en conductos no aparecen.[nl]Los marcadores permanecen fijos y no muestran nombres. Completa tareas para obtener más escaneos.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Beacon.Tab.Details">[nl]&lt;size=65%&gt;Cargas: {1}/{2:0} | +1 cada {3:0} tareas&lt;/color&gt;[nl]Duración: {4:0.#} s | Recarga: {5:0.#} s[nl]Abrir el mapa no consume cargas.[nl]&lt;color=#FFCF70&gt;Comunicaciones bloqueadas: no puedes escanear.&lt;/color&gt; Los marcadores muestran dónde estaban los jugadores al escanear.&lt;/size&gt;</string>
+    <string name="NewMod.Button.Beacon.Scan">Escanear</string>
+    <!-- Ajustes de Baliza -->
+    <string name="NewMod.Options.Group.Beacon">Ajustes de Baliza</string>
+        <string name="NewMod.Options.Beacon.StartingCharges">Cargas iniciales</string>
+        <string name="NewMod.Options.Beacon.TasksPerCharge">Tareas por carga</string>
+        <string name="NewMod.Options.Beacon.MaxCharges">Cargas máximas</string>
+        <string name="NewMod.Options.Beacon.PulseDuration">Duración del escaneo</string>
+        <string name="NewMod.Options.Beacon.PulseCooldown">Recarga del escaneo</string>
+
+    <!-- Agente Doble -->
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent">Agente Doble</string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.IntroBlurb">Sabotea comunicaciones con la tripulación.</string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.MedDescription">Usa el mapa de sabotajes para desactivar Comunicaciones brevemente. Se repara automáticamente tras un tiempo.[nl]Sigues completando tareas y ganas con la tripulación.</string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.TabDescription">Usa el mapa de sabotajes para desactivar Comunicaciones brevemente. Se repara automáticamente tras un tiempo.[nl]Sigues completando tareas y ganas con la tripulación.</string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.WikiDescription">Usa el mapa de sabotajes para desactivar Comunicaciones brevemente. Se repara automáticamente tras un tiempo.[nl]Sigues completando tareas y ganas con la tripulación.</string>
+    <string name="NewMod.Roles.CrewmateRoles.DoubleAgent.Tab.SabotageCommunicationsOnlyDurationS">[nl]&lt;size=65%&gt;Sabotaje: solo Comunicaciones&lt;/color&gt;[nl]Duración: {1:0.#} s | Recarga: {2:0.#} s[nl]Se repara automáticamente. No reemplaza sabotajes activos.[nl]&lt;color=#FFCF70&gt;Ganas con la tripulación.&lt;/color&gt;&lt;/size&gt;</string>
+    <!-- Ajustes de Agente Doble -->
+    <string name="NewMod.Options.Group.DoubleAgent">Ajustes de Agente Doble</string>
+        <string name="NewMod.Options.DoubleAgent.CounterfeitDuration">Duración del sabotaje</string>
+        <string name="NewMod.Options.DoubleAgent.CounterfeitCooldown">Recarga del sabotaje</string>
+
+    <!-- Especialista -->
+    <string name="NewMod.Roles.CrewmateRoles.Specialist">Especialista</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.IntroBlurb">Completa tareas para obtener escaneos.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.MedDescription">Cada tarea te da un escaneo, hasta un máximo de tres. Elige qué buscar antes de escanear.[nl]Presencia cuenta jugadores cercanos. Forense busca cadáveres.[nl]Alteración indica si alguien fue asesinado recientemente en las cercanías.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.TabDescription">Cada tarea te da un escaneo, hasta un máximo de tres. Elige qué buscar antes de escanear.[nl]Presencia cuenta jugadores cercanos. Forense busca cadáveres.[nl]Alteración indica si alguien fue asesinado recientemente en las cercanías.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.WikiDescription">Cada tarea te da un escaneo, hasta un máximo de tres. Elige qué buscar antes de escanear.[nl]Presencia cuenta jugadores cercanos. Forense busca cadáveres.[nl]Alteración indica si alguien fue asesinado recientemente en las cercanías.</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.Tab.Details">[nl]&lt;size=65%&gt;{0}Modo: {1} | Escaneos: {2}/3&lt;/color&gt;[nl]Alcance: 5 unidades | Historial: 15 s[nl]Escanear tarda 1,5 s. No te muevas. &lt;color=#FFCF70&gt;Comunicaciones bloquea los escaneos.&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.Mode.Presence">Presencia</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.Mode.Forensics">Forense</string>
+    <string name="NewMod.Roles.CrewmateRoles.Specialist.Mode.Disturbance">Alteración</string>
+    <string name="NewMod.Button.Specialist.Scan">Escanear</string>
+        <string name="NewMod.Button.Specialist.Scan">Cambiar Scan</string>
+    <!-- Ajustes de Especialista -->
+
+    <!-- El Visionario -->
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary">El Visionario</string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.IntroBlurb">Coloca cámaras y comparte fotos en reuniones.</string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.MedDescription">Coloca una cámara que tomará una foto tras unos segundos.[nl]Regresa para recogerla y elige una foto que mostrar en una reunión. Otros pueden desactivar tu cámara antes que la recojas.</string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.TabDescription">Coloca y apunta una cámara. Tomará una foto tras unos segundos.[nl]Regresa para recogerla y elige una foto para mostrarla en una reunión.[nl]Otros jugadores pueden desactivar tu cámara antes de que la recojas.</string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.WikiDescription">Coloca y apunta una cámara. Tomará una foto tras unos segundos.[nl]Regresa para recogerla y elige una foto para mostrarla en una reunión.[nl]Otros jugadores pueden desactivar tu cámara antes de que la recojas.</string>
+    <string name="NewMod.Roles.CrewmateRoles.TheVisionary.Tab.Details">[nl]&lt;size=65%&gt;{0}Cámaras: {1:0} | Retraso: {2:0.#} s&lt;/color&gt;[nl]Suelta para colocar. Clic derecho o Esc para cancelar.[nl]Regresa para recoger la foto. Otros pueden desactivar la cámara.[nl]&lt;color=#FFCF70&gt;Comunicaciones arruina la foto.&lt;/color&gt; Muestra una foto por reunión.&lt;/size&gt;</string>
+    <string name="NewMod.Button.TheVisionary.Preview">Ver Foto</string>
+    <string name="NewMod.Button.TheVisionary.Camera">Cámara</string>
+    <string name="NewMod.Button.TheVisionary.Retrieve">Recuperar</string>
+    <string name="NewMod.Button.TheVisionary.Disable">Desactivar Cámara</string>
+    <string name="NewMod.Button.TheVisionary.PlaceCamera">Colocar Cámera</string>
+    <!-- Ajustes de El Visionario -->
+    <string name="NewMod.Options.Group.TheVisionary">Ajustes de El Visionario</string>
+        <string name="NewMod.Options.TheVisionary.ScreenshotCooldown">Recarga de colocación</string>
+        <string name="NewMod.Options.TheVisionary.MaxScreenshots">Usos de cámara</string>
+        <string name="NewMod.Options.TheVisionary.MaxDisplayDuration">Duración máxima de exposición</string>
+        <string name="NewMod.Options.TheVisionary.CaptureDelay">Retraso de captura</string>
+        <string name="NewMod.Options.TheVisionary.PhotoHeight">Altura de foto (píxeles)</string>
+        <string name="NewMod.Options.TheVisionary.PlacementRange">Alcance de colocación</string>
+        <string name="NewMod.Options.TheVisionary.PhotoViewHeight">Altura de visualización</string>
+        <string name="NewMod.Options.TheVisionary.PhotoAspect">Proporción de la foto</string>
+        <string name="NewMod.Options.TheVisionary.PhotoQuality">Calidad JPEG de la foto</string>
+
+    <!-- Filo Umbrío -->
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil">Filo Umbrío</string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil.IntroBlurb">Lanza un arco letal frente a ti.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil.MedDescription">Quédate quieto para cargar y lanzar un corte. Tus objetivos pueden esquivar o cubrirse con una pared.[nl]Si fallas, la habilidad también entra en recarga.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil.TabDescription">Quédate quieto para cargar y lanza un corte en la dirección que miras.[nl]Tus objetivos pueden esquivarlo o cubrirse tras una pared. Si fallas, la habilidad también entra en recarga.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Edgeveil.WikiDescription">Quédate quieto para cargar y lanza un corte en la dirección que miras.[nl]Tus objetivos pueden esquivarlo o cubrirse tras una pared. Si fallas, la habilidad también entra en recarga.</string>
+    <!-- Ajustes de Filo Umbrío -->
+    <string name="NewMod.Options.Group.Edgeveil">Ajustes de Filo Umbrío</string>
+        <string name="NewMod.Options.Edgeveil.SlashCooldown">Recarga del corte</string>
+        <string name="NewMod.Options.Edgeveil.SlashRange">Alcance del corte</string>
+        <string name="NewMod.Options.Edgeveil.SlashSpeed">Velocidad del corte</string>
+        <string name="NewMod.Options.Edgeveil.ChargeDuration">Tiempo de carga</string>
+        <string name="NewMod.Options.Edgeveil.PlayersToKill">Máximo de víctimas por corte</string>
+
+    <!-- Nigromante -->
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole">Nigromante</string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.IntroBlurb">Revive a jugadores que no hayas matado.</string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.MedDescription">Devuelve la vida a un jugador muerto. No puedes revivir a alguien que hayas matado tú mismo.</string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.TabDescription">Devuelve la vida a un jugador muerto. No puedes revivir a alguien que hayas matado tú mismo.</string>
+    <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.WikiDescription">Devuelve la vida a un jugador muerto. No puedes revivir a alguien que hayas matado tú mismo.</string>
+    <string name="NewMod.Button.Necromancer.Revive">Revivir</string>
+    <!-- Ajustes de Nigromante -->
+    <string name="NewMod.Options.Group.Necromancer">Ajustes de Nigromante</string>
+        <string name="NewMod.Options.Necromancer.ReviveCooldown">Recarga de resurrección</string>
+        <string name="NewMod.Options.Necromancer.ReviveUses">Usos de resurrección</string>    
+    
+    
+<!-- Modificadores -->
+
+<!-- Ajustes -->
+    
+    <!-- Grupo NewMod -->
+    <string name="NewMod.Options.Group.NewMod">NewMod</string>
+    <string name="NewMod.Options.NewMod.AllowCams">Cámaras Globales para Muertos</string>
+    <string name="NewMod.Options.NewMod.TotalNeutrals">Total de Neutrales</string>
+    <string name="NewMod.Options.NewMod.KeepCrewMajority">Mantener mayoría de tripulantes</string>
+    <string name="NewMod.Options.NewMod.PreferVariety">Priorizar variedad</string>
+    <string name="NewMod.Options.NewMod.ShouldDeadPlayersSeeRoles">Los muertos ven roles en reuniones</string>
+    <string name="NewMod.Options.NewMod.EnableAnonymousNamesInMeetings">Nombres anónimos en reuniones</string>
+    <!-- EGs -->
+    <string name="NewMod.Options.Group.GE">Eventos generales</string>
+        <string name="NewMod.Options.GE.EnableGeneralEvents">Activar Eventos Generales</string>
+        <string name="NewMod.Options.GE.MinimumInterval">Intervalo mín. entre eventos</string>
+        <string name="NewMod.Options.GE.MaximumInterval">Intervalo máx. entre eventos</string>
+        <string name="NewMod.Options.GE.EventTriggerChance">Probabilidad de activación</string>
+        <string name="NewMod.Options.GE.AbilityExchangeFrequency">Frecuencia de Intercambio de habilidades</string>
+        <string name="NewMod.Options.GE.CrimsonVortexFrequency">Frecuencia del Vórtice Carmesí</string>
+        <string name="NewMod.Options.GE.IdentityCrisisFrequency">Frecuencia de Crisis de Identidad</string>
+        <string name="NewMod.Options.GE.NegativeRealityFrequency">Frecuencia de Realidad Negativa</string>
+        <string name="NewMod.Options.GE.NoMansLandFrequency">Frecuencia de Tierra de Nadie</string>
+        <string name="NewMod.Options.GE.RoleScrambleFrequency">Frecuencia de Confusión de Roles</string>
+        <string name="NewMod.Options.GE.ScreenDesynchronizationFrequency">Frecuencia de Desincronización</string>
+        <string name="NewMod.Options.GE.SystemOverrideFrequency">Frecuencia de Anulación del Sistema</string>
+        <string name="NewMod.Options.GE.ShowCrimsonWarning">Mostrar aviso del Vórtice Carmesí</string>
+        <string name="NewMod.Options.GE.CrimsonDuration">Duración del vórtice</string>
+        <string name="NewMod.Options.GE.CrimsonRadius">Tamaño del vórtice</string>
+        <string name="NewMod.Options.GE.CrimsonIntensity">Fuerza de atracción</string>
+        <string name="NewMod.Options.GE.CrimsonEscapeDifficulty">Dificultad para escapar</string>
+    <!-- Opciones de Modificadores -->
+    <string name="NewMod.Options.Group.Modifiers">Ajustes de modificadores</string>
+        <string name="NewMod.Options.Modifiers.StickyAmount">Cantidad de Pegajosos</string>
+        <string name="NewMod.Options.Modifiers.StickyChance">Probabilidad de Pegajoso</string>
+        <string name="NewMod.Options.Modifiers.DrowsyAmount">Cantidad de Somnolientos</string>
+        <string name="NewMod.Options.Modifiers.DrowsyChance">Probabilidad de Somnoliento</string>
+        <string name="NewMod.Options.Modifiers.AdrenalineAmount">Cantidad de Adrenalinas</string>
+        <string name="NewMod.Options.Modifiers.FatefulAmount">Cantidad de Destinos</string>
+        <string name="NewMod.Options.Modifiers.FatefulChance">Probabilidad de Destino</string>
+        <string name="NewMod.Options.Modifiers.LazyAmount">Cantidad de Perezosos</string>
+        <string name="NewMod.Options.Modifiers.LazyChance">Probabilidad de Perezoso</string>
+        <string name="NewMod.Options.Modifiers.AdrenalineChance">Probabilidad de Adrenalina</string>
+        <string name="NewMod.Options.Modifiers.MomentumChance">Probabilidad de Impulso</string>
+        <string name="NewMod.Options.Modifiers.MarkedChance">Probabilidad de Marcado</string>
+        <string name="NewMod.Options.Modifiers.MomentumAmount">Cantidad de Impulsos</string>
+        <string name="NewMod.Options.Modifiers.MarkedAmount">Cantidad de Marcados</string>
+        <string name="NewMod.Options.Modifiers.OverclockedAmount">Cantidad de Acelerados</string>
+        <string name="NewMod.Options.Modifiers.OverclockedChance">Probabilidad de Acelerado</string>
+    <string name="NewMod.Options.Group.AdrenalineModifier">Ajustes de Adrenalina</string>
+        <string name="NewMod.Options.AdrenalineModifier.SpeedMultiplier">Multiplicador de velocidad</string>
+    <string name="NewMod.Options.Group.DrowsyModifier">Ajustes de Somnoliento</string>
+        <string name="NewMod.Options.DrowsyModifier.SpeedMultiplier">Multiplicador de velocidad</string>
+    <string name="NewMod.Options.Group.ExplosiveModifier">Ajustes de Explosivo</string>
+        <string name="NewMod.Options.ExplosiveModifier.KillDistance">Distancia de explosión</string>
+        <string name="NewMod.Options.ExplosiveModifier.Duration">Duración del explosivo</string>
+    <string name="NewMod.Options.Group.FalseFormModifier">Ajustes de Falsa Apariencia</string>
+        <string name="NewMod.Options.FalseFormModifier.FalseFormDuration">Duración del efecto</string>
+        <string name="NewMod.Options.FalseFormModifier.FalseFormAppearanceTimer">Retraso del cambio de apariencia</string>
+        <string name="NewMod.Options.FalseFormModifier.RevertAppearance">Restaurar apariencia al terminar el efecto</string>
+    <string name="NewMod.Options.Group.FatefulModifier">Ajustes de Destino</string>
+        <string name="NewMod.Options.FateFulModifier.DeathChance">Probabilidad de muerte (%)</string>    
+    <string name="NewMod.Options.Group.MarkedModifier">Ajustes de Marcado</string>
+        <string name="NewMod.Options.MarkedModifier.MarkRange">Alcance de marca</string>    
+        <string name="NewMod.Options.MarkedModifier.ProximityTime">Tiempo de proximidad requerido</string>    
+        <string name="NewMod.Options.MarkedModifier.IndicatorDuration">Duración del indicador</string>    
+    <string name="NewMod.Options.Group.MomentumModifier">Ajustes de Impulso</string>
+        <string name="NewMod.Options.MomentumModifier.TimeToMaxSpeed">Tiempo para velocidad máx</string>    
+        <string name="NewMod.Options.MomentumModifier.MaxSpeedBonus">Bonificación de velocidad máx</string>    
+    <string name="NewMod.Options.Group.OverclockedModifier">Ajustes de Acelerado</string>
+        <string name="NewMod.Options.OverclockedModifier.CooldownMultiplier">Multiplicador de recarga de habilidad</string>    
+        <string name="NewMod.Options.OverclockedModifier.PulseDuration">Duración del pulso</string>    
+    <string name="NewMod.Options.Group.StickyModifier">Ajustes de Pegajoso</string>
+        <string name="NewMod.Options.StickyModifier.StickyDuration">Duración del efecto pegajoso</string>    
+        <string name="NewMod.Options.StickyModifier.StickyDistance">Distancia para activar el efecto</string>
+        <string name="NewMod.Options.StickyModifier.PullStrength">Fuerza de atracción</string>
+
+    <!-- Interfaz y otros elementos -->
+
+<!-- Otros -->
+
+MiraLocaleManager.Get("");
+
+</resources>

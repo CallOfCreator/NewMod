@@ -1,5 +1,6 @@
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.Modifiers.S1;
 using NewMod.Roles.CrewmateRoles;
@@ -12,7 +13,7 @@ namespace NewMod.Buttons.Roles;
 public class SpecialistScanButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Intelligence;
-    public override string Name => "Scan";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.Specialist.Scan");
     public Vector2 ScanOrigin;
     public bool Interrupted;
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, 8f);
