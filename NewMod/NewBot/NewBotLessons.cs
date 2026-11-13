@@ -98,7 +98,14 @@ public sealed class NewBotLessons(NewBot bot)
     public IEnumerator CoPractice(RoleBehaviour role)
     {
         var description = (ICustomRole)role;
-        yield return bot.Say($"Let's try {description.RoleName}.\n{description.RoleLongDescription}");
+        var introduction = role switch
+        {
+            EgoistRole => "I'll set up a few practice votes. You can watch your Ego grow, then try Challenge.",
+            VerifierRole => "I'll give you a claim about one of the practice players. We'll open a meeting and check it together.",
+            Specialist => "Let's try a scan. I'll give you a charge and show you which button to press, then we'll read the result together.",
+            _ => description.RoleLongDescription,
+        };
+        yield return bot.Say($"Let's try {description.RoleName}.\n{introduction}");
         var repeat = new NewBotMenu.Choice("Try again", Color.white);
         var harder = new NewBotMenu.Choice("Next difficulty", new Color(1f, 0.75f, 0.3f));
         var roles = new NewBotMenu.Choice("Choose another role", Color.white);
@@ -222,12 +229,21 @@ public sealed class NewBotLessons(NewBot bot)
 
                 break;
             case Specialist:
-                yield return bot.Say("Read each scan result. Presence counts living players within 5 units. Forensics separates close and distant bodies. Disturbance only detects violence from the last 15 seconds.");
-                var modes = System.Enum.GetValues<Specialist.ScanMode>().OrderBy(_ => bot.Level >= 3 ? Random.value : 0f).ToArray();
+                yield return bot.Say("Tasks give you scan charges, up to three. I'll supply charges for this exercise. After pressing Scan, stand still for 1.5 seconds. Moving or a communications sabotage cancels it.");
+                var modes = System.Enum.GetValues<Specialist.ScanMode>();
                 foreach (var mode in modes)
                 {
+                    var explanation = mode switch
+                    {
+                        Specialist.ScanMode.Presence => "Presence counts other living players nearby, within 5 units. It does not reveal names or teams, and players in vents are excluded.",
+                        Specialist.ScanMode.Forensics => "Forensics finds nearby bodies. The result tells you whether a body is very close (within 2 units), farther away (2-5 units), or absent. It does not identify the killer.",
+                        _ => "Disturbance detects a nearby attack from the last 15 seconds, within 5 units. A body can remain after that trace expires. This scan does not identify the attacker.",
+                    };
+                    yield return bot.Say(explanation);
                     Specialist.EarnScan(id);
-                    yield return bot.WaitFor($"Choose {mode} mode.", () => Specialist.ScanStates[id].Mode == mode, 45f);
+                    yield return bot.WaitFor($"Press Scan Mode until it shows {mode}.", () => Specialist.ScanStates[id].Mode == mode, 45f);
+                    if (!bot.LessonSucceeded)
+                        yield break;
                     if (mode != Specialist.ScanMode.Presence)
                     {
                         foreach (var body in Object.FindObjectsOfType<DeadBody>())
@@ -243,14 +259,22 @@ public sealed class NewBotLessons(NewBot bot)
 
                     bot.Observation = null;
                     var charges = Specialist.ScanStates[id].Charges;
-                    yield return bot.WaitFor($"Use {mode} Scan and read the result.", () => Specialist.ScanStates[id].Charges < charges, 60f);
+                    yield return bot.WaitFor($"{mode}: press Scan, then stand still for 1.5 seconds.", () => Specialist.ScanStates[id].Charges < charges, 60f);
+                    if (!bot.LessonSucceeded)
+                        yield break;
                     if (Specialist.ScanStates[id].Mode != mode || bot.Observation == null)
                     {
                         bot.Failure = $"That used the wrong mode. Select {mode} before scanning.";
                         yield break;
                     }
 
-                    yield return new WaitForSeconds(bot.Level == 4 ? 1f : 3f);
+                    yield return new WaitForSeconds(3f);
+                    if (bot.Level < 3)
+                    {
+                        var result = mode == Specialist.ScanMode.Presence ? $"{bot.Observation} other living player(s) nearby" : bot.Observation;
+                        yield return bot.Say($"Your {mode} result: {result}.\n{explanation}");
+                        continue;
+                    }
                     if (mode == Specialist.ScanMode.Presence)
                         yield return CoQuestion("How many living players were nearby?", bot.Observation, "0", "1", "2", "3", "4", "5");
                     else if (mode == Specialist.ScanMode.Forensics)
@@ -335,11 +359,12 @@ public sealed class NewBotLessons(NewBot bot)
                 yield return CoQuestion("What does the seal prevent?", "Vent entry in the sealed room", "All kills in the room", "Players leaving on foot");
                 break;
             case VerifierRole:
+                yield return bot.Say("In a meeting: press VERIFY, select the named player, then choose a row. Green means 'they did this'; red means 'they did not'. A Confirmed result means your chosen statement matches the record, not that the player is innocent.");
                 var claims = System.Enum.GetValues<VerifierClaimType>().Where(claim => claim != VerifierClaimType.None);
-                foreach (var claim in claims.OrderBy(_ => bot.Level >= 3 ? Random.value : 0f))
+                foreach (var claim in claims)
                 {
                     bot.VerificationClaim = claim;
-                    bot.VerificationExpected = bot.Level < 3 || Random.value > 0.5f;
+                    bot.VerificationExpected = bot.Level < 3 ? claim != VerifierClaimType.EnteredVent : Random.value > 0.5f;
                     var targets = bot.Map.Dummies.Where(dummy => !dummy.Data.IsDead).ToArray();
                     var verified = targets[Random.Range(0, bot.Level >= 3 ? targets.Length : 1)];
                     bot.VerificationTarget = verified.PlayerId;
@@ -368,18 +393,30 @@ public sealed class NewBotLessons(NewBot bot)
                         VerifierClaimType.UsedAbility => "used an ability",
                         _ => "was near a body",
                     };
+                    var row = claim switch
+                    {
+                        VerifierClaimType.DidTask => "Completed a task last round",
+                        VerifierClaimType.EnteredVent => "Entered a vent last round",
+                        VerifierClaimType.UsedAbility => "Used an ability last round",
+                        _ => "Near a body at report time",
+                    };
                     if (claim == VerifierClaimType.NearBody)
                         VerifierUtilities.RegisterNearBody();
                     bot.VerificationExpected = (VerifierUtilities.RoundFacts.GetValueOrDefault(verified.PlayerId) & VerifierUtilities.GetFlag(claim)) != 0;
                     var evidence = bot.VerificationExpected ? $"Evidence confirms that {verified.Data.PlayerName} {action}." : $"There is no record that {verified.Data.PlayerName} {action}.";
-                    yield return bot.Say($"{evidence} Verify that claim in the next meeting, then skip.");
+                    yield return bot.Say($"Practice evidence: {evidence}\nI'll open a meeting. Press VERIFY, select {verified.Data.PlayerName}, and find the row '{row}'.");
                     yield return Meeting(string.Empty, () => VerifierUtilities.UsedThisMeeting, () =>
                     {
                         bot.VerificationExpected = (VerifierUtilities.RoundFacts.GetValueOrDefault(verified.PlayerId) & VerifierUtilities.GetFlag(claim)) != 0;
-                        return $"{verified.Data.PlayerName}: {action}. Select the {(bot.VerificationExpected ? "green check" : "red cross")}, then vote Skip.";
+                        return $"VERIFY > {verified.Data.PlayerName}\n{row}: {(bot.VerificationExpected ? "green check (did)" : "red cross (did not)")}. Then Skip.";
                     });
                     if (!bot.LessonSucceeded)
                         yield break;
+                    yield return bot.Say(bot.VerificationExpected
+                        ? $"You confirmed that {verified.Data.PlayerName} {action}. That action alone does not prove their team."
+                        : $"You denied that {verified.Data.PlayerName} {action}. 'Confirmed' means your denial matched the record. It does not mean they performed the action.");
+                    if (claim == VerifierClaimType.NearBody)
+                        yield return bot.Say("Near a body is only an observation at report time, not proof of a kill. Unknown means that body observation was unavailable; it is not a yes or a no.");
                 }
 
                 break;
@@ -685,26 +722,29 @@ public sealed class NewBotLessons(NewBot bot)
                 yield return CoJudgments();
                 break;
             case EgoistRole:
-                yield return bot.Say("Ego comes from other players voting against you while you survive. Some dummies will vote for you; the rest will skip. Vote Skip too, and watch your Ego grow.");
+                var opposingVotes = bot.Level >= 3 ? 2 : 1;
+                yield return bot.Say($"Let's get your Challenge button ready. {(opposingVotes == 1 ? "Practice 1" : "Practice 1 and Practice 2")} will vote for you; the others will skip. You skip too. I'll show you what happens to your Ego afterward.");
                 var requiredEgo = (int)OptionGroupSingleton<EgoistRoleOptions>.Instance.EgoRequired;
                 while (EgoistRole.States[id].Ego < requiredEgo)
                 {
                     var previousEgo = EgoistRole.States[id].Ego;
-                    var opposingVotes = bot.Level >= 3 ? 2 : 1;
                     for (var voter = 0; voter < bot.Map.Dummies.Count; voter++)
                         bot.Map.Dummies[voter].GetComponent<DummyBehaviour>().PlayerIdToVoteFor = voter < opposingVotes ? id : 253;
-                    yield return Meeting("Vote Skip. Survive the vote to gain Ego.", () => true);
+                    yield return Meeting($"Vote Skip. Planned votes against you: {opposingVotes}.\nEgo: {previousEgo}/{requiredEgo}.", () => true);
                     if (EgoistRole.States[id].Ego <= previousEgo)
                     {
                         bot.LessonSucceeded = false;
+                        bot.Failure = "Ego did not increase. You must survive votes from other players. Vote Skip in this practice step.";
                         yield break;
                     }
+                    yield return bot.Say($"You survived. Ego: {EgoistRole.States[id].Ego}/{requiredEgo}. " +
+                        (EgoistRole.States[id].Ego < requiredEgo ? "We'll repeat the same safe voting plan." : "Challenge is ready for the next meeting."));
                 }
 
-                yield return bot.Say("Your Ego is full. Challenge Practice 1 in the next meeting, then vote for them. A challenge commits you to beating that opponent in the vote.");
+                yield return bot.Say("Now press CHALLENGE in the meeting, then select Practice 1. Wait for LOCKED, then cast your normal vote for Practice 1. The dummies are arranged to exile that target if you follow this plan.");
                 for (var voter = 0; voter < bot.Map.Dummies.Count; voter++)
                     bot.Map.Dummies[voter].GetComponent<DummyBehaviour>().PlayerIdToVoteFor = bot.Level >= 3 && voter < 2 ? id : bot.Map.Dummies[0].PlayerId;
-                yield return Meeting("Challenge Practice 1, then vote for them. Some votes will be against you.", () => EgoistRole.States[id].OpponentId == bot.Map.Dummies[0].PlayerId);
+                yield return Meeting("CHALLENGE > Practice 1 > LOCKED.\nThen vote for Practice 1.", () => EgoistRole.States[id].OpponentId == bot.Map.Dummies[0].PlayerId);
                 bot.LessonSucceeded &= bot.Map.Dummies[0].Data.IsDead;
                 break;
             default:
@@ -728,17 +768,38 @@ public sealed class NewBotLessons(NewBot bot)
 
         while (MeetingHud.Instance && MeetingHud.Instance.CurrentState == MeetingHud.MeetingStates.Animating)
             yield return null;
+        var position = bot.Objective.GetComponent<AspectPosition>();
+        var previousAlignment = position.Alignment;
+        var previousOffset = position.DistanceFromEdge;
+        var previousSize = bot.Objective.rectTransform.sizeDelta;
+        position.Alignment = AspectPosition.EdgeAlignments.Bottom;
+        position.DistanceFromEdge = new Vector3(0f, 1.25f, -40f);
+        position.AdjustPosition();
+        bot.Objective.rectTransform.sizeDelta = new Vector2(7f, 0.7f);
         bot.Objective.text = instructionAfterOpening?.Invoke() ?? instruction;
         var performed = false;
-        while (MeetingHud.Instance)
+        try
         {
-            performed |= completed();
-            yield return null;
-        }
+            while (MeetingHud.Instance)
+            {
+                performed |= completed();
+                bot.Objective.enabled = MeetingHud.Instance.CurrentState != MeetingHud.MeetingStates.Results && !Minigame.Instance;
+                yield return null;
+            }
 
-        while (ExileController.Instance)
-            yield return null;
-        bot.Objective.text = string.Empty;
-        bot.LessonSucceeded &= performed;
+            bot.Objective.text = string.Empty;
+            while (ExileController.Instance)
+                yield return null;
+            bot.LessonSucceeded &= performed;
+        }
+        finally
+        {
+            bot.Objective.text = string.Empty;
+            bot.Objective.enabled = true;
+            bot.Objective.rectTransform.sizeDelta = previousSize;
+            position.Alignment = previousAlignment;
+            position.DistanceFromEdge = previousOffset;
+            position.AdjustPosition();
+        }
     }
 }
