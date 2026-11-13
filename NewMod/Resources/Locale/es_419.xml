@@ -122,10 +122,53 @@
     <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.TabDescription">Devuelve la vida a un jugador muerto. No puedes revivir a alguien que hayas matado tú mismo.</string>
     <string name="NewMod.Roles.ImpostorRoles.NecromancerRole.WikiDescription">Devuelve la vida a un jugador muerto. No puedes revivir a alguien que hayas matado tú mismo.</string>
     <string name="NewMod.Button.Necromancer.Revive">Revivir</string>
+    <string name="NewMod.Button.Necromancer.RevivedKill">Matar</string>
     <!-- Ajustes de Nigromante -->
     <string name="NewMod.Options.Group.Necromancer">Ajustes de Nigromante</string>
         <string name="NewMod.Options.Necromancer.ReviveCooldown">Recarga de resurrección</string>
-        <string name="NewMod.Options.Necromancer.ReviveUses">Usos de resurrección</string>    
+        <string name="NewMod.Options.Necromancer.ReviveUses">Usos de resurrección</string>
+
+    <!-- Hoja de Pulso -->
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade">Hoja de Pulso</string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.IntroBlurb">Embiste y alcanza a quien se cruce.</string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.MedDescription">Carga brevemente y embiste en línea recta.[nl]Golpea a un rival para eliminarlo. Después, recupérate antes de volver a moverte. Ganas con los impostores.</string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.TabDescription">Carga brevemente y embiste en línea recta.[nl]Golpea a un rival para eliminarlo. Después, recupérate antes de volver a moverte. Ganas con los impostores.</string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.WikiDescription">Carga brevemente y embiste en línea recta.[nl]Golpea a un rival para eliminarlo. Después, recupérate antes de volver a moverte. Ganas con los impostores.</string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.Tab.Timing">&lt;size=65%&gt;Carga: &lt;color=#FF8080&gt;{0:0.#}s&lt;/color&gt; | Recuperación: &lt;color=#FF8080&gt;{1:0.#}s&lt;/color&gt;&lt;/size&gt;</string>
+    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.Tab.DashRules">&lt;size=65%&gt;La dirección se fija al pulsar Embestir. Las paredes detienen la embestida. Fallar también consume la recarga.&lt;/size&gt;</string>
+    <string name="NewMod.Button.PulseBlade.Strike">Embestir</string>
+    <string name="NewMod.Button.PulseBlade.Charging">Cargando</string>
+    <!-- Ajustes de Hoja de Pulso -->
+    <string name="NewMod.Options.Group.PulseBlade">Ajustes de Hoja de Pulso</string>
+        <string name="NewMod.Options.PulseBlade.StrikeCooldown">Recarga de embestida</string>
+        <string name="NewMod.Options.PulseBlade.StrikeRange">Velocidad de embestida</string>
+        <string name="NewMod.Options.PulseBlade.DashSpeed">Recarga de resurrección</string>
+        <string name="NewMod.Options.PulseBlade.ChargeDuration">Tiempo de carga</string>
+        <string name="NewMod.Options.PulseBlade.RecoveryDuration">Tiempo de recuperación</string>
+
+    <!-- Revenant -->
+    <string name="NewMod.Roles.ImpostorRoles.Revenant">Retornado</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.IntroBlurb">Finge tu muerte, revive y mata al contacto.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.MedDescription">Finge tu muerte una vez.[nl]Si no hay reunión antes de que regreses, activa Despertar Funesto para moverte más rápido y atacar al primer no impostor que toques.[nl]Una reunión mientras finges estar muerto te mata.[nl]Despertar Funesto termina tras un ataque, cuando se agota el tiempo o al comenzar una reunión.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.TabDescription">Finge tu muerte una vez. Una reunión antes de regresar te mata.[nl]Al revivir, activa Despertar Funesto para ganar velocidad y atacar por contacto.[nl]Ataca al primer no impostor que toques y luego termina.[nl]También termina si se agota el tiempo o comienza una reunión.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.WikiDescription">Finge tu muerte una vez.[nl]Si no hay reunión antes de que regreses, activa Despertar Funesto para moverte más rápido y atacar al primer no impostor que toques.[nl]Una reunión mientras finges estar muerto te mata.[nl]Despertar Funesto termina tras un ataque, cuando se agota el tiempo o al comenzar una reunión.</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.Tab.State">&lt;size=65%&gt;&lt;color=#B77ADB&gt;Estado:&lt;/color&gt; {0}&lt;/size&gt;</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Ready">Listo</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Feigning">Fingiendo estar muerto</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Revived">Revivido</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.DoomActive">Despertar Funesto activo</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.DoomSpent">Despertar Funesto agotado</string>
+    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.PermanentlyDead">Muerto</string>
+    <string name="NewMod.Button.Revenant.FeignDeath">Fingir muerte</string>
+    <string name="NewMod.Button.Revenant.DoomAwake">Despertar Funesto</string>
+    <!-- Ajustes de Retornado -->
+    <string name="NewMod.Options.Group.Revenant">Ajustes de Retornado</string>
+        <string name="NewMod.Options.Revenant.FeignDeathCooldown">Recarga de fingir muerte</string>
+        <string name="NewMod.Options.Revenant.FeignDuration">Duración de muerte fingida</string>
+        <string name="NewMod.Options.Revenant.DoomDuration">Duración de Despertar Funesto</string>
+        <string name="NewMod.Options.Revenant.DoomSpeedBonus">Bonificación de velocidad</string>
+        <string name="NewMod.Options.Revenant.DoomContactRadius">Radio de contacto</string>
+    
     
     
 <!-- Modificadores -->

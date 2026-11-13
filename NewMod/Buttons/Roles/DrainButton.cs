@@ -2,6 +2,7 @@ using Il2CppSystem;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.GeneralEvents.Season1;
@@ -17,7 +18,7 @@ public sealed class DrainButton : CustomActionButton
     private PlayerControl _target;
     private bool _breachMode;
 
-    public override string Name => "Siphon";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.EnergyThief.Drain");
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<EnergyThiefOptions>.Instance.SiphonCooldown);
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
@@ -55,7 +56,9 @@ public sealed class DrainButton : CustomActionButton
         if (ready != _breachMode)
         {
             _breachMode = ready;
-            OverrideName(ready ? "GRID BREACH" : "Siphon");
+            OverrideName(ready
+                ? MiraLocaleManager.Get("NewMod.Button.EnergyThief.GridBreach")
+                : MiraLocaleManager.Get("NewMod.Button.EnergyThief.Drain"));
         }
 
         if (ready)

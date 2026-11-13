@@ -1,6 +1,7 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.Options.Roles;
 using NewMod.Roles.NeutralRoles;
@@ -10,7 +11,7 @@ namespace NewMod.Buttons.Roles;
 
 public sealed class EnergyGroundButton : CustomActionButton
 {
-    public override string Name => "Ground";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.EnergyThief.Ground");
     public override float Cooldown => 0f;
     public override float EffectDuration => OptionGroupSingleton<EnergyThiefOptions>.Instance.GroundDuration;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;

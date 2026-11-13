@@ -1,25 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="NewMod.Roles.ImpostorRoles.PulseBlade">PulseBlade</string>
-    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.IntroBlurb">Commit to a dash and catch someone in your path.</string>
-    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.MedDescription">Charge briefly, then dash in a fixed direction.[nl]Hit an opponent to kill them, then recover before moving again. Win with the impostors.</string>
-    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.TabDescription">Charge briefly, then dash in a fixed direction.[nl]Hit an opponent to kill them, then recover before moving again. Win with the impostors.</string>
-    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.WikiDescription">Charge briefly, then dash in a fixed direction.[nl]Hit an opponent to kill them, then recover before moving again. Win with the impostors.</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant">Revenant</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.IntroBlurb">Feign death, revive, then kill by contact.</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.MedDescription">Feign death once.[nl]If no meeting starts before you return, activate Doom Awakening to move faster and attack the first non-impostor you touch.[nl]A meeting during feigned death kills you.[nl]Doom Awakening ends after one attack, when its timer runs out, or when a meeting starts.</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.TabDescription">Feign death once. A meeting before you return kills you.[nl]After returning, activate Doom Awakening for speed and a contact attack.[nl]It attacks the first non-impostor you touch, then ends.[nl]The timer running out or a meeting also ends it.</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.WikiDescription">Feign death once.[nl]If no meeting starts before you return, activate Doom Awakening to move faster and attack the first non-impostor you touch.[nl]A meeting during feigned death kills you.[nl]Doom Awakening ends after one attack, when its timer runs out, or when a meeting starts.</string>
-    <string name="NewMod.Roles.NeutralRoles.EgoistRole">Egoist</string>
-    <string name="NewMod.Roles.NeutralRoles.EgoistRole.IntroBlurb">Survive suspicion, then persuade the meeting to eject your rival.</string>
-    <string name="NewMod.Roles.NeutralRoles.EgoistRole.MedDescription">Votes from other players build [color=#CC4D99]Ego[/color] if you survive the meeting.[nl]Once you have enough, publicly challenge another player. Get them ejected that meeting to win.[nl]Everyone can still vote for anyone or Skip. A failed challenge spends all your Ego.</string>
-    <string name="NewMod.Roles.NeutralRoles.EgoistRole.TabDescription">[color=#CC4D99]Ego:[/color] Receive votes and survive to charge your challenge.[nl][color=#CC4D99]Win:[/color] Challenge someone, then get them ejected that meeting.[nl]Everyone can vote normally. Failure spends all your Ego.</string>
-    <string name="NewMod.Roles.NeutralRoles.EgoistRole.WikiDescription">Votes from other players build [color=#CC4D99]Ego[/color] if you survive the meeting.[nl]Once you have enough, publicly challenge another player. Get them ejected that meeting to win.[nl]Everyone can still vote for anyone or Skip. A failed challenge spends all your Ego.</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief">Energy Thief</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.IntroBlurb">Every power leaves something to steal.</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.MedDescription">Siphon a player to collect energy.[nl]If they use an ability while siphoned, you also collect its category and briefly disrupt their abilities in that category.[nl]Each player can give you energy once per round.[nl]Collect enough energy and different categories to reveal a Power Node.[nl]At the node, start Grid Breach and stay inside until the countdown ends to win alone.[nl]Leaving or a meeting interrupts the breach.</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.TabDescription">Siphon players for energy, once per player each round.[nl]An ability used during Siphon gives its category.[nl]It briefly disrupts that player's matching abilities.[nl]Collect enough energy and categories to reveal a Power Node.[nl]Start Grid Breach there and stay inside until the timer ends to win.[nl]Leaving or a meeting interrupts the breach.</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.WikiDescription">Siphon a player to collect energy.[nl]If they use an ability while siphoned, you also collect its category and briefly disrupt their abilities in that category.[nl]Each player can give you energy once per round.[nl]Collect enough energy and different categories to reveal a Power Node.[nl]At the node, start Grid Breach and stay inside until the countdown ends to win alone.[nl]Leaving or a meeting interrupts the breach.</string>
+I WILL REMOVE THIS FILE BEFORE MERGING THE PR along with PR.md
     <string name="NewMod.Roles.NeutralRoles.InjectorRole">Injector</string>
     <string name="NewMod.Roles.NeutralRoles.InjectorRole.IntroBlurb">Collect research samples, then submit your results.</string>
     <string name="NewMod.Roles.NeutralRoles.InjectorRole.MedDescription">[color=#E64D1A]Choose Adrenaline or Sedative[/color], then inject a player.[nl]Wait for the observation to finish and return to collect their sample before it expires.[nl]Each player counts once.[nl]Targets can cleanse the serum. Failed experiments can be retried.[nl]After collecting enough samples, use [color=#E64D1A]Submit Research[/color] and stay in place until it finishes.[nl]Everyone is warned.</string>
@@ -103,18 +84,6 @@
     <string name="NewMod.RoleTab.Header">{0}You are &lt;b&gt;{1}&lt;/b&gt;&lt;/color&gt;[nl]&lt;size=65%&gt;Faction: {2}&lt;/size&gt;[nl]&lt;size=70%&gt;{3}&lt;/size&gt;[nl]</string>
     <string name="NewMod.Roles.CrewmateRoles.Aegis.Tab.Details">[nl]&lt;size=65%&gt;{0}Ward: {1:0.#}s | Radius: {2:0.#}&lt;/color&gt;[nl]Cooldown: {3:0.#}s | Uses: {4:0}[nl]Blocks one kill attempt against anyone inside.[nl]&lt;color=#FFCF70&gt;The shield breaks after blocking a kill.&lt;/color&gt; Other abilities still work.&lt;/size&gt;</string>
 
-
-    
-    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.Tab.Timing">&lt;size=65%&gt;Charge: &lt;color=#FF8080&gt;{0:0.#}s&lt;/color&gt; | Recovery: &lt;color=#FF8080&gt;{1:0.#}s&lt;/color&gt;&lt;/size&gt;</string>
-    <string name="NewMod.Roles.ImpostorRoles.PulseBlade.Tab.DashRules">&lt;size=65%&gt;Your direction locks when you press Strike. Walls stop the dash. Misses still use the cooldown.&lt;/size&gt;</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.Tab.State">&lt;size=65%&gt;&lt;color=#B77ADB&gt;State:&lt;/color&gt; {0}&lt;/size&gt;</string>
-    <string name="NewMod.Roles.NeutralRoles.EgoistRole.Tab.Ego">&lt;size=65%&gt;Ego: &lt;color=#CC4D99&gt;{0}&lt;/color&gt;/{1}&lt;/size&gt;</string>
-    <string name="NewMod.Roles.NeutralRoles.EgoistRole.Tab.Opponent">&lt;size=65%&gt;Opponent: &lt;color=#CC4D99&gt;{0}&lt;/color&gt;&lt;/size&gt;</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.Energy">&lt;size=65%&gt;Energy: &lt;color=#D96BFF&gt;{0}&lt;/color&gt;/{1}&lt;/size&gt;</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.Categories">&lt;size=65%&gt;Resonance: &lt;color=#75E6FF&gt;{0}&lt;/color&gt;/{1} categories&lt;/size&gt;</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.BreachCountdown">&lt;size=65%&gt;&lt;color=#FF5CEA&gt;GRID BREACH: {0:F1}s&lt;/color&gt;&lt;/size&gt;</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.ObjectiveReady">&lt;size=65%&gt;&lt;color=#75E6A5&gt;Power Node located. Reach it and breach the grid.&lt;/color&gt;&lt;/size&gt;</string>
-    <string name="NewMod.Roles.NeutralRoles.EnergyThief.Tab.Siphoning">&lt;size=65%&gt;&lt;color=#FFD166&gt;Siphoning {0}...&lt;/color&gt;&lt;/size&gt;</string>
     <string name="NewMod.Roles.NeutralRoles.Shade.Tab.ActiveShadowZones">&lt;size=65%&gt;Active Shadow Zones: &lt;color=#{0}&gt;{1}&lt;/color&gt;&lt;/size&gt;</string>
     <string name="NewMod.Roles.NeutralRoles.Shade.Tab.PlayersInsideZones">&lt;size=65%&gt;Players inside zones: &lt;color=#{0}&gt;{1}&lt;/color&gt;&lt;/size&gt;</string>
     <string name="NewMod.Roles.NeutralRoles.WraithCaller.Tab.Sent">&lt;size=70%&gt;Sent: &lt;b&gt;&lt;color=#{0}&gt;{1}&lt;/color&gt;&lt;/b&gt;&lt;/size&gt;</string>
@@ -163,17 +132,7 @@
     <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.0">Entry timing</string>
     <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.1">Recent ability</string>
     <string name="NewMod.Roles.CrewmateRoles.S1.WardenRole.Clue.2">Time inside</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Ready">Ready</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Feigning">Feigning death</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.Revived">Revived</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.DoomActive">Doom Awakening active</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.DoomSpent">Doom Awakening spent</string>
-    <string name="NewMod.Roles.ImpostorRoles.Revenant.State.PermanentlyDead">Dead</string>
-    <string name="NewMod.EnergyCategory.Aggression">Aggression</string>
-    <string name="NewMod.EnergyCategory.Intelligence">Intelligence</string>
-    <string name="NewMod.EnergyCategory.Mobility">Mobility</string>
-    <string name="NewMod.EnergyCategory.Control">Control</string>
-    <string name="NewMod.EnergyCategory.Protection">Protection</string>
+
     <string name="NewMod.Deadwire.Reward.ReduceKillCooldown">Kill Boost</string>
     <string name="NewMod.Deadwire.Reward.TrackActor">Track</string>
     <string name="NewMod.Deadwire.Reward.Blink">Blink</string>

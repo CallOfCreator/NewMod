@@ -3,6 +3,7 @@ using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Networking;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.GeneralEvents.Season1;
@@ -19,7 +20,7 @@ namespace NewMod.Buttons.Roles;
 public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Aggression;
-    public override string Name => "Strike";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.PulseBlade.Strike");
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeCooldown);
     public override float EffectDuration => OptionGroupSingleton<PulseBladeOptions>.Instance.ChargeDuration;
     public override float Distance => OptionGroupSingleton<PulseBladeOptions>.Instance.StrikeRange;
@@ -45,7 +46,7 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
 
     protected override void FixedUpdate(PlayerControl playerControl)
     {
-        OverrideName(EffectActive ? "Charging" : Name);
+        OverrideName(EffectActive ? MiraLocaleManager.Get("NewMod.Button.PulseBlade.Charging") : Name);
     }
 
     protected override void OnClick()

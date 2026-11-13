@@ -1,6 +1,8 @@
 # Localization update
 ## and some minor things.
 
+I WILL REMOVE THIS FILE BEFORE MERGING THE PR along with OLD_en_US.xml
+
 ### What I did
 
 - Added translations to es_419 (Latam Spanish) to all the pre-existing strings in English.
@@ -8,6 +10,10 @@
   - Option Groups
   - Button Names
 - Reordered the Modifiers list in the settings to match both chance and ammount in the same place. (Some modifiers had their settings scattered)
+
+### What's pending
+
+The second wave of localization will be notification and event texts. All those scattered texts inside de Role/Role.cs files, since those require a little bit more attention.
 
 ### My recommendations
 
