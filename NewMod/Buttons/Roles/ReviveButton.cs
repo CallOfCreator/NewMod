@@ -3,6 +3,7 @@ using AmongUs.GameOptions;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.GeneralEvents.Season1;
@@ -23,9 +24,9 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
     public EnergyCategory Category => EnergyCategory.Protection;
 
     /// <summary>
-    /// Gets an empty label because the sprite includes the name.
+    /// Removed the Empty label in favor of localization
     /// </summary>
-    public override string Name => string.Empty;
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.Necromancer.Revive");
 
     /// <summary>
     /// Gets the revive cooldown with the Overclocked modifier applied.

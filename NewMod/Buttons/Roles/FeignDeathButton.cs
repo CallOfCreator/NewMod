@@ -1,6 +1,7 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
@@ -13,7 +14,7 @@ namespace NewMod.Buttons.Roles;
 public sealed class FeignDeathButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Protection;
-    public override string Name => "Feign Death";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.Revenant.FeignDeath");
     public override float InitialCooldown => 0f;
     public override float Cooldown => OptionGroupSingleton<RevenantOptions>.Instance.FeignDeathCooldown;
     public override int MaxUses => 1;

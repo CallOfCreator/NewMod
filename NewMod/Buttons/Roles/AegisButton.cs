@@ -1,6 +1,7 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.Components;
 using NewMod.GeneralEvents.Season1;
@@ -20,8 +21,7 @@ public class AegisButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Protection;
 
-    public override string Name => "Sentinel Ward";
-
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.Aegis.SentinelWard");
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<AegisOptions>.Instance.AegisCooldown);
 
     public override int MaxUses => (int)OptionGroupSingleton<AegisOptions>.Instance.MaxCharges;

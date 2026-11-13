@@ -1,28 +1,29 @@
 using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
+using MiraAPI.Translation;
 
 namespace NewMod.Options;
 
 public class GeneralOption : AbstractOptionGroup
 {
-    public override string GroupName => "NewMod Group";
+    public override string GroupName => MiraLocaleManager.Get("NewMod.Options.Group.NewMod");
 
-    [ModdedToggleOption("Allows dead players to open cams anywhere")]
+    [ModdedToggleOption("NewMod.Options.NewMod.AllowCams")]
     public bool AllowCams { get; set; } = false;
 
-    [ModdedNumberOption("Total Neutrals", 0f, 10)]
+    [ModdedNumberOption("NewMod.Options.NewMod.TotalNeutrals", 0f, 10)]
     public float TotalNeutrals { get; set; } = 1f;
 
-    [ModdedToggleOption("Keep Crew Majority")]
+    [ModdedToggleOption("NewMod.Options.NewMod.KeepCrewMajority")]
     public bool KeepCrewMajority { get; set; } = true;
 
-    [ModdedToggleOption("Prefer Variety")]
+    [ModdedToggleOption("NewMod.Options.NewMod.PreferVariety")]
     public bool PreferVariety { get; set; } = true;
 
-    [ModdedToggleOption("Dead players can see roles in meetings")]
+    [ModdedToggleOption("NewMod.Options.NewMod.ShouldDeadPlayersSeeRoles")]
     public bool ShouldDeadPlayersSeeRoles { get; set; } = true;
 
-    [ModdedToggleOption("Anonymous Names in Meetings")]
+    [ModdedToggleOption("NewMod.Options.NewMod.EnableAnonymousNamesInMeetings")]
     public bool EnableAnonymousNamesInMeetings { get; set; } = false;
 }
