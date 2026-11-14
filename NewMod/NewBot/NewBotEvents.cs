@@ -25,6 +25,7 @@ public sealed class NewBotEvents(NewBot bot)
 {
     public bool Running;
     public IGeneralEvent ActiveEvent;
+    public IGeneralEvent SelectedEvent;
     public (OpenableDoor Door, bool Open)[] Doors = [];
 
     public IEnumerator CoBrowse()
@@ -58,6 +59,7 @@ public sealed class NewBotEvents(NewBot bot)
 
     public IEnumerator CoPractice(IGeneralEvent ge)
     {
+        SelectedEvent = ge;
         var again = new NewBotMenu.Choice("Try again", Color.white);
         var harder = new NewBotMenu.Choice(ge is CrismonVortexGE ? "Stronger vortex" : "Longer exercise", new Color(1f, 0.75f, 0.3f));
         var hasHarderExercise = ge is IdentityCrisisGE or NegativeRealityGE or ScrDesyncEffectGE or NoMansLandGE or CrismonVortexGE;
@@ -181,14 +183,19 @@ public sealed class NewBotEvents(NewBot bot)
     public IEnumerator CoWait(string instruction, Func<bool> completed, float seconds, bool duringEvent = false)
     {
         bot.Objective.text = instruction;
-        while (bot.LessonSucceeded && bot.Failure == null && !bot.Player.Data.IsDead && !completed())
+        while (bot.IsPaused || (bot.LessonSucceeded && bot.Failure == null && !bot.Player.Data.IsDead && !completed()))
         {
-            if (seconds <= 0f || (duringEvent && !ReferenceEquals(GeneralEventManager.CurrentEvent, ActiveEvent)))
+            if (bot.IsPaused)
+            {
+                yield return null;
+                continue;
+            }
+            if ((bot.Progressive && seconds <= 0f) || (duringEvent && !ReferenceEquals(GeneralEventManager.CurrentEvent, ActiveEvent)))
             {
                 bot.Failure = duringEvent ? "The event ended before you finished. Try the same exercise again." : "That step took too long. Let's try again.";
                 break;
             }
-            if (!bot.IsPaused)
+            if (bot.Progressive)
                 seconds -= Time.deltaTime;
             yield return null;
         }
@@ -274,7 +281,7 @@ public sealed class NewBotEvents(NewBot bot)
         var required = 3f + bot.Level;
         bot.Objective.text = "Stay close to the original Practice 1, even with a different name.";
         var remaining = ge.Duration;
-        while (bot.LessonSucceeded && !bot.Player.Data.IsDead && remaining > 0f && following < required && ReferenceEquals(GeneralEventManager.CurrentEvent, ge))
+        while (bot.IsPaused || (bot.LessonSucceeded && !bot.Player.Data.IsDead && remaining > 0f && following < required && ReferenceEquals(GeneralEventManager.CurrentEvent, ge)))
         {
             if (!bot.IsPaused)
             {

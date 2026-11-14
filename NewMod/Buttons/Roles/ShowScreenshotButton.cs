@@ -45,6 +45,6 @@ public class ShowScreenshotButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<TheVisionary>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<TheVisionary>(PlayerControl.LocalPlayer);
     }
 }

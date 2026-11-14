@@ -114,6 +114,6 @@ public class ReviveButton : CustomActionButton, IEnergyAbility
     /// <returns>True for Necromancer.</returns>
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<NecromancerRole>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<NecromancerRole>(PlayerControl.LocalPlayer);
     }
 }

@@ -31,9 +31,14 @@ public sealed class NewBot : MonoBehaviour
     public RoleTypes OriginalRole;
     public Vector2 OriginalPosition;
     public DialogUI Dialog;
+    public RoleBehaviour PracticeRole;
+    public string LastExplanation;
 
     [HideFromIl2Cpp]
-    public bool IsPaused => Dialog || MeetingHud.Instance || ExileController.Instance;
+    public IEnumerator ControlsCoro { get; set; }
+
+    [HideFromIl2Cpp]
+    public bool IsPaused => ControlsCoro != null || Dialog || Minigame.Instance || MeetingHud.Instance || ExileController.Instance;
 
     [HideFromIl2Cpp]
     public bool CanUseNormalKill => LessonRunning && AllowKills && Player.Data.Role is not (Edgeveil or PulseBlade or Revenant or WraithCaller or MirrorBladeRole or Bounty);
@@ -97,7 +102,14 @@ public sealed class NewBot : MonoBehaviour
         if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay || MeetingHud.Instance)
             return;
         if (Instance)
+        {
+            if (Instance.CanOpenControls())
+            {
+                Instance.ControlsCoro = Instance.CoControls();
+                Coroutines.Start(Instance.ControlsCoro);
+            }
             return;
+        }
         Instance = HudManager.Instance.gameObject.AddComponent<NewBot>();
         Instance.Player = PlayerControl.LocalPlayer;
         Instance.Map.Ship = ShipStatus.Instance;
@@ -118,7 +130,7 @@ public sealed class NewBot : MonoBehaviour
         }
 
         yield return Say("Welcome to NewMod! I'm NewBot. Pick a role or a general event and we'll try it together. This is Freeplay: you can take your time and try again.");
-        yield return Say("For role practice, take your time or work through harder rounds. Extreme starts with the toughest opponents. Mistakes reset the trial so you can try again.");
+        yield return Say("Guided practice has no lesson timer. Harder rounds add timed challenges; Extreme starts at the toughest level. Press NewBot during an exercise for help, restart, or exit. Role abilities still use their normal timers.");
         var relaxed = new NewBotMenu.Choice("Guided practice", Color.white);
         var progressive = new NewBotMenu.Choice("Harder rounds", new Color(1f, 0.75f, 0.3f));
         var extreme = new NewBotMenu.Choice("Extreme", new Color(1f, 0.35f, 0.35f));
@@ -144,6 +156,7 @@ public sealed class NewBot : MonoBehaviour
     {
         while (Minigame.Instance)
             yield return null;
+        LastExplanation = text;
         Dialog = DialogUI.CreateDialog();
         Dialog.Open([new DialogLine(Dialog, "NEWBOT", text)]);
         while (Dialog)
@@ -217,8 +230,74 @@ public sealed class NewBot : MonoBehaviour
         }
     }
 
+    [HideFromIl2Cpp]
+    public IEnumerator CoDelay(float seconds)
+    {
+        while (seconds > 0f)
+        {
+            if (!IsPaused)
+                seconds -= Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    [HideFromIl2Cpp]
+    public IEnumerator CoControls()
+    {
+        var resume = new NewBotMenu.Choice("Continue", Color.white);
+        var repeat = new NewBotMenu.Choice("Repeat instruction", Color.white);
+        var restart = new NewBotMenu.Choice("Restart exercise", Color.white);
+        var leave = new NewBotMenu.Choice("Leave practice", Color.white);
+        var instruction = Objective && !string.IsNullOrEmpty(Objective.text) ? Objective.text : LastExplanation;
+        Menu = NewBotMenu.Open("Practice controls", [resume, repeat, restart, leave]);
+        var controls = Menu;
+        while (controls.Component)
+            yield return null;
+        if (controls.Selected == repeat)
+            yield return Say(instruction);
+        if (controls.Selected == leave)
+        {
+            ControlsCoro = null;
+            Destroy(this);
+            yield break;
+        }
+        if (controls.Selected == restart)
+        {
+            Coroutines.Stop(LessonCoro);
+            Coroutines.Stop(Coro);
+            LessonCoro = null;
+            LessonRunning = false;
+            Events.Clear();
+            Map.StopMovements();
+            Coro = CoRestartPractice();
+            Coroutines.Start(Coro);
+        }
+        ControlsCoro = null;
+    }
+
+    public bool CanOpenControls()
+    {
+        return LessonRunning && ControlsCoro == null && !Minigame.Instance && !Dialog && !Loading;
+    }
+
+    [HideFromIl2Cpp]
+    public IEnumerator CoRestartPractice()
+    {
+        yield return null;
+        while (Minigame.Instance)
+            yield return null;
+        if (Events.SelectedEvent != null)
+            yield return Events.CoPractice(Events.SelectedEvent);
+        else
+            yield return Lessons.CoPractice(PracticeRole);
+        yield return CoBrowseRoles();
+        Coro = null;
+        Destroy(this);
+    }
+
     public void OnDestroy()
     {
+        Coroutines.Stop(ControlsCoro);
         Coroutines.Stop(Coro);
         if (LessonRunning)
             Coroutines.Stop(LessonCoro);
@@ -237,7 +316,7 @@ public sealed class NewBot : MonoBehaviour
             Destroy(Map.Transition.gameObject);
         if (Objective)
             Destroy(Objective.gameObject);
-        if (Practicing && Map.Ship && Map.Ship == ShipStatus.Instance && Player && Player == PlayerControl.LocalPlayer && HudManager.Instance && AmongUsClient.Instance)
+        if (Practicing && Map.Ship && Map.Ship == ShipStatus.Instance && Player && Player == PlayerControl.LocalPlayer && HudManager.Instance && AmongUsClient.Instance && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay && TutorialManager.Instance)
         {
             Player.RpcSetRole(RoleTypes.Crewmate);
             Map.ClearDummies();
@@ -245,6 +324,7 @@ public sealed class NewBot : MonoBehaviour
             Player.Revive();
             Player.RpcSetRole(OriginalRole);
             Player.NetTransform.RpcSnapTo(OriginalPosition - Player.Collider.offset);
+            Map.RestoreFreeplayDummies();
             HudManager.Instance.SetHudActive(Player, Player.Data.Role, true);
         }
 
@@ -255,10 +335,10 @@ public sealed class NewBot : MonoBehaviour
     [HideFromIl2Cpp]
     public IEnumerator WaitFor(string instruction, System.Func<bool> completed, float seconds = 120f)
     {
-        StepRemaining = Progressive ? seconds : seconds * 3f;
+        StepRemaining = seconds;
         Instruction = instruction;
         Objective.text = instruction;
-        while (LessonSucceeded && (!Player.Data.IsDead || Player.Data.Role is Revenant) && !completed())
+        while (LessonSucceeded && (!Player.Data.IsDead || Player.Data.Role is Revenant) && (IsPaused || !completed()))
             yield return null;
         Objective.text = string.Empty;
         Instruction = string.Empty;
@@ -293,27 +373,29 @@ public sealed class NewBot : MonoBehaviour
         Coroutines.Start(LessonCoro);
         while (LessonRunning && Failure == null)
         {
+            if (IsPaused)
+            {
+                yield return null;
+                continue;
+            }
             if (role is Revenant && Revenant.Phases.TryGetValue(Player.PlayerId, out var revenantPhase) && revenantPhase == Revenant.Phase.PermanentlyDead)
                 Failure = "Your fake body was exposed. Choose a safer place before using Feign Death.";
             if (Player.Data.IsDead && role is not Revenant)
                 Failure = "You were caught. Let's reset the trial and try again.";
-            if (!IsPaused)
+            if (!CanLeavePracticeRoom && role is not Nomad and not EnergyThief and not Beacon and not TerminatorRole && !Map.Room.roomArea.OverlapPoint(Player.GetTruePosition()) && Vector2.Distance(Player.GetTruePosition(), Map.Center) > 8f)
+                Failure = "You've left the practice area. I'll bring you back and reset this trial.";
+            if (Progressive && StepRemaining > 0f)
             {
-                if (!CanLeavePracticeRoom && role is not Nomad and not EnergyThief and not Beacon and not TerminatorRole && !Map.Room.roomArea.OverlapPoint(Player.GetTruePosition()) && Vector2.Distance(Player.GetTruePosition(), Map.Center) > 8f)
-                    Failure = "You've left the practice area. I'll bring you back and reset this trial.";
-                if (StepRemaining > 0f)
+                StepRemaining -= Time.deltaTime;
+                var seconds = Mathf.CeilToInt(StepRemaining);
+                if (!string.IsNullOrEmpty(Instruction) && (seconds != displayedSeconds || Instruction != displayedInstruction))
                 {
-                    StepRemaining -= Time.deltaTime;
-                    var seconds = Mathf.CeilToInt(StepRemaining);
-                    if (Progressive && !string.IsNullOrEmpty(Instruction) && (seconds != displayedSeconds || Instruction != displayedInstruction))
-                    {
-                        Objective.text = $"{Instruction}\n<size=75%>{seconds} seconds left</size>";
-                        displayedSeconds = seconds;
-                        displayedInstruction = Instruction;
-                    }
-                    if (StepRemaining <= 0f)
-                        Failure = "Time ran out. I'll reset the trial. Read the target and plan your next move before starting.";
+                    Objective.text = $"{Instruction}\n<size=75%>{seconds} seconds left</size>";
+                    displayedSeconds = seconds;
+                    displayedInstruction = Instruction;
                 }
+                if (StepRemaining <= 0f)
+                    Failure = "Time ran out. I'll reset the trial. Read the target and plan your next move before starting.";
             }
 
             yield return null;

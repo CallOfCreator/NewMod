@@ -22,7 +22,7 @@ public class WardenClueButton : CustomActionButton
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<WardenRole>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<WardenRole>(PlayerControl.LocalPlayer);
     }
 
     protected override void OnClick()

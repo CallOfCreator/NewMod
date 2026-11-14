@@ -39,7 +39,7 @@ public class CallWraithButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<Wraith>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<Wraith>(PlayerControl.LocalPlayer);
     }
 
     public override void ClickHandler()

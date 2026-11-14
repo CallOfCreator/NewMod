@@ -91,6 +91,6 @@ public class ArcButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<Edgeveil>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<Edgeveil>(PlayerControl.LocalPlayer);
     }
 }

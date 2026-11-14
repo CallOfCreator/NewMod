@@ -58,6 +58,18 @@ public static class NewBotGameOverPatch
     }
 }
 
+[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Die))]
+public static class NewBotGhostRolePatch
+{
+    [HarmonyPriority(Priority.First)]
+    public static void Prefix(PlayerControl __instance, ref bool assignGhostRole)
+    {
+        var bot = NewBotController.Instance;
+        if (bot && bot.Practicing && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay && bot.Map.Dummies.Contains(__instance))
+            assignGhostRole = false;
+    }
+}
+
 [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
 public static class NewBotFreeplayEndPatch
 {

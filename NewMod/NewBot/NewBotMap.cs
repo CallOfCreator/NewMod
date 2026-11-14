@@ -233,6 +233,12 @@ public sealed class NewBotMap(NewBot bot)
 
         if (!bot.Objective)
             bot.Objective = Helpers.CreateTextLabel("NewbotObjective", HudManager.Instance.transform, AspectPosition.EdgeAlignments.Top, new Vector3(0f, 1.15f, -40f), 1.5f);
+        var objectivePosition = bot.Objective.GetComponent<AspectPosition>();
+        objectivePosition.Alignment = AspectPosition.EdgeAlignments.Top;
+        objectivePosition.DistanceFromEdge = new Vector3(0f, 1.15f, -40f);
+        objectivePosition.AdjustPosition();
+        bot.Objective.enabled = true;
+        bot.Objective.text = string.Empty;
         bot.Objective.rectTransform.sizeDelta = new Vector2(5.5f, 0.7f);
     }
 
@@ -261,6 +267,18 @@ public sealed class NewBotMap(NewBot bot)
         info.RpcSetTasks(System.Array.Empty<byte>());
         Dummies.Add(dummy);
         return dummy;
+    }
+
+    public void RestoreFreeplayDummies()
+    {
+        var name = DestroyableSingleton<TranslationController>.Instance.GetString(StringNames.Dummy);
+        for (var index = 0; index < Ship.DummyLocations.Length; index++)
+        {
+            var dummy = SpawnDummy($"{name} {index + 1}", Ship.DummyLocations[index].position);
+            dummy.transform.position = Ship.DummyLocations[index].position;
+            dummy.GetComponent<DummyBehaviour>().PlayerIdToVoteFor = -1;
+        }
+        Dummies.Clear();
     }
 
     public IEnumerator CoFade(float from, float to)
@@ -337,12 +355,12 @@ public sealed class NewBotMap(NewBot bot)
     public IEnumerator CoRoam(PlayerControl dummy, int offset)
     {
         var index = offset % RoamingPositions.Count;
-        var pause = new WaitForSeconds(1f / bot.Level);
+        var pause = 1f / bot.Level;
         while (bot.LessonRunning && dummy && !dummy.Data.IsDead)
         {
             yield return CoWalk(dummy, RoamingPositions[index]);
             index = (index + 1) % RoamingPositions.Count;
-            yield return pause;
+            yield return bot.CoDelay(pause);
         }
     }
 
@@ -384,7 +402,8 @@ public sealed class NewBotMap(NewBot bot)
 
     public void ResetPractice()
     {
-        bot.Player.RpcRemoveModifier<InVoid>();
+        if (bot.Player.HasModifier<InVoid>())
+            bot.Player.RpcRemoveModifier<InVoid>();
         foreach (var body in Object.FindObjectsOfType<DeadBody>())
             Object.Destroy(body.gameObject);
         if (DoubleAgent.CounterfeitActive)

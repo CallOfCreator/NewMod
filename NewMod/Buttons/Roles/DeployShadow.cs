@@ -22,7 +22,7 @@ public class DeployShadow : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<Shade>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<Shade>(PlayerControl.LocalPlayer);
     }
 
     protected override void OnClick()

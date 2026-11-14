@@ -44,13 +44,28 @@ public sealed class NewBotLessons(NewBot bot)
     {
         var correct = new NewBotMenu.Choice(answer, Color.white);
         var choices = alternatives.Distinct().Where(text => text != answer).Select(text => new NewBotMenu.Choice(text, Color.white)).Append(correct).OrderBy(_ => Random.value).ToArray();
-        bot.Menu = NewBotMenu.Open(question, choices);
-        while (bot.Menu.Component)
-            yield return null;
-        if (bot.Menu.Selected != correct)
+        while (true)
         {
+            bot.Menu = NewBotMenu.Open(question, choices);
+            while (bot.Menu.Component)
+                yield return null;
+            if (bot.Menu.Selected == correct)
+                yield break;
+            if (bot.Menu.Selected == null)
+            {
+                bot.LessonSucceeded = false;
+                Object.Destroy(bot);
+                yield return null;
+                yield break;
+            }
+            if (!bot.Progressive)
+            {
+                yield return bot.Say($"The answer is '{answer}'. Have another look at the question. You can try it again without repeating the exercise.");
+                continue;
+            }
             bot.Failure = $"The answer was {answer}. Let's repeat the exercise and check the evidence.";
             bot.LessonSucceeded = false;
+            yield break;
         }
     }
 
@@ -97,6 +112,8 @@ public sealed class NewBotLessons(NewBot bot)
 
     public IEnumerator CoPractice(RoleBehaviour role)
     {
+        bot.PracticeRole = role;
+        bot.Events.SelectedEvent = null;
         var description = (ICustomRole)role;
         var introduction = role switch
         {
@@ -148,16 +165,17 @@ public sealed class NewBotLessons(NewBot bot)
             while (MeetingHud.Instance || ExileController.Instance)
                 yield return null;
             var succeeded = bot.LessonSucceeded && !bot.Player.Data.IsDead;
+            if (Minigame.Instance)
+            {
+                Minigame.Instance.ForceClose();
+                yield return null;
+            }
+            bot.Player.RpcSetRole(AmongUs.GameOptions.RoleTypes.Crewmate);
+            bot.Map.ResetPractice();
+            bot.Player.Revive();
             if (!succeeded)
             {
-                if (Minigame.Instance)
-                {
-                    Minigame.Instance.ForceClose();
-                    yield return null;
-                }
-
-                yield return bot.Map.CoPrepare(role, count);
-                yield return bot.Say(bot.Failure ?? "That didn't work. I've reset the trial so you can try again.");
+                yield return bot.Say(bot.Failure ?? "That didn't work. Choose Try again when you're ready.");
             }
             else
             {
@@ -268,7 +286,7 @@ public sealed class NewBotLessons(NewBot bot)
                         yield break;
                     }
 
-                    yield return new WaitForSeconds(3f);
+                    yield return bot.CoDelay(3f);
                     if (bot.Level < 3)
                     {
                         var result = mode == Specialist.ScanMode.Presence ? $"{bot.Observation} other living player(s) nearby" : bot.Observation;

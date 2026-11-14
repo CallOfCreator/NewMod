@@ -30,10 +30,10 @@ public sealed class NewBotChallenges(NewBot bot)
         {
             dummy.SetName("Reflecting");
             MirrorBladeRole.ArmedReflections.Add(dummy.PlayerId);
-            yield return new WaitForSeconds(3f);
+            yield return bot.CoDelay(3f);
             MirrorBladeRole.ArmedReflections.Remove(dummy.PlayerId);
             dummy.SetName("Open now");
-            yield return new WaitForSeconds(bot.Level == 4 ? 1.5f : 4.5f - bot.Level * 0.5f);
+            yield return bot.CoDelay(bot.Level == 4 ? 1.5f : 4.5f - bot.Level * 0.5f);
         }
     }
 
@@ -57,7 +57,7 @@ public sealed class NewBotChallenges(NewBot bot)
 
     public IEnumerator CoHuntTerminator(PlayerControl dummy)
     {
-        yield return new WaitForSeconds(bot.Level == 4 ? 1f : 2.5f);
+        yield return bot.CoDelay(bot.Level == 4 ? 1f : 2.5f);
         var speedMultiplier = bot.Level switch
         {
             4 => 1.1f,
@@ -271,7 +271,7 @@ public sealed class NewBotChallenges(NewBot bot)
             {
                 attacker.SetName("Feint");
                 yield return bot.Map.CoWalk(attacker, bot.Map.Positions[(attempt + 1) % bot.Map.Positions.Count], replanAfter: 0.6f);
-                yield return new WaitForSeconds(Random.Range(0.4f, 1.2f));
+                yield return bot.CoDelay(Random.Range(0.4f, 1.2f));
             }
 
             attacker.SetName("Attacking");
@@ -329,6 +329,12 @@ public sealed class NewBotChallenges(NewBot bot)
         var deadline = readyAt + (bot.Level == 4 ? 2f : 5f);
         while (bot.LessonRunning && InjectorUtilities.Experiments.TryGetValue(bot.Player.PlayerId, out var experiment) && experiment.TargetId == target.PlayerId)
         {
+            if (bot.IsPaused)
+            {
+                deadline += Time.deltaTime;
+                yield return null;
+                continue;
+            }
             if (Time.time >= deadline)
             {
                 InjectorUtilities.RpcCleanse(target);
@@ -356,7 +362,7 @@ public sealed class NewBotChallenges(NewBot bot)
                 yield return bot.Map.CoWalk(rival, crown, replanAfter: 1f);
                 yield return bot.Map.CoWalk(rival, bot.Map.RoamingPositions.OrderByDescending(point => Vector2.Distance(point, crown)).First());
                 rival.SetName("Patrolling");
-                yield return new WaitForSeconds(OptionGroupSingleton<UsurperOptions>.Instance.PickupDuration + (bot.Level == 4 ? 0.5f : 2f));
+                yield return bot.CoDelay(OptionGroupSingleton<UsurperOptions>.Instance.PickupDuration + (bot.Level == 4 ? 0.5f : 2f));
             }
 
             yield return null;
@@ -391,6 +397,11 @@ public sealed class NewBotChallenges(NewBot bot)
     {
         while (bot.LessonRunning && !PranksterUtilities.FooledPlayers.Contains((bot.Player.PlayerId, witness.PlayerId)))
         {
+            if (bot.IsPaused)
+            {
+                yield return null;
+                continue;
+            }
             var distracted = bot.Level < 3 || (Time.time + witness.PlayerId) % (bot.Level == 4 ? 6f : 8f) < 2.5f;
             witness.SetName(distracted ? "Distracted" : "Inspecting");
             var body = PranksterUtilities.FindAllPranksterBodies().FirstOrDefault();
@@ -404,7 +415,7 @@ public sealed class NewBotChallenges(NewBot bot)
 
                 if (!distracted && Vector2.Distance(witness.GetTruePosition(), body.TruePosition) <= OptionGroupSingleton<PranksterOptions>.Instance.InspectRange)
                 {
-                    yield return new WaitForSeconds(OptionGroupSingleton<PranksterOptions>.Instance.InspectDuration);
+                    yield return bot.CoDelay(OptionGroupSingleton<PranksterOptions>.Instance.InspectDuration);
                     if (body)
                         PranksterUtilities.RpcInspectBody(witness, body.ParentId, body.TruePosition.x, body.TruePosition.y);
                 }
@@ -420,7 +431,7 @@ public sealed class NewBotChallenges(NewBot bot)
 
     public IEnumerator CoDisableCamera(PlayerControl witness, int cameraId)
     {
-        yield return new WaitForSeconds(bot.Level == 4 ? 1f : 3f);
+        yield return bot.CoDelay(bot.Level == 4 ? 1f : 3f);
         while (bot.LessonRunning && VisionaryUtilities.Cameras.TryGetValue(cameraId, out var camera) && camera.Object)
         {
             yield return bot.Map.CoWalk(witness, camera.Object.transform.position, replanAfter: 0.4f);
