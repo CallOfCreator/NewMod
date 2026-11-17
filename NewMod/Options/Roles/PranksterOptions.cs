@@ -7,17 +7,17 @@ namespace NewMod.Options.Roles;
 
 public class PranksterOptions : AbstractOptionGroup<Prankster>
 {
-    public override string GroupName => "Prankster";
+    public override string GroupName => MiraLocaleManager.Get("NewMod.Options.Group.Prankster");
 
-    [ModdedNumberOption("Prank Cooldown", 10, 40, suffixType: MiraNumberSuffixes.Seconds)]
+    [ModdedNumberOption("NewMod.Options.Prankster.PrankCooldown", 10, 40, suffixType: MiraNumberSuffixes.Seconds)]
     public float PrankCooldown { get; set; } = 20f;
 
-    [ModdedNumberOption("Body Inspection Range", 0.5f, 1.5f, 0.25f)]
+    [ModdedNumberOption("NewMod.Options.Prankster.InspectRange", 0.5f, 1.5f, 0.25f)]
     public float InspectRange { get; set; } = 0.75f;
 
-    [ModdedNumberOption("Body Inspection Duration", 1f, 5f, 0.5f)]
+    [ModdedNumberOption("NewMod.Options.Prankster.InspectDuration", 1f, 5f, 0.5f)]
     public float InspectDuration { get; set; } = 2f;
 
-    [ModdedNumberOption("Reports Required To Win", 1, 3)]
+    [ModdedNumberOption("NewMod.Options.Prankster.ReportsRequiredToWin", 1, 3)]
     public float ReportsRequiredToWin { get; set; } = 2f;
 }
