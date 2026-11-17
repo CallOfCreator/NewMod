@@ -33,6 +33,6 @@ public class FakeBodyButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<Prankster>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<Prankster>(PlayerControl.LocalPlayer);
     }
 }

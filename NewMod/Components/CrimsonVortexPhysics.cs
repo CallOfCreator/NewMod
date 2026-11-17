@@ -1,4 +1,4 @@
-﻿using MiraAPI.GameOptions;
+using MiraAPI.GameOptions;
 using MiraAPI.Modifiers;
 using MiraAPI.Networking;
 using NewMod.Achievements;
@@ -17,7 +17,6 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 {
     public int EscapeCount;
 
-    private bool _collisionDisabled;
     private bool _deathRequested;
 
     private float _escapeProgress;
@@ -43,9 +42,9 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
         {
-            if ((!CrismonVortexGE.Active || CrismonVortexGE.IsWarning()) && _physics.AmOwner && !_player.Data.IsDead && _player.CanMove && !_player.inVent)
+            if ((!CrismonVortexGE.Active || CrismonVortexGE.IsWarning()) && _physics.AmOwner && !_player.Data.IsDead && _player.CanMove && !_player.inVent && _player.Collider.enabled)
             {
-                _lastSafePosition = _player.GetTruePosition();
+                _lastSafePosition = _player.transform.position;
                 _lastSafePositionReady = true;
             }
 
@@ -151,8 +150,6 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             _escapeProgress = 0f;
             _lastPressTime = float.NegativeInfinity;
 
-            RestoreCollision();
-
             return;
         }
 
@@ -165,16 +162,14 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         if (distance >= options.CrimsonRadius.Value)
         {
-            if (_physics.AmOwner && _player.CanMove && !_player.inVent)
+            if (_physics.AmOwner && _player.CanMove && !_player.inVent && _player.Collider.enabled)
             {
-                _lastSafePosition = _player.GetTruePosition();
+                _lastSafePosition = _player.transform.position;
                 _lastSafePositionReady = true;
             }
 
             _escaping = false;
             _escapedThisEntry = false;
-
-            RestoreCollision();
         }
 
         if (AmongUsClient.Instance.AmHost && !_deathRequested && !_escaping && !_player.inVent && distance <= killRadius)
@@ -183,31 +178,11 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
             Collector.MarkEnvironmental(_player.PlayerId);
 
             _player.RpcAdvancedCustomMurder(_player, MeetingCheck.OutsideMeeting, true, true, resetKillTimer: false, teleportMurderer: false, showKillAnim: false, playKillSound: false);
-
-            return;
         }
-
-        if (_physics.AmOwner && !_escaping && !_player.CanMove && _collisionDisabled)
-        {
-            _player.Collider.enabled = true;
-            _collisionDisabled = false;
-        }
-    }
-
-    public void RestoreCollision()
-    {
-        if (!_collisionDisabled)
-            return;
-
-        _player.Collider.enabled = true;
-        _collisionDisabled = false;
     }
 
     public void OnDestroy()
     {
-        if (_collisionDisabled && _player && _player.Collider)
-            _player.Collider.enabled = true;
-
         if (_physics && _physics.AmOwner && CrimsonVortexEscapeHud.Instance) CrimsonVortexEscapeHud.Instance.ForceHide();
     }
 
@@ -225,33 +200,14 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
 
         if (_player.inVent)
         {
-            RestoreCollision();
-
             if (_physics.AmOwner && Vent.currentVent)
                 _physics.RpcBootFromVent(Vent.currentVent.Id);
 
             return;
         }
 
-        if (distance >= options.CrimsonRadius.Value)
-        {
-            RestoreCollision();
-
+        if (distance >= options.CrimsonRadius.Value || !_player.CanMove)
             return;
-        }
-
-        if (!_player.CanMove)
-        {
-            RestoreCollision();
-
-            return;
-        }
-
-        if (!_collisionDisabled && _player.Collider.enabled)
-        {
-            _player.Collider.enabled = false;
-            _collisionDisabled = true;
-        }
 
         if (distance <= 0.001f)
             return;
@@ -311,8 +267,6 @@ public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
         var escapePosition = _lastSafePositionReady ? _lastSafePosition : ShipStatus.Instance.InitialSpawnCenter;
         _player.NetTransform.RpcSnapTo(escapePosition);
         NewModAchievementsTab.EventHorizonDenied.Unlock();
-
-        RestoreCollision();
 
         if (CrimsonVortexEscapeHud.Instance)
             CrimsonVortexEscapeHud.Instance.ShowSuccess();

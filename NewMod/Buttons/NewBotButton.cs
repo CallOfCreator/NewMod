@@ -19,7 +19,8 @@ public class NewBotButton : CustomActionButton
 
     public override bool CanUse()
     {
-        return !MeetingHud.Instance && !ExileController.Instance;
+        return !MeetingHud.Instance && !ExileController.Instance && !Minigame.Instance &&
+            (!NewBotController.Instance || NewBotController.Instance.CanOpenControls());
     }
 
     protected override void OnClick()

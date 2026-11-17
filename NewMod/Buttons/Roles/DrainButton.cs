@@ -26,7 +26,7 @@ public sealed class DrainButton : CustomActionButton
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<EnergyThief>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<EnergyThief>(PlayerControl.LocalPlayer);
     }
 
     public override void SetActive(bool visible, RoleBehaviour role)

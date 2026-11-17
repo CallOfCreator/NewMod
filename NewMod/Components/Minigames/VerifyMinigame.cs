@@ -111,8 +111,20 @@ public class VerifyMinigame(IntPtr ptr) : Minigame(ptr)
     [HideFromIl2Cpp]
     private void Bind(TextMeshPro text, VerifierClaimType claim)
     {
-        Bind(text.transform.Find("ConfirmIcon").GetComponent<PassiveButton>(), claim, true, NewModAsset.ConfirmIconHover.LoadAsset());
-        Bind(text.transform.Find("DenyIcon").GetComponent<PassiveButton>(), claim, false, NewModAsset.DenyIconHover.LoadAsset());
+        var confirm = text.transform.Find("ConfirmIcon");
+        var deny = text.transform.Find("DenyIcon");
+        var rowPosition = text.transform.localPosition;
+        text.transform.localPosition = new Vector3(0.65f, rowPosition.y + 2.5f, rowPosition.z);
+        text.rectTransform.sizeDelta = new Vector2(2.8f, 0.7f);
+        text.margin = Vector4.zero;
+        text.alignment = TextAlignmentOptions.Center;
+        text.fontSize = 1.9f;
+        text.enableWordWrapping = true;
+        confirm.localPosition = new Vector3(-0.95f, -0.7f, 0f);
+        deny.localPosition = new Vector3(0.95f, -0.7f, 0f);
+        confirm.localScale = deny.localScale = Vector3.one * 0.26f;
+        Bind(confirm.GetComponent<PassiveButton>(), claim, true, NewModAsset.ConfirmIconHover.LoadAsset());
+        Bind(deny.GetComponent<PassiveButton>(), claim, false, NewModAsset.DenyIconHover.LoadAsset());
     }
 
     [HideFromIl2Cpp]

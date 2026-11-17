@@ -117,7 +117,7 @@ public class AbilityExchangeGE : IGeneralEvent
 
     public static bool HasRoleAbility<T>(PlayerControl player) where T : RoleBehaviour
     {
-        return HasRoleAbility<T>(player.Data.Role, player.PlayerId);
+        return player && HasRoleAbility<T>(player.Data.Role, player.PlayerId);
     }
 
     public static bool HasRoleAbility<T>(RoleBehaviour role, byte playerId) where T : RoleBehaviour

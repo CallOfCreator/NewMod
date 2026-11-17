@@ -66,14 +66,14 @@ public sealed class MainMenuLayout(nint ptr) : MonoBehaviour(ptr)
         Logo.sprite = NewModAsset.NewModLogo.LoadAsset();
         PlaceLogo(Logo, 3.1f, 6f);
 
-        PlaceButton(menu.inventoryButton, "INVENTORY", -4.4f, -1.45f, 3.55f, true);
-        PlaceButton(menu.playButton, "PLAY", 0f, -1.45f, 4.8f, true);
-        PlaceButton(menu.shopButton, "SHOP", 4.4f, -1.45f, 3.55f, true);
-        PlaceButton(menu.newsButton, "NEWS", -3.3f, -2.45f, 3.15f, false);
-        PlaceButton(menu.myAccountButton, "MY ACCOUNT", 0f, -2.45f, 3.15f, false);
-        PlaceButton(menu.settingsButton, "SETTINGS", 3.3f, -2.45f, 3.15f, false);
-        PlaceButton(menu.creditsButton, "CREDITS", -6.75f, -3.85f, 1.7f, false);
-        PlaceButton(menu.quitButton, "QUIT", 6.75f, -3.85f, 1.7f, false);
+        PlaceButton(menu.inventoryButton, -4.4f, -1.45f, 3.55f, true);
+        PlaceButton(menu.playButton, 0f, -1.45f, 4.8f, true);
+        PlaceButton(menu.shopButton, 4.4f, -1.45f, 3.55f, true);
+        PlaceButton(menu.newsButton, -3.3f, -2.45f, 3.15f, false);
+        PlaceButton(menu.myAccountButton, 0f, -2.45f, 3.15f, false);
+        PlaceButton(menu.settingsButton, 3.3f, -2.45f, 3.15f, false);
+        PlaceButton(menu.creditsButton, -6.75f, -3.85f, 1.7f, false);
+        PlaceButton(menu.quitButton, 6.75f, -3.85f, 1.7f, false);
         CreateLinkButton(
             "Discord", -7.35f, DiscordUrl, NewModAsset.DiscordNormal.LoadAsset(), NewModAsset.DiscordHover.LoadAsset(), NewModAsset.DiscordPressed.LoadAsset());
         CreateLinkButton(
@@ -84,7 +84,12 @@ public sealed class MainMenuLayout(nint ptr) : MonoBehaviour(ptr)
         BackButton.name = "BackToMainMenu";
         BackButton.OnClick = new Button.ButtonClickedEvent();
         BackButton.OnClick.AddListener((System.Action)ReturnHome);
-        SetLabel(BackButton, "BACK", false);
+        var backTranslator = BackButton.buttonText.GetComponent<TextTranslatorTMP>();
+        backTranslator.TargetText = StringNames.BackButton;
+        backTranslator.defaultStr = string.Empty;
+        backTranslator.ResetOnlyWhenNoDefault = false;
+        backTranslator.ResetText();
+        StyleLabel(BackButton, false);
         BackButton.gameObject.SetActive(false);
         menu.ControllerSelectable.Add(BackButton);
 
@@ -212,7 +217,7 @@ public sealed class MainMenuLayout(nint ptr) : MonoBehaviour(ptr)
         logo.transform.localScale = new Vector3(scale, scale, 1f);
     }
 
-    public void PlaceButton(PassiveButton button, string label, float x, float y, float width, bool primary)
+    public void PlaceButton(PassiveButton button, float x, float y, float width, bool primary)
     {
         FreezeLayout(button.transform);
         var scale = width / button.inactiveSprites.GetComponent<SpriteRenderer>().size.x;
@@ -226,20 +231,13 @@ public sealed class MainMenuLayout(nint ptr) : MonoBehaviour(ptr)
         StyleState(button.selectedInactiveSprites, primary, false, false);
         StyleState(button.disabledSprites, primary, false, true);
         StyleState(button.onClickSprites, primary, true, false);
-        SetLabel(button, label, primary);
+        StyleLabel(button, primary);
     }
 
-    public static void SetLabel(PassiveButton button, string label, bool primary)
+    public static void StyleLabel(PassiveButton button, bool primary)
     {
-        foreach (var translator in button.GetComponentsInChildren<TextTranslatorTMP>(true))
-        {
-            translator.enabled = false;
-            Destroy(translator);
-        }
-
         var text = button.transform.Find("FontPlacer/Text_TMP").GetComponent<TextMeshPro>();
         button.buttonText = text;
-        text.text = label;
         text.alignment = TextAlignmentOptions.MidlineRight;
         text.enableWordWrapping = false;
         text.enableAutoSizing = true;

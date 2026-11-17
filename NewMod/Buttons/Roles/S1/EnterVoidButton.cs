@@ -27,7 +27,7 @@ public class EnterVoid : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<Voidwalker>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<Voidwalker>(PlayerControl.LocalPlayer);
     }
 
     public override float EffectDuration => OptionGroupSingleton<VoidwalkerOptions>.Instance.VoidTime;

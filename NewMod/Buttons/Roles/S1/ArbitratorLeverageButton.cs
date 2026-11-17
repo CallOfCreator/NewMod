@@ -30,7 +30,7 @@ public class ArbitratorLeverageButton : CustomActionButton<PlayerControl>, IEner
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(role, PlayerControl.LocalPlayer.PlayerId);
+        return AbilityExchangeGE.HasRoleAbility<ArbitratorRole>(PlayerControl.LocalPlayer);
     }
 
     public override PlayerControl GetTarget()
