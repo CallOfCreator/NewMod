@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -115,9 +115,9 @@ public class AbilityExchangeGE : IGeneralEvent
         ButtonStates.Clear();
     }
 
-    public static bool HasRoleAbility<T>(PlayerControl player) where T : RoleBehaviour
+    public static bool HasRoleAbility<T>(PlayerControl player, RoleBehaviour role = null) where T : RoleBehaviour
     {
-        return player && HasRoleAbility<T>(player.Data.Role, player.PlayerId);
+        return player && HasRoleAbility<T>(role ?? player.Data.Role, player.PlayerId);
     }
 
     public static bool HasRoleAbility<T>(RoleBehaviour role, byte playerId) where T : RoleBehaviour

@@ -19,7 +19,7 @@ public class FakeBodyButton : CustomActionButton, IEnergyAbility
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<PranksterOptions>.Instance.PrankCooldown);
     public override ButtonLocation Location => ButtonLocation.BottomRight;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.DeadBodySprite;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.Prank;
 
     public override bool CanUse()
     {
@@ -33,6 +33,6 @@ public class FakeBodyButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<Prankster>(PlayerControl.LocalPlayer);
+        return AbilityExchangeGE.HasRoleAbility<Prankster>(PlayerControl.LocalPlayer, role);
     }
 }

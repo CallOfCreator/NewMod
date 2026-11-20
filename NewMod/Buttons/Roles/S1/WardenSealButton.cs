@@ -25,7 +25,7 @@ public class WardenSealButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<WardenRole>(PlayerControl.LocalPlayer);
+        return AbilityExchangeGE.HasRoleAbility<WardenRole>(PlayerControl.LocalPlayer, role);
     }
 
     public override bool CanUse()

@@ -23,7 +23,7 @@ public sealed class FeignDeathButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<Revenant>(PlayerControl.LocalPlayer);
+        return AbilityExchangeGE.HasRoleAbility<Revenant>(PlayerControl.LocalPlayer, role);
     }
 
     public override bool CanUse()

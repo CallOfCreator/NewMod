@@ -12,7 +12,7 @@ public class SubmitResearchButton : CustomActionButton
 {
     public override string Name => "Submit Research";
     public override float Cooldown => OptionGroupSingleton<InjectorOptions>.Instance.SubmissionDuration;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.InjectIcon;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.SubmitResearch;
 
     public override bool Enabled(RoleBehaviour role)
     {

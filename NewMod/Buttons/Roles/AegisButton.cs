@@ -36,7 +36,7 @@ public class AegisButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<Aegis>(PlayerControl.LocalPlayer);
+        return AbilityExchangeGE.HasRoleAbility<Aegis>(PlayerControl.LocalPlayer, role);
     }
 
     public override bool CanUse()

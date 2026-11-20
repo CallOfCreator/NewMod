@@ -29,7 +29,7 @@ public class StrikeButton : CustomActionButton<PlayerControl>, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<PulseBlade>(PlayerControl.LocalPlayer);
+        return AbilityExchangeGE.HasRoleAbility<PulseBlade>(PlayerControl.LocalPlayer, role);
     }
 
     public override PlayerControl GetTarget()

@@ -24,7 +24,7 @@ public class ObjectiveButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<TerminatorRole>(PlayerControl.LocalPlayer);
+        return AbilityExchangeGE.HasRoleAbility<TerminatorRole>(PlayerControl.LocalPlayer, role);
     }
 
     public override bool CanUse()

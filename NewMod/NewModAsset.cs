@@ -15,13 +15,13 @@ public static class NewModAsset
     // Miscellaneous
     public static LoadableAsset<Sprite> Arrow { get; } = new LoadableBundleAsset<Sprite>("arrow.png", Bundle);
     public static LoadableResourceAsset NewModLogo { get; } = new("NewMod.Resources.NewModLogo.png");
-    public static LoadableResourceAsset MainMenuBackground { get; } = new("NewMod.Resources.nm_bg_mainmenu.png");
-    public static LoadableResourceAsset DiscordNormal { get; } = new("NewMod.Resources.DiscordNormal.png");
-    public static LoadableResourceAsset DiscordHover { get; } = new("NewMod.Resources.DiscordHover.png");
-    public static LoadableResourceAsset DiscordPressed { get; } = new("NewMod.Resources.DiscordPressed.png");
-    public static LoadableResourceAsset WebsiteNormal { get; } = new("NewMod.Resources.WebsiteNormal.png");
-    public static LoadableResourceAsset WebsiteHover { get; } = new("NewMod.Resources.WebsiteHover.png");
-    public static LoadableResourceAsset WebsitePressed { get; } = new("NewMod.Resources.WebsitePressed.png");
+    public static LoadableAsset<Sprite> MainMenuBackground { get; } = new LoadableBundleAsset<Sprite>("nm_bg_mainmenu.png", Bundle);
+    public static LoadableAsset<Sprite> DiscordNormal { get; } = new LoadableBundleAsset<Sprite>("DiscordNormal.png", Bundle);
+    public static LoadableAsset<Sprite> DiscordHover { get; } = new LoadableBundleAsset<Sprite>("DiscordHover.png", Bundle);
+    public static LoadableAsset<Sprite> DiscordPressed { get; } = new LoadableBundleAsset<Sprite>("DiscordPressed.png", Bundle);
+    public static LoadableAsset<Sprite> WebsiteNormal { get; } = new LoadableBundleAsset<Sprite>("WebsiteNormal.png", Bundle);
+    public static LoadableAsset<Sprite> WebsiteHover { get; } = new LoadableBundleAsset<Sprite>("WebsiteHover.png", Bundle);
+    public static LoadableAsset<Sprite> WebsitePressed { get; } = new LoadableBundleAsset<Sprite>("WebsitePressed.png", Bundle);
     public static LoadableAsset<Sprite> NMIcon { get; } = new LoadableBundleAsset<Sprite>("nm", Bundle);
     public static LoadableAsset<Sprite> CustomCursor { get; } = new LoadableBundleAsset<Sprite>("cursor.png", Bundle);
     public static LoadableAsset<GameObject> Toast { get; } = new LoadableBundleAsset<GameObject>("Toast", Bundle);
@@ -41,7 +41,10 @@ public static class NewModAsset
     public static LoadableResourceAsset ShowScreenshotButton { get; } = new("NewMod.Resources.showscreenshot.png");
     public static LoadableResourceAsset DoomAwakeningButton { get; } = new("NewMod.Resources.doomawakening.png");
     public static LoadableResourceAsset NecromancerButton { get; } = new("NewMod.Resources.Revive2.png");
-    public static LoadableResourceAsset InjectButton { get; } = new("NewMod.Resources.inject.png");
+    public static LoadableAsset<Sprite> InjectAdrenaline { get; } = new LoadableBundleAsset<Sprite>("injectAdrenaline.png", Bundle);
+    public static LoadableAsset<Sprite> InjectSedative { get; } = new LoadableBundleAsset<Sprite>("injectSedative.png", Bundle);
+    public static LoadableAsset<Sprite> SubmitResearch { get; } = new LoadableBundleAsset<Sprite>("SubmitResearch.png", Bundle);
+    public static LoadableAsset<Sprite> Prank { get; } = new LoadableBundleAsset<Sprite>("Prank.png", Bundle);
     public static LoadableResourceAsset DeadBodySprite { get; } = new("NewMod.Resources.deadbody.png");
     public static LoadableResourceAsset Camera { get; } = new("NewMod.Resources.cam.png");
     public static LoadableAsset<Sprite> CameraOff { get; } = new LoadableBundleAsset<Sprite>("cam_off.png", Bundle);
@@ -68,9 +71,10 @@ public static class NewModAsset
     public static LoadableAsset<Sprite> CameraDisabled { get; } = new LoadableBundleAsset<Sprite>("cam_disabled.png", Bundle);
     public static LoadableAsset<Sprite> CameraDisabledOutline { get; } = new LoadableBundleAsset<Sprite>("cam_disabled.png", Bundle);
     public static LoadableAsset<Sprite> TyrantAlliance { get; } = new LoadableBundleAsset<Sprite>("tyrantAlliance.png", Bundle);
+    public static LoadableAsset<Sprite> TyrantRejectAlliance { get; } = new LoadableBundleAsset<Sprite>("tyrantRejectAlliance.png", Bundle);
     public static LoadableAsset<Sprite> TyrantIntimidate { get; } = new LoadableBundleAsset<Sprite>("tyrantIntimidate.png", Bundle);
     public static LoadableResourceAsset StrikeButton { get; } = new("NewMod.Resources.Strike.png");
-    public static LoadableResourceAsset Shield { get; } = new("NewMod.Resources.Shield.png");
+    public static LoadableAsset<Sprite> Shield { get; } = new LoadableBundleAsset<Sprite>("Shield.png", Bundle);
     public static LoadableResourceAsset Slash { get; } = new("NewMod.Resources.Slash.png");
     public static LoadableResourceAsset VerifyButton { get; } = new("NewMod.Resources.verifier.png");
     public static LoadableResourceAsset VanillaKillButton { get; } = new("NewMod.Resources.killbutton.png");
@@ -124,7 +128,6 @@ public static class NewModAsset
     public static LoadableResourceAsset EnergyThiefIcon { get; } = new("NewMod.Resources.GridBreachAbilityIcon.png");
 
     // Notif Icons
-    public static LoadableResourceAsset VisionDebuff { get; } = new("NewMod.Resources.NotifIcons.vision_debuff.png");
     public static LoadableResourceAsset SpeedDebuff { get; } = new("NewMod.Resources.NotifIcons.speed_debuff.png");
     public static LoadableResourceAsset Freeze { get; } = new("NewMod.Resources.NotifIcons.freeze.png");
 

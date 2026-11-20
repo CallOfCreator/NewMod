@@ -23,7 +23,7 @@ public class CollectWraithTraceButton : CustomActionButton<DeadBody>
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<WraithCaller>(PlayerControl.LocalPlayer);
+        return AbilityExchangeGE.HasRoleAbility<WraithCaller>(PlayerControl.LocalPlayer, role);
     }
 
     public override DeadBody GetTarget()

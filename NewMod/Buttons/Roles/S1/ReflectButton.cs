@@ -25,7 +25,7 @@ public class MirrorReflectButton : CustomActionButton, IEnergyAbility
 
     public override bool Enabled(RoleBehaviour role)
     {
-        return AbilityExchangeGE.HasRoleAbility<MirrorBladeRole>(PlayerControl.LocalPlayer);
+        return AbilityExchangeGE.HasRoleAbility<MirrorBladeRole>(PlayerControl.LocalPlayer, role);
     }
 
     public override bool CanUse()

@@ -20,7 +20,7 @@ public class InjectButton : CustomActionButton<PlayerControl>, IEnergyAbility
     public override float Distance => OptionGroupSingleton<InjectorOptions>.Instance.InjectionRange;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
-    public override LoadableAsset<Sprite> Sprite => NewModAsset.InjectButton;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.InjectIcon;
 
     public override bool Enabled(RoleBehaviour role)
     {
