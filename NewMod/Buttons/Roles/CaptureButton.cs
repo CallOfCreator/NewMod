@@ -4,6 +4,7 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Modifiers.S1;
@@ -27,7 +28,7 @@ public class CaptureButton : CustomActionButton, IEnergyAbility
 
     public EnergyCategory Category => EnergyCategory.Intelligence;
 
-    public override string Name => "Place Camera";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.TheVisionary.PlaceCamera");
 
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<VisionaryOptions>.Instance.ScreenshotCooldown);
 

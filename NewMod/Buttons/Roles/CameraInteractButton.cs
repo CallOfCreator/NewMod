@@ -1,5 +1,6 @@
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.Utilities;
 using UnityEngine;
@@ -11,7 +12,7 @@ public class CameraInteractButton : CustomActionButton
     public int TargetId = -1;
     public int PendingId = -1;
     public Vector2 Origin;
-    public override string Name => "Camera";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.TheVisionary.Camera");
     public override float Cooldown => 1f;
     public override float EffectDuration => 1.5f;
     public override MiraKeybind Keybind => null;
@@ -71,7 +72,7 @@ public class CameraInteractButton : CustomActionButton
         {
             Button.gameObject.SetActive(TargetId >= 0);
             if (TargetId >= 0)
-                OverrideName(VisionaryUtilities.Cameras[TargetId].Owner == playerControl.PlayerId ? "Retrieve" : "Disable Camera");
+                OverrideName(VisionaryUtilities.Cameras[TargetId].Owner == playerControl.PlayerId ? MiraLocaleManager.Get("NewMod.Button.TheVisionary.Retrieve") : MiraLocaleManager.Get("NewMod.Button.TheVisionary.Disable"));
         }
     }
 

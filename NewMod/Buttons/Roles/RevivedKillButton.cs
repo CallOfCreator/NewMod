@@ -3,6 +3,7 @@ using Il2CppSystem;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
 using MiraAPI.Networking;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 using MiraAPI.Utilities.Assets;
 using NewMod.Roles.ImpostorRoles;
@@ -14,7 +15,7 @@ namespace NewMod.Buttons.Roles;
 public class RevivedKillButton : CustomActionButton<PlayerControl>, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Aggression;
-    public override string Name => "KILL";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.Necromancer.RevivedKill");
     public override float Cooldown => GameOptionsManager.Instance.CurrentGameOptions.GetFloat(FloatOptionNames.KillCooldown);
     public override int MaxUses => 0;
     public override float EffectDuration => 0f;

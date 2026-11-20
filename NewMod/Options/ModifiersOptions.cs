@@ -1,49 +1,52 @@
 using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
 using MiraAPI.GameOptions.OptionTypes;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
 
 namespace NewMod.Options;
 
 public class ModifiersOptions : AbstractOptionGroup
 {
-    public override string GroupName => "Modifiers Settings";
+    public override string GroupName => MiraLocaleManager.Get("NewMod.Options.Group.Modifiers");
     public override MenuCategory ParentMenu => MenuCategory.Modifiers;
 
-    [ModdedNumberOption("Sticky Amount", 0f, 2f)]
+    [ModdedNumberOption("NewMod.Options.Modifiers.StickyAmount", 0f, 2f)]
     public float StickyAmount { get; set; } = 1f;
 
-    public ModdedNumberOption StickyChance { get; } = new("Sticky Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.StickyAmount > 0 };
+    public ModdedNumberOption StickyChance { get; } = new("NewMod.Options.Modifiers.StickyChance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.StickyAmount > 0 };
 
-    [ModdedNumberOption("Drowsy Amount", 0f, 2f)]
+    [ModdedNumberOption("NewMod.Options.Modifiers.DrowsyAmount", 0f, 2f)]
     public float DrowsyAmount { get; set; } = 1f;
 
-    public ModdedNumberOption DrowsyChance { get; } = new("Drowsy Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.DrowsyAmount > 0f };
+    public ModdedNumberOption DrowsyChance { get; } = new("NewMod.Options.Modifiers.DrowsyChance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.DrowsyAmount > 0f };
 
-    [ModdedNumberOption("Adrenaline Amount", 0f, 2f)]
+    [ModdedNumberOption("NewMod.Options.Modifiers.AdrenalineAmount", 0f, 2f)]
     public float AdrenalineAmount { get; set; } = 1f;
+    
+    public ModdedNumberOption AdrenalineChance { get; } = new("NewMod.Options.Modifiers.AdrenalineChance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.AdrenalineAmount > 0f };
 
-    [ModdedNumberOption("Fateful Amount", 0f, 6f)]
+    [ModdedNumberOption("NewMod.Options.Modifiers.FatefulAmount", 0f, 6f)]
     public float FatefulAmount { get; set; } = 1f;
 
-    public ModdedNumberOption FatefulChance { get; } = new("Fateful Chance", 15f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.FatefulAmount > 0f };
+    public ModdedNumberOption FatefulChance { get; } = new("NewMod.Options.Modifiers.FatefulChance", 15f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.FatefulAmount > 0f };
 
-    [ModdedNumberOption("Lazy Amount", 0f, 6f)]
+    [ModdedNumberOption("NewMod.Options.Modifiers.LazyAmount", 0f, 6f)]
     public float LazyAmount { get; set; } = 1f;
 
-    public ModdedNumberOption LazyChance { get; } = new("Lazy Chance", 15f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.LazyAmount > 0f };
-    public ModdedNumberOption AdrenalineChance { get; } = new("Adrenaline Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.AdrenalineAmount > 0f };
-    public ModdedNumberOption MomentumChance { get; } = new("Momentum Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.MomentumAmount > 0f };
-    public ModdedNumberOption MarkedChance { get; } = new("Marked Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.MarkedAmount > 0f };
+    public ModdedNumberOption LazyChance { get; } = new("NewMod.Options.Modifiers.LazyChance", 15f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.LazyAmount > 0f };
+    public ModdedNumberOption MomentumChance { get; } = new("NewMod.Options.Modifiers.MomentumChance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.MomentumAmount > 0f };
 
-    [ModdedNumberOption("Momentum Amount", 0, 5, 1, MiraNumberSuffixes.None)]
+    [ModdedNumberOption("NewMod.Options.Modifiers.MomentumAmount", 0, 5, 1, MiraNumberSuffixes.None)]
     public float MomentumAmount { get; set; } = 1f;
+    
+    public ModdedNumberOption MarkedChance { get; } = new("NewMod.Options.Modifiers.MarkedChance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.MarkedAmount > 0f };
 
-    [ModdedNumberOption("Marked Amount", 0, 5, 1, MiraNumberSuffixes.None)]
+    [ModdedNumberOption("NewMod.Options.Modifiers.MarkedAmount", 0, 5, 1, MiraNumberSuffixes.None)]
     public float MarkedAmount { get; set; } = 1f;
 
-    [ModdedNumberOption("Overclocked Amount", 0, 5, 1, MiraNumberSuffixes.None)]
+    [ModdedNumberOption("NewMod.Options.Modifiers.OverclockedAmount", 0, 5, 1, MiraNumberSuffixes.None)]
     public float OverclockedAmount { get; set; } = 1f;
 
-    public ModdedNumberOption OverclockedChance { get; } = new("Overclocked Chance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.OverclockedAmount > 0f };
+    public ModdedNumberOption OverclockedChance { get; } = new("NewMod.Options.Modifiers.OverclockedChance", 50f, 0, 100f, 10f, MiraNumberSuffixes.Percent) { Visible = () => OptionGroupSingleton<ModifiersOptions>.Instance.OverclockedAmount > 0f };
 }

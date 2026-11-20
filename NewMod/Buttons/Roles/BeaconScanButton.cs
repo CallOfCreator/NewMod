@@ -1,6 +1,7 @@
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
@@ -16,7 +17,7 @@ namespace NewMod.Buttons.Roles;
 public class BeaconScanButton : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Intelligence;
-    public override string Name => "Scan";
+    public override string Name => MiraLocaleManager.Get("NewMod.Button.Beacon.Scan");
     public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<BeaconOptions>.Instance.PulseCooldown);
     public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
     public override ButtonLocation Location => ButtonLocation.BottomRight;

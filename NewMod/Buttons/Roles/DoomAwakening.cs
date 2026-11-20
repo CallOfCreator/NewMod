@@ -2,6 +2,7 @@ using System.Collections;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Keybinds;
+using MiraAPI.Translation;
 using MiraAPI.Utilities.Assets;
 using NewMod.GeneralEvents.Season1;
 using NewMod.Options.Roles;
@@ -16,7 +17,7 @@ namespace NewMod.Buttons.Roles;
 public sealed class DoomAwakening : CustomActionButton, IEnergyAbility
 {
     public EnergyCategory Category => EnergyCategory.Aggression;
-    public override string Name => string.Empty;
+        public override string Name => MiraLocaleManager.Get("NewMod.Button.Revenant.DoomAwake");
     public override float Cooldown => 0f;
     public override int MaxUses => 1;
     public override ButtonLocation Location => ButtonLocation.BottomLeft;
