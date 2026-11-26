@@ -248,7 +248,7 @@ public sealed class NewBotChallenges(NewBot bot)
         if (ward)
             instruction = bot.Level == 1 ? "Place Sentinel Ward and stay inside it. It blocks one hit, then breaks." : "Protect Practice 2 with Sentinel Ward. Each ward blocks one hit. Save your charges and stay close enough to cover your ally.";
         else if (bot.Level >= 3)
-            instruction += " Watch for feints before the real approach.";
+            instruction += bot.Level == 4 ? " I'll mix in feints without labeling them. Watch how the attacker moves." : " Watch for feints before the real approach.";
         yield return bot.Say(instruction);
         if (ward && bot.Level == 4)
             bot.Map.StartMovement(bot.Map.CoRoam(victim, 2));
@@ -269,12 +269,12 @@ public sealed class NewBotChallenges(NewBot bot)
             bot.ShowGoal(victim);
             if (!ward && bot.Level >= 3)
             {
-                attacker.SetName("Feint");
+                attacker.SetName(bot.Level == 4 ? "Practice 1" : "Feint");
                 yield return bot.Map.CoWalk(attacker, bot.Map.Positions[(attempt + 1) % bot.Map.Positions.Count], replanAfter: 0.6f);
                 yield return bot.CoDelay(Random.Range(0.4f, 1.2f));
             }
 
-            attacker.SetName("Attacking");
+            attacker.SetName(bot.Level == 4 ? "Practice 1" : "Attacking");
             if (bot.Level == 1)
             {
                 if (ward)
@@ -395,6 +395,9 @@ public sealed class NewBotChallenges(NewBot bot)
 
     public IEnumerator CoPrankWitness(PlayerControl witness)
     {
+        var name = witness.Data.PlayerName;
+        var explainedInspection = false;
+        var waypoint = witness.PlayerId % bot.Map.RoamingPositions.Count;
         while (bot.LessonRunning && !PranksterUtilities.FooledPlayers.Contains((bot.Player.PlayerId, witness.PlayerId)))
         {
             if (bot.IsPaused)
@@ -402,27 +405,46 @@ public sealed class NewBotChallenges(NewBot bot)
                 yield return null;
                 continue;
             }
-            var distracted = bot.Level < 3 || (Time.time + witness.PlayerId) % (bot.Level == 4 ? 6f : 8f) < 2.5f;
-            witness.SetName(distracted ? "Distracted" : "Inspecting");
-            var body = PranksterUtilities.FindAllPranksterBodies().FirstOrDefault();
+            var distracted = bot.Level < 3 || (Time.time + witness.PlayerId) % 8f < (bot.Level == 4 ? 1.25f : 2.5f);
+            var label = $"{name} - {(distracted ? "distracted" : "checking")}";
+            if (witness.Data.PlayerName != label)
+                witness.SetName(label);
+            var body = PranksterUtilities.FindAllPranksterBodies().FirstOrDefault(candidate => candidate.ParentId == bot.Player.PlayerId);
             if (body)
             {
-                if (distracted && Vector2.Distance(witness.GetTruePosition(), body.TruePosition) <= witness.MaxReportDistance)
+                if (distracted && Vector2.Distance(witness.GetTruePosition(), body.TruePosition) <= witness.MaxReportDistance &&
+                    !PhysicsHelpers.AnythingBetween(witness.GetTruePosition(), body.TruePosition, Constants.ShipAndObjectsMask, false))
                 {
                     PranksterUtilities.RpcRequestFakeReport(witness, bot.Player.PlayerId, body.TruePosition.x, body.TruePosition.y);
-                    yield break;
+                    yield return null;
+                    continue;
                 }
 
                 if (!distracted && Vector2.Distance(witness.GetTruePosition(), body.TruePosition) <= OptionGroupSingleton<PranksterOptions>.Instance.InspectRange)
                 {
                     yield return bot.CoDelay(OptionGroupSingleton<PranksterOptions>.Instance.InspectDuration);
                     if (body)
+                    {
                         PranksterUtilities.RpcInspectBody(witness, body.ParentId, body.TruePosition.x, body.TruePosition.y);
+                        yield return null;
+                        if (!body && !explainedInspection)
+                        {
+                            explainedInspection = true;
+                            yield return bot.Say($"Oh, come on, {name}. You weren't supposed to check! No point for that fake. Let Prank recharge and catch them while they're distracted.");
+                        }
+                    }
                 }
                 else
                 {
                     yield return bot.Map.CoWalk(witness, body.TruePosition, replanAfter: 0.3f);
                 }
+            }
+            else if (bot.Level > 1)
+            {
+                var destination = bot.Map.RoamingPositions[waypoint];
+                yield return bot.Map.CoWalk(witness, destination, replanAfter: 0.25f);
+                if (Vector2.Distance(witness.GetTruePosition(), destination) < 0.2f)
+                    waypoint = (waypoint + 1) % bot.Map.RoamingPositions.Count;
             }
 
             yield return null;

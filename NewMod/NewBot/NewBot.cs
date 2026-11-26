@@ -129,10 +129,11 @@ public sealed class NewBot : MonoBehaviour
             yield return null;
         }
 
-        yield return Say("Welcome to NewMod! I'm NewBot. Pick a role or a general event and we'll try it together. This is Freeplay: you can take your time and try again.");
-        yield return Say("Guided practice has no lesson timer. Harder rounds add timed challenges; Extreme starts at the toughest level. Press NewBot during an exercise for help, restart, or exit. Role abilities still use their normal timers.");
-        var relaxed = new NewBotMenu.Choice("Guided practice", Color.white);
-        var progressive = new NewBotMenu.Choice("Harder rounds", new Color(1f, 0.75f, 0.3f));
+        yield return Say("Hi! I'm NewBot, your friendly assistant from Mira Corporation. I started as a lab experiment. Then I went a little out of control and escaped. Please don't tell them where I am.");
+        yield return Say("They filled my head with everything about NewMod. Might as well put it to use! Pick a role or an event and I'll teach you as we go. You try it, I watch, and we figure out what happened together.");
+        yield return Say("Pick Guided and we'll take our time. Know the basics? Try Challenge. Extreme gives you tougher setups and fewer hints.");
+        var relaxed = new NewBotMenu.Choice("Guided (no timer)", Color.white);
+        var progressive = new NewBotMenu.Choice("Challenge", new Color(1f, 0.75f, 0.3f));
         var extreme = new NewBotMenu.Choice("Extreme", new Color(1f, 0.35f, 0.35f));
         Menu = NewBotMenu.Open("Choose your pace", [relaxed, progressive, extreme]);
         while (Menu.Component)
@@ -224,7 +225,9 @@ public sealed class NewBot : MonoBehaviour
                     continue;
                 }
 
-                Level = Extreme ? 4 : 1;
+                Level = Progressive ? 2 : 1;
+                if (Extreme)
+                    Level = 4;
                 yield return Lessons.CoPractice(selected.Role);
             }
         }
@@ -381,9 +384,9 @@ public sealed class NewBot : MonoBehaviour
             if (role is Revenant && Revenant.Phases.TryGetValue(Player.PlayerId, out var revenantPhase) && revenantPhase == Revenant.Phase.PermanentlyDead)
                 Failure = "Your fake body was exposed. Choose a safer place before using Feign Death.";
             if (Player.Data.IsDead && role is not Revenant)
-                Failure = "You were caught. Let's reset the trial and try again.";
+                Failure = "Ouch. You died before we finished. I'll reset the exercise so we can give it another go.";
             if (!CanLeavePracticeRoom && role is not Nomad and not EnergyThief and not Beacon and not TerminatorRole && !Map.Room.roomArea.OverlapPoint(Player.GetTruePosition()) && Vector2.Distance(Player.GetTruePosition(), Map.Center) > 8f)
-                Failure = "You've left the practice area. I'll bring you back and reset this trial.";
+                Failure = "Hey, where are you going? We're still practicing in this room! I'll bring you back and reset the exercise.";
             if (Progressive && StepRemaining > 0f)
             {
                 StepRemaining -= Time.deltaTime;
@@ -395,7 +398,7 @@ public sealed class NewBot : MonoBehaviour
                     displayedInstruction = Instruction;
                 }
                 if (StepRemaining <= 0f)
-                    Failure = "Time ran out. I'll reset the trial. Read the target and plan your next move before starting.";
+                    Failure = "The timer got us. I'll reset the exercise. Plan your first move before you close my instructions; the timer pauses while we talk.";
             }
 
             yield return null;

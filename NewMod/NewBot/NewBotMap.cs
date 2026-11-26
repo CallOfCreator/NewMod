@@ -46,7 +46,7 @@ public sealed class NewBotMap(NewBot bot)
         UseElevators = false,
     };
 
-    public IEnumerator CoFindArena(int requiredPositions)
+    public IEnumerator CoFindArena(int requiredPositions, float vortexRadius = 0f)
     {
         Positions.Clear();
         RoamingPositions.Clear();
@@ -117,10 +117,20 @@ public sealed class NewBotMap(NewBot bot)
                     continue;
                 Center = start.Value;
                 Room = room;
+                RoamingPositions.Clear();
                 foreach (var position in connected.OrderBy(_ => Random.value))
                 {
                     if (!RoamingPositions.Any(other => Vector2.Distance(position, other) < 1.5f))
                         RoamingPositions.Add(position);
+                }
+
+                if (vortexRadius > 0f)
+                {
+                    if (!TryFindVortexEntry(vortexRadius, out _))
+                        continue;
+                    yield return CoFindEscapeRoutes(vortexRadius + 1f);
+                    if (EscapePositions.Count == 0)
+                        continue;
                 }
 
                 yield break;
@@ -128,14 +138,42 @@ public sealed class NewBotMap(NewBot bot)
         }
 
         Positions.Clear();
+        RoamingPositions.Clear();
+        EscapePositions.Clear();
     }
 
-    public IEnumerator CoFindEscapeRoutes()
+    public bool TryFindVortexEntry(float radius, out Vector2 entry)
     {
+        var killRadius = Mathf.Clamp(radius * 0.12f, 0.45f, 0.9f);
+        var outerRadius = radius * (bot.Level == 4 ? 0.68f : 0.72f);
+        var probe = MapPathfinding.CreateRequest(Center, Center, WalkingOptions);
+        for (var ring = 0; ring < 3; ring++)
+        {
+            var distance = Mathf.Lerp(outerRadius, killRadius + 0.65f, ring / 2f);
+            for (var index = 0; index < 32; index++)
+            {
+                var angle = index * Mathf.PI / 16f;
+                var point = Center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+                if (probe.IsClear(point, WalkingOptions.Radius + 0.2f) && probe.CanMove(Center, point))
+                {
+                    entry = point;
+                    return true;
+                }
+            }
+        }
+
+        entry = default;
+        return false;
+    }
+
+    public IEnumerator CoFindEscapeRoutes(float minimumDistance = 0f)
+    {
+        EscapePositions.Clear();
         var probe = MapPathfinding.CreateRequest(Center, Center, WalkingOptions);
         var rooms = Ship.AllRooms.Where(room => room != Room && room.roomArea && room.RoomId != SystemTypes.Hallway)
-            .OrderBy(room => Vector2.SqrMagnitude((Vector2)room.roomArea.bounds.center - Center)).Take(6).ToArray();
-        for (var index = 0; index < rooms.Length && EscapePositions.Count < 3; index++)
+            .OrderBy(room => Vector2.SqrMagnitude((Vector2)room.roomArea.bounds.center - Center)).ToArray();
+        var requiredRoutes = minimumDistance > 0f ? 1 : 3;
+        for (var index = 0; index < rooms.Length && EscapePositions.Count < requiredRoutes; index++)
         {
             var room = rooms[index];
             DestroyableSingleton<LoadingBarManager>.Instance.SetLoadingPercent(50f + 40f * index / rooms.Length, StringNames.None);
@@ -146,12 +184,12 @@ public sealed class NewBotMap(NewBot bot)
                 for (var y = bounds.min.y + 0.5f; y < bounds.max.y; y += 1f)
                 {
                     var point = new Vector2(x, y);
-                    if (room.roomArea.OverlapPoint(point) && probe.IsClear(point, WalkingOptions.Radius + 0.2f))
+                    if (Vector2.Distance(point, Center) > minimumDistance && room.roomArea.OverlapPoint(point) && probe.IsClear(point, WalkingOptions.Radius + 0.2f))
                         candidates.Add(point);
                 }
             }
 
-            foreach (var point in candidates.OrderBy(point => Vector2.SqrMagnitude(point - (Vector2)bounds.center)).Take(2))
+            foreach (var point in candidates.OrderBy(point => Vector2.SqrMagnitude(point - (Vector2)bounds.center)).Take(minimumDistance > 0f ? candidates.Count : 2))
             {
                 var path = MapPathfinding.CreateRequest(Center, point, WalkingOptions);
                 while (path.Status == PathStatus.Searching && path.ExpandedNodes < 2048)
@@ -172,7 +210,7 @@ public sealed class NewBotMap(NewBot bot)
         }
     }
 
-    public IEnumerator CoPrepare(RoleBehaviour role, int dummyCount, bool chooseRoom = false)
+    public IEnumerator CoPrepare(RoleBehaviour role, int dummyCount, bool chooseRoom = false, float vortexRadius = 0f)
     {
         var loading = bot.Loading = DestroyableSingleton<LoadingBarManager>.Instance;
         loading.ToggleLoadingBar(true);
@@ -182,7 +220,7 @@ public sealed class NewBotMap(NewBot bot)
         try
         {
             if (chooseRoom)
-                yield return CoFindArena(role is Collector ? dummyCount + 3 : dummyCount);
+                yield return CoFindArena(role is Collector ? dummyCount + 3 : dummyCount, vortexRadius);
             if (Positions.Count == 0)
                 yield break;
             loading.SetLoadingPercent(50f, StringNames.None);

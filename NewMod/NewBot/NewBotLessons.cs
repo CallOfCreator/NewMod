@@ -8,6 +8,7 @@ using MiraAPI.Modifiers;
 using MiraAPI.Networking;
 using MiraAPI.Roles;
 using MiraAPI.Utilities;
+using NewMod.Buttons.Roles.S1;
 using NewMod.Components;
 using NewMod.Modifiers.S1;
 using NewMod.Options.Roles;
@@ -30,10 +31,13 @@ public sealed class NewBotLessons(NewBot bot)
     {
         for (var i = 0; i < count; i++)
         {
-            var position = bot.Map.Positions[bot.Map.Dummies.Count + (i + (int)kind) % (bot.Map.Positions.Count - bot.Map.Dummies.Count)];
+            var position = bot.Level >= 3
+                ? bot.Map.RoamingPositions[Random.Range(0, bot.Map.RoamingPositions.Count)]
+                : bot.Map.Positions[bot.Map.Dummies.Count + (i + (int)kind) % (bot.Map.Positions.Count - bot.Map.Dummies.Count)];
             var target = Collector.Inventories[bot.Player.PlayerId][(int)kind] + 1;
             Collector.RpcSpawnFragment(bot.Player, ++Collector._nextFragmentId, (byte)kind, position.x, position.y);
-            bot.ShowGoal(position);
+            if (bot.Level < 4)
+                bot.ShowGoal(position);
             yield return bot.WaitFor($"Harvest the {kind} fragment.", () => Collector.Inventories[bot.Player.PlayerId][(int)kind] >= target, 90f);
             if (bot.GoalMarker)
                 Object.Destroy(bot.GoalMarker.gameObject);
@@ -60,10 +64,10 @@ public sealed class NewBotLessons(NewBot bot)
             }
             if (!bot.Progressive)
             {
-                yield return bot.Say($"The answer is '{answer}'. Have another look at the question. You can try it again without repeating the exercise.");
+                yield return bot.Say($"Hold on, that doesn't match what happened. The answer is '{answer}'. Read the choices once more; we can stay here and try again.");
                 continue;
             }
-            bot.Failure = $"The answer was {answer}. Let's repeat the exercise and check the evidence.";
+            bot.Failure = $"Ah, we missed that one. The answer was '{answer}'. Let's repeat the exercise and watch for it this time.";
             bot.LessonSucceeded = false;
             yield break;
         }
@@ -84,7 +88,7 @@ public sealed class NewBotLessons(NewBot bot)
             }
 
             var target = bot.Map.Dummies.Where(dummy => !ArbitratorRole.ScoredTargets.Contains(dummy.PlayerId)).OrderBy(_ => bot.Level >= 3 ? Random.value : 0f).First();
-            var defend = round % 2 == 0;
+            var defend = bot.Level >= 3 ? Random.value > 0.5f : round % 2 == 0;
             var voters = bot.Map.Dummies.Where(dummy => dummy != target).ToArray();
             var votes = defend ? (int)options.DefendVotesRequired : voters.Length;
             for (var voter = 0; voter < votes; voter++)
@@ -114,15 +118,6 @@ public sealed class NewBotLessons(NewBot bot)
     {
         bot.PracticeRole = role;
         bot.Events.SelectedEvent = null;
-        var description = (ICustomRole)role;
-        var introduction = role switch
-        {
-            EgoistRole => "I'll set up a few practice votes. You can watch your Ego grow, then try Challenge.",
-            VerifierRole => "I'll give you a claim about one of the practice players. We'll open a meeting and check it together.",
-            Specialist => "Let's try a scan. I'll give you a charge and show you which button to press, then we'll read the result together.",
-            _ => description.RoleLongDescription,
-        };
-        yield return bot.Say($"Let's try {description.RoleName}.\n{introduction}");
         var repeat = new NewBotMenu.Choice("Try again", Color.white);
         var harder = new NewBotMenu.Choice("Next difficulty", new Color(1f, 0.75f, 0.3f));
         var roles = new NewBotMenu.Choice("Choose another role", Color.white);
@@ -142,7 +137,8 @@ public sealed class NewBotLessons(NewBot bot)
                 ArbitratorRole => Mathf.Max((int)OptionGroupSingleton<ArbitratorOptions>.Instance.JudgmentTokensToWin + 1, (int)OptionGroupSingleton<ArbitratorOptions>.Instance.DefendVotesRequired * 2),
                 TheVisionary => bot.Level >= 3 ? 3 : 2,
                 Beacon or Specialist => bot.Level + 1,
-                NecromancerRole or WraithCaller or WardenRole or Collector or Usurper => 2,
+                NecromancerRole => bot.Level >= 3 ? 3 : 2,
+                WraithCaller or WardenRole or Collector or Usurper => 2,
                 Voidwalker => bot.Level > 1 ? 2 : 1,
                 InjectorRole => Mathf.Max(2, OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount),
                 DoubleAgent => bot.Level > 1 ? 1 : 0,
@@ -175,11 +171,42 @@ public sealed class NewBotLessons(NewBot bot)
             bot.Player.Revive();
             if (!succeeded)
             {
-                yield return bot.Say(bot.Failure ?? "That didn't work. Choose Try again when you're ready.");
+                yield return bot.Say(bot.Failure ?? "That attempt didn't finish. Want another go? Choose Try again and I'll set it up.");
             }
             else
             {
-                yield return bot.Say("Nicely done. Want another go, or a different role?");
+                var recap = role switch
+                {
+                    Aegis => "That ward took the hit. In a match, put it around whoever needs protecting; it breaks after blocking one attack.",
+                    MirrorBladeRole => "You caught the attack with Reflect. Keep that timing: activating too early leaves you exposed when it wears off.",
+                    Beacon => "You read the scan. Those markers show where people were, so check again before treating an old position as current.",
+                    Specialist => "You read all three scans. Presence counts players, Forensics finds bodies, and Disturbance checks recent violence. None of them names the killer.",
+                    DoubleAgent => "Your Comms worked and ended on its own. You're still helping the crew, so choose a moment that helps them rather than interrupting them.",
+                    TheVisionary => "You brought the photo into the meeting. Keep track of which camera captured the evidence before you show it.",
+                    WardenRole => "You read the room's trace. Use it to check someone's story. The seal blocks vent entry; it doesn't stop a kill.",
+                    VerifierRole => "You matched the claims to the evidence. Confirmed means your statement was correct, even when that statement was 'they didn't do it'.",
+                    Edgeveil => "You landed Arc without hitting the others. Face the right way before charging; you can't steer it afterward.",
+                    PulseBlade => "You landed Strike on the right target. Their outline tells you who you're aiming at, but the dash won't turn to follow them.",
+                    NecromancerRole => "They're back! Revive works on someone else's victim. A body from your own kill won't be a valid target.",
+                    Revenant => "You survived the fake death and caught your target with Doom. Keep your fake body away from witnesses, and save Doom until you're close enough.",
+                    Voidwalker => "You made the crossing and attacked after returning. You can't attack while phased, so choose your exit before leaving the Void.",
+                    Deadwire => "You've tried all five records. Watch what you captured before using Override; the category decides what it does.",
+                    EnergyThief => "You finished the breach. Both energy and distinct categories matter. Once they're ready, leave Siphon and get to the node.",
+                    InjectorRole => "Samples submitted. Each one came from a different player, and you stayed still for the finish. That's the whole experiment.",
+                    Prankster => "They fell for it. Each different reporter gave you a point; inspecting a fake would give you nothing. I'm checking every body you leave near my lab.",
+                    Shade => "Those kills counted because both you and the target were inside your active shadow. Set up the zone before you commit to the chase.",
+                    WraithCaller => "Your Wraith landed a kill. You'll need a new trace for the next hunt. Watch for anyone who can reflect it back at you.",
+                    Tyrant => "Your Champion accepted and you both survived the meeting. Keep them alive; losing either of you breaks that shared win.",
+                    Bounty => "Contract collected. Keep contact during the escort, then move fast once the head start ends. Cash Out belongs in the collection window.",
+                    Nomad => "Routes scored and meeting survived. Count different rooms, let each visit register, then Wander home. Replacing an unfinished Anchor starts that route over.",
+                    Collector => "You built the set and survived the meeting. Pairs buy powers; one of each arms the win. Spend carefully so you keep what you need.",
+                    Usurper => "You kept the crown and survived the meeting. An early meeting only pauses the hold timer, so wait until it's finished.",
+                    TerminatorRole => "You survived the countdown. Starting Terminate is only the beginning; keep enough distance that attackers can't strip your armor.",
+                    ArbitratorRole => "Your judgments scored. Accuse needs an exile; Defend needs enough votes and a survivor. Pick someone new for each token.",
+                    EgoistRole => "You built Ego, locked your opponent, and got them exiled. Locking the challenge doesn't cast your normal vote; you still need both.",
+                    _ => "You finished the exercise. Want another go?",
+                };
+                yield return bot.Say(recap);
             }
 
             var choices = new List<NewBotMenu.Choice>
@@ -218,15 +245,13 @@ public sealed class NewBotLessons(NewBot bot)
             case Beacon:
                 Beacon.charges = Mathf.Max(1, Beacon.charges);
                 bot.Map.StartRoaming();
-                yield return bot.Say("Scan shows a snapshot of everyone else. Count the purple markers, then close the map. They will not follow players after the scan.");
+                yield return bot.Say("I'll get everyone moving. Use Scan and count the purple markers on your map. Remember where they were: those dots won't follow them.");
                 for (var scan = 0; scan < (bot.Level >= 3 ? 2 : 1); scan++)
                 {
                     if (scan > 0)
                     {
-                        Beacon.charges = 0;
-                        yield return bot.Say($"Earn another charge by completing tasks. It takes {OptionGroupSingleton<BeaconOptions>.Instance.TasksPerCharge:0} tasks per charge. Return here when it is ready.");
-                        yield return bot.WaitFor("Complete tasks until Scan has a charge.", () => Beacon.charges > 0, 600f);
-                        yield return bot.WaitFor("Return to the practice area.", () => Vector2.Distance(bot.Player.GetTruePosition(), bot.Map.Center) < 2f, 180f);
+                        Beacon.charges = Mathf.Max(1, Beacon.charges);
+                        yield return bot.Say($"I've supplied another practice charge. In a match, you earn one every {OptionGroupSingleton<BeaconOptions>.Instance.TasksPerCharge:0} completed tasks. Scan again and compare the new positions with your first snapshot.");
                     }
 
                     var previousPulse = Beacon.pulseUntil;
@@ -247,8 +272,8 @@ public sealed class NewBotLessons(NewBot bot)
 
                 break;
             case Specialist:
-                yield return bot.Say("Tasks give you scan charges, up to three. I'll supply charges for this exercise. After pressing Scan, stand still for 1.5 seconds. Moving or a communications sabotage cancels it.");
-                var modes = System.Enum.GetValues<Specialist.ScanMode>();
+                yield return bot.Say("I'll lend you scan charges. You normally earn them from tasks. Pick a mode, press Scan, and hold still for 1.5 seconds. Move too soon and you'll cancel it.");
+                var modes = System.Enum.GetValues<Specialist.ScanMode>().OrderBy(mode => bot.Level >= 3 ? Random.value : (float)mode).ToArray();
                 foreach (var mode in modes)
                 {
                     var explanation = mode switch
@@ -257,7 +282,8 @@ public sealed class NewBotLessons(NewBot bot)
                         Specialist.ScanMode.Forensics => "Forensics finds nearby bodies. The result tells you whether a body is very close (within 2 units), farther away (2-5 units), or absent. It does not identify the killer.",
                         _ => "Disturbance detects a nearby attack from the last 15 seconds, within 5 units. A body can remain after that trace expires. This scan does not identify the attacker.",
                     };
-                    yield return bot.Say(explanation);
+                    if (bot.Level < 3)
+                        yield return bot.Say(explanation);
                     Specialist.EarnScan(id);
                     yield return bot.WaitFor($"Press Scan Mode until it shows {mode}.", () => Specialist.ScanStates[id].Mode == mode, 45f);
                     if (!bot.LessonSucceeded)
@@ -270,7 +296,7 @@ public sealed class NewBotLessons(NewBot bot)
                         bot.Map.Dummies[0].RpcCustomMurder(bot.Map.Dummies[1], MeetingCheck.OutsideMeeting, teleportMurderer: false);
                         if (bot.Level == 4 && mode == Specialist.ScanMode.Disturbance)
                         {
-                            yield return bot.Say("That attack is old news now. Wait here until its trace expires, then check Disturbance.");
+                            yield return bot.Say("Watch this body. I'll leave it here for a while, then ask you to check for recent violence. Read the result carefully.");
                             yield return new WaitForSeconds(16f);
                         }
                     }
@@ -290,7 +316,7 @@ public sealed class NewBotLessons(NewBot bot)
                     if (bot.Level < 3)
                     {
                         var result = mode == Specialist.ScanMode.Presence ? $"{bot.Observation} other living player(s) nearby" : bot.Observation;
-                        yield return bot.Say($"Your {mode} result: {result}.\n{explanation}");
+                        yield return bot.Say($"You found {result}. That tells us about this area; it doesn't name a killer.");
                         continue;
                     }
                     if (mode == Specialist.ScanMode.Presence)
@@ -306,7 +332,7 @@ public sealed class NewBotLessons(NewBot bot)
                 break;
             case DoubleAgent:
                 DoubleAgent.CooldownUntil = 0f;
-                yield return bot.Say("You still play for the crew. Open Sabotage and choose Communications. Counterfeit Comms ends on its own; you cannot use the other sabotages.");
+                yield return bot.Say("You're still on the crew's side. Open Sabotage and try Communications. I'll wait with you while it runs out. The other sabotages aren't yours to use.");
                 if (bot.Level > 1)
                 {
                     bot.Map.StartRoaming();
@@ -336,7 +362,9 @@ public sealed class NewBotLessons(NewBot bot)
             case TheVisionary:
                 bot.EvidenceCamera = -1;
                 bot.ShowGoal(bot.Map.Dummies[1]);
-                yield return bot.Say("Place a camera covering Practice 2. I'll stage an attack there while it charges. Collect the photo with the body in frame, then show that evidence in a meeting.");
+                yield return bot.Say("Put Practice 2 in your camera's frame. I'll stage an attack while it charges. Bring the photo back and we'll show it in a meeting.");
+                if (bot.Level >= 3)
+                    yield return bot.Say("Practice 3 will try to disable your camera. Stay close enough to collect it when it's ready.");
                 yield return bot.WaitFor("Place a camera aimed at the marked scene.", () => VisionaryUtilities.Cameras.Count > 0);
                 var cameraId = VisionaryUtilities.Cameras.Keys.Max();
                 yield return new WaitForSeconds(OptionGroupSingleton<VisionaryOptions>.Instance.CaptureDelay * 0.5f);
@@ -354,14 +382,16 @@ public sealed class NewBotLessons(NewBot bot)
                 break;
             case WardenRole:
                 WardenRole.ResetState();
-                yield return bot.Say("Seal this room first. I'll stage an attack inside it. Then inspect the Residual Trace to learn what the room recorded.");
+                yield return bot.Say("Seal this room and watch what happens inside. I'll stage an attack. Your Residual Trace will give us clues; it won't hand us the killer's name.");
                 yield return bot.WaitFor("Use Seal in this room.", () => WardenRole.SealActive);
+                if (bot.Level >= 3 && Random.value > 0.5f)
+                    WardenRole.RpcTrackAbilityUse(bot.Map.Dummies[0]);
                 bot.Map.Dummies[0].RpcCustomMurder(bot.Map.Dummies[1], MeetingCheck.OutsideMeeting, teleportMurderer: false);
                 yield return null;
                 if (WardenRole.ResidualMarks.Count == 0)
                 {
-                    bot.LessonSucceeded = false;
-                    break;
+                    bot.Failure = "The attack left no trace in your seal. Keep the seal in this room and try again.";
+                    yield break;
                 }
 
                 bot.Observation = null;
@@ -377,7 +407,7 @@ public sealed class NewBotLessons(NewBot bot)
                 yield return CoQuestion("What does the seal prevent?", "Vent entry in the sealed room", "All kills in the room", "Players leaving on foot");
                 break;
             case VerifierRole:
-                yield return bot.Say("In a meeting: press VERIFY, select the named player, then choose a row. Green means 'they did this'; red means 'they did not'. A Confirmed result means your chosen statement matches the record, not that the player is innocent.");
+                yield return bot.Say("I'll give you evidence about one player. In the meeting, choose VERIFY, then that player and the matching row. Green says they did it; red says they didn't. We're checking an action, not clearing their name.");
                 var claims = System.Enum.GetValues<VerifierClaimType>().Where(claim => claim != VerifierClaimType.None);
                 foreach (var claim in claims)
                 {
@@ -426,7 +456,10 @@ public sealed class NewBotLessons(NewBot bot)
                     yield return Meeting(string.Empty, () => VerifierUtilities.UsedThisMeeting, () =>
                     {
                         bot.VerificationExpected = (VerifierUtilities.RoundFacts.GetValueOrDefault(verified.PlayerId) & VerifierUtilities.GetFlag(claim)) != 0;
-                        return $"VERIFY > {verified.Data.PlayerName}\n{row}: {(bot.VerificationExpected ? "green check (did)" : "red cross (did not)")}. Then Skip.";
+                        if (bot.Level >= 3)
+                            return $"Verify {verified.Data.PlayerName}: {row}.\nChoose the answer from the evidence, then Skip.";
+                        var answer = bot.VerificationExpected ? "green check (did)" : "red cross (did not)";
+                        return $"VERIFY > {verified.Data.PlayerName}\n{row}: {answer}. Then Skip.";
                     });
                     if (!bot.LessonSucceeded)
                         yield break;
@@ -440,7 +473,7 @@ public sealed class NewBotLessons(NewBot bot)
                 break;
             case Edgeveil:
             case PulseBlade:
-                yield return bot.Say(role is Edgeveil ? "Use Arc on the marked target. Your direction locks during the charge. Leave the other players alive." : "Use Strike on the marked target. Aim for where they are going; the dash direction locks during the charge. Leave the other players alive.");
+                yield return bot.Say(role is Edgeveil ? "Face left or right toward the marked player, then press Arc. You can't turn it once the charge starts. Keep the others out of your line of fire." : "Get the marked player outlined, then press Strike. Your dash follows the direction chosen when you clicked, so watch their movement. Leave the others alive.");
                 if (bot.Level > 1)
                 {
                     foreach (var dummy in bot.Map.Dummies)
@@ -458,7 +491,13 @@ public sealed class NewBotLessons(NewBot bot)
                 break;
             case NecromancerRole:
                 bot.Map.Dummies[0].RpcCustomMurder(bot.Map.Dummies[1], MeetingCheck.OutsideMeeting, teleportMurderer: false);
-                yield return bot.Say("This dummy was killed by someone else. Approach the body and use Revive. You cannot revive a player you killed yourself.");
+                yield return bot.WaitFor("Watch Practice 2 fall.", () => bot.Map.Dummies[1].Data.IsDead, 10f);
+                bot.ShowGoal(bot.Map.Dummies[1]);
+                yield return bot.Say(bot.Level >= 3
+                    ? "Bring Practice 2 back. Practice 3 will chase you as you approach, so take a route that gives you time to reach the body."
+                    : "Practice 2 needs a second chance. Someone else killed them, so you can help: walk up to the body and press Revive. You can't undo your own kills.");
+                if (bot.Level >= 3)
+                    bot.Map.StartMovement(bot.Challenges.CoAttack(bot.Map.Dummies[2], bot.Player));
                 yield return bot.WaitFor("Revive the fallen dummy.", () => !bot.Map.Dummies[1].Data.IsDead);
                 break;
             case Revenant:
@@ -476,6 +515,8 @@ public sealed class NewBotLessons(NewBot bot)
                     : "Use Feign Death and wait for your revival. A reported fake corpse ends the trick. After reviving, activate Doom Awakening and touch the marked dummy.");
                 yield return bot.WaitFor("Feign death, revive, then catch the dummy during Doom.", () => Revenant.Phases.TryGetValue(id, out var phase) && phase == Revenant.Phase.DoomSpent);
                 bot.LessonSucceeded = bot.Map.Dummies[0].Data.IsDead;
+                if (!bot.LessonSucceeded)
+                    bot.Failure = "Doom ran out before you caught the target. Get closer after reviving, then activate it and make contact.";
                 break;
             case Voidwalker:
                 yield return bot.Say(bot.Level == 1 ? "Enter the Void and move to the arrow. Return before attacking the dummy. You cannot attack while phased." : "Follow each arrow while phased. A hunter will chase you when you return. Finish the route, leave the Void beside your target, and kill them before the hunter catches you.");
@@ -498,10 +539,12 @@ public sealed class NewBotLessons(NewBot bot)
                 break;
             case Deadwire:
                 Deadwire.ResetState();
-                yield return bot.Say("Deadlock records a marked player's next ability. Override spends that record. I'll simulate each category on this dummy so you can try all five responses.");
-                for (var recordIndex = 0; recordIndex < 5; recordIndex++)
+                yield return bot.Say("Mark Practice 1 with Deadlock. I'll stage an ability for you to record, then we'll try Override. I'll refill Deadlock between examples so we can cover all five types.");
+                if (bot.Level > 1)
+                    bot.Map.StartRoaming();
+                var categories = System.Enum.GetValues<EnergyCategory>().OrderBy(category => bot.Level >= 3 ? Random.value : (float)category).ToArray();
+                foreach (var category in categories)
                 {
-                    var category = (EnergyCategory)recordIndex;
                     var explanation = category switch
                     {
                         EnergyCategory.Aggression => "Aggression cuts your kill cooldown. Watch the timer after Override.",
@@ -510,12 +553,35 @@ public sealed class NewBotLessons(NewBot bot)
                         EnergyCategory.Control => "Control jams the recorded player's abilities for a short time.",
                         _ => "Protection gives you a temporary barrier.",
                     };
-                    yield return bot.Say(explanation);
-                    foreach (var button in CustomButtonManager.Buttons)
-                        button.SetTimer(0f);
+                    if (bot.Level < 3)
+                        yield return bot.Say(explanation);
+                    CustomButtonSingleton<DeadlockButton>.Instance.SetUses(1);
+                    CustomButtonSingleton<DeadlockButton>.Instance.SetTimer(0f);
+                    CustomButtonSingleton<OverrideButton>.Instance.SetTimer(0f);
                     yield return bot.WaitFor($"Mark the dummy to capture {category}.", () => Deadwire.MarkedPlayers.ContainsKey(id), 75f);
                     Deadwire.RpcRequestCapture(bot.Map.Dummies[0], (byte)category);
                     yield return bot.WaitFor($"Capture the {category} record.", () => Deadwire.Records.ContainsKey(id), 15f);
+                    if (bot.Level >= 3)
+                    {
+                        var response = category switch
+                        {
+                            EnergyCategory.Aggression => "Reduce my kill cooldown",
+                            EnergyCategory.Intelligence => "Track the recorded player",
+                            EnergyCategory.Mobility => "Blink in my movement direction",
+                            EnergyCategory.Control => "Jam the recorded player's abilities",
+                            _ => "Gain a temporary barrier",
+                        };
+                        yield return CoQuestion(
+                            $"You recorded {category}. What will Override do?",
+                            response,
+                            "Reduce my kill cooldown",
+                            "Track the recorded player",
+                            "Blink in my movement direction",
+                            "Jam the recorded player's abilities",
+                            "Gain a temporary barrier");
+                        if (!bot.LessonSucceeded)
+                            yield break;
+                    }
                     if (category == EnergyCategory.Aggression)
                         bot.Player.killTimer = 20f;
                     yield return bot.WaitFor($"Use Override with the {category} record.", () => !Deadwire.Records.ContainsKey(id), 60f);
@@ -524,20 +590,29 @@ public sealed class NewBotLessons(NewBot bot)
                 break;
             case EnergyThief:
                 EnergyThief.ResetState();
-                yield return bot.Say("Siphon takes energy from another player. An ability gives typed energy and causes a brownout; waiting gives raw energy. I'll simulate ability use on these targets so you can practise collecting each type.");
+                yield return bot.Say("Let's steal some energy. Siphon a player, then watch what they do. An ability gives you its energy type; letting the tether expire gives raw energy. I'll stage the ability uses for this exercise.");
                 if (bot.Level > 1)
                     bot.Map.StartRoaming();
                 var rawBefore = EnergyThief.Energy.GetValueOrDefault(id);
                 yield return bot.Say("First, Siphon Practice 6 and let the tether expire. That gives raw energy without a category.");
-                yield return bot.WaitFor("Siphon Practice 6 without an ability capture.", () => EnergyThief.TetherTargets.TryGetValue(id, out var rawTarget) && rawTarget == bot.Map.Dummies[5].PlayerId);
+                yield return bot.WaitFor("Siphon Practice 6 without an ability capture.", () => EnergyThief.TetherTargets.ContainsKey(id));
+                if (!bot.LessonSucceeded)
+                    yield break;
+                if (EnergyThief.TetherTargets[id] != bot.Map.Dummies[5].PlayerId)
+                {
+                    bot.Failure = "Wrong volunteer. Use Practice 6 for the raw-energy example.";
+                    yield break;
+                }
                 yield return bot.WaitFor("Wait for the raw energy.", () => EnergyThief.Energy.GetValueOrDefault(id) > rawBefore, OptionGroupSingleton<EnergyThiefOptions>.Instance.SiphonDuration + 10f);
-                for (var categoryIndex = 0; categoryIndex < 5; categoryIndex++)
+                for (var categoryIndex = 0; categoryIndex < 5 && !EnergyThief.IsReady(id); categoryIndex++)
                 {
                     var category = (EnergyCategory)categoryIndex;
                     var target = bot.Map.Dummies[categoryIndex];
                     target.SetName(category.ToString());
                     bot.ShowGoal(target);
                     yield return bot.WaitFor($"Siphon {category}.", () => EnergyThief.TetherTargets.ContainsKey(id), 90f);
+                    if (!bot.LessonSucceeded)
+                        yield break;
                     if (EnergyThief.TetherTargets[id] != target.PlayerId)
                     {
                         bot.Failure = $"That was the wrong target. Look for {category} before attaching Siphon.";
@@ -550,7 +625,7 @@ public sealed class NewBotLessons(NewBot bot)
 
                 yield return bot.WaitFor("Find the Power Node.", () => EnergyThief.NodePositionIndex >= 0);
                 bot.ShowGoal(EnergyThief.GetNodePosition());
-                yield return bot.Say("You have enough energy and types. Follow the arrow to the Power Node, start Grid Breach, and stay inside its radius. Moving away or a meeting interrupts it. Other players can ground the node.");
+                yield return bot.Say("You've filled the energy and category requirements. Follow the arrow to the Power Node and start Grid Breach. Stay inside its circle until it finishes; leaving or a meeting interrupts it.");
                 if (bot.Level >= 3)
                 {
                     bot.Map.StopMovements();
@@ -563,11 +638,14 @@ public sealed class NewBotLessons(NewBot bot)
             case InjectorRole:
                 if (bot.Level > 1)
                     bot.Map.StartRoaming();
-                yield return bot.Say("Adrenaline speeds a target up. Sedative slows them down. Choose a serum, inject, then collect when observation finishes. A target can cleanse the experiment, and each sample must come from a different player.");
+                yield return bot.Say("Adrenaline speeds someone up; Sedative slows them down. I'll name the serum for each sample. Inject a fresh player, stay with them, and collect when observation finishes.");
+                if (bot.Level >= 3)
+                    yield return bot.Say($"These volunteers won't wait around. You'll have {(bot.Level == 4 ? 2 : 5)} seconds to collect after observation, then they'll cleanse the injection. Keep up with them.");
                 for (var sample = 0; sample < OptionGroupSingleton<InjectorOptions>.Instance.RequiredInjectCount; sample++)
                 {
                     var required = sample + 1;
-                    var serum = sample % 2 == 0 ? InjectorRole.SerumType.Adrenaline : InjectorRole.SerumType.Sedative;
+                    var adrenaline = bot.Level >= 3 ? Random.value > 0.5f : sample % 2 == 0;
+                    var serum = adrenaline ? InjectorRole.SerumType.Adrenaline : InjectorRole.SerumType.Sedative;
                     yield return bot.WaitFor($"Select {serum} before injecting.", () => InjectorUtilities.SelectedSerum == serum);
                     yield return bot.WaitFor($"Inject a new target with {serum}.", () => InjectorUtilities.Experiments.ContainsKey(id), 90f);
                     if (InjectorUtilities.Experiments[id].Serum != serum)
@@ -581,14 +659,36 @@ public sealed class NewBotLessons(NewBot bot)
                     yield return bot.WaitFor($"Collect sample {required} from the injected target.", () => InjectorUtilities.SampleCount(id) >= required, 150f);
                 }
 
-                yield return bot.Say("You have enough samples. Use Submit and hold still until it finishes. Moving, dying, or a meeting can stop submission.");
+                yield return bot.Say("That's enough samples. Find a spot to stand still, then press Submit. Don't move until it finishes.");
                 yield return bot.WaitFor("Submit your samples without moving.", () => InjectorUtilities.Submitted.Contains(id), 120f);
                 break;
             case Prankster:
-                yield return bot.Say($"Fool {bot.Map.Dummies.Count} different witnesses. Each witness only counts once. Place fake bodies with Prank. A distracted witness reports; an alert one inspects and removes the fake.");
+                yield return bot.Say($"Let's fool {bot.Map.Dummies.Count} {(bot.Map.Dummies.Count == 1 ? "volunteer" : "volunteers")}. Prank drops a fake body at your feet. Get someone to report it and you score. No meeting, no murder. You can only have one fake out at a time.");
+                yield return bot.Say(bot.Level switch
+                {
+                    1 => "Practice 1 will stay put. Follow the arrow, drop a fake nearby, and watch them report it.",
+                    2 => "They're walking a route this time. Drop your fake where they'll find it. Follow the arrow if you lose them.",
+                    3 => "They're patrolling and checking for fakes. Wait for the distracted label before placing one near them. If they inspect it, you get no point.",
+                    _ => "They'll inspect most fakes. You get a brief distracted window, and no arrow to follow. Watch their names and movement. Those labels are training hints; real players won't have them.",
+                });
                 foreach (var witness in bot.Map.Dummies)
+                {
+                    var name = witness.Data.PlayerName;
+                    if (bot.Level < 4)
+                        bot.ShowGoal(witness);
                     bot.Map.StartMovement(bot.Challenges.CoPrankWitness(witness));
-                yield return bot.WaitFor("Fool each witness while they are distracted.", () => PranksterUtilities.GetReportCount(id) >= bot.Map.Dummies.Count, bot.Map.Dummies.Count * (OptionGroupSingleton<PranksterOptions>.Instance.PrankCooldown + 60f));
+                    yield return bot.WaitFor(
+                        $"Place a fake near {name} and get them to report it.",
+                        () => PranksterUtilities.FooledPlayers.Contains((id, witness.PlayerId)),
+                        OptionGroupSingleton<PranksterOptions>.Instance.PrankCooldown + 60f);
+                    bot.Map.StopMovements();
+                    witness.SetName(name);
+                    if (!bot.LessonSucceeded)
+                        yield break;
+                    var reports = PranksterUtilities.GetReportCount(id);
+                    if (reports < bot.Map.Dummies.Count)
+                        yield return bot.Say($"{name} fell for it! That's {reports} of {bot.Map.Dummies.Count}. They can't score twice. Next is {bot.Map.Dummies[reports].Data.PlayerName}; let Prank recharge before you try them.");
+                }
                 break;
             case Shade:
                 yield return bot.Say($"Earn {bot.Map.Dummies.Count} kills inside active shadow zones. Both you and the target must be inside. The targets will try to escape on harder settings.");
@@ -618,10 +718,10 @@ public sealed class NewBotLessons(NewBot bot)
                 break;
             case WraithCaller:
                 bot.Map.Dummies[0].RpcCustomMurder(bot.Map.Dummies[1], MeetingCheck.OutsideMeeting, teleportMurderer: false);
-                yield return bot.Say("Collect the trace from the body, then choose the living dummy for your Wraith. You need a fresh trace for each hunt. A failed hunt returns your trace.");
+                yield return bot.Say("There's your trace on the body. Collect it, then send a Wraith after the living player. If the hunt fails, you get the trace back for another try.");
                 if (bot.Level > 1)
                 {
-                    bot.Map.Dummies[0].RpcSetRole(CustomRoleManager.CustomMiraRoles.OfType<MirrorBladeRole>().Single().Role);
+                    bot.Map.Dummies[0].RpcSetRole((AmongUs.GameOptions.RoleTypes)RoleId.Get<MirrorBladeRole>());
                     bot.Map.StartMovement(bot.Challenges.CoReflectionWindows(bot.Map.Dummies[0]));
                     yield return bot.Say("This target can reflect your Wraith back at you. Their name shows when Reflect is active. Get close, watch the window, and summon so the Wraith arrives while they're open.");
                     if (bot.Level > 2)
@@ -633,7 +733,7 @@ public sealed class NewBotLessons(NewBot bot)
             case Tyrant:
                 if (bot.Level > 1)
                     bot.Map.StartRoaming();
-                yield return bot.Say("Earn a kill to unlock Fear Pulse. Use it to pressure the remaining targets. Four kills unlock the Champion offer; keep one dummy alive for that offer.");
+                yield return bot.Say("One kill unlocks Fear Pulse. Try it on the others, then work toward four kills. Leave one volunteer alive: you'll need someone to accept your Champion offer.");
                 yield return bot.WaitFor("Earn one kill, then use Fear Pulse.", () => ((Tyrant)bot.Player.Data.Role).NextPulse > Time.time);
                 yield return bot.WaitFor("Reach four kills, then offer the last living dummy an alliance.", () => Tyrant.ChampionId != byte.MaxValue);
                 yield return CoQuestion("What happens if the Champion refuses?", "The shared win is unavailable", "The Champion dies", "You win alone");
@@ -647,17 +747,25 @@ public sealed class NewBotLessons(NewBot bot)
             case Bounty:
                 Bounty.AssignContract(id);
                 bot.Map.StartMovement(bot.Challenges.CoFleeContract(bot.Map.Dummies[0]));
-                yield return bot.Say("Follow your contract target closely until Collection begins. After their head start, catch them and use Cash Out before the collection timer ends.");
+                yield return bot.Say("Stay close to your contract target until Collection starts. They'll get a head start while you're held still. Then chase them down and use Cash Out before the timer runs out.");
                 var bountyOptions = OptionGroupSingleton<BountyOptions>.Instance;
                 yield return bot.WaitFor("Stay with your target, then Cash Out during Collection.", () => bot.Victory, (bountyOptions.EscortDuration + bountyOptions.HeadStart + bountyOptions.CollectionDuration + 25f) * 2.5f);
                 break;
             case Nomad:
                 var nomadOptions = OptionGroupSingleton<NomadOptions>.Instance;
-                yield return bot.Say($"Place an Anchor, then visit {nomadOptions.RoomsPerRoute:0} different rooms. Stay at each stop long enough for it to count. Wander returns you to the Anchor and scores the route. You need {nomadOptions.ScoreGoal:0} routes, then a meeting.");
+                yield return bot.Say($"Place an Anchor in a room. That counts as your first stop. We need {nomadOptions.RoomsPerRoute:0} different rooms per route; stay at each new stop for {nomadOptions.VisitDuration:0.#} seconds and travel far enough for it to count.");
+                yield return bot.WaitFor("Place your Anchor.", () => Nomad.Anchors.ContainsKey(id));
+                yield return bot.Say($"Wander lights up when the route is ready. Use it to return and score, then place a new Anchor for the next route. We'll do {nomadOptions.ScoreGoal:0} routes, then survive a meeting. Replacing the Anchor early resets your unfinished route.");
                 for (var route = 0; route < nomadOptions.ScoreGoal; route++)
                 {
                     var score = route + 1;
-                    yield return bot.WaitFor($"Complete route {score}, then Wander back.", () => Nomad.Scores.GetValueOrDefault(id) >= score, nomadOptions.RoomsPerRoute * (nomadOptions.VisitDuration + 30f) * 2.5f);
+                    if (route > 0)
+                        yield return bot.WaitFor("Place a new Anchor to start your next route.", () => Nomad.Anchors.ContainsKey(id) || Nomad.Scores.GetValueOrDefault(id) >= score);
+                    yield return bot.WaitFor(
+                        $"Visit different rooms until Wander is ready. Route {score}/{nomadOptions.ScoreGoal:0}.",
+                        () => Nomad.CanWander.Contains(id) || Nomad.Scores.GetValueOrDefault(id) >= score,
+                        nomadOptions.RoomsPerRoute * (nomadOptions.VisitDuration + 30f) * (2.5f - bot.Level * 0.3f));
+                    yield return bot.WaitFor("Use Wander to return to your Anchor and score.", () => Nomad.Scores.GetValueOrDefault(id) >= score, nomadOptions.WanderCooldown + 30f);
                 }
 
                 yield return bot.Say("Your routes are complete. Stay alive through this meeting to finish.");
@@ -665,7 +773,9 @@ public sealed class NewBotLessons(NewBot bot)
                 bot.LessonSucceeded &= bot.Victory;
                 break;
             case Collector:
-                yield return bot.Say("Harvest gathers fragments. Normal kills leave Violence, ability kills leave Ability, and exile or environmental deaths leave Fate. I'll place samples so you can practise each use.");
+                yield return bot.Say("I'll leave fragments for you to harvest. Violence comes from normal kills, Ability from ability kills, and Fate from exile or environmental deaths. Let's turn a pair into something useful.");
+                if (bot.Level == 4)
+                    yield return bot.Say("You'll need to find the samples yourself this time. Search this room and use their colors to tell them apart. I'll name the type you need, but won't mark its position.");
                 yield return CoHarvestFragments(Collector.FragmentKind.Violence, 2);
                 yield return bot.Say("Two Violence fragments can make Trace. Use Manifest and watch for a highlighted fragment. Trace helps you find your next harvest.");
                 var tracePoint = bot.Map.Positions[^1];
@@ -695,7 +805,7 @@ public sealed class NewBotLessons(NewBot bot)
                 bot.LessonSucceeded &= bot.Victory;
                 break;
             case Usurper:
-                yield return bot.Say("Claim one of the dummies. I'll arrange that target's death. Then stand still beside the crown, alone, until you collect it.");
+                yield return bot.Say("Choose a volunteer with Claim. I'll arrange their death so you can practice taking the crown. Stand still beside it, with nobody else close, until it's yours.");
                 yield return bot.WaitFor("Claim a dummy.", () => Usurper.States.TryGetValue(id, out var state) && state.Phase == Usurper.CrownPhase.Claimed);
                 var claimed = Utils.PlayerById(Usurper.States[id].TargetId);
                 var attacker = bot.Map.Dummies.First(dummy => dummy != claimed);
@@ -714,7 +824,7 @@ public sealed class NewBotLessons(NewBot bot)
                 bot.LessonSucceeded &= bot.Victory;
                 break;
             case TerminatorRole:
-                yield return bot.Say("Survive the required meetings to reveal your objective. Once it appears, activate Terminate and survive the countdown.");
+                yield return bot.Say("First we need to get you through the required meetings. I'll arrange safe votes. Once your objective appears, go to it and start Terminate. Then you have to stay alive until it finishes.");
                 var requiredMeetings = (int)OptionGroupSingleton<TerminatorOptions>.Instance.MeetingsBeforeObjective;
                 for (var meeting = 0; meeting < requiredMeetings; meeting++)
                 {
@@ -759,11 +869,12 @@ public sealed class NewBotLessons(NewBot bot)
                         (EgoistRole.States[id].Ego < requiredEgo ? "We'll repeat the same safe voting plan." : "Challenge is ready for the next meeting."));
                 }
 
-                yield return bot.Say("Now press CHALLENGE in the meeting, then select Practice 1. Wait for LOCKED, then cast your normal vote for Practice 1. The dummies are arranged to exile that target if you follow this plan.");
+                var opponent = bot.Map.Dummies[bot.Level == 4 ? Random.Range(0, bot.Map.Dummies.Count) : 0];
+                yield return bot.Say($"Let's challenge {opponent.Data.PlayerName}. Press CHALLENGE, select them, and wait for LOCKED. Then vote for them normally. I've arranged enough votes to exile them if you follow that plan.");
                 for (var voter = 0; voter < bot.Map.Dummies.Count; voter++)
-                    bot.Map.Dummies[voter].GetComponent<DummyBehaviour>().PlayerIdToVoteFor = bot.Level >= 3 && voter < 2 ? id : bot.Map.Dummies[0].PlayerId;
-                yield return Meeting("CHALLENGE > Practice 1 > LOCKED.\nThen vote for Practice 1.", () => EgoistRole.States[id].OpponentId == bot.Map.Dummies[0].PlayerId);
-                bot.LessonSucceeded &= bot.Map.Dummies[0].Data.IsDead;
+                    bot.Map.Dummies[voter].GetComponent<DummyBehaviour>().PlayerIdToVoteFor = bot.Level >= 3 && voter < 2 ? id : opponent.PlayerId;
+                yield return Meeting($"CHALLENGE > {opponent.Data.PlayerName} > LOCKED.\nThen vote for {opponent.Data.PlayerName}.", () => EgoistRole.States[id].OpponentId == opponent.PlayerId);
+                bot.LessonSucceeded &= opponent.Data.IsDead;
                 break;
             default:
                 bot.LessonSucceeded = false;

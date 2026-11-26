@@ -15,7 +15,6 @@ using NewMod.Options;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Roles.ImpostorRoles.S1;
 using NewMod.UI;
-using PathfindingAPI.Navigation;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -44,7 +43,7 @@ public sealed class NewBotEvents(NewBot bot)
         var choices = events.Select(ge => new NewBotMenu.Choice(ge.Title, ge.AccentColor)).ToList();
         var back = new NewBotMenu.Choice("Categories", Color.white);
         choices.Add(back);
-        yield return bot.Say("General events affect the whole match. Pick one to see its warning, try the response, and learn what changes when it ends.");
+        yield return bot.Say("Pick an event. I'll trigger it here so you can learn what to do when it happens in a match.");
         while (true)
         {
             bot.Menu = NewBotMenu.Open("General events", choices);
@@ -52,7 +51,9 @@ public sealed class NewBotEvents(NewBot bot)
                 yield return null;
             if (bot.Menu.Selected == null || bot.Menu.Selected == back)
                 yield break;
-            bot.Level = bot.Extreme ? 4 : 1;
+            bot.Level = bot.Progressive ? 2 : 1;
+            if (bot.Extreme)
+                bot.Level = 4;
             yield return CoPractice(events[choices.IndexOf(bot.Menu.Selected)]);
         }
     }
@@ -67,10 +68,13 @@ public sealed class NewBotEvents(NewBot bot)
         while (true)
         {
             var role = ge is AbilityExchangeGE ? RoleId.GetRole<MirrorBladeRole>() : RoleId.GetRole<Aegis>();
-            yield return bot.Map.CoPrepare(role, 2, chooseRoom: true);
+            var vortexRadius = ge is CrismonVortexGE ? OptionGroupSingleton<GEOptions>.Instance.CrimsonRadius.Value : 0f;
+            yield return bot.Map.CoPrepare(role, 2, chooseRoom: true, vortexRadius: vortexRadius);
             if (bot.Map.Positions.Count == 0)
             {
-                yield return bot.Say("I couldn't set up the practice area. Choose the event again to retry.");
+                yield return bot.Say(ge is CrismonVortexGE
+                    ? "I checked the available rooms, but couldn't find a safe setup for this vortex size. Lower Vortex Size or try another map. Let's choose another event for now."
+                    : "I couldn't find a usable practice area on this map. Let's choose another event.");
                 yield break;
             }
 
@@ -206,7 +210,7 @@ public sealed class NewBotEvents(NewBot bot)
     public IEnumerator CoAbilityExchange(IGeneralEvent ge)
     {
         bot.Map.Dummies[0].RpcSetRole(RoleId.GetType<Aegis>());
-        yield return bot.Say("You're MirrorBlade. Ability Exchange will lend you Aegis's Sentinel Ward. Your team and win condition stay the same. Place the borrowed ward before the event ends.");
+        yield return bot.Say("You're MirrorBlade, but I'm about to lend you Aegis's ward. Try placing it before the event ends. Your team and win condition won't change.");
         Start(ge);
         yield return CoWait("Place the borrowed Sentinel Ward.", () => ShieldArea._active.Any(area => area && area.ownerId == bot.Player.PlayerId), ge.Duration, true);
         if (!bot.LessonSucceeded)
@@ -222,7 +226,7 @@ public sealed class NewBotEvents(NewBot bot)
 
     public IEnumerator CoCeasefire(IGeneralEvent ge)
     {
-        yield return bot.Say("No Man's Land blocks combat, role abilities, vents, sabotage, reporting, and the Use button. You can still walk. Move to the arrow, then wait for your abilities to return. Players already in the Void are exempt.");
+        yield return bot.Say("Your buttons are about to stop working. You can still walk, so follow my arrows to safety. No fighting, reporting, abilities, or venting until the event ends. Someone already in the Void is exempt.");
         Start(ge);
         yield return CoCourse(2 + bot.Level, true);
         if (!bot.LessonSucceeded)
@@ -237,8 +241,8 @@ public sealed class NewBotEvents(NewBot bot)
     public IEnumerator CoVisibility(IGeneralEvent ge)
     {
         yield return bot.Say(ge is NegativeRealityGE
-            ? "Negative Reality changes the screen's colors. Walls and controls stay where they were. Follow the arrows using the room's layout, then check that you still have your role ability."
-            : "Screen Desynchronization distorts the image in bursts. It does not teleport players or change the walls. Follow the arrows and keep your bearings between bursts.");
+            ? "The colors are about to change. Keep your bearings and follow my arrows; the walls and controls stay where they were. We'll try your ability too."
+            : "The screen will distort in bursts. Keep moving toward the arrows. You're still in the same room, even when the picture looks wrong.");
         Start(ge);
         yield return CoCourse(2 + bot.Level, true);
         if (!bot.LessonSucceeded)
@@ -270,7 +274,7 @@ public sealed class NewBotEvents(NewBot bot)
     {
         var target = bot.Map.Dummies[0];
         bot.ShowGoal(target);
-        yield return bot.Say("Watch Practice 1 before you close this dialog. Identity Crisis passes living players' outfits and displayed names to another player. Players in the Void keep their identity. Keep track of this dummy by following its movement.");
+        yield return bot.Say("Keep your eyes on Practice 1. I'm about to swap everyone's names and outfits. Follow their movement, not their new name. Players in the Void keep their identity.");
         if (bot.GoalMarker)
             Object.Destroy(bot.GoalMarker.gameObject);
         Start(ge);
@@ -308,7 +312,7 @@ public sealed class NewBotEvents(NewBot bot)
     {
         bot.Map.Dummies[0].RpcSetRole(RoleId.GetType<MirrorBladeRole>());
         bot.Map.Dummies[1].RpcSetRole(RoleTypes.Crewmate);
-        yield return bot.Say("You start as Aegis. Role Scramble shuffles living players' roles, except players in the Void. Your role may stay the same, but any change lasts after the banner disappears. Check your role name and team before acting.");
+        yield return bot.Say("You're Aegis for now. I'll scramble the roles, then ask what you became. Read your role and team before pressing anything. The change stays after the event ends; players in the Void are exempt.");
         Start(ge);
         yield return CoWait("Read your new role and check your buttons.", () => GeneralEventManager.CurrentEvent == null, ge.Duration + 2f);
         var role = bot.Player.Data.Role;
@@ -369,10 +373,6 @@ public sealed class NewBotEvents(NewBot bot)
     public IEnumerator CoVortex(CrismonVortexGE ge)
     {
         var radius = OptionGroupSingleton<GEOptions>.Instance.CrimsonRadius.Value;
-        var killRadius = Mathf.Clamp(radius * 0.12f, 0.45f, 0.9f);
-        yield return bot.Map.CoFindEscapeRoutes();
-        var safePoints = bot.Map.EscapePositions.Concat(bot.Map.RoamingPositions).Where(point => Vector2.Distance(point, bot.Map.Center) > radius + 1f).ToArray();
-        var probe = MapPathfinding.CreateRequest(bot.Map.Center, bot.Map.Center, bot.Map.WalkingOptions);
         ge.PracticePullStrength = bot.Level switch
         {
             1 => 0.35f,
@@ -386,22 +386,17 @@ public sealed class NewBotEvents(NewBot bot)
             2 or 3 => GEOptions.EscapeDifficulty.Standard,
             _ => GEOptions.EscapeDifficulty.Hard,
         };
-        var entryRadius = Mathf.Max(killRadius + 0.65f, radius * (bot.Level == 4 ? 0.68f : 0.72f));
-        var caughtPoints = Enumerable.Range(0, 16)
-            .Select(index => bot.Map.Center + new Vector2(Mathf.Cos(index * Mathf.PI / 8f), Mathf.Sin(index * Mathf.PI / 8f)) * entryRadius)
-            .Where(point => bot.Map.Room.roomArea.OverlapPoint(point) && probe.IsClear(point, bot.Map.WalkingOptions.Radius + 0.2f) && probe.CanMove(bot.Map.Center, point)).ToArray();
-        if (safePoints.Length == 0 || caughtPoints.Length == 0)
+        if (!bot.Map.TryFindVortexEntry(radius, out var caught))
         {
             bot.LessonSucceeded = false;
-            bot.Failure = "This room has no safe escape route for the current vortex size. Retry to set up in another room.";
+            bot.Failure = "The practice area changed during setup. I'll check the rooms again when you retry.";
             yield break;
         }
 
-        var safe = safePoints.OrderBy(point => Vector2.Distance(point, bot.Map.Center)).First();
-        var caught = caughtPoints.OrderBy(point => Vector2.SqrMagnitude(point - safe)).First();
+        var safe = bot.Map.EscapePositions[0];
         yield return bot.Say(bot.Level == 1
-            ? "We'll start near the outer edge of the escape zone, with a gentle pull and an easier escape bar. After the warning, I'll move you there. Keep pressing Space, or tap repeatedly on Android, until you break free. The center is lethal."
-            : "This round has a stronger pull. I'll place you near the outer edge of the escape zone after the warning. Start filling the escape bar immediately and move away from the center. Vents will not protect you.");
+            ? "I've found room to practice. After the warning, I'll move you inside the escape zone, away from the lethal center. Keep pressing Space, or tap repeatedly on Android, until you break free. We'll start with a gentle pull."
+            : "This round has a stronger pull. After the warning, I'll move you inside the escape zone, away from the lethal center. Fill the escape bar immediately and move away from the center. Vents will not protect you.");
         bot.Player.MyPhysics.body.velocity = Vector2.zero;
         bot.Player.NetTransform.RpcSnapTo(safe - bot.Player.Collider.offset);
         yield return null;
