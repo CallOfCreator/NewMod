@@ -5,7 +5,6 @@
 <p align="center">
 <i>📱 NewMod now supports Android!</i>
 </p>
-
 <p align="center">
     <a href="https://github.com/CallOfCreator/NewMod/stargazers">
         <img src="https://img.shields.io/github/stars/CallOfCreator/NewMod" alt="GitHub stars">
@@ -14,25 +13,19 @@
         <img alt="Downloads" src="https://img.shields.io/github/downloads/CallOfCreator/NewMod/total?style=flat&logo=github&labelColor=%23800080&color=%23ff00ff">
     </a>
     <a href="https://starlight.allofus.dev/mods/com.callofcreator.newmod">
-      <img alt="Starlight Downloads" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fstarlight.allofus.dev%2Fapi%2Fv3%2Fmods%2Fcom.callofcreator.newmod&query=%24.downloads&suffix=%20downloads&label=%E2%AD%90%20Starlight&labelColor=%23B8860B&color=%23FFD700">
+    <img alt="Starlight Downloads" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fstarlight.allofus.dev%2Fapi%2Fv3%2Fmods%2Fcom.callofcreator.newmod&query=%24.downloads&suffix=%20downloads&label=%E2%AD%90%20Starlight&labelColor=%23B8860B&color=%23FFD700">
 </a>
-    </a>
     <a href="https://github.com/CallOfCreator/NewMod/network/members">
         <img src="https://img.shields.io/github/forks/CallOfCreator/NewMod?style=social" alt="GitHub forks">
     </a>
     <a href="https://github.com/CallOfCreator/NewMod/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/CallOfCreator/NewMod" alt="License">
     </a>
-    <a href="https://discord.gg/7UKG528WxZ">
-        <img src="https://img.shields.io/discord/1345441098851422259?label=Discord&logo=discord&color=5865F2&style=flat" alt="Join Discord">
+     <a href="https://discord.gg/7UKG528WxZ">
+        <img src="https://img.shields.io/discord/1345441098851422259?label=Discord&logo=discord&color=5865F2&style=flat" alt="Join">
     </a>
 </p>
 
-<p align="center">
-    <a href="https://starlight.allofus.dev/mods/com.callofcreator.newmod">
-        <img src="https://raw.githubusercontent.com/All-Of-Us-Mods/allofus.dev/refs/heads/master/static/images/starlight-badge.svg" alt="Starlight badge">
-    </a>
-</p>
 
 ---
 
@@ -42,7 +35,6 @@
 - [✨ Features](#-features)
 - [🔗 Compatibility](#-compatibility)
 - [🤝 Contributing](#-contributing)
-- [📱  Android](#-android)
 - [👥 Credits](#-credits)
 - [⚠️ Disclaimer](#-disclaimer)
 
@@ -66,7 +58,6 @@
 | v1.2.9 Hotfix 2     | v17.1.0 (2025.11.18) & v17.2 (2026.2.17) & v17.3 (2026.3.31) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot2/NewMod.zip) |
 | v1.2.9 Hotfix 3     | v17.3 (2026.3.31) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot3/NewMod.zip) |
 | v1.2.9 Hotfix 4     | v17.4 (2026.6.5) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.2.9Hot4/NewMod.zip) |
-| v1.3.0 ALPHA Fixed    | v17.4 (2026.6.5) |[Download](https://github.com/CallOfCreator/NewMod/releases/download/V1.3.0-ALPHA.Hot2/NewMod.dll) |
 
 ---
 
@@ -107,17 +98,9 @@ If you’d like to contribute, feel free to join and improve the project!
 
 ---
 
-# 📱 Android
-
-NewMod now officially supports Android.  
-Special thanks to [@xtracube](https://github.com/XtraCube) for providing access to the Android game lib, ensuring NewMod is fully compatible with **Starlight** at launch.  
-For more information about Starlight, please visit: [https://discord.gg/FYYqJU2bvp](https://discord.gg/FYYqJU2bvp)
-
----
-
 # 👥 Credits
 
-- **MiraAPI**: [MiraAPI GitHub](https://github.com/All-Of-Us-Mods/MiraAPI) - Among Us modding API and utility library, with inspiration for the debug window and the derivation of the gold color from MiraAPIExample Mod.
+- **MiraAPI**: [MiraAPI GitHub](https://github.com/All-Of-Us-Mods/MiraAPI) - An Among Us modding API and utility library. NewMod draws inspiration from MiraAPIExample Mod for its debug window and gold color, and also utilizes MiraAPI's analyzers.
 - **Reactor**: [Reactor GitHub](https://github.com/NuclearPowered/Reactor) - Modding API for Among Us.
 - **TownOfUs-R**: - Portions of code (PlayerById, GetClosestBody) and asset (ReviveSprite) derived from [Town-Of-Us-R](https://github.com/eDonnes124/Town-Of-Us-R).
 - **MoreGamemodes**: [MoreGamemodes](https://github.com/Rabek009/MoreGamemodes) - Derivation of IsActive and IsSabotage code.
@@ -126,8 +109,12 @@ For more information about Starlight, please visit: [https://discord.gg/FYYqJU2b
 - **Jsenm**: [Jsenm Discord](jsenm) - For the newer sprites/art for NewMod
 - **Pixabay**: [Pixabay](https://pixabay.com) - For sound effects used in NewMod
 - **angxlwtf**: [angxlwtf](https://github.com/angxlwtf) - Idea for **Wraith Caller** (originally for Hitman LP)
-
----
+- **CloneC**: [am-clonec](https://github.com/am-clonec) - For the Voidwalker Role & being NewMod's third developer
+- **exec**: [3X3CODE](https://github.com/3X3CODE) - For being NewMod’s second developer and providing artwork for the mod alongside Jsenm
+- **Ramcette**: [Ram's Discord](ramcetteau) - For providing some nameplate cosmetics
+- **Raly**: [Raly's Discord](dpanimating) - For providing the "Cosmic Visor" cosmetic
+- **WanderingPix**: [WanderingPixel](https://github.com/WanderingPix) - For providing the "Do worry" & "Dance and Fire" cosmetics
+- **Denis Volkow**: [Background Artwork](https://www.behance.net/gallery/161972373/Landscapes-in-ProCreate) – Used as the background for the new main menu
 
 # ⚠️ Disclaimer
 

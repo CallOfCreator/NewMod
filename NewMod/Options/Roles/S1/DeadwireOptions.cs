@@ -1,0 +1,45 @@
+using MiraAPI.GameOptions;
+using MiraAPI.GameOptions.Attributes;
+using MiraAPI.PluginLoading;
+using MiraAPI.Utilities;
+
+namespace NewMod.Options.Roles.S1;
+
+[MiraIgnore]
+public class DeadwireOptions : AbstractOptionGroup<global::NewMod.Roles.ImpostorRoles.S1.Deadwire>
+{
+    public override string GroupName => "Deadwire Settings";
+
+    [ModdedNumberOption("Deadlock Cooldown", 25f, 60f, 5f, MiraNumberSuffixes.Seconds)]
+    public float DeadlockCooldown { get; set; } = 35f;
+
+    [ModdedNumberOption("Deadlock Duration", 6f, 15f, 1f, MiraNumberSuffixes.Seconds)]
+    public float DeadlockDuration { get; set; } = 10f;
+
+    [ModdedNumberOption("Deadlock Uses", 1, 3, 1, "#", "#")]
+    public int DeadlockUses { get; set; } = 2;
+
+    [ModdedNumberOption("Deadlock Range", 0.75f, 2.5f, 0.25f, MiraNumberSuffixes.Distance)]
+    public float DeadlockRange { get; set; } = 1.5f;
+
+    [ModdedNumberOption("Override Cooldown", 3f, 15f, 1f, MiraNumberSuffixes.Seconds)]
+    public float OverrideCooldown { get; set; } = 5f;
+
+    [ModdedNumberOption("Kill Cooldown Reduction", 1f, 15f, 1f, MiraNumberSuffixes.Seconds)]
+    public float KillCooldownReduction { get; set; } = 8f;
+
+    [ModdedNumberOption("Minimum Kill Delay", 2f, 10f, 1f, MiraNumberSuffixes.Seconds)]
+    public float MinimumKillDelay { get; set; } = 3f;
+
+    [ModdedNumberOption("Tracking Duration", 3f, 12f, 1f, MiraNumberSuffixes.Seconds)]
+    public float TrackingDuration { get; set; } = 6f;
+
+    [ModdedNumberOption("Blink Distance", 1f, 4f, 0.25f, MiraNumberSuffixes.Distance)]
+    public float BlinkDistance { get; set; } = 2.5f;
+
+    [ModdedNumberOption("Jam Duration", 3f, 12f, 1f, MiraNumberSuffixes.Seconds)]
+    public float JamDuration { get; set; } = 6f;
+
+    [ModdedNumberOption("Barrier Duration", 3f, 12f, 1f, MiraNumberSuffixes.Seconds)]
+    public float BarrierDuration { get; set; } = 6f;
+}

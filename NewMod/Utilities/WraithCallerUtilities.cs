@@ -1,69 +1,167 @@
 using System.Collections.Generic;
+using System.Linq;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Utilities;
 using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Modifiers.S1;
+using NewMod.Options.Roles;
+using NewMod.Roles.ImpostorRoles.S1;
+using NewMod.Roles.NeutralRoles;
 using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
+using Reactor.Utilities;
 using UnityEngine;
 
-namespace NewMod.Utilities
+namespace NewMod.Utilities;
+
+public static class WraithCallerUtilities
 {
-    public static class WraithCallerUtilities
+    public static readonly HashSet<byte> Traces = [];
+    public static readonly HashSet<(byte Caller, byte Body)> CollectedTraces = [];
+    public static readonly Dictionary<byte, float> NextSummon = [];
+    public static readonly Dictionary<byte, int> Sent = [];
+    public static readonly Dictionary<byte, int> Kills = [];
+    public static readonly Dictionary<uint, WraithCallerNpc> ActiveNpcs = [];
+
+    public static int GetSentNPC(byte ownerId)
     {
-        public static readonly Dictionary<byte, int> Sent = [];
-        public static readonly Dictionary<byte, int> Kills = [];
+        return Sent.GetValueOrDefault(ownerId);
+    }
 
-        public static int GetSentNPC(byte ownerId)
+    public static int GetKillsNPC(byte ownerId)
+    {
+        return Kills.GetValueOrDefault(ownerId);
+    }
+
+    public static void AddSentNPC(byte ownerId, int amount = 1)
+    {
+        Sent[ownerId] = GetSentNPC(ownerId) + amount;
+    }
+
+    public static void AddKillNPC(byte ownerId, int amount = 1)
+    {
+        Kills[ownerId] = GetKillsNPC(ownerId) + amount;
+    }
+
+    [RegisterEvent]
+    public static void OnAfterMurder(AfterMurderEvent evt)
+    {
+        if (!AmongUsClient.Instance.AmHost || !evt.Source || !evt.Target || !evt.Target.Data || !evt.Target.Data.IsDead)
+            return;
+
+        var npc = ActiveNpcs.Values.FirstOrDefault(npc => npc && npc.isActive && npc.ResolvingKill && !npc.Reflected && npc.Owner == evt.Source && npc.Target == evt.Target);
+
+        if (!npc)
+            return;
+
+        npc.ResolvingKill = false;
+        npc.HuntSucceeded = true;
+        RpcConfirmKill(PlayerControl.LocalPlayer, evt.Source.PlayerId);
+    }
+
+    [MethodRpc((uint)CustomRPC.WraithCallerConfirmKill, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcConfirmKill(PlayerControl source, byte ownerId)
+    {
+        if (!source.IsHost())
+            return;
+
+        AddKillNPC(ownerId);
+    }
+
+    public static void ClearAll()
+    {
+        foreach (var npc in ActiveNpcs.Values.ToArray())
         {
-            return Sent.TryGetValue(ownerId, out var v) ? v : 0;
+            if (npc)
+            {
+                npc.HuntSucceeded = true;
+                npc.Dispose();
+            }
         }
 
-        public static int GetKillsNPC(byte ownerId)
-        {
-            return Kills.TryGetValue(ownerId, out var v) ? v : 0;
-        }
+        Traces.Clear();
+        CollectedTraces.Clear();
+        NextSummon.Clear();
+        Sent.Clear();
+        Kills.Clear();
+        ActiveNpcs.Clear();
+    }
 
-        public static void AddSentNPC(byte ownerId, int amount = 1)
-        {
-            Sent[ownerId] = GetSentNPC(ownerId) + amount;
-        }
+    public static void RequestSummonNPC(PlayerControl owner, PlayerControl target)
+    {
+        RpcRequestSummonNPC(owner, target.PlayerId);
+    }
 
-        public static void AddKillNPC(byte ownerId, int amount = 1)
-        {
-            Kills[ownerId] = GetKillsNPC(ownerId) + amount;
-        }
+    [MethodRpc((uint)CustomRPC.RequestSummon)]
+    public static void RpcRequestSummonNPC(PlayerControl source, byte targetId)
+    {
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<WraithCaller>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || !Traces.Contains(source.PlayerId) || NextSummon.GetValueOrDefault(source.PlayerId) > Time.time || ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
+            return;
 
-        public static void ClearAll()
-        {
-            Sent.Clear();
-            Kills.Clear();
-        }
+        var target = Utils.PlayerById(targetId);
+        if (!target || target == source || target.Data.IsDead || target.Data.Disconnected || target.HasModifier<InVoid>())
+            return;
 
-        public static void RequestSummonNPC(PlayerControl owner, PlayerControl target)
-        {
-            RpcRequestSummonNPC(owner, target.PlayerId);
-        }
+        var start = source.GetTruePosition();
 
-        [MethodRpc((uint)CustomRPC.RequestSummon)]
-        public static void RpcRequestSummonNPC(PlayerControl source, byte targetId)
-        {
-            if (!AmongUsClient.Instance.AmHost) return;
+        NextSummon[source.PlayerId] = Time.time + OverclockedModifier.GetCooldown(source, OptionGroupSingleton<WraithCallerOptions>.Instance.CallWraithCooldown);
+        OverclockedModifier.Pulse(source);
+        RpcSummonNPC(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId, start.x, start.y);
+    }
 
-            var target = Utils.PlayerById(targetId);
-            if (!target) return;
+    [MethodRpc((uint)CustomRPC.SummonNPC)]
+    public static void RpcSummonNPC(PlayerControl source, byte ownerId, byte targetId, float x, float y)
+    {
+        if (!source.IsHost()) return;
+        var owner = Utils.PlayerById(ownerId);
+        var target = Utils.PlayerById(targetId);
+        if (!owner || !target)
+            return;
 
-            var start = source.GetTruePosition();
+        Traces.Remove(ownerId);
+        AddSentNPC(ownerId);
 
-            RpcSummonNPC(source, target.PlayerId, start.x, start.y);
-        }
+        var npcId = GetSentNPC(ownerId);
+        var holder = new GameObject("WraithNPC_Holder");
+        var npc = holder.AddComponent<WraithCallerNpc>();
 
-        [MethodRpc((uint)CustomRPC.SummonNPC)]
-        public static void RpcSummonNPC(PlayerControl source, byte targetId, float x, float y)
-        {
-            var target = Utils.PlayerById(targetId);
+        ActiveNpcs[((uint)ownerId << 16) | (uint)npcId] = npc;
 
-            AddSentNPC(source.PlayerId);
+        npc.Initialize(owner, target, new Vector2(x, y), npcId);
+        if (owner.AmOwner)
+            Deadwire.RpcRequestCapture(owner, (byte)EnergyCategory.Control);
+    }
 
-            var holder = new GameObject("WraithNPC_Holder");
-            var npc = holder.AddComponent<WraithCallerNpc>();
-            npc.Initialize(source, target, new Vector2(x, y));
-        }
+    [MethodRpc((uint)CustomRPC.WraithCollectTrace)]
+    public static void RpcCollectTrace(PlayerControl source, byte bodyId)
+    {
+        if (!AmongUsClient.Instance.AmHost || !AbilityExchangeGE.HasRoleAbility<WraithCaller>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Traces.Contains(source.PlayerId) || CollectedTraces.Contains((source.PlayerId, bodyId)) || ActiveNpcs.Values.Any(npc => npc && npc.isActive && npc.Owner == source))
+            return;
+
+        var body = Helpers.GetBodyById(bodyId);
+        if (!body || body.Reported || PranksterUtilities.IsPranksterBody(body) || Vector2.Distance(source.GetTruePosition(), body.TruePosition) > OptionGroupSingleton<WraithCallerOptions>.Instance.TraceRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), body.TruePosition, Constants.ShipAndObjectsMask, false))
+            return;
+
+        RpcConfirmTrace(PlayerControl.LocalPlayer, source.PlayerId, bodyId);
+    }
+
+    [MethodRpc((uint)CustomRPC.WraithConfirmTrace)]
+    public static void RpcConfirmTrace(PlayerControl source, byte ownerId, byte bodyId)
+    {
+        if (!source.IsHost()) return;
+        CollectedTraces.Add((ownerId, bodyId));
+        Traces.Add(ownerId);
+        if (PlayerControl.LocalPlayer.PlayerId == ownerId)
+            Coroutines.Start(CoroutinesHelper.CoNotify("Trace collected. Choose a target to send your Wraith."));
+    }
+
+    [MethodRpc((uint)CustomRPC.WraithRestoreTrace)]
+    public static void RpcRestoreTrace(PlayerControl source, byte ownerId)
+    {
+        if (source.IsHost()) Traces.Add(ownerId);
     }
 }

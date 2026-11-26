@@ -1,0 +1,37 @@
+using MiraAPI.GameOptions;
+using MiraAPI.GameOptions.Attributes;
+using MiraAPI.PluginLoading;
+using MiraAPI.Utilities;
+using NewMod.Roles.NeutralRoles.S1;
+
+namespace NewMod.Options.Roles.S1;
+
+[MiraIgnore]
+public sealed class BountyOptions : AbstractOptionGroup<Bounty>
+{
+    [ModdedNumberOption("Target Head Start", 1f, 6f, 0.5f, MiraNumberSuffixes.Seconds)]
+    public float HeadStart { get; set; } = 3f;
+
+    [ModdedNumberOption("Tracking Interval", 2f, 10f, 1f, MiraNumberSuffixes.Seconds)]
+    public float TrackingInterval { get; set; } = 4f;
+
+    [ModdedNumberOption("Lost Contact Grace", 2f, 15f, 1f, MiraNumberSuffixes.Seconds)]
+    public float ContactGrace { get; set; } = 2f;
+
+    public override string GroupName => "Bounty Settings";
+
+    [ModdedNumberOption("Cash Out Cooldown", 10f, 30f, 5f, MiraNumberSuffixes.Seconds)]
+    public float CashOutCooldown { get; set; } = 15f;
+
+    [ModdedNumberOption("Cash Out Range", 0.75f, 2.5f, 0.25f, MiraNumberSuffixes.Distance)]
+    public float CashOutRange { get; set; } = 1f;
+
+    [ModdedNumberOption("Escort Range", 1f, 4f, 0.25f, MiraNumberSuffixes.Distance)]
+    public float EscortRange { get; set; } = 2f;
+
+    [ModdedNumberOption("Escort Duration", 10f, 45f, 5f, MiraNumberSuffixes.Seconds)]
+    public float EscortDuration { get; set; } = 25f;
+
+    [ModdedNumberOption("Collection Duration", 5f, 20f, 1f, MiraNumberSuffixes.Seconds)]
+    public float CollectionDuration { get; set; } = 10f;
+}

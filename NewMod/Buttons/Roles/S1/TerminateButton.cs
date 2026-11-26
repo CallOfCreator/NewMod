@@ -1,0 +1,53 @@
+using Il2CppSystem;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.PluginLoading;
+using MiraAPI.Utilities.Assets;
+using NewMod.Options.Roles.S1;
+using NewMod.Roles.NeutralRoles.S1;
+using UnityEngine;
+
+namespace NewMod.Buttons.Roles.S1;
+
+[MiraIgnore]
+public class TerminateButton : CustomActionButton<PlayerControl>
+{
+    public override string Name => "Terminate";
+    public override float Cooldown => 0f;
+    public override int MaxUses => 1;
+    public override ButtonLocation Location => ButtonLocation.BottomRight;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.TerminateButton;
+    public override float Distance => OptionGroupSingleton<TerminatorOptions>.Instance.CounterAttackRange;
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return Button && PlayerControl.LocalPlayer && PlayerControl.LocalPlayer.Data && TerminatorRole.FinalCountdownActive && PlayerControl.LocalPlayer.PlayerId != TerminatorRole.FinalCountdownOwnerId;
+    }
+
+    public override void SetActive(bool visible, RoleBehaviour role)
+    {
+        base.SetActive(visible && TerminatorRole.FinalCountdownActive, role);
+    }
+
+    public override PlayerControl GetTarget()
+    {
+        var terminator = TerminatorRole.GetTerminator();
+        if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected)
+            return null;
+
+        return Vector2.Distance(PlayerControl.LocalPlayer.GetTruePosition(), terminator.GetTruePosition()) <= Distance &&
+               !PhysicsHelpers.AnythingBetween(PlayerControl.LocalPlayer.GetTruePosition(), terminator.GetTruePosition(), Constants.ShipAndObjectsMask, false)
+            ? terminator
+            : null;
+    }
+
+    public override void SetOutline(bool active)
+    {
+        Target?.cosmetics.SetOutline(active, new Nullable<Color>(Color.red));
+    }
+
+    protected override void OnClick()
+    {
+        TerminatorRole.RpcRequestTerminate(PlayerControl.LocalPlayer);
+    }
+}

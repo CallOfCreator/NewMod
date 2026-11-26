@@ -1,57 +1,38 @@
 using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
-using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using NewMod.Roles.NeutralRoles;
-using UnityEngine;
 
-namespace NewMod.Options.Roles.InjectorOptions;
+namespace NewMod.Options.Roles;
 
 public class InjectorOptions : AbstractOptionGroup<InjectorRole>
 {
     public override string GroupName => "Injector Settings";
 
-    [ModdedNumberOption("Serum Cooldown", min: 5, max: 60, suffixType: MiraNumberSuffixes.Seconds)]
+    [ModdedNumberOption("Serum Cooldown", 5f, 60f)]
     public float SerumCooldown { get; set; } = 20f;
 
-    [ModdedNumberOption("Max Serum Uses", min: 1, max: 10)]
-    public float MaxSerumUses { get; set; } = 3f;
+    [ModdedNumberOption("Samples Required To Win", 1, 10, 1, "#", "#")]
+    public int RequiredInjectCount { get; set; } = 3;
 
-    [ModdedNumberOption("Injections Required to Win", min: 1, max: 10)]
-    public float RequiredInjectCount { get; set; } = 3f;
+    [ModdedNumberOption("Injection And Collection Range", 0.5f, 2f, 0.25f, MiraNumberSuffixes.Distance)]
+    public float InjectionRange { get; set; } = 1.25f;
 
-    [ModdedNumberOption("Adrenaline Effect (+% Speed)", min: 10, max: 200, increment: 5, suffixType: MiraNumberSuffixes.Percent)]
-    public float AdrenalineSpeedBoost { get; set; } = 10f;
+    [ModdedNumberOption("Observation Duration", 2f, 10f)]
+    public float ObservationDuration { get; set; } = 5f;
 
-    [ModdedNumberOption("Immobilize Duration", min: 1, max: 10, suffixType: MiraNumberSuffixes.Seconds)]
-    public float ParalysisDuration { get; set; } = 4f;
+    [ModdedNumberOption("Sample Collection Window", 5f, 30f)]
+    public float CollectionWindow { get; set; } = 15f;
 
-    [ModdedNumberOption("Bounce Force (Horizontal)", min: 1f, max: 2f, increment: 0.1f)]
-    public float BounceForceHorizontal { get; set; } = 2f;
+    [ModdedNumberOption("Adrenaline Speed Bonus", 5f, 40f, 5f)]
+    public float AdrenalineSpeedBoost { get; set; } = 20f;
 
-    [ModdedToggleOption("Enable Random Bounce Effects")]
-    public bool EnableBounceVariants { get; set; } = true;
+    [ModdedNumberOption("Sedative Slowdown", 5f, 30f, 5f)]
+    public float SedativeSlowdown { get; set; } = 15f;
 
-    [ModdedNumberOption("Bounce Duration", min: 1, max: 10, suffixType: MiraNumberSuffixes.Seconds)]
-    public float BounceDuration { get; set; } = 10f;
+    [ModdedNumberOption("Cleanse Duration", 1f, 5f, 0.5f)]
+    public float CleanseDuration { get; set; } = 2f;
 
-    public ModdedNumberOption BounceRotateEffect { get; } = new("Bounce Rotate Effect", 180f, min: 0f, max: 180f, increment: 10f, suffixType: MiraNumberSuffixes.None)
-    {
-        Visible = () => OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants
-    };
-    public ModdedNumberOption BounceStretchScale { get; } = new("Bounce Stretch Scale", 1.5f, min: 1f, max: 1.5f, increment: 0.01f, suffixType: MiraNumberSuffixes.Multiplier)
-    {
-        Visible = () => OptionGroupSingleton<InjectorOptions>.Instance.EnableBounceVariants
-    };
-
-    [ModdedNumberOption("Repel Duration", min: 1, max: 10, suffixType: MiraNumberSuffixes.Seconds)]
-    public float RepelDuration { get; set; } = 10f;
-
-    [ModdedNumberOption("Repel Range", min: 0.5f, max: 4f, increment: 0.1f)]
-    public float RepelRange { get; set; } = 2f;
-
-    [ModdedNumberOption("Repel Force", min: 0.1f, max: 2f, increment: 0.1f, suffixType: MiraNumberSuffixes.Multiplier)]
-    public float RepelForce { get; set; } = 0.3f;
+    [ModdedNumberOption("Final Submission Duration", 3f, 15f)]
+    public float SubmissionDuration { get; set; } = 6f;
 }
-
-

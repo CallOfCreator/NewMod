@@ -1,0 +1,27 @@
+<Project>
+    <Target Name="MergeReactUI" AfterTargets="Build">
+        <ItemGroup>
+            <MergeInput Include="$(TargetPath)"/>
+            <MergeInput Include="$(MSBuildProjectDirectory)/Resources/Dlls/ReactUI.dll"/>
+            <ILRepackSearchDir Include="@(ReferencePath->'%(RootDir)%(Directory)')"/>
+        </ItemGroup>
+
+        <MakeDir Directories="$(TargetDir)ilrepack_tmp"/>
+
+        <ILRepack
+                InputAssemblies="@(MergeInput)"
+                LibraryPath="@(ILRepackSearchDir)"
+                TargetKind="SameAsPrimaryAssembly"
+                OutputFile="$(TargetDir)ilrepack_tmp/$(TargetFileName)"
+                Internalize="true"
+                RenameInternalized="true"/>
+
+        <Delete Files="$(TargetPath)"/>
+
+        <Move
+                SourceFiles="$(TargetDir)ilrepack_tmp/$(TargetFileName)"
+                DestinationFiles="$(TargetPath)"/>
+
+        <RemoveDir Directories="$(TargetDir)ilrepack_tmp"/>
+    </Target>
+</Project>

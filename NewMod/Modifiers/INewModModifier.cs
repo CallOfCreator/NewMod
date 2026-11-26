@@ -1,0 +1,6 @@
+namespace NewMod.Modifiers;
+
+public interface INewModModifier
+{
+    ModifierFaction Faction { get; }
+}

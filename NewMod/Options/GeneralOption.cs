@@ -11,8 +11,8 @@ public class GeneralOption : AbstractOptionGroup
     [ModdedToggleOption("Allows dead players to open cams anywhere")]
     public bool AllowCams { get; set; } = false;
 
-    [ModdedNumberOption("Total Neutrals", min: 0f, max: 10, 1f)]
-    public float TotalNeutrals { get; set; } = 3f;
+    [ModdedNumberOption("Total Neutrals", 0f, 10)]
+    public float TotalNeutrals { get; set; } = 1f;
 
     [ModdedToggleOption("Keep Crew Majority")]
     public bool KeepCrewMajority { get; set; } = true;
@@ -25,7 +25,4 @@ public class GeneralOption : AbstractOptionGroup
 
     [ModdedToggleOption("Anonymous Names in Meetings")]
     public bool EnableAnonymousNamesInMeetings { get; set; } = false;
-
-    /*[ModdedToggleOption("Should spawn NPC after round start")]
-    public bool SpawnNpcAfterRoundStart { get; set; } = false;*/
 }

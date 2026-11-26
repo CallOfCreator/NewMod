@@ -1,0 +1,72 @@
+using System;
+using MiraAPI.Utilities;
+using NewMod.Utilities;
+using Reactor.Utilities;
+using Reactor.Utilities.Attributes;
+using UnityEngine;
+
+namespace NewMod.Components;
+
+[RegisterInIl2Cpp]
+public sealed class SuppressionDomeArea(IntPtr ptr) : MonoBehaviour(ptr)
+{
+    public byte _ownerId;
+    public float _radius, _duration, _t;
+    public bool _inside;
+    public AudioClip _enterClip;
+    public AudioClip _heartbeatClip;
+
+    public void Update()
+    {
+        _t += Time.deltaTime;
+        if (_t > _duration)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        var localPlayer = PlayerControl.LocalPlayer;
+        if (!localPlayer || localPlayer.Data == null) return;
+        if (localPlayer.PlayerId == _ownerId) return;
+
+        var nowInside = Vector2.Distance(localPlayer.GetTruePosition(), transform.position) <= _radius;
+        if (nowInside == _inside) return;
+
+        _inside = nowInside;
+        var hud = HudManager.Instance;
+        hud.SetHudActive(localPlayer, localPlayer.Data.Role, !_inside);
+
+        if (_inside)
+        {
+            Coroutines.Start(Utils.CoShakeCamera(Camera.main.GetComponent<FollowerCamera>(), 0.5f));
+
+            if (!localPlayer.Data.IsDead && Constants.ShouldPlaySfx() && !SoundManager.Instance.SoundIsPlaying(_enterClip))
+                SoundManager.Instance.PlaySound(_enterClip, false);
+
+            var notification = Helpers.CreateAndShowNotification("You’ve stepped into the Suppression Dome! All your abilities are LOCKED", Color.red);
+            notification.Text.SetOutlineThickness(0.36f);
+
+            if (localPlayer.MyPhysics.Velocity.sqrMagnitude > 0.0001f && !SoundManager.Instance.SoundIsPlaying(_heartbeatClip))
+                SoundManager.Instance.PlaySound(_heartbeatClip, false);
+        }
+    }
+
+    public void OnDestroy()
+    {
+        if (!_inside) return;
+        var localPlayer = PlayerControl.LocalPlayer;
+        if (!localPlayer || localPlayer.Data == null) return;
+        HudManager.Instance.SetHudActive(localPlayer, localPlayer.Data.Role, true);
+        _inside = false;
+    }
+
+    public void Init(byte ownerId, float radius, float duration)
+    {
+        _ownerId = ownerId;
+        _radius = radius;
+        _duration = duration;
+        _inside = false;
+        _enterClip = NewModAsset.FearSound.LoadAsset();
+        _heartbeatClip = NewModAsset.HeartbeatSound.LoadAsset();
+    }
+}

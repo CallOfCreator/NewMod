@@ -1,0 +1,288 @@
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.Networking;
+using NewMod.Achievements;
+using NewMod.GeneralEvents;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Modifiers.S1;
+using NewMod.Options;
+using NewMod.Roles.NeutralRoles.S1;
+using Reactor.Utilities.Attributes;
+using UnityEngine;
+
+namespace NewMod.Components;
+
+[RegisterInIl2Cpp]
+public class CrismonVortexPhysics(nint ptr) : MonoBehaviour(ptr)
+{
+    public int EscapeCount;
+
+    private bool _deathRequested;
+
+    private float _escapeProgress;
+    private bool _escapedThisEntry;
+    private bool _escaping;
+    private float _lastPressTime;
+    private Vector2 _lastSafePosition;
+    private bool _lastSafePositionReady;
+    private PlayerPhysics _physics;
+    private PlayerControl _player;
+
+    public void Awake()
+    {
+        _physics = GetComponent<PlayerPhysics>();
+        _player = GetComponent<PlayerControl>();
+        _lastPressTime = float.NegativeInfinity;
+    }
+
+    public void Update()
+    {
+        if (!_physics.AmOwner || _player.notRealPlayer || _player.Data == null)
+            return;
+
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
+        {
+            if ((!CrismonVortexGE.Active || CrismonVortexGE.IsWarning()) && _physics.AmOwner && !_player.Data.IsDead && _player.CanMove && !_player.inVent && _player.Collider.enabled)
+            {
+                _lastSafePosition = _player.transform.position;
+                _lastSafePositionReady = true;
+            }
+
+            _escapeProgress = 0f;
+            _lastPressTime = float.NegativeInfinity;
+
+            if (CrimsonVortexEscapeHud.Instance)
+                CrimsonVortexEscapeHud.Instance.ForceHide();
+
+            return;
+        }
+
+        if (_escaping)
+            return;
+
+        var options = OptionGroupSingleton<GEOptions>.Instance;
+        var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
+
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
+        var escapeRadius = options.CrimsonRadius.Value * 0.75f;
+        var difficulty = (GeneralEventManager.CurrentEvent as CrismonVortexGE)?.PracticeEscapeDifficulty ?? options.CrimsonEscapeDifficulty.Value;
+        var progressPerPress = difficulty switch
+        {
+            GEOptions.EscapeDifficulty.Easy => 0.12f,
+            GEOptions.EscapeDifficulty.Standard => 0.09f,
+            GEOptions.EscapeDifficulty.Hard => 0.07f,
+            _ => 0.09f,
+        };
+        var decayDelay = difficulty switch
+        {
+            GEOptions.EscapeDifficulty.Easy => 0.25f,
+            GEOptions.EscapeDifficulty.Standard => 0.15f,
+            GEOptions.EscapeDifficulty.Hard => 0.1f,
+            _ => 0.15f,
+        };
+        var decayRate = difficulty switch
+        {
+            GEOptions.EscapeDifficulty.Easy => 0.35f,
+            GEOptions.EscapeDifficulty.Standard => 0.55f,
+            GEOptions.EscapeDifficulty.Hard => 0.75f,
+            _ => 0.55f,
+        };
+
+        if (_escapedThisEntry || !_player.CanMove || _player.inVent || distance > escapeRadius || distance <= killRadius)
+        {
+            _escapeProgress = 0f;
+            _lastPressTime = float.NegativeInfinity;
+
+            if (CrimsonVortexEscapeHud.Instance)
+                CrimsonVortexEscapeHud.Instance.Hide();
+
+            return;
+        }
+
+        var inputBlocked = HudManager.Instance.Chat.IsOpenOrOpening || Minigame.Instance || (MapBehaviour.Instance && MapBehaviour.Instance.gameObject.activeSelf) || (MatchInfoGuide.Instance && MatchInfoGuide.Instance.IsActive);
+
+        var pressed = Input.GetKeyDown(KeyCode.Space);
+
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            for (var touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
+            {
+                var touch = Input.GetTouch(touchIndex);
+
+                if (touch.phase != TouchPhase.Began)
+                    continue;
+
+                pressed = true;
+                break;
+            }
+        }
+
+        if (!inputBlocked && pressed)
+        {
+            _escapeProgress = Mathf.Clamp01(_escapeProgress + progressPerPress);
+
+            _lastPressTime = Time.time;
+
+            if (CrimsonVortexEscapeHud.Instance)
+                CrimsonVortexEscapeHud.Instance.Pulse();
+        }
+        else if (Time.time - _lastPressTime > decayDelay)
+        {
+            _escapeProgress = Mathf.Max(0f, _escapeProgress - decayRate * Time.deltaTime);
+        }
+
+        if (CrimsonVortexEscapeHud.Instance) CrimsonVortexEscapeHud.Instance.SetProgress(_escapeProgress);
+
+        if (_escapeProgress >= 1f)
+            CrismonVortexGE.RpcEscapeVortex(_player);
+    }
+
+    public void FixedUpdate()
+    {
+        if (_player.notRealPlayer || _player.Data == null)
+            return;
+
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>())
+        {
+            _escaping = false;
+            _escapedThisEntry = false;
+            _deathRequested = false;
+            _escapeProgress = 0f;
+            _lastPressTime = float.NegativeInfinity;
+
+            return;
+        }
+
+        var options = OptionGroupSingleton<GEOptions>.Instance;
+        var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
+
+        if (distance > killRadius)
+            _deathRequested = false;
+
+        if (distance >= options.CrimsonRadius.Value)
+        {
+            if (_physics.AmOwner && _player.CanMove && !_player.inVent && _player.Collider.enabled)
+            {
+                _lastSafePosition = _player.transform.position;
+                _lastSafePositionReady = true;
+            }
+
+            _escaping = false;
+            _escapedThisEntry = false;
+        }
+
+        if (AmongUsClient.Instance.AmHost && !_deathRequested && !_escaping && !_player.inVent && distance <= killRadius)
+        {
+            _deathRequested = true;
+            Collector.MarkEnvironmental(_player.PlayerId);
+
+            _player.RpcAdvancedCustomMurder(_player, MeetingCheck.OutsideMeeting, true, true, resetKillTimer: false, teleportMurderer: false, showKillAnim: false, playKillSound: false);
+        }
+    }
+
+    public void OnDestroy()
+    {
+        if (_physics && _physics.AmOwner && CrimsonVortexEscapeHud.Instance) CrimsonVortexEscapeHud.Instance.ForceHide();
+    }
+
+    public void ApplyVortex()
+    {
+        if (_player.notRealPlayer || _player.Data == null || !CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return;
+
+        if (_escaping)
+            return;
+
+        var options = OptionGroupSingleton<GEOptions>.Instance;
+        var fromCenter = _player.GetTruePosition() - CrismonVortexGE.VortexPosition;
+
+        var distance = fromCenter.magnitude;
+
+        if (_player.inVent)
+        {
+            if (_physics.AmOwner && Vent.currentVent)
+                _physics.RpcBootFromVent(Vent.currentVent.Id);
+
+            return;
+        }
+
+        if (distance >= options.CrimsonRadius.Value || !_player.CanMove)
+            return;
+
+        if (distance <= 0.001f)
+            return;
+
+        var outward = fromCenter / distance;
+        var inward = -outward;
+        var tangent = Vector2.Perpendicular(outward);
+
+        var proximity = Mathf.Clamp01(1f - distance / options.CrimsonRadius.Value);
+
+        var pullProgress = proximity * proximity;
+        var intensity = options.CrimsonIntensity.Value switch
+        {
+            GEOptions.VortexIntensity.Gentle => 0.75f,
+            GEOptions.VortexIntensity.Standard => 1f,
+            GEOptions.VortexIntensity.Brutal => 1.3f,
+            _ => 1f,
+        };
+        intensity = (GeneralEventManager.CurrentEvent as CrismonVortexGE)?.PracticePullStrength ?? intensity;
+        var pull = Mathf.Lerp(0.55f, 4.25f, pullProgress) * intensity;
+        var orbit = 2.25f * intensity * (1f - pullProgress);
+
+        var currentDirection = Vector2.zero;
+
+        if (!_player.isDummy) currentDirection = _physics.GetVelocity() / Mathf.Max(_physics.TrueSpeed, 0.01f);
+
+        var direction = currentDirection + inward * pull + tangent * orbit;
+
+        _physics.SetNormalizedVelocity(Vector2.ClampMagnitude(direction, 2.1f * intensity));
+    }
+
+    public bool CanAcceptEscape()
+    {
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>() || !_player.CanMove || _player.inVent || _escaping || _escapedThisEntry) return false;
+
+        var options = OptionGroupSingleton<GEOptions>.Instance;
+        var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
+
+        return distance < options.CrimsonRadius.Value && distance > killRadius;
+    }
+
+    public void BeginEscape()
+    {
+        if (_escaping || _escapedThisEntry || _player.HasModifier<InVoid>())
+            return;
+
+        _escaping = true;
+        _escapedThisEntry = true;
+        _escapeProgress = 0f;
+        _lastPressTime = float.NegativeInfinity;
+
+        if (!_physics.AmOwner)
+            return;
+
+        EscapeCount++;
+        var escapePosition = _lastSafePositionReady ? _lastSafePosition : ShipStatus.Instance.InitialSpawnCenter;
+        _player.NetTransform.RpcSnapTo(escapePosition);
+        NewModAchievementsTab.EventHorizonDenied.Unlock();
+
+        if (CrimsonVortexEscapeHud.Instance)
+            CrimsonVortexEscapeHud.Instance.ShowSuccess();
+    }
+
+    public bool ShouldConsumeEscapeInput()
+    {
+        if (!CrismonVortexGE.Active || !CrismonVortexGE.PositionReady || CrismonVortexGE.IsWarning() || MeetingHud.Instance || ExileController.Instance || _player.Data.IsDead || _player.HasModifier<InVoid>()) return false;
+
+        if (_escaping)
+            return true;
+
+        var options = OptionGroupSingleton<GEOptions>.Instance;
+        var distance = Vector2.Distance(_player.GetTruePosition(), CrismonVortexGE.VortexPosition);
+        var killRadius = Mathf.Clamp(options.CrimsonRadius.Value * 0.12f, 0.45f, 0.9f);
+
+        return !_escapedThisEntry && distance <= options.CrimsonRadius.Value * 0.75f && distance > killRadius;
+    }
+}

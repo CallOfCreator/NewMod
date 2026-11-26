@@ -1,0 +1,33 @@
+using MiraAPI.Hud;
+using MiraAPI.Keybinds;
+using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Roles.CrewmateRoles.S1;
+using UnityEngine;
+
+namespace NewMod.Buttons.Roles.S1;
+
+public class WardenClueButton : CustomActionButton
+{
+    public override string Name => WardenRole.ClueType switch
+    {
+        0 => "Entry",
+        1 => "Ability",
+        _ => "Presence",
+    };
+    public override float Cooldown => 0f;
+    public override MiraKeybind Keybind => MiraGlobalKeybinds.TertiaryAbility;
+    public override ButtonLocation Location => ButtonLocation.BottomRight;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.WardenInvestigate;
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return AbilityExchangeGE.HasRoleAbility<WardenRole>(PlayerControl.LocalPlayer, role);
+    }
+
+    protected override void OnClick()
+    {
+        WardenRole.ClueType = (WardenRole.ClueType + 1) % 3;
+        OverrideName(Name);
+    }
+}

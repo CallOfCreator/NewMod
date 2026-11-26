@@ -1,0 +1,81 @@
+﻿using System.Globalization;
+using MiraAPI.Hud;
+using NewMod.Patches;
+using NewMod.Utilities;
+using UnityEngine;
+
+namespace NewMod.Debugging.Tabs;
+
+public class MatchTab : IDebugTab
+{
+    public string Name => "MATCH";
+    public bool ShouldShow => ShipStatus.Instance != null && PlayerControl.LocalPlayer;
+
+    public float _zoom;
+
+    public void BuildGUI()
+    {
+        if (!PlayerControl.LocalPlayer) return;
+
+        _zoom = DebugWindow.Instance.Zoom;
+        var meeting = MeetingHud.Instance;
+
+        GUILayout.Label("CAMERA MOUSE WHEEL");
+
+        var prevZoom = _zoom;
+
+        GUILayout.BeginHorizontal();
+
+        _zoom = GUILayout.HorizontalSlider(DebugWindow.Instance.Zoom, DebugWindow.ZoomMin, DebugWindow.ZoomMax);
+        GUILayout.Label(_zoom.ToString(CultureInfo.CurrentCulture));
+
+        GUILayout.EndHorizontal();
+
+        if (_zoom != prevZoom) DebugWindow.Instance.ApplyZoom(_zoom);
+
+        if (GUILayout.Button("Reset _zoom")) DebugWindow.Instance.ApplyZoom(DebugWindow.ZoomDefault);
+
+        GUILayout.Label("INFLUENCER ICONS");
+        GUILayout.Label($"{InfluencerIconsPatch.RoleIconIndices.Count} NewMod icons loaded");
+        GUILayout.Label("Use Influencer and open its image menu to preview.");
+        var forceIcons = GUILayout.Toggle(InfluencerIconsPatch.ForceNewModIcons, "Force NewMod icons");
+        if (forceIcons != InfluencerIconsPatch.ForceNewModIcons)
+            InfluencerIconsPatch.SetForcedPreview(forceIcons);
+        if (GUILayout.Button("Refresh icons")) InfluencerIconsPatch.RefreshIcons();
+
+        GUILayout.Label("LOCAL ABILITIES");
+
+        if (GUILayout.Button("Reset Kill Cooldown")) PlayerControl.LocalPlayer.SetKillTimer(0f);
+        if (GUILayout.Button("Reset Button Cooldowns"))
+        {
+            foreach (var button in CustomButtonManager.Buttons)
+                button.ResetCooldownAndOrEffect();
+        }
+
+        if (GUILayout.Button("Reset Button Uses to 3"))
+        {
+            foreach (var button in CustomButtonManager.Buttons)
+                button.SetUses(3);
+        }
+
+        if (meeting)
+        {
+            if (GUILayout.Button("Cast Random Vote"))
+            {
+                var target = Utils.GetRandomPlayer(player => !player.Data.IsDead && !player.Data.Disconnected);
+
+                if (target)
+                    meeting.CmdCastVote(PlayerControl.LocalPlayer.PlayerId, target.PlayerId);
+            }
+
+            if (GUILayout.Button("Close Meeting")) meeting.Close();
+        }
+        else
+        {
+            GUILayout.Label("No active meeting");
+        }
+
+        if (GUILayout.Button($"Force all seasons: {(NewMod.ForceEnableAllSeasons.Value ? "ON" : "OFF")}"))
+            NewMod.ForceEnableAllSeasons.Value = !NewMod.ForceEnableAllSeasons.Value;
+    }
+}

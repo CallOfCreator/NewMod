@@ -1,9 +1,15 @@
-namespace NewMod
+namespace NewMod;
+
+public enum NewModFaction
 {
-    public enum NewModFaction
-    {
-        Apex,
-        Entropy,
-        Sentinel
-    }
+    Apex,
+    Entropy,
+    Sentinel,
+    Rift,
+}
+
+public enum ModifierFaction
+{
+    Crew,
+    Murder,
 }

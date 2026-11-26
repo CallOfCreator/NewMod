@@ -1,0 +1,53 @@
+[*.cs]
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.SA1401.severity = none
+dotnet_diagnostic.CA1051.severity = none
+dotnet_diagnostic.S1104.severity = none
+dotnet_diagnostic.S2223.severity = none
+dotnet_diagnostic.CA2211.severity = none
+dotnet_diagnostic.SA1307.severity = none
+dotnet_diagnostic.SA1311.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1720.severity = none
+dotnet_diagnostic.S3887.severity = none
+dotnet_diagnostic.S2386.severity = none
+dotnet_diagnostic.S2696.severity = none
+dotnet_diagnostic.S3267.severity = none
+
+[Networking/*Rpc.cs]
+dotnet_diagnostic.CA1725.severity = none
+dotnet_diagnostic.S927.severity = none
+
+[Achievements/NewModAchievements.cs]
+dotnet_diagnostic.S125.severity = none
+dotnet_diagnostic.SA1518.severity = none
+
+[{NewModEventHandler.cs,Seasons/SeasonManager.cs,Patches/Compatibility/LaunchpadCompatibility.cs}]
+dotnet_diagnostic.S3011.severity = none
+
+[{DebugWindow.cs,Debugging/**.cs,Roles/NeutralRoles/S1/ArbitratorRole.cs}]
+dotnet_diagnostic.S1244.severity = none
+
+[GeneralEvents/GeneralEventHud.cs]
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.S2325.severity = none
+
+[{Components/WraithCallerNpc.cs,Components/ScreenEffects/ScreenEffect.cs,GameModes/WraithSiegeGamemode/WraithSiegeNpc.cs,Debugging/PathfindingNpc.cs}]
+dotnet_diagnostic.S2953.severity = none
+
+[{Components/Toast.cs,Components/SlashTray.cs}]
+dotnet_diagnostic.CA1050.severity = none
+dotnet_diagnostic.S3903.severity = none
+
+[NewModEventHandler.cs]
+dotnet_diagnostic.CA1711.severity = none
+
+[Utilities/VerifierUtilities.cs]
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.S2344.severity = none
+
+[Patches/**.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.SA1611.severity = none
+dotnet_diagnostic.SA1615.severity = none

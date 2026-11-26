@@ -1,131 +1,58 @@
 using System.Collections;
 using System.Collections.Generic;
-using HarmonyLib;
 using MiraAPI.GameOptions;
-using MiraAPI.Utilities;
-using NewMod.Components.ScreenEffects;
-using NewMod.Options.Roles.BeaconOptions;
-using NewMod.Utilities;
-using Reactor.Utilities;
+using MiraAPI.Modifiers;
+using NewMod.Modifiers.S1;
+using NewMod.Networking;
+using NewMod.Options.Roles;
+using Reactor.Networking.Rpc;
 using UnityEngine;
 using BC = NewMod.Roles.CrewmateRoles.Beacon;
 
-namespace NewMod.Patches.Roles.Beacon
+namespace NewMod.Patches.Roles.Beacon;
+
+public static class BeaconShowMapPatch
 {
-    [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.Show))]
-    public static class BeaconShowMapPatch
+    public static IEnumerator ShowSnapshot()
     {
-        private static readonly List<SpriteRenderer> _markers = new();
-        private static bool _armedPulseThisOpen;
+        HudManager.Instance.InitMap();
+        var map = MapBehaviour.Instance;
+        map.Show(new MapOptions { Mode = MapOptions.Modes.Normal, AllowMovementWhileMapOpen = true });
+        if (!map.IsOpen)
+            yield break;
 
-        public static void Prefix(MapBehaviour __instance, MapOptions opts)
+        var options = OptionGroupSingleton<BeaconOptions>.Instance;
+        if (PlayerControl.LocalPlayer.HasModifier<OverclockedModifier>())
+            OverclockedModifier.RpcRequestPulse(PlayerControl.LocalPlayer);
+        BC.charges--;
+        BC.pulseUntil = Time.time + options.PulseDuration;
+        Rpc<BeaconPulseRpc>.Instance.Send(new BeaconPulseRpc.Data(0.6f));
+        var markers = new List<SpriteRenderer>();
+        foreach (var player in PlayerControl.AllPlayerControls)
         {
-            _armedPulseThisOpen = false;
+            if (player.Data.IsDead || player.Data.Disconnected || player.inVent || player == PlayerControl.LocalPlayer)
+                continue;
 
-            if (PlayerControl.LocalPlayer.Data.Role is not BC) return;
-            if (__instance.IsOpen || opts.Mode != MapOptions.Modes.Normal) return;
-
-            var settings = OptionGroupSingleton<BeaconOptions>.Instance;
-
-            if (BC.charges <= 0 || Time.time < BC.cooldownUntil) return;
-
-            BC.charges--;
-            BC.pulseUntil = Time.time + settings.PulseDuration;
-            BC.cooldownUntil = Time.time + settings.PulseCooldown;
-
-            opts.Mode = MapOptions.Modes.CountOverlay;
-            opts.ShowLivePlayerPosition = true;
-            opts.IncludeDeadBodies = settings.IncludeDeadBodies;
-            opts.AllowMovementWhileMapOpen = true;
-
-            _armedPulseThisOpen = true;
+            var marker = Object.Instantiate(map.HerePoint, map.HerePoint.transform.parent);
+            marker.enabled = true;
+            PlayerMaterial.SetColors(new Color(0.75f, 0.65f, 1f), marker);
+            var position = (Vector3)player.GetTruePosition() / ShipStatus.Instance.MapScale;
+            position.x *= Mathf.Sign(ShipStatus.Instance.transform.localScale.x);
+            position.z = -1f;
+            marker.transform.localPosition = position;
+            markers.Add(marker);
         }
 
-        public static void Postfix(MapBehaviour __instance, MapOptions opts)
+        while (map && map.IsOpen && Time.time < BC.pulseUntil && !PlayerControl.LocalPlayer.Data.IsDead && !MeetingHud.Instance && !Utilities.Utils.IsActive(SystemTypes.Comms))
+            yield return null;
+
+        foreach (var marker in markers)
         {
-            if (!_armedPulseThisOpen) return;
-            if (!__instance || !__instance.IsOpen) { _armedPulseThisOpen = false; return; }
-
-            ClearMarkers();
-
-            foreach (var pc in PlayerControl.AllPlayerControls)
+            if (marker)
             {
-                if (!pc) continue;
-
-                var marker = Object.Instantiate(__instance.HerePoint, __instance.HerePoint.transform.parent);
-                marker.name = $"BeaconMarker_{pc.PlayerId}";
-                marker.enabled = true;
-
-                pc.SetPlayerMaterialColors(marker);
-
-                _markers.Add(marker);
+                Object.Destroy(marker.material);
+                Object.Destroy(marker.gameObject);
             }
-
-            Coroutines.Start(CoUpdateMarkers(__instance));
-            _armedPulseThisOpen = false;
-
-            Helpers.CreateAndShowNotification(
-                $"Beacon pulse active ({BC.charges}/{OptionGroupSingleton<BeaconOptions>.Instance.MaxCharges} left)",
-                new Color(0.75f, 0.65f, 1f),
-                spr: NewModAsset.RadarIcon.LoadAsset());
-        }
-        [HarmonyPatch(typeof(MapCountOverlay), nameof(MapCountOverlay.Update))]
-        public static class BeaconOverlayTintKeeper
-        {
-            static void Postfix(MapCountOverlay __instance)
-            {
-                if (PlayerControl.LocalPlayer.Data.Role is not BC) return;
-
-                var map = MapBehaviour.Instance;
-                if (!map || !map.IsOpen) return;
-                if (!__instance || !__instance.isActiveAndEnabled) return;
-
-                if (__instance.BackgroundColor)
-                {
-                    __instance.BackgroundColor.SetColor(new Color(0.60f, 0.20f, 0.80f, 1f));
-                }
-            }
-        }
-
-        public static IEnumerator CoUpdateMarkers(MapBehaviour map)
-        {
-            while (Time.time < BC.pulseUntil && map && map.IsOpen && ShipStatus.Instance)
-            {
-                var players = PlayerControl.AllPlayerControls.ToArray();
-                for (int i = 0; i < players.Length && i < _markers.Count; i++)
-                {
-                    var pc = players[i];
-                    var mrk = _markers[i];
-                    if (!pc || !mrk) continue;
-
-                    Vector3 v = pc.transform.position;
-                    v /= ShipStatus.Instance.MapScale;
-                    v.x *= Mathf.Sign(ShipStatus.Instance.transform.localScale.x);
-                    v.z = -1f;
-                    mrk.transform.localPosition = v;
-                }
-                yield return null;
-            }
-            if (Time.time >= BC.pulseUntil)
-            {
-                Object.Destroy(Camera.main.GetComponent<DistorationWaveEffect>());
-                NewMod.Instance.Log.LogError("DESTROYED EFFECT");
-            }
-
-            ClearMarkers();
-            if (map && map.IsOpen)
-                map.Show(new MapOptions { Mode = MapOptions.Modes.Normal });
-        }
-
-        [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.Close))]
-        public static class BeaconCloseMapPatch
-        {
-            public static void Postfix() => ClearMarkers();
-        }
-        public static void ClearMarkers()
-        {
-            foreach (var r in _markers) if (r) Object.Destroy(r.gameObject);
-            _markers.Clear();
         }
     }
 }

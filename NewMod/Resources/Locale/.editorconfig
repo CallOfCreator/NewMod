@@ -1,0 +1,4 @@
+[*.xml]
+ij_xml_keep_whitespaces = true
+ij_xml_keep_line_breaks_in_text = true
+ij_xml_text_wrap = off

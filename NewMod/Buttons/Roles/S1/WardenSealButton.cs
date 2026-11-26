@@ -1,0 +1,51 @@
+﻿using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Keybinds;
+using MiraAPI.PluginLoading;
+using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Modifiers.S1;
+using NewMod.Options.Roles.S1;
+using NewMod.Roles.CrewmateRoles.S1;
+using NewMod.Roles.NeutralRoles;
+using UnityEngine;
+
+namespace NewMod.Buttons.Roles.S1;
+
+[MiraIgnore]
+public class WardenSealButton : CustomActionButton, IEnergyAbility
+{
+    public EnergyCategory Category => EnergyCategory.Control;
+    public override string Name => "Seal";
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<WardenOptions>.Instance.SealCooldown);
+    public override float EffectDuration => OptionGroupSingleton<WardenOptions>.Instance.SealDuration;
+    public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
+    public override ButtonLocation Location => ButtonLocation.BottomLeft;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.WardenSeal;
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return AbilityExchangeGE.HasRoleAbility<WardenRole>(PlayerControl.LocalPlayer, role);
+    }
+
+    public override bool CanUse()
+    {
+        if (!base.CanUse() || WardenRole.SealActive)
+            return false;
+
+        var room = WardenRole.GetRoom(PlayerControl.LocalPlayer.GetTruePosition());
+
+        return room && room.RoomId != SystemTypes.Hallway;
+    }
+
+    protected override void OnClick()
+    {
+        var player = PlayerControl.LocalPlayer;
+        var room = WardenRole.GetRoom(player.GetTruePosition());
+
+        if (!room || room.RoomId == SystemTypes.Hallway)
+            return;
+
+        WardenRole.RpcStartSeal(player, (byte)room.RoomId);
+    }
+}

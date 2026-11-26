@@ -1,55 +1,63 @@
+using System.Linq;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
-using MiraAPI.Events.Vanilla.Usables;
-using MiraAPI.Utilities;
+using MiraAPI.Events.Vanilla.Meeting;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Networking;
 using NewMod.Roles.CrewmateRoles;
 using NewMod.Utilities;
-using Reactor.Utilities;
+using UnityEngine;
 
-namespace NewMod.Patches.Roles.Visionary
+namespace NewMod.Patches.Roles.Visionary;
+
+public static class VisionaryMeetingEvents
 {
-    public static class VisionaryVentEvents
+    [RegisterEvent]
+    public static void OnRoundStart(RoundStartEvent evt)
     {
-        [RegisterEvent]
-        public static void OnEnterVent(EnterVentEvent evt)
-        {
-            var localPlayer = PlayerControl.LocalPlayer;
-            if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || evt.Player == localPlayer || !Helpers.CheckChance(20))
-                return;
-
-            var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-            var filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-
-            Coroutines.Start(Utils.CaptureScreenshot(filePath));
-        }
-
-        [RegisterEvent]
-        public static void OnExitVent(ExitVentEvent evt)
-        {
-            var localPlayer = PlayerControl.LocalPlayer;
-            if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || evt.Player == localPlayer || !Helpers.CheckChance(20))
-                return;
-
-            var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-            var filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-
-            Coroutines.Start(Utils.CaptureScreenshot(filePath));
-        }
+        if (evt.TriggeredByIntro)
+            VisionaryUtilities.DeleteAllScreenshots();
     }
 
-    public static class VisionaryMurderEvent
+    [RegisterEvent]
+    public static void OnMeetingStart(StartMeetingEvent evt)
     {
-        [RegisterEvent]
-        public static void OnBeforeMurder(BeforeMurderEvent evt)
+        VisionaryUtilities.MeetingNumber++;
+        VisionaryUtilities.BroadcastOwners.Clear();
+        Object.Destroy(VisionaryUtilities.PhotoPanel);
+        VisionaryUtilities.PhotoPanel = null;
+        UpdateMeetingButton();
+    }
+
+    public static void UpdateMeetingButton()
+    {
+        if (!MeetingHud.Instance)
+            return;
+
+        var button = MeetingHud.Instance.MeetingAbilityButton;
+        if (!AbilityExchangeGE.HasRoleAbility<TheVisionary>(PlayerControl.LocalPlayer) || PlayerControl.LocalPlayer.Data.IsDead)
         {
-            var localPlayer = PlayerControl.LocalPlayer;
-            if (localPlayer.Data.Role is not TheVisionary || localPlayer.Data.IsDead || !Helpers.CheckChance(20))
-                return;
+            if (button.graphic.sprite == NewModAsset.ShowScreenshotButton.LoadAsset())
+                button.Hide();
+            return;
+        }
+        button.Show();
+        button.SetInfiniteUses();
+        button.SetCoolDown(0f, 1f);
+        button.graphic.sprite = NewModAsset.ShowScreenshotButton.LoadAsset();
+        button.OverrideColor(Color.white);
+        button.OverrideText(VisionaryUtilities.BroadcastOwners.Contains(PlayerControl.LocalPlayer.PlayerId) ? "SENT" : "BROADCAST");
+    }
 
-            var timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
-            var filePath = System.IO.Path.Combine(VisionaryUtilities.ScreenshotDirectory, $"screenshot_{timestamp}.png");
-
-            Coroutines.Start(Utils.CaptureScreenshot(filePath));
+    [RegisterEvent]
+    public static void OnMeetingEnd(EndMeetingEvent evt)
+    {
+        Object.Destroy(VisionaryUtilities.PhotoPanel);
+        VisionaryUtilities.PhotoPanel = null;
+        foreach (var key in VisionaryPhotoRpc.Transfers.Keys.ToArray())
+        {
+            if (key.Meeting >= 0)
+                VisionaryPhotoRpc.Transfers.Remove(key);
         }
     }
 }

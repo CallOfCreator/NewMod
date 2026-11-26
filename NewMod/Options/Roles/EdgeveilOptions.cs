@@ -1,32 +1,26 @@
 using MiraAPI.GameOptions;
 using MiraAPI.GameOptions.Attributes;
-using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using NewMod.Roles.ImpostorRoles;
 
-namespace NewMod.Options.Roles.EdgeveilOptions
+namespace NewMod.Options.Roles;
+
+public class EdgeveilOptions : AbstractOptionGroup<Edgeveil>
 {
-    public class EdgeveilOptions : AbstractOptionGroup<Edgeveil>
-    {
-        public override string GroupName => "Edgeveil Settings";
+    public override string GroupName => "Edgeveil Settings";
 
-        [ModdedNumberOption("Slash Cooldown", min: 15f, max: 60f, increment: 1f, suffixType: MiraNumberSuffixes.Seconds)]
-        public float SlashCooldown { get; set; } = 20f;
+    [ModdedNumberOption("Slash Cooldown", 15f, 60f, 1f, MiraNumberSuffixes.Seconds)]
+    public float SlashCooldown { get; set; } = 25f;
 
-        [ModdedNumberOption("Slash Max Uses", min: 1f, max: 3f, increment: 1f, suffixType: MiraNumberSuffixes.Seconds)]
-        public float SlashMaxUses { get; set; } = 1f;
+    [ModdedNumberOption("Slash Range", 1f, 6f)]
+    public float SlashRange { get; set; } = 2.5f;
 
-        [ModdedNumberOption("Slash Range", min: 1f, max: 6f, increment: 1f, suffixType: MiraNumberSuffixes.None)]
-        public float SlashRange { get; set; } = 3f;
+    [ModdedNumberOption("Slash Tray Speed", 1f, 6f)]
+    public float SlashSpeed { get; set; } = 3f;
 
-        [ModdedNumberOption("Slash Tray Speed", min: 1f, max: 6f, increment: 1f, suffixType: MiraNumberSuffixes.None)]
-        public float SlashSpeed { get; set; } = 3f;
+    [ModdedNumberOption("Charge Duration", 0.3f, 2f, 0.1f, MiraNumberSuffixes.Seconds)]
+    public float ChargeDuration { get; set; } = 0.7f;
 
-        [ModdedNumberOption("Duration of Shake Effect", min: 5f, max: 6f, increment: 1f, suffixType: MiraNumberSuffixes.None)]
-        public float EffectDuration { get; set; } = 3f;
-
-        [ModdedNumberOption("Max players the Arc can kill", min: 1f, max: 6f, increment: 1f, suffixType: MiraNumberSuffixes.None)]
-        public float PlayersToKill { get; set; } = 4f;
-
-    }
+    [ModdedNumberOption("Max Players The Arc Can Kill", 1f, 6f)]
+    public float PlayersToKill { get; set; } = 1f;
 }

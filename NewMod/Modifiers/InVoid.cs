@@ -1,0 +1,214 @@
+﻿using System.Collections;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
+using MiraAPI.PluginLoading;
+using MiraAPI.Utilities;
+using NewMod.Components.ScreenEffects;
+using NewMod.Components.ScreenEffects.Effects;
+using NewMod.GeneralEvents;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Options.Roles.S1;
+using Reactor.Utilities;
+using UnityEngine;
+
+namespace NewMod.Modifiers.S1;
+
+[MiraIgnore]
+public class InVoid : BaseModifier
+{
+    public bool VoidActive;
+
+    public override string ModifierName => "InVoid";
+    public override bool ShowInFreeplay => true;
+    public override bool HideOnUi => true;
+
+    public override string GetDescription()
+    {
+        return "In Void";
+    }
+
+    public override void OnActivate()
+    {
+        OverclockedModifier.Pulse(Player, true);
+        VoidActive = true;
+
+        if (GeneralEventManager.CurrentEvent is IdentityCrisisGE)
+            Player.RawSetOutfit(Player.Data.DefaultOutfit, PlayerOutfitType.Default);
+
+        if (Player.AmOwner)
+        {
+            HudManager.Instance.SetHudActive(Player, Player.Data.Role, true);
+            SoundManager.Instance.PlaySoundImmediate(NewModAsset.EnterVoidSFX.LoadAsset(), false, 1f);
+
+            HudManager.Instance.KillButton.Hide();
+
+            var camera = Camera.main;
+
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                var fullScreen = HudManager.Instance.FullScreen;
+                fullScreen.transform.localPosition = new Vector3(0f, 0f, -250f);
+                fullScreen.color = Color.clear;
+                fullScreen.gameObject.SetActive(true);
+                Coroutines.Start(CoEnterVoidEffect(null, null));
+            }
+            else if (camera)
+            {
+                var oldTransition = camera.GetScreenEffect<VoidwalkerTransitionEffect>();
+
+                if (oldTransition != null)
+                    oldTransition.Remove();
+
+                var voidEffect = camera.AddScreenEffect<VoidwalkerVoidEffect>();
+
+                var transition = camera.AddScreenEffect<VoidwalkerTransitionEffect>();
+
+                voidEffect.amount = 0f;
+                transition.SetEnter(0f);
+
+                Coroutines.Start(CoEnterVoidEffect(voidEffect, transition));
+            }
+
+            foreach (var door in ShipStatus.Instance.AllDoors)
+                door.gameObject.SetActive(false);
+        }
+
+        if (!Player.AmOwner)
+            Player.Visible = false;
+    }
+
+    public override void OnDeactivate()
+    {
+        VoidActive = false;
+        Coroutines.Start(CoEmergenceCue());
+
+        if (Player.AmOwner)
+        {
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                Coroutines.Start(CoExitVoidEffect(null, null));
+            }
+            else
+            {
+                var camera = Camera.main;
+                var voidEffect = camera.GetScreenEffect<VoidwalkerVoidEffect>();
+
+                var transition = camera.AddScreenEffect<VoidwalkerTransitionEffect>();
+
+                transition.SetExit(0f);
+
+                Coroutines.Start(CoExitVoidEffect(voidEffect, transition));
+            }
+
+            HudManager.Instance.SetHudActive(Player, Player.Data.Role, !Player.Data.IsDead && !MeetingHud.Instance && !ExileController.Instance);
+
+            foreach (var door in ShipStatus.Instance.AllDoors)
+                door.gameObject.SetActive(true);
+        }
+
+        if (!Player.AmOwner)
+            Player.Visible = true;
+    }
+
+    public IEnumerator CoEmergenceCue()
+    {
+        var end = Time.time + OptionGroupSingleton<VoidwalkerOptions>.Instance.ExitTransitionDuration;
+        while (Player && !Player.Data.IsDead && !MeetingHud.Instance && Time.time < end)
+        {
+            Player.cosmetics.currentBodySprite.BodySprite.UpdateOutline(new Color(0.7f, 0.3f, 1f));
+            yield return null;
+        }
+
+        if (Player)
+            Player.cosmetics.currentBodySprite.BodySprite.UpdateOutline(null);
+    }
+
+    public IEnumerator CoEnterVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
+    {
+        var hud = HudManager.Instance;
+        var duration = OptionGroupSingleton<VoidwalkerOptions>.Instance.EnterTransitionDuration;
+
+        var timer = 0f;
+
+        while (hud && VoidActive && timer < duration)
+        {
+            timer += Time.unscaledDeltaTime;
+            var progress = Mathf.Clamp01(timer / duration);
+
+            var easedProgress = Mathf.SmoothStep(0f, 1f, progress);
+
+            if (Application.platform == RuntimePlatform.Android)
+                hud.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f * easedProgress);
+            else if (voidEffect != null && voidEffect.Active)
+                voidEffect.amount = easedProgress;
+
+            if (transition != null && transition.Active)
+                transition.SetEnter(progress);
+
+            yield return null;
+        }
+
+        if (!hud || !VoidActive)
+            yield break;
+
+        if (Application.platform == RuntimePlatform.Android)
+            hud.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f);
+        else if (voidEffect != null && voidEffect.Active)
+            voidEffect.amount = 1f;
+
+        if (transition != null && transition.Active)
+            transition.Remove();
+    }
+
+    public static IEnumerator CoExitVoidEffect(VoidwalkerVoidEffect voidEffect, VoidwalkerTransitionEffect transition)
+    {
+        var hud = HudManager.Instance;
+        var duration = OptionGroupSingleton<VoidwalkerOptions>.Instance.ExitTransitionDuration;
+
+        var timer = 0f;
+
+        while (hud && timer < duration)
+        {
+            timer += Time.unscaledDeltaTime;
+            var progress = Mathf.Clamp01(timer / duration);
+
+            var easedProgress = Mathf.SmoothStep(1f, 0f, progress);
+
+            if (Application.platform == RuntimePlatform.Android)
+                hud.FullScreen.color = new Color(0.19f, 0.035f, 0.32f, 0.42f * easedProgress);
+            else if (voidEffect != null && voidEffect.Active)
+                voidEffect.amount = easedProgress;
+
+            if (transition != null && transition.Active)
+                transition.SetExit(progress);
+
+            yield return null;
+        }
+
+        if (!hud)
+            yield break;
+
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            var fullScreen = hud.FullScreen;
+            fullScreen.color = Color.clear;
+            fullScreen.gameObject.SetActive(false);
+            fullScreen.transform.localPosition = new Vector3(0f, 0f, -500f);
+        }
+
+        if (transition != null && transition.Active)
+            transition.Remove();
+
+        if (voidEffect != null && voidEffect.Active)
+            voidEffect.Remove();
+    }
+
+    [RegisterEvent]
+    public static void OnBeforeMurder(BeforeMurderEvent @event)
+    {
+        if (@event.Source.HasModifier<InVoid>() || @event.Target.HasModifier<InVoid>())
+            @event.Cancel();
+    }
+}

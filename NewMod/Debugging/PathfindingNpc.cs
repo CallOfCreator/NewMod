@@ -1,0 +1,1048 @@
+using System.Collections.Generic;
+using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.Attributes;
+using PathfindingAPI.Compatibility;
+using PathfindingAPI.Core;
+using PathfindingAPI.Navigation;
+using PathfindingAPI.Options;
+using Reactor.Utilities.Attributes;
+using UnityEngine;
+
+namespace NewMod.Debugging;
+
+[RegisterInIl2Cpp]
+public class PathfindingNpc(nint ptr) : MonoBehaviour(ptr)
+{
+    public float Speed = 2.5f;
+    public NormalPlayerTask task;
+    public Console taskConsole;
+    public readonly Queue<Console> taskConsoles = new();
+    public SubmergedElevator elevator;
+    public Behaviour elevatorMover;
+    public MapPathRequest elevatorRequest;
+    public int elevatorWaypoint;
+    public int elevatorPhase;
+    public bool elevatorFromUpper;
+    public bool elevatorRequested;
+    public Vector2 elevatorControlPosition;
+    public ZiplineConsole zipConsole;
+    public HandZiplinePoolable zipHand;
+    public int zipPhase;
+    public float zipTime;
+    public Vector2 zipStart;
+    public Vector3 handStart;
+    public bool zipDownLoop;
+    public Vent ventExit;
+    public Il2CppSystem.Collections.IEnumerator ventAnimation;
+    public int ventPhase;
+    public MovingPlatformBehaviour platform;
+    public MapPathRequest platformAlternative;
+    public int platformPhase;
+    public Vector2 platformStart;
+    public Vector2 platformEnd;
+    public Vector2 platformExit;
+    public OpenableDoor waitingDoor;
+    public AudioSource traversalAudio;
+    public Vector2 lastClearPosition;
+    public float progress;
+    public float recoveryWait;
+    public PlayerControl visual;
+    public PathfindingPreview preview;
+    public MapPathRequest request;
+    public MapPath path;
+    public readonly Queue<Vector2> stops = new();
+    public readonly Queue<Vector2> traversalPoints = new();
+    public Vector2 destination;
+    public int waypoint;
+    public int retries;
+    public bool touring;
+    public bool returning;
+    public bool crossing;
+    public float crossingTime;
+    public float traversalSpeed;
+    public PathCrossing interaction;
+    public DeconSystem decon;
+
+    [HideFromIl2Cpp]
+    public void Initialize(PathfindingPreview owner, bool tour, NormalPlayerTask task = null)
+    {
+        preview = owner;
+        this.task = task;
+        traversalAudio = gameObject.AddComponent<AudioSource>();
+        traversalAudio.playOnAwake = false;
+        traversalAudio.outputAudioMixerGroup = SoundManager.Instance.SfxChannel;
+        touring = tour;
+        visual = Instantiate(AmongUsClient.Instance.PlayerPrefab);
+        visual.transform.SetParent(transform, true);
+        visual.notRealPlayer = true;
+        visual.enabled = false;
+        visual.NetTransform.enabled = false;
+        visual.MyPhysics.enabled = false;
+        visual.Collider.enabled = false;
+        visual.MyPhysics.body.isKinematic = true;
+        visual.MyPhysics.body.velocity = Vector2.zero;
+        PlayerControl.AllPlayerControls.Remove(visual);
+        visual.cosmetics.enabled = true;
+        visual.cosmetics.Visible = true;
+        visual.cosmetics.SetName("Pathfinding NPC");
+        visual.cosmetics.ToggleName(true);
+        visual.cosmetics.SetNamePosition(new Vector3(0f, 0.8f, -0.5f));
+        visual.cosmetics.ToggleHat(false);
+        visual.cosmetics.TogglePet(false);
+        visual.cosmetics.ToggleVisor(false);
+        visual.cosmetics.currentBodySprite.Visible = true;
+        visual.cosmetics.SetBodyColor(10);
+        var shadow = visual.gameObject.AddComponent<NoShadowBehaviour>();
+        shadow.rend = visual.cosmetics.currentBodySprite.BodySprite;
+        shadow.hitOverride = visual.Collider;
+        SetPosition(owner.start);
+        lastClearPosition = owner.start;
+        if (task)
+        {
+            foreach (var console in ShipStatus.Instance.AllConsoles)
+            {
+                if (console && console.isActiveAndEnabled && task.ValidConsole(console))
+                    taskConsoles.Enqueue(console);
+            }
+            NextTaskConsole();
+            return;
+        }
+        if (tour && !BuildTour(owner.start))
+            return;
+        if (!tour)
+            stops.Enqueue(owner.goal);
+        NextStop();
+    }
+
+    public void NextTaskConsole()
+    {
+        if (taskConsoles.Count == 0)
+        {
+            preview.message = $"NPC {task.TaskType}: no reachable console.";
+            Finish();
+            return;
+        }
+
+        taskConsole = taskConsoles.Dequeue();
+        destination = taskConsole.transform.position;
+        retries = 0;
+        Plan();
+        preview.message = $"NPC walking to {task.TaskType}.";
+    }
+
+    public bool BuildTour(Vector2 start)
+    {
+        var probe = MapPathfinding.CreateRequest(start, start);
+        if (probe.grid == null)
+        {
+            probe.Cancel();
+            Finish();
+            return false;
+        }
+
+        foreach (var room in ShipStatus.Instance.AllRooms)
+        {
+            if (!room.roomArea)
+                continue;
+            var center = (Vector2)room.roomArea.bounds.center;
+            var nearestDistance = float.MaxValue;
+            var point = center;
+            var bounds = room.roomArea.bounds;
+            for (var y = bounds.min.y; y <= bounds.max.y; y += probe.options.CellSize)
+            {
+                for (var x = bounds.min.x; x <= bounds.max.x; x += probe.options.CellSize)
+                {
+                    var candidate = new Vector2(x, y);
+                    var distance = Vector2.Distance(candidate, center);
+                    if (distance >= nearestDistance || !room.roomArea.OverlapPoint(candidate) || !probe.grid.bounds.Contains(candidate) || !probe.IsClear(candidate))
+                        continue;
+                    nearestDistance = distance;
+                    point = candidate;
+                }
+            }
+
+            if (nearestDistance < float.MaxValue)
+                stops.Enqueue(point);
+        }
+
+        stops.Enqueue(start);
+        probe.Cancel();
+        return true;
+    }
+
+    public void NextStop()
+    {
+        if (task)
+        {
+            if (request.CanUseConsole(visual.GetTruePosition()) && task.ValidConsole(request.console))
+            {
+                task.Owner.RpcCompleteTask(task.Id);
+                preview.message = $"NPC {task.TaskType} | Complete: {task.IsComplete && task.Owner.Data.FindTaskById(task.Id)?.Complete == true}";
+            }
+            else
+            {
+                preview.message = $"NPC {task.TaskType}: console unavailable.";
+            }
+            Finish();
+            return;
+        }
+
+        if (stops.Count == 0)
+        {
+            Finish();
+            return;
+        }
+
+        destination = stops.Dequeue();
+        returning = touring && stops.Count == 0;
+        retries = 0;
+        Plan();
+    }
+
+    public void Plan()
+    {
+        request?.Cancel();
+        request = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = retries > 0 ? 0.2f : 0.35f, WaitForDoors = true, UseVents = PlayerControl.LocalPlayer.Data.Role.CanVent && !MapPathfinding.IsSubmergedMap() }, PlayerControl.LocalPlayer, taskConsole);
+        path = null;
+        SetWalking(false);
+    }
+
+    public void FixedUpdate()
+    {
+        if (!visual || !preview || MeetingHud.Instance || !ShipStatus.Instance)
+        {
+            Dispose();
+            return;
+        }
+
+        if (task && (task.Owner != PlayerControl.LocalPlayer || !task.Owner.AmOwner || !task.Owner.myTasks.Contains(task) || task.IsComplete))
+        {
+            preview.message = "NPC task interrupted.";
+            Finish();
+            return;
+        }
+
+        if (crossing)
+        {
+            Traverse();
+            return;
+        }
+
+        if (request == null)
+            return;
+        if (waitingDoor)
+        {
+            if (!waitingDoor.IsOpen)
+            {
+                SetWalking(false);
+                return;
+            }
+
+            waitingDoor = null;
+        }
+
+        if (recoveryWait > 0f)
+        {
+            recoveryWait -= Time.fixedDeltaTime;
+            return;
+        }
+
+        if (path == null)
+        {
+            request.Step();
+            if (request.Status == PathStatus.Searching)
+                return;
+            if (request.Status != PathStatus.Found)
+            {
+                if ((request.Status == PathStatus.Obstructed || request.Status == PathStatus.InvalidEndpoint) && retries++ < 8)
+                {
+                    RecoverPath();
+                    recoveryWait = 0.25f;
+                    Plan();
+                }
+                else if (task)
+                {
+                    NextTaskConsole();
+                }
+                else if (!request.IsClear(visual.GetTruePosition()))
+                {
+                    Finish();
+                }
+                else if (touring && !returning)
+                {
+                    NextStop();
+                }
+                else
+                {
+                    Finish();
+                }
+
+                return;
+            }
+
+            path = request.Result;
+            waypoint = 1;
+            preview.DrawPath(path);
+        }
+
+        if (waypoint >= path.Points.Length)
+        {
+            NextStop();
+            return;
+        }
+
+        foreach (var step in path.Crossings)
+        {
+            if (step.PointIndex == waypoint - 1)
+            {
+                BeginTraversal(step);
+                return;
+            }
+        }
+
+        var position = visual.GetTruePosition();
+        var next = Vector2.MoveTowards(position, path.Points[waypoint], Speed * Time.fixedDeltaTime);
+        if (!request.CanMove(position, next))
+        {
+            SetWalking(false);
+            waitingDoor = FindClosedDoor(position, path.Points[waypoint]);
+            if (waitingDoor) return;
+            if (retries++ < 8)
+            {
+                RecoverPath();
+                recoveryWait = 0.25f;
+                Plan();
+            }
+            else
+            {
+                Finish();
+            }
+
+            return;
+        }
+
+        SetWalking(true);
+        Face(next - position);
+        lastClearPosition = position;
+        SetPosition(next);
+        progress += Vector2.Distance(position, next);
+        if (progress >= 0.5f)
+        {
+            retries = 0;
+            progress = 0f;
+        }
+
+        if ((next - path.Points[waypoint]).sqrMagnitude == 0f)
+            waypoint++;
+    }
+
+    [HideFromIl2Cpp]
+    public void BeginTraversal(PathCrossing step)
+    {
+        if (!step.Source || !step.Source.Cast<Behaviour>().isActiveAndEnabled)
+        {
+            Finish();
+            return;
+        }
+
+        interaction = step;
+        crossing = true;
+        crossingTime = 0f;
+        traversalPoints.Clear();
+        traversalSpeed = Speed;
+        SetWalking(false);
+        if (step.Type == PathTraversal.Ladder)
+        {
+            var ladder = step.Source.Cast<Ladder>();
+            traversalPoints.Enqueue(ladder.transform.position);
+            traversalPoints.Enqueue(ladder.Destination.transform.position);
+            traversalPoints.Enqueue(path.Points[waypoint]);
+            visual.cosmetics.SetFlipXWithoutPet(false);
+            visual.MyPhysics.Animations.PlayClimbAnimation(ladder.IsTop);
+            traversalSpeed = Speed * (ladder.IsTop ? 2f : 1f);
+        }
+        else if (step.Type == PathTraversal.Zipline)
+        {
+            zipConsole = step.Source.Cast<ZiplineConsole>();
+            zipPhase = 0;
+            zipTime = 0f;
+        }
+        else if (step.Type == PathTraversal.Vent)
+        {
+            ventExit = null;
+            var vent = step.Source.Cast<Vent>();
+            foreach (var next in new[] { vent.Left, vent.Right, vent.Center })
+            {
+                if (next && Vector2.Distance(next.transform.position + next.Offset, path.Points[waypoint]) <= next.UsableDistance)
+                {
+                    ventExit = next;
+                    break;
+                }
+            }
+
+            if (!PlayerControl.LocalPlayer.Data.Role.CanVent || !ventExit)
+            {
+                Finish();
+                return;
+            }
+
+            ventPhase = 0;
+            ventAnimation = null;
+        }
+        else if (step.Type == PathTraversal.MovingPlatform)
+        {
+            platform = step.Source.Cast<MovingPlatformBehaviour>();
+            var parent = platform.transform.parent;
+            var left = (Vector2)parent.TransformPoint(platform.LeftUsePosition);
+            var right = (Vector2)parent.TransformPoint(platform.RightUsePosition);
+            var position = visual.GetTruePosition();
+            var fromLeft = Vector2.Distance(position, left) < Vector2.Distance(position, right);
+            platformStart = parent.TransformPoint(fromLeft ? platform.LeftPosition : platform.RightPosition);
+            platformEnd = parent.TransformPoint(fromLeft ? platform.RightPosition : platform.LeftPosition);
+            platformExit = parent.TransformPoint(fromLeft ? platform.RightUsePosition : platform.LeftUsePosition);
+            platformPhase = 0;
+        }
+        else if (step.Type == PathTraversal.Elevator)
+        {
+            var map = SubmergedCompatibility.Get(ShipStatus.Instance);
+            elevator = map?.Elevators.Find(item => item.Source == step.Source);
+            var moverType = SubmergedCompatibility.Assembly?.GetType("Submerged.Elevators.Objects.ElevatorMover");
+            if (elevator == null || !elevator.Initialized || moverType == null || !AmongUsClient.Instance.AmHost)
+            {
+                Finish();
+                return;
+            }
+
+            elevatorMover = visual.gameObject.AddComponent(Il2CppType.From(moverType)).Cast<Behaviour>();
+            elevatorMover.enabled = false;
+            elevatorFromUpper = map.IsUpper(visual.GetTruePosition());
+            elevatorPhase = 0;
+            elevatorRequested = false;
+        }
+        else if (step.Type == PathTraversal.Decontamination)
+        {
+            decon = null;
+            foreach (var system in ShipStatus.Instance.GetComponentsInChildren<DeconSystem>())
+            {
+                if (system.UpperDoor == step.Source || system.LowerDoor == step.Source)
+                {
+                    decon = system;
+                    break;
+                }
+            }
+
+            if (!decon)
+            {
+                Finish();
+                return;
+            }
+        }
+
+        if (step.Type is not (PathTraversal.Ladder or PathTraversal.Zipline or PathTraversal.Vent or PathTraversal.MovingPlatform or PathTraversal.Decontamination or PathTraversal.Door or PathTraversal.Elevator))
+        {
+            Finish();
+            return;
+        }
+
+        if (step.Type != PathTraversal.Ladder) traversalPoints.Enqueue(path.Points[waypoint]);
+    }
+
+    public void Traverse()
+    {
+        crossingTime += Time.fixedDeltaTime;
+        if (!interaction.Source || (interaction.Type is not (PathTraversal.Door or PathTraversal.MovingPlatform) && crossingTime > 30f))
+        {
+            Finish();
+            return;
+        }
+
+        switch (interaction.Type)
+        {
+            case PathTraversal.Elevator:
+                TraverseElevator();
+                return;
+            case PathTraversal.Zipline:
+                TraverseZipline();
+                return;
+            case PathTraversal.Vent:
+                TraverseVent();
+                return;
+            case PathTraversal.MovingPlatform:
+                TraversePlatform();
+                return;
+        }
+
+        var position = visual.GetTruePosition();
+        if (interaction.Type == PathTraversal.Door && !request.CanMove(position, traversalPoints.Peek()))
+        {
+            SetWalking(false);
+            return;
+        }
+
+        if (interaction.Type == PathTraversal.Decontamination && !request.CanMove(position, traversalPoints.Peek()))
+        {
+            SetWalking(false);
+            if (decon.CurState == DeconSystem.States.Idle)
+            {
+                var upper = decon.UpperDoor == interaction.Source;
+                if (decon.RoomArea.OverlapPoint(position)) decon.OpenFromInside(upper);
+                else decon.OpenDoor(upper);
+            }
+
+            return;
+        }
+
+        if (interaction.Type is PathTraversal.Door or PathTraversal.Decontamination) SetWalking(true);
+        if (interaction.Type == PathTraversal.Ladder && traversalPoints.Count == 1) SetWalking(true);
+        var target = traversalPoints.Peek();
+        var next = Vector2.MoveTowards(position, target, traversalSpeed * Time.fixedDeltaTime);
+        if (interaction.Type != PathTraversal.Ladder) Face(next - position);
+        SetPosition(next);
+        if ((next - target).sqrMagnitude != 0f)
+            return;
+        traversalPoints.Dequeue();
+        if (traversalPoints.Count > 0)
+            return;
+        CompleteTraversal();
+    }
+
+    public void TraverseElevator()
+    {
+        if (elevatorPhase is 1 or 2 && elevator.Map.IsUpper(visual.GetTruePosition()) != elevatorFromUpper)
+        {
+            elevatorRequest?.Cancel();
+            elevatorRequest = null;
+            elevatorPhase = 3;
+        }
+
+        if (elevatorPhase == 0)
+        {
+            if (!elevator.Ready(elevatorFromUpper))
+            {
+                if (elevator.Moving())
+                {
+                    elevatorRequested = false;
+                }
+                else if (!elevatorRequested && elevator.TargetUpper() != elevatorFromUpper)
+                {
+                    var console = elevatorFromUpper ? elevator.UpperConsole : elevator.LowerConsole;
+                    var range = elevatorFromUpper ? elevator.UpperRange : elevator.LowerRange;
+                    if (Vector2.Distance(visual.GetTruePosition(), console.transform.position) > range || PhysicsHelpers.AnythingBetween(visual.GetTruePosition(), console.transform.position, Constants.ShipOnlyMask, false))
+                    {
+                        Finish();
+                        return;
+                    }
+
+                    ShipStatus.Instance.RpcUpdateSystem(elevator.SystemType, (byte)2);
+                    elevatorRequested = true;
+                }
+
+                return;
+            }
+
+            elevatorRequested = false;
+            elevatorPhase = 1;
+        }
+
+        if (elevatorPhase == 1)
+        {
+            var cabin = elevatorFromUpper ? elevator.UpperCabin : elevator.LowerCabin;
+            if (!WalkElevatorTo((Vector2)cabin.bounds.center + visual.Collider.offset)) return;
+            elevatorMover.enabled = true;
+            var console = elevatorFromUpper ? elevator.UpperControl : elevator.LowerControl;
+            var range = elevatorFromUpper ? elevator.UpperControlRange : elevator.LowerControlRange;
+            if (!WalkingGrid.TryApproach(console.transform.position, cabin.bounds.center - console.transform.position, range, point => request.IsClear(point) && cabin.OverlapPoint(point - visual.Collider.offset), request.CanReachInteraction, out elevatorControlPosition))
+            {
+                Finish();
+                return;
+            }
+
+            elevatorPhase = 2;
+        }
+
+        if (elevatorPhase == 2)
+        {
+            if (!WalkElevatorTo(elevatorControlPosition)) return;
+            elevatorPhase = 3;
+        }
+
+        if (elevatorPhase == 3)
+        {
+            SetWalking(false);
+            if (!elevator.Contains(visual))
+            {
+                Finish();
+                return;
+            }
+
+            if (elevator.Ready(!elevatorFromUpper) && elevator.Map.IsUpper(visual.GetTruePosition()) != elevatorFromUpper)
+            {
+                elevatorPhase = 4;
+            }
+            else
+            {
+                if (elevator.Moving())
+                {
+                    elevatorRequested = false;
+                }
+                else if (!elevatorRequested && elevator.TargetUpper() == elevatorFromUpper)
+                {
+                    ShipStatus.Instance.RpcUpdateSystem(elevator.SystemType, (byte)2);
+                    elevatorRequested = true;
+                }
+
+                return;
+            }
+        }
+
+        if (WalkElevatorTo(path.Points[waypoint])) CompleteTraversal();
+    }
+
+    public bool WalkElevatorTo(Vector2 target)
+    {
+        if (elevatorRequest == null)
+        {
+            elevatorRequest = new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), target, new PathOptions
+            {
+                UseElevators = false,
+                UseVents = false,
+                UseLadders = false,
+                UseZiplines = false,
+                UseMovingPlatforms = false,
+                UseDecontamination = false,
+                WaitForDoors = false,
+                AutoOpenDoors = false,
+            });
+            elevatorWaypoint = 0;
+        }
+
+        elevatorRequest.Step();
+        if (elevatorRequest.Status == PathStatus.Searching) return false;
+        if (elevatorRequest.Status != PathStatus.Found)
+        {
+            Finish();
+            return false;
+        }
+
+        var points = elevatorRequest.Result.Points;
+        while (elevatorWaypoint < points.Length && Vector2.Distance(visual.GetTruePosition(), points[elevatorWaypoint]) <= 0.03f)
+            elevatorWaypoint++;
+        if (elevatorWaypoint == points.Length)
+        {
+            elevatorRequest = null;
+            SetWalking(false);
+            return true;
+        }
+
+        var next = Vector2.MoveTowards(visual.GetTruePosition(), points[elevatorWaypoint], Speed * Time.fixedDeltaTime);
+        if (!elevatorRequest.CanMove(visual.GetTruePosition(), next))
+        {
+            Finish();
+            return false;
+        }
+
+        Face(next - visual.GetTruePosition());
+        SetWalking(true);
+        SetPosition(next);
+        return false;
+    }
+
+    public void ReleaseElevator()
+    {
+        elevatorRequest?.Cancel();
+        elevatorRequest = null;
+        if (elevatorMover)
+        {
+            elevatorMover.enabled = false;
+            Destroy(elevatorMover);
+        }
+
+        elevatorMover = null;
+        elevator = null;
+    }
+
+    public void CompleteTraversal()
+    {
+        ReleaseElevator();
+        ReleaseZipline();
+        ReleasePlatform();
+        var landing = path.Points[waypoint];
+        SetPosition(landing);
+        if (!request.IsClear(visual.GetTruePosition()))
+        {
+            Finish();
+            return;
+        }
+
+        lastClearPosition = landing;
+        retries = 0;
+        crossing = false;
+        waypoint++;
+        SetWalking(false);
+    }
+
+    public OpenableDoor FindClosedDoor(Vector2 from, Vector2 to)
+    {
+        var delta = to - from;
+        var count = Physics2D.CircleCast(from, request.options.Radius, delta.normalized, request.filter, request.crossingHits, delta.magnitude);
+        for (var i = 0; i < count; i++)
+        {
+            var door = request.crossingHits[i].collider.GetComponentInParent<OpenableDoor>();
+            if (door && !door.IsOpen) return door;
+        }
+
+        return null;
+    }
+
+    public bool RecoverPath()
+    {
+        var position = visual.GetTruePosition();
+        if (!request.IsClear(position))
+        {
+            if (Vector2.Distance(position, lastClearPosition) <= 0.15f && request.IsClear(lastClearPosition))
+            {
+                SetPosition(lastClearPosition);
+                return true;
+            }
+
+            return false;
+        }
+
+        var target = path != null && waypoint < path.Points.Length ? path.Points[waypoint] : destination;
+        if (!request.FindRecoveryPoint(position, target, out var point))
+            return false;
+        lastClearPosition = position;
+        SetPosition(point);
+        return true;
+    }
+
+    public void TraverseZipline()
+    {
+        if (!zipConsole || !zipConsole.zipline)
+        {
+            Finish();
+            return;
+        }
+
+        var zipline = zipConsole.zipline;
+        var top = zipConsole.atTop;
+        zipTime += Time.fixedDeltaTime;
+        if (zipPhase == 0)
+        {
+            var handle = (Vector2)zipline.GetHandlePos(top) + visual.Collider.offset;
+            var next = WalkTowards(handle);
+            if ((next - handle).sqrMagnitude != 0f) return;
+            SetWalking(false);
+            zipHand = Instantiate(zipline.handPool.Prefab).Cast<HandZiplinePoolable>();
+            zipHand.transform.SetParent(transform, true);
+            zipHand.gameObject.SetActive(true);
+            zipHand.handRenderer.sharedMaterial = CosmeticsLayer.GetBodyMaterial(PlayerMaterial.MaskType.None);
+            PlayerMaterial.SetColors(10, zipHand.handRenderer);
+            zipHand.handRenderer.color = Color.white;
+            handStart = (top ? zipline.upHandPosition : zipline.downHandPosition).position;
+            zipHand.transform.position = handStart;
+            if (top) zipHand.StartDownAnimation();
+            else zipHand.StartUpAnimation();
+            PlayEffect(zipline.attachSound, false);
+            visual.cosmetics.AnimateSkinJump();
+            StartCoroutine(visual.MyPhysics.Animations.CoPlayJumpAnimation());
+            zipStart = next;
+            zipTime = 0f;
+            zipPhase = 1;
+        }
+        else if (zipPhase == 1)
+        {
+            var phaseProgress = Mathf.Clamp01(zipTime / Mathf.Max(zipline.timeJump, 0.01f));
+            var curve = top ? zipline.jumpZiplineCurve : zipline.jumpZiplineCurveBottom;
+            SetPosition(zipStart + Vector2.up * curve.Evaluate(phaseProgress));
+            zipHand.transform.position = handStart + Vector3.up * zipline.jumpZiplineHandCurve.Evaluate(phaseProgress);
+            if (zipTime < zipline.timeJump + 0.1f) return;
+            zipStart = visual.GetTruePosition();
+            handStart = zipHand.transform.position - visual.transform.position;
+            zipTime = 0f;
+            zipDownLoop = false;
+            PlayEffect(top ? zipline.downSound : zipline.upSound, !top);
+            zipPhase = 2;
+        }
+        else if (zipPhase == 2)
+        {
+            if (top && !zipDownLoop && zipTime >= Mathf.Max(0f, zipline.downSound.length - 0.05f))
+            {
+                traversalAudio.Stop();
+                PlayEffect(zipline.downLoopSound, true);
+                zipDownLoop = true;
+            }
+
+            var drop = (Vector2)(top ? zipline.dropPositionBottom : zipline.dropPositionTop).position + visual.Collider.offset;
+            var seconds = top ? zipline.downTravelTime : zipline.upTravelTime;
+            var phaseProgress = Mathf.Clamp01(zipTime / Mathf.Max(seconds, 0.1f));
+            SetPosition(Vector2.Lerp(zipStart, drop, Mathf.SmoothStep(0f, 1f, phaseProgress)));
+            zipHand.transform.position = visual.transform.position + handStart;
+            if (phaseProgress < 1f) return;
+            traversalAudio.Stop();
+            PlayEffect(zipline.detachSound, false);
+            if (top) zipHand.StartDownOutroAnimation();
+            else zipHand.StartUpOutroAnimation();
+            zipPhase = 3;
+        }
+        else
+        {
+            if (zipPhase == 5)
+            {
+                if (zipTime < 0.1f) return;
+                CompleteTraversal();
+                return;
+            }
+
+            var landing = top ? zipline.landingPositionBottom : zipline.landingPositionTop;
+            var target = zipPhase == 3 ? (Vector2)zipline.transform.TransformPoint(landing.position) : path.Points[waypoint];
+            var next = WalkTowards(target);
+            if ((next - target).sqrMagnitude != 0f) return;
+            if (zipPhase == 3)
+            {
+                zipPhase = 4;
+            }
+            else
+            {
+                SetWalking(false);
+                zipTime = 0f;
+                zipPhase = 5;
+            }
+        }
+    }
+
+    public void TraverseVent()
+    {
+        if (!ventExit || !request.VentAvailable(ventExit) || !PlayerControl.LocalPlayer.Data.Role.CanVent)
+        {
+            visual.cosmetics.Visible = true;
+            Finish();
+            return;
+        }
+
+        if (ventPhase == 0)
+        {
+            var vent = interaction.Source.Cast<Vent>();
+            var target = (Vector2)(vent.transform.position + vent.Offset);
+            var next = WalkTowards(target);
+            if (next != target) return;
+            SetWalking(false);
+            vent.EnterVent(visual);
+            PlayEffect(ShipStatus.Instance.VentEnterSound, false);
+            visual.cosmetics.AnimateSkinEnterVent();
+            ventAnimation = visual.MyPhysics.Animations.CoPlayEnterVentAnimation(vent.NumFramesUntilPlayerDisappears);
+            ventPhase = 1;
+        }
+
+        if (ventPhase == 1)
+        {
+            if (ventAnimation.MoveNext()) return;
+            SetWalking(false);
+            visual.cosmetics.Visible = false;
+            SetPosition(ventExit.transform.position);
+            ventAnimation = ventExit.ExitVent(visual);
+            ventPhase = 2;
+        }
+
+        if (ventPhase == 2)
+        {
+            if (ventAnimation.MoveNext()) return;
+            visual.cosmetics.Visible = true;
+            visual.cosmetics.AnimateSkinExitVent();
+            ventAnimation = visual.MyPhysics.Animations.CoPlayExitVentAnimation();
+            PlayEffect(ShipStatus.Instance.VentExitSound ? ShipStatus.Instance.VentExitSound : ShipStatus.Instance.VentEnterSound, false);
+            ventPhase = 3;
+        }
+
+        if (ventPhase == 3)
+        {
+            if (ventAnimation.MoveNext()) return;
+            ventAnimation = null;
+            SetWalking(false);
+            ventPhase = 4;
+        }
+
+        var exitTarget = path.Points[waypoint];
+        var exitNext = WalkTowards(exitTarget);
+        if (exitNext == exitTarget) CompleteTraversal();
+    }
+
+    public void TraversePlatform()
+    {
+        if (!platform || !platform.isActiveAndEnabled)
+        {
+            Finish();
+            return;
+        }
+
+        if (platformPhase == 0)
+        {
+            var available = !platform.InUse && Vector2.Distance(platform.transform.position, platformStart) < 0.1f;
+            if (!AmongUsClient.Instance.AmHost || !available)
+            {
+                if (platform.InUse && crossingTime < 5f) return;
+                platformAlternative ??= new MapPathRequest(ShipStatus.Instance, visual.GetTruePosition(), destination, new PathOptions { CellSize = request.options.CellSize, WaitForDoors = request.options.WaitForDoors, UseVents = request.options.UseVents, UseMovingPlatforms = false }, PlayerControl.LocalPlayer, taskConsole);
+                platformAlternative.Step();
+                if (platformAlternative.Status == PathStatus.Found)
+                {
+                    request = platformAlternative;
+                    path = request.Result;
+                    platformAlternative = null;
+                    platform = null;
+                    crossing = false;
+                    waypoint = 1;
+                    preview.DrawPath(path);
+                }
+
+                return;
+            }
+
+            platformAlternative?.Cancel();
+            platformAlternative = null;
+            platform.Target = visual;
+            platformPhase = 1;
+        }
+
+        if (platform.Target != visual)
+        {
+            Finish();
+            return;
+        }
+
+        var position = visual.GetTruePosition();
+        var target = platformPhase switch
+        {
+            1 => platformStart,
+            2 => platformEnd,
+            3 => platformExit,
+            _ => path.Points[waypoint],
+        };
+        SetWalking(platformPhase != 2);
+        var next = Vector2.MoveTowards(position, target, Speed * Time.fixedDeltaTime);
+        Face(next - position);
+        SetPosition(next);
+        if (platformPhase == 2) platform.transform.position = new Vector3(next.x, next.y, platform.transform.position.z);
+        if ((next - target).sqrMagnitude != 0f) return;
+        if (platformPhase == 1) PlayEffect(platform.MovingSound, true);
+        if (platformPhase == 2) traversalAudio.Stop();
+        if (platformPhase == 4) CompleteTraversal();
+        else platformPhase++;
+    }
+
+    public void ReleasePlatform()
+    {
+        platformAlternative?.Cancel();
+        platformAlternative = null;
+        if (platform && visual && platform.Target == visual)
+        {
+            var parent = platform.transform.parent;
+            var left = parent.TransformPoint(platform.LeftPosition);
+            var right = parent.TransformPoint(platform.RightPosition);
+            platform.Target = null;
+            platform.SetSide(Vector2.Distance(platform.transform.position, left) <= Vector2.Distance(platform.transform.position, right));
+        }
+
+        platform = null;
+    }
+
+    public void PlayEffect(AudioClip clip, bool loop)
+    {
+        if (!clip || !Constants.ShouldPlaySfx()) return;
+        if (!loop)
+        {
+            traversalAudio.PlayOneShot(clip);
+        }
+        else
+        {
+            traversalAudio.clip = clip;
+            traversalAudio.loop = true;
+            traversalAudio.Play();
+        }
+    }
+
+    public void ReleaseZipline()
+    {
+        StopAllCoroutines();
+        ventAnimation = null;
+        if (traversalAudio) traversalAudio.Stop();
+        if (zipHand) Destroy(zipHand.gameObject);
+        zipHand = null;
+        zipConsole = null;
+    }
+
+    public Vector2 WalkTowards(Vector2 target)
+    {
+        var position = visual.GetTruePosition();
+        var next = Vector2.MoveTowards(position, target, Speed * Time.fixedDeltaTime);
+        SetWalking(true);
+        Face(next - position);
+        SetPosition(next);
+        return next;
+    }
+
+    public void SetPosition(Vector2 position)
+    {
+        var origin = position - visual.Collider.offset;
+        visual.transform.position = new Vector3(origin.x, origin.y, origin.y / 1000f);
+    }
+
+    public void Face(Vector2 velocity)
+    {
+        if (Mathf.Abs(velocity.x) > 0.001f)
+            visual.cosmetics.SetFlipXWithoutPet(velocity.x < 0f);
+    }
+
+    public void SetWalking(bool moving)
+    {
+        var animations = visual.MyPhysics.Animations;
+        if (moving && !animations.IsPlayingRunAnimation())
+        {
+            animations.PlayRunAnimation();
+            visual.cosmetics.AnimateSkinRun();
+        }
+        else if (!moving)
+        {
+            animations.PlayIdleAnimation();
+            visual.cosmetics.AnimateSkinIdle();
+        }
+    }
+
+    public void Finish()
+    {
+        ReleaseElevator();
+        ReleasePlatform();
+        ReleaseZipline();
+        request?.Cancel();
+        request = null;
+        crossing = false;
+        task = null;
+        taskConsole = null;
+        taskConsoles.Clear();
+        if (visual)
+        {
+            visual.cosmetics.Visible = true;
+            SetWalking(false);
+        }
+    }
+
+    public void ReleaseNpc()
+    {
+        Finish();
+        if (visual)
+        {
+            Destroy(visual.gameObject);
+        }
+        visual = null;
+    }
+
+    public void Dispose()
+    {
+        ReleaseNpc();
+        Destroy(gameObject);
+    }
+
+    public void OnDisable()
+    {
+        ReleaseNpc();
+    }
+}

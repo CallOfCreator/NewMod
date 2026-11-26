@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
@@ -5,118 +6,109 @@ using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Player;
 using MiraAPI.GameOptions;
 using MiraAPI.Roles;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
-using NewMod.Components.ScreenEffects;
-using NewMod.Networking;
-using NewMod.Options.Roles.BeaconOptions;
-using NewMod.Utilities;
-using Reactor.Networking.Rpc;
-using Reactor.Utilities;
+using NewMod.Options.Roles;
 using UnityEngine;
 
-namespace NewMod.Roles.CrewmateRoles
+namespace NewMod.Roles.CrewmateRoles;
+
+public class Beacon : CrewmateRole, INewModRole
 {
-    public class Beacon : CrewmateRole, INewModRole
-    {
-        public string RoleName => "Beacon";
-        public string RoleDescription => "Scan. Locate. Coordinate.";
+    public static int charges;
+    public static int grantedFromTasks;
+    public static int lastCompletedTasks;
+    public static float pulseUntil;
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.TabDescription");
+    public Color RoleColor => new(0.494f, 0.341f, 0.761f);
+    public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
+    public NewModFaction Faction => NewModFaction.Sentinel;
 
-        public string RoleLongDescription =>
-            "Send out a map-wide pulse that briefly reveals the position of all players.";
-
-        public Color RoleColor => new(0.494f, 0.341f, 0.761f);
-        public ModdedRoleTeams Team => ModdedRoleTeams.Crewmate;
-        public NewModFaction Faction => NewModFaction.Sentinel;
-
-        public CustomRoleConfiguration Configuration => new(this)
+    public CustomRoleConfiguration Configuration =>
+        new(this)
         {
             AffectedByLightOnAirship = true,
             CanUseSabotage = false,
             CanUseVent = false,
             UseVanillaKillButton = false,
             TasksCountForProgress = true,
-            Icon = NewModAsset.RadarIcon
+            MaxRoleCount = 1,
+            Icon = NewModAsset.RadarIcon,
         };
 
-        [HideFromIl2Cpp]
-        public StringBuilder SetTabText()
+    [HideFromIl2Cpp]
+    public StringBuilder SetTabText()
+    {
+        var tab = INewModRole.GetRoleTabText(this);
+        var options = OptionGroupSingleton<BeaconOptions>.Instance;
+
+        tab.Append(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.CrewmateRoles.Beacon.Tab.Details"), RoleColor.ToTextColor(), charges, options.MaxCharges, options.TasksPerCharge, options.PulseDuration, options.PulseCooldown));
+
+        return tab;
+    }
+
+    [RegisterEvent]
+    public static void OnRoundStart(RoundStartEvent evt)
+    {
+        if (!evt.TriggeredByIntro)
+            return;
+
+        Reset();
+    }
+
+    [RegisterEvent]
+    public static void OnSetRole(SetRoleEvent evt)
+    {
+        if (evt.Player.AmOwner && evt.Player.Data.Role is Beacon)
+            Reset();
+    }
+
+    public static void Reset()
+    {
+        pulseUntil = 0f;
+        grantedFromTasks = 0;
+        lastCompletedTasks = 0;
+        charges = Mathf.Min((int)OptionGroupSingleton<BeaconOptions>.Instance.StartingCharges, (int)OptionGroupSingleton<BeaconOptions>.Instance.MaxCharges);
+    }
+
+    [RegisterEvent]
+    public static void OnTaskComplete(CompleteTaskEvent evt)
+    {
+        if (!evt.Player.AmOwner || evt.Player.Data.Role is not Beacon) return;
+        UpdateChargesFromTasks();
+    }
+
+    public static void UpdateChargesFromTasks()
+    {
+        var settings = OptionGroupSingleton<BeaconOptions>.Instance;
+        var completed = GetCompletedTasks();
+        if (completed == lastCompletedTasks) return;
+
+        lastCompletedTasks = completed;
+        var tasksPerCharge = (int)settings.TasksPerCharge;
+        var earned = completed / tasksPerCharge;
+        var delta = Mathf.Min(earned - grantedFromTasks, (int)settings.MaxCharges - charges);
+        grantedFromTasks = earned;
+
+        if (delta > 0)
         {
-            var tab = INewModRole.GetRoleTabText(this);
-            var opts = OptionGroupSingleton<BeaconOptions>.Instance;
+            charges += delta;
+            Helpers.CreateAndShowNotification($"+{delta} Beacon {(delta > 1 ? "charges" : "charge")} (tasks)", new Color(0.75f, 0.65f, 1f), spr: NewModAsset.RadarIcon.LoadAsset());
+        }
+    }
 
-            var pulseDur = opts.PulseDuration;
-            var cd = opts.PulseCooldown;
-            var taskPerCh = opts.TasksPerCharge;
-            var maxCharges = opts.MaxCharges;
-
-            int completedTasks = GetCompletedTasks();
-            int chargesFromTasks = (int)(completedTasks / taskPerCh);
-
-            tab.AppendLine($"<size=65%><color=#{ColorUtility.ToHtmlStringRGB(RoleColor)}>Recon Support</color></size>");
-            tab.AppendLine();
-            tab.AppendLine(
-                $"<size=65%>Charges: <b><color=#{ColorUtility.ToHtmlStringRGB(Color.cyan)}>{chargesFromTasks}</color></b> / {maxCharges}  (+1 per {taskPerCh} tasks)</size>");
-            tab.AppendLine(
-                $"<size=65%>Pulse Duration: <color=#{ColorUtility.ToHtmlStringRGB(Color.cyan)}>{pulseDur:F0}s</color> • Cooldown: <color=#{ColorUtility.ToHtmlStringRGB(Color.yellow)}>{cd:F0}s</color></size>");
-            tab.AppendLine();
-            tab.AppendLine(
-                "<size=65%><color=#FFD54F>Tip:</color> Use pulses after lights or suspected kills to catch rotations.</size>");
-
-            return tab;
+    public static int GetCompletedTasks()
+    {
+        var localPlayer = PlayerControl.LocalPlayer;
+        var completedTasks = 0;
+        foreach (var task in localPlayer.myTasks)
+        {
+            if (task && task.IsComplete)
+                completedTasks++;
         }
 
-        public static int charges;
-        public static int grantedFromTasks;
-        public static int lastCompletedTasks;
-        public static float cooldownUntil;
-        public static float pulseUntil;
-
-        [RegisterEvent]
-        public static void OnRoundStart(RoundStartEvent evt)
-        {
-            pulseUntil = 0f;
-            cooldownUntil = 0f;
-            charges = (int)OptionGroupSingleton<BeaconOptions>.Instance.MaxCharges;
-        }
-
-        [RegisterEvent]
-        public static void OnTaskComplete(CompleteTaskEvent evt)
-        {
-            if (PlayerControl.LocalPlayer.Data.Role is not Beacon) return;
-            UpdateChargesFromTasks();
-        }
-
-        public static void UpdateChargesFromTasks()
-        {
-            var settings = OptionGroupSingleton<BeaconOptions>.Instance;
-            int completed = GetCompletedTasks();
-            if (completed == lastCompletedTasks) return;
-
-            lastCompletedTasks = completed;
-            int per = (int)settings.TasksPerCharge;
-            int earned = Mathf.Min(completed / per, (int)settings.MaxCharges);
-            int delta = earned - grantedFromTasks;
-
-            if (delta > 0)
-            {
-                charges = Mathf.Clamp(charges + delta, 0, (int)settings.MaxCharges);
-                grantedFromTasks = earned;
-                Helpers.CreateAndShowNotification(
-                    $"+{delta} Beacon {(delta > 1 ? "charges" : "charge")} (tasks)",
-                    new Color(0.75f, 0.65f, 1f), spr: NewModAsset.RadarIcon.LoadAsset());
-
-                Rpc<BeaconPulseRpc>.Instance.Send(new BeaconPulseRpc.Data(settings.PulseDuration));
-            }
-        }
-
-        public static int GetCompletedTasks()
-        {
-            var lp = PlayerControl.LocalPlayer;
-            int done = 0;
-            foreach (var t in lp.myTasks)
-                if (t && t.IsComplete)
-                    done++;
-            return done;
-        }
+        return completedTasks;
     }
 }

@@ -3,37 +3,15 @@ using MiraAPI.GameOptions.OptionTypes;
 using MiraAPI.Utilities;
 using NewMod.Modifiers;
 
-namespace NewMod.Options.Modifiers
+namespace NewMod.Options.Modifiers;
+
+public class StickyModifierOptions : AbstractOptionGroup<StickyModifier>
 {
-    public class StickyModifierOptions : AbstractOptionGroup<StickyModifier>
-    {
-        public override string GroupName => "Sticky Settings";
-        public ModdedNumberOption StickyDuration { get; } =
-            new(
-                "Duration of Sticky Effect",
-                15f,
-                min: 10f,
-                max: 30f,
-                increment: 0.5f,
-                suffixType: MiraNumberSuffixes.Seconds
-            );
-        public ModdedNumberOption StickyDistance { get; } =
-            new(
-                "Distance to trigger stickiness",
-                1f,
-                min: 1f,
-                max: 3f,
-                increment: 0.5f,
-                suffixType: MiraNumberSuffixes.None
-            );
-         public ModdedNumberOption PullStrength  { get; } =
-            new(
-                "Pull Strength",
-                1f,
-                min: 1f,
-                max: 5f,
-                increment: 1f,
-                suffixType: MiraNumberSuffixes.None
-            );
-    }
+    public override string GroupName => "Sticky Settings";
+
+    public ModdedNumberOption StickyDuration { get; } = new("Duration of Sticky Effect", 15f, 10f, 30f, 0.5f, MiraNumberSuffixes.Seconds);
+
+    public ModdedNumberOption StickyDistance { get; } = new("Distance to trigger stickiness", 1f, 1f, 3f, 0.5f, MiraNumberSuffixes.None);
+
+    public ModdedNumberOption PullStrength { get; } = new("Pull Strength", 1f, 1f, 5f, 1f, MiraNumberSuffixes.None);
 }

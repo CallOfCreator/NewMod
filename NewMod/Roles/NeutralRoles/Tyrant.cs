@@ -1,351 +1,204 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Text;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.Events;
 using MiraAPI.Events.Vanilla.Gameplay;
 using MiraAPI.Events.Vanilla.Meeting;
-using MiraAPI.Events.Vanilla.Meeting.Voting;
+using MiraAPI.GameEnd;
 using MiraAPI.GameOptions;
 using MiraAPI.Hud;
 using MiraAPI.Roles;
-using MiraAPI.Utilities.Assets;
-using NewMod.Colors;
+using MiraAPI.Translation;
+using MiraAPI.Utilities;
+using NewMod.Buttons.Roles;
 using NewMod.Components;
-using NewMod.Options.Roles.TyrantOptions;
+using NewMod.Modifiers.S1;
+using NewMod.Options.Roles;
 using NewMod.Utilities;
 using Reactor.Networking.Attributes;
-using Reactor.Networking.Rpc;
 using Reactor.Utilities;
-using Reactor.Utilities.Extensions;
 using UnityEngine;
 
-namespace NewMod.Roles.ImpostorRoles
+namespace NewMod.Roles.ImpostorRoles;
+
+public class Tyrant : ImpostorRole, INewModRole
 {
-    public sealed class Tyrant : ImpostorRole, INewModRole
+    public enum ThroneOutcome
     {
-        public string RoleName => "Tyrant";
-        public string RoleDescription => "Slow them. Bind them. End them";
+        None,
+        ChampionSideWin,
+    }
 
-        public string RoleLongDescription => "You are the Tyrant. Each kill strengthens your control over the ship:\n";
+    public static byte ChampionId = byte.MaxValue;
+    public static bool OfferAnswered;
+    public static bool ApexThroneReady;
+    public static bool ApexThroneOutcomeSet;
+    public static ThroneOutcome Outcome;
+    public static bool ChampionMeeting;
+    public int Kills;
+    public float NextPulse;
 
-        public Color RoleColor => new(0.78f, 0.10f, 0.16f, 1f);
-        public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
-        public RoleOptionsGroup RoleOptionsGroup { get; } = RoleOptionsGroup.Neutral;
-        public NewModFaction Faction => NewModFaction.Apex;
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.IntroBlurb");
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.TabDescription");
+    public Color RoleColor => new(0.78f, 0.10f, 0.16f);
+    public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
+    public NewModFaction Faction => NewModFaction.Apex;
 
-        public CustomRoleConfiguration Configuration =>
-            new(this)
-            {
-                MaxRoleCount = 1,
-                OptionsScreenshot = MiraAssets.Empty,
-                Icon = NewModAsset.CrownIcon,
-                CanGetKilled = true,
-                UseVanillaKillButton = true,
-                CanUseVent = true,
-                TasksCountForProgress = false,
-                CanUseSabotage = true,
-                DefaultChance = 25,
-                DefaultRoleCount = 1,
-                CanModifyChance = true,
-                GhostRole = AmongUs.GameOptions.RoleTypes.Crewmate,
-                RoleHintType = RoleHintType.RoleTab
-            };
-
-        public TeamIntroConfiguration TeamConfiguration => new() { IntroTeamDescription = RoleDescription, IntroTeamColor = RoleColor };
-
-        [HideFromIl2Cpp]
-        public StringBuilder SetTabText()
+    public CustomRoleConfiguration Configuration =>
+        new(this)
         {
-            var tabText = INewModRole.GetRoleTabText(this);
-            var green = Palette.AcceptedGreen.ToHtmlStringRGBA();
-            int kills = GetKillCount();
+            MaxRoleCount = 1,
+            Icon = NewModAsset.CrownIcon,
+            CanGetKilled = true,
+            UseVanillaKillButton = true,
+            CanUseVent = true,
+            TasksCountForProgress = false,
+            CanUseSabotage = false,
+            DefaultChance = 25,
+            DefaultRoleCount = 1,
+            CanModifyChance = true,
+            RoleHintType = RoleHintType.RoleTab,
+        };
 
-            string firstKill = "* 1st Kill — Fear Pulse: nearby foes suffer reduced vision and speed for a short time.\n";
-            string secondKill = "* 2nd Kill — Zone of Suppression: a dome that disables buttons for those inside.\n";
-            string thirdKill = "* 3rd Kill — Intimidation Protocol: the next witness is frozen briefly.\n";
-            string fourthKill = "* 4th Kill — Apex Throne: designate a Champion who cannot oppose you.\n";
+    [HideFromIl2Cpp]
+    public StringBuilder SetTabText()
+    {
+        var text = INewModRole.GetRoleTabText(this);
+        text.AppendLine();
+        text.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.ImpostorRoles.Tyrant.Tab.Progress"), Kills));
+        return text;
+    }
 
-            void AppendAbilityLine(int index, string text)
-            {
-                if (kills > index)
-                {
-                    tabText.AppendLine($"<size=70%><color=#{green}><b><s>{text}</s></b></color></size>");
-                }
-                else if (kills == index)
-                {
-                    tabText.AppendLine($"<size=70%><color=#{green}><b><s>{text}</s></b></color></size>");
-                    tabText.AppendLine($"<size=64%><color=#{green}>✓ Unlocked</color></size>");
-                }
-                else if (index == kills + 1)
-                {
-                    tabText.AppendLine($"<size=72%><b><color=#FFD166>{text}</color></b></size>");
-                }
-                else
-                {
-                    tabText.AppendLine($"<size=70%><color=#B7B7B7>{text}</size></color>");
-                }
-            }
+    public override bool DidWin(GameOverReason gameOverReason)
+    {
+        return gameOverReason == CustomGameOver.GameOverReason<TyrantGameOver>();
+    }
 
-            AppendAbilityLine(1, firstKill);
-            AppendAbilityLine(2, secondKill);
-            AppendAbilityLine(3, thirdKill);
-            AppendAbilityLine(4, fourthKill);
+    public static void ResetState()
+    {
+        CustomRoleSingleton<Tyrant>.Instance.Kills = 0;
+        CustomRoleSingleton<Tyrant>.Instance.NextPulse = 0f;
+        ChampionId = byte.MaxValue;
+        OfferAnswered = false;
+        ApexThroneReady = false;
+        ApexThroneOutcomeSet = false;
+        ChampionMeeting = false;
+        Outcome = ThroneOutcome.None;
+    }
 
-            return tabText;
+    [RegisterEvent]
+    public static void OnAfterMurder(AfterMurderEvent evt)
+    {
+        if (evt.Source.Data.Role is not Tyrant tyrant || !evt.Target.Data.IsDead) return;
+        tyrant.Kills++;
+        if (tyrant.Kills >= 4) ApexThroneReady = true;
+    }
+
+    [RegisterEvent]
+    public static void OnMeetingStart(StartMeetingEvent evt)
+    {
+        ChampionMeeting = ApexThroneReady && OfferAnswered && Outcome == ThroneOutcome.ChampionSideWin;
+    }
+
+    [RegisterEvent]
+    public static void OnMeetingResolved(RoundStartEvent evt)
+    {
+        if (evt.TriggeredByIntro || !GameManager.Instance.ShouldCheckForGameEnd || !AmongUsClient.Instance.AmHost || !ChampionMeeting) return;
+        var champion = Utils.PlayerById(ChampionId);
+        PlayerControl tyrant = null;
+        foreach (var player in PlayerControl.AllPlayerControls)
+        {
+            if (player.Data.Role is not Tyrant)
+                continue;
+
+            tyrant = player;
+            break;
         }
 
-        public override bool DidWin(GameOverReason reason)
+        ApexThroneOutcomeSet = champion && tyrant && !champion.Data.IsDead && !champion.Data.Disconnected && !tyrant.Data.IsDead && !tyrant.Data.Disconnected;
+    }
+
+    [MethodRpc((uint)CustomRPC.NotifyChampion)]
+    public static void RpcNotifyChampion(PlayerControl source, PlayerControl target)
+    {
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Tyrant tyrant || tyrant.Kills < 4 || source.Data.IsDead || source.Data.Disconnected || !target || target == source || target.Data.IsDead || target.Data.Disconnected || ChampionId != byte.MaxValue || MeetingHud.Instance || ExileController.Instance) return;
+        RpcConfirmOffer(PlayerControl.LocalPlayer, source.PlayerId, target.PlayerId);
+    }
+
+    [MethodRpc((uint)CustomRPC.TyrantConfirmOffer)]
+    public static void RpcConfirmOffer(PlayerControl source, byte tyrantId, byte championId)
+    {
+        if (!source.IsHost()) return;
+        ChampionId = championId;
+        OfferAnswered = false;
+        var tyrant = Utils.PlayerById(tyrantId);
+        var champion = Utils.PlayerById(championId);
+        Coroutines.Start(CoroutinesHelper.CoNotify($"{tyrant.Data.PlayerName} is the Tyrant and has offered {champion.Data.PlayerName} an alliance.\nThey can accept or reject."));
+        if (champion.AmOwner)
         {
-            return reason == CustomGameOver.GameOverReason<TyrantGameOver>();
+            CustomButtonSingleton<AcceptChampionButton>.Instance.SetActive(true, champion.Data.Role);
+            CustomButtonSingleton<RejectChampionButton>.Instance.SetActive(true, champion.Data.Role);
+            Coroutines.Start(CoroutinesHelper.CoNotify("Accept to win with the Tyrant if you both survive a meeting.\nReject to keep your own objective."));
+        }
+    }
+
+    [MethodRpc((uint)CustomRPC.TyrantAnswerOffer)]
+    public static void RpcAnswerOffer(PlayerControl source, bool accepted)
+    {
+        if (!AmongUsClient.Instance.AmHost || source.PlayerId != ChampionId || OfferAnswered || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance) return;
+        RpcConfirmAnswer(PlayerControl.LocalPlayer, accepted);
+    }
+
+    [MethodRpc((uint)CustomRPC.TyrantConfirmAnswer)]
+    public static void RpcConfirmAnswer(PlayerControl source, bool accepted)
+    {
+        if (!source.IsHost()) return;
+        OfferAnswered = true;
+        if (PlayerControl.LocalPlayer.PlayerId == ChampionId)
+        {
+            CustomButtonSingleton<AcceptChampionButton>.Instance.SetActive(false, PlayerControl.LocalPlayer.Data.Role);
+            CustomButtonSingleton<RejectChampionButton>.Instance.SetActive(false, PlayerControl.LocalPlayer.Data.Role);
         }
 
-        public int _kills;
-        public static byte _championId;
-        public static bool ApexThroneReady;
-        public static bool ApexThroneOutcomeSet;
+        Outcome = accepted ? ThroneOutcome.ChampionSideWin : ThroneOutcome.None;
+        Coroutines.Start(CoroutinesHelper.CoNotify(accepted ? "The Champion accepted.\nExile or kill either ally before they survive a meeting." : "The Champion rejected the Tyrant's offer."));
+    }
 
-        public enum ThroneOutcome
+    [MethodRpc((uint)CustomRPC.FearPulse)]
+    public static void RpcSpawnFearPulse(PlayerControl source, float x, float y)
+    {
+        if (!AmongUsClient.Instance.AmHost || source.Data.Role is not Tyrant tyrant || tyrant.Kills < 1 || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance || Time.time < tyrant.NextPulse) return;
+        tyrant.NextPulse = Time.time + OverclockedModifier.GetCooldown(source, OptionGroupSingleton<TyrantOptions>.Instance.PulseCooldown);
+        OverclockedModifier.Pulse(source);
+        RpcConfirmPulse(PlayerControl.LocalPlayer, source.PlayerId, source.GetTruePosition());
+    }
+
+    [MethodRpc((uint)CustomRPC.TyrantConfirmPulse)]
+    public static void RpcConfirmPulse(PlayerControl source, byte ownerId, Vector2 position)
+    {
+        if (source.IsHost()) Coroutines.Start(CoPulse(Utils.PlayerById(ownerId), position));
+    }
+
+    public static IEnumerator CoPulse(PlayerControl owner, Vector2 position)
+    {
+        if (!owner || owner.Data.Role is not Tyrant tyrant)
+            yield break;
+
+        var options = OptionGroupSingleton<TyrantOptions>.Instance;
+        var radius = options.FearPulseRadius + Mathf.Min(2, tyrant.Kills - 1) * 0.5f;
+        var bubble = Utils.CreateSphere("TyrantPulse", new Vector3(position.x, position.y, -1f), radius, Color.red, options.PulseWarning + options.FearPulseDuration);
+        yield return new WaitForSeconds(options.PulseWarning);
+        if (!owner || owner.Data.IsDead || owner.Data.Disconnected || owner.Data.Role is not Tyrant || MeetingHud.Instance || ExileController.Instance)
         {
-            None,
-            ChampionSideWin
+            Destroy(bubble);
+            yield break;
         }
 
-        public static ThroneOutcome Outcome = ThroneOutcome.None;
-        public static readonly HashSet<byte> PendingBetrayals = new();
-        public int GetKillCount() => _kills;
-        public byte GetChampion() => _championId;
-        public static byte ChampionId => _championId;
-        public void SetChampion(byte playerId) => _championId = playerId;
-        public static void ClearChampion() => _championId = byte.MaxValue;
-
-        public static void ResetState()
-        {
-            CustomRoleSingleton<Tyrant>.Instance._kills = 0;
-            ApexThroneReady = false;
-            ApexThroneOutcomeSet = false;
-            Outcome = ThroneOutcome.None;
-            PendingBetrayals.Clear();
-            ClearChampion();
-        }
-
-        [RegisterEvent]
-        public static void OnAfterMurderEvent(AfterMurderEvent evt)
-        {
-            if (!Utils.IsRoleActive("Tyrant")) return;
-
-            if (evt.Source.Data.Role is not Tyrant tyrant) return;
-
-            tyrant._kills++;
-
-            if (tyrant.GetKillCount() == 1)
-            {
-                RpcSpawnFearPulse(evt.Source, evt.Source.GetTruePosition().x, evt.Source.GetTruePosition().y);
-            }
-            else if (tyrant.GetKillCount() == 2)
-            {
-                RpcSpawnSuppressionDome(evt.Source, evt.Source.GetTruePosition().x, evt.Source.GetTruePosition().y);
-            }
-            else if (tyrant.GetKillCount() == 3)
-            {
-                RpcArmWitnessTrap(evt.Source, evt.Source.GetTruePosition().x, evt.Source.GetTruePosition().y);
-            }
-            else
-            {
-                ApexThroneReady = true;
-                ApexThroneOutcomeSet = false;
-
-                var menu = CustomPlayerMenu.Create();
-                menu.Begin(player => !player.Data.IsDead && !player.Data.Disconnected && player.PlayerId != PlayerControl.LocalPlayer.PlayerId, player =>
-                {
-                    tyrant.SetChampion(player.PlayerId);
-                    menu.Close();
-
-                    if (tyrant.Player.AmOwner)
-                        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#9CCC65>Apex Throne is armed. You have chosen a Champion.</color>"));
-
-                    RpcNotifyChampion(tyrant.Player, player);
-                });
-            }
-        }
-
-        [RegisterEvent]
-        public static void OnMeetingStart(StartMeetingEvent evt)
-        {
-            Coroutines.Start(CoShowTyrantForChampion(evt.MeetingHud));
-        }
-
-        public static IEnumerator CoShowTyrantForChampion(MeetingHud hud)
-        {
-            yield return null;
-
-            if (PlayerControl.LocalPlayer.PlayerId == _championId)
-            {
-                var tyrantPlayer = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p && p.Data != null && p.Data.Role is Tyrant);
-
-                if (tyrantPlayer)
-                {
-                    foreach (var ps in hud.playerStates)
-                    {
-                        if (ps.PlayerId == tyrantPlayer.PlayerId)
-                        {
-                            ps.NameText.text += "\n<color=#C62828><size=60%>Tyrant</size></color>";
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    NewMod.Instance.Log.LogMessage("No Tyrant in this match skipping...");
-                }
-            }
-
-            NewMod.Instance.Log.LogMessage("NO CRASH");
-        }
-
-        [RegisterEvent]
-        public static void OnHandleVote(HandleVoteEvent evt)
-        {
-            if (!Utils.IsRoleActive("Tyrant")) return;
-
-            var voter = evt.VoteData.Owner;
-
-            var allPlayers = PlayerControl.AllPlayerControls.ToArray();
-
-            foreach (var player in allPlayers)
-            {
-                if (voter.PlayerId != _championId)
-                {
-                    continue;
-                }
-
-                bool betrays = evt.TargetId == player.PlayerId;
-
-                if (betrays)
-                {
-                    if (evt.VoteData.VotedFor(evt.TargetId))
-                    {
-                        evt.VoteData.RemovePlayerVote(evt.TargetId);
-                    }
-
-                    evt.VoteData.VoteForPlayer(evt.VoteData.Owner.PlayerId);
-                    evt.VoteData.SetRemainingVotes(0);
-
-                    PendingBetrayals.Add(voter.PlayerId);
-                    ApexThroneOutcomeSet = true;
-                    Outcome = ThroneOutcome.None;
-                }
-                else
-                {
-                    ApexThroneOutcomeSet = true;
-                    Outcome = ThroneOutcome.ChampionSideWin;
-                }
-
-                if (voter.AmOwner)
-                {
-                    var msg = (Outcome == ThroneOutcome.ChampionSideWin) ? "<color=#64B5F6>You submitted to the Tyrant’s will.</color>" : "<color=red>Betrayal detected. You will be punished.</color>";
-                    Coroutines.Start(CoroutinesHelper.CoNotify(msg));
-                }
-
-                break;
-            }
-        }
-
-        [RegisterEvent]
-        public static void OnProcessVotes(ProcessVotesEvent evt)
-        {
-            if (!Utils.IsRoleActive("Tyrant")) return;
-
-            if (PendingBetrayals.Count == 0) return;
-
-            var first = default(byte);
-            foreach (var id in PendingBetrayals)
-            {
-                first = id;
-                break;
-            }
-
-            PendingBetrayals.Clear();
-
-            var info = GameData.Instance.GetPlayerById(first);
-
-            if (info != null)
-            {
-                evt.ExiledPlayer = info;
-            }
-        }
-
-        public void SpawnSuppressionDome(Vector3 pos)
-        {
-            var go = new GameObject("Supression_Dome");
-            go.transform.position = pos;
-
-            var area = go.AddComponent<SuppressionDomeArea>();
-            area.Init(Player.PlayerId, radius: OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius, OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
-
-            if (Player.AmOwner)
-                Utils.CreateCircle("SupressionDome", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.DomeRadius, Palette.AcceptedGreen, OptionGroupSingleton<TyrantOptions>.Instance.DomeDuration);
-        }
-
-        public void ArmWitnessTrap(Vector3 pos)
-        {
-            var go = new GameObject("WitnessTrap");
-            go.transform.position = pos;
-
-            var trap = go.AddComponent<WitnessTrapArea>();
-            trap.Init(ownerId: Player.PlayerId, radius: OptionGroupSingleton<TyrantOptions>.Instance.WitnessRange, freeze: OptionGroupSingleton<TyrantOptions>.Instance.WitnessFreezeDuration, duration: OptionGroupSingleton<TyrantOptions>.Instance.WitnessArmWindow);
-
-            if (Player.AmOwner)
-                Utils.CreateCircle("ArmWitnessTrap", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.WitnessRange, Color.cyan, OptionGroupSingleton<TyrantOptions>.Instance.WitnessArmWindow);
-        }
-
-        public void SpawnFearPulse(Vector3 pos)
-        {
-            var go = new GameObject("FearPulseArea");
-            go.transform.position = pos;
-
-            var area = go.AddComponent<FearPulseArea>();
-            area.Init(ownerId: Player.PlayerId, radius: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseRadius, duration: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseDuration, speedMul: OptionGroupSingleton<TyrantOptions>.Instance.FearPulseSpeed);
-
-            if (Player.AmOwner)
-                Utils.CreateCircle("FearPulse", Player.GetTruePosition(), OptionGroupSingleton<TyrantOptions>.Instance.FearPulseRadius, new Color(1f, 0.35f, 0.2f, 0.6f), OptionGroupSingleton<TyrantOptions>.Instance.FearPulseDuration);
-        }
-
-        [MethodRpc((uint)CustomRPC.NotifyChampion)]
-        public static void RpcNotifyChampion(PlayerControl source, PlayerControl target)
-        {
-            if (source.Data.Role is Tyrant tyrant)
-            {
-                tyrant.SetChampion(target.PlayerId);
-            }
-
-            if (target.AmOwner)
-            {
-                Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#FFD54F>{source.Data.PlayerName}</color> is your <color=#C62828>Tyrant</color>. Obey or be exiled."));
-            }
-        }
-
-        [MethodRpc((uint)CustomRPC.FearPulse)]
-        public static void RpcSpawnFearPulse(PlayerControl source, float x, float y)
-        {
-            var tyrant = source.Data.Role as Tyrant;
-
-            tyrant.SpawnFearPulse(new Vector2(x, y));
-        }
-
-        [MethodRpc((uint)CustomRPC.SuppressionDome)]
-        public static void RpcSpawnSuppressionDome(PlayerControl source, float x, float y)
-        {
-            var tyrant = source.Data.Role as Tyrant;
-            tyrant.SpawnSuppressionDome(new Vector2(x, y));
-        }
-
-        [MethodRpc((uint)CustomRPC.WitnessTrap)]
-        public static void RpcArmWitnessTrap(PlayerControl source, float x, float y)
-        {
-            var tyrant = source.Data.Role as Tyrant;
-            tyrant.ArmWitnessTrap(new Vector2(x, y));
-        }
+        var area = new GameObject("FearPulseArea").AddComponent<FearPulseArea>();
+        area.transform.position = position;
+        area.bubble = bubble.GetComponent<AreaBubble>();
+        area.Init(owner.PlayerId, radius, options.FearPulseDuration, options.FearPulseSpeed);
     }
 }

@@ -1,0 +1,40 @@
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Keybinds;
+using MiraAPI.PluginLoading;
+using MiraAPI.Utilities.Assets;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Modifiers.S1;
+using NewMod.Options.Roles.S1;
+using NewMod.Roles.ImpostorRoles.S1;
+using NewMod.Roles.NeutralRoles;
+using UnityEngine;
+
+namespace NewMod.Buttons.Roles.S1;
+
+[MiraIgnore]
+public class MirrorReflectButton : CustomActionButton, IEnergyAbility
+{
+    public EnergyCategory Category => EnergyCategory.Protection;
+    public override string Name => "Reflect";
+    public override float Cooldown => OverclockedModifier.GetCooldown(PlayerControl.LocalPlayer, OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectCooldown);
+    public override float EffectDuration => OptionGroupSingleton<MirrorBladeOptions>.Instance.ReflectWindow;
+    public override MiraKeybind Keybind => MiraGlobalKeybinds.PrimaryAbility;
+    public override ButtonLocation Location => ButtonLocation.BottomLeft;
+    public override LoadableAsset<Sprite> Sprite => NewModAsset.ReflectButton;
+
+    public override bool Enabled(RoleBehaviour role)
+    {
+        return AbilityExchangeGE.HasRoleAbility<MirrorBladeRole>(PlayerControl.LocalPlayer, role);
+    }
+
+    public override bool CanUse()
+    {
+        return base.CanUse() && !MirrorBladeRole.ArmedReflections.Contains(PlayerControl.LocalPlayer.PlayerId);
+    }
+
+    protected override void OnClick()
+    {
+        MirrorBladeRole.RpcArmReflection(PlayerControl.LocalPlayer);
+    }
+}

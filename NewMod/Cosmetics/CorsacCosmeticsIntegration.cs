@@ -1,0 +1,55 @@
+using CorsacCosmetics.Cosmetics.Hats;
+using CorsacCosmetics.Cosmetics.Nameplates;
+using CorsacCosmetics.Cosmetics.Sources;
+using CorsacCosmetics.Cosmetics.Visors;
+using HarmonyLib;
+using MiraAPI;
+
+namespace NewMod.Cosmetics;
+
+internal static class CorsacCosmeticsIntegration
+{
+    public static bool Initialized;
+
+    public static void Initialize(Harmony harmony)
+    {
+        if (Initialized)
+            return;
+
+        harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.OnEnable)), HarmonyPatchType.All, MiraApiPlugin.Id);
+        harmony.Unpatch(AccessTools.Method(typeof(VisorsTab), nameof(VisorsTab.OnEnable)), HarmonyPatchType.All, MiraApiPlugin.Id);
+        harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.Update)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
+        harmony.Unpatch(AccessTools.Method(typeof(VisorsTab), nameof(VisorsTab.Update)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
+        harmony.Unpatch(AccessTools.Method(typeof(NameplatesTab), nameof(NameplatesTab.OnEnable)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
+        harmony.Unpatch(AccessTools.Method(typeof(NameplatesTab), nameof(NameplatesTab.Update)), HarmonyPatchType.Prefix, MiraApiPlugin.Id);
+        harmony.Unpatch(AccessTools.Method(typeof(HatsTab), nameof(HatsTab.OnEnable)), HarmonyPatchType.Prefix, NewMod.CorsacPluginId);
+        harmony.Unpatch(AccessTools.Method(typeof(VisorsTab), nameof(VisorsTab.OnEnable)), HarmonyPatchType.Prefix, NewMod.CorsacPluginId);
+
+        NewModCosmeticsRegistry.RegisterHat("og_newmod", NewModAsset.OG_NewModHat.LoadAsset(), new HatMetadata { Name = "OG NewMod", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("glitch_reality", NewModAsset.GlitchedRealityHat.LoadAsset(), new HatMetadata { Name = "Glitch Reality", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("mint_icecream", NewModAsset.MintIceCreamHat.LoadAsset(), new HatMetadata { Name = "Mint Ice Cream", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("strawberry_icecream", NewModAsset.StrawberryIceCreamHat.LoadAsset(), new HatMetadata { Name = "Strawberry Ice Cream", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("pizza", NewModAsset.PizzaHat.LoadAsset(), new HatMetadata { Name = "Pizza", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("squeeze_cap", NewModAsset.SqueezeCapHat.LoadAsset(), new HatMetadata { Name = "Squeeze Cap", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("zros", NewModAsset.ZrosHat.LoadAsset(), new HatMetadata { Name = "Zro's Hat", InFront = true, NoBounce = false });
+        NewModCosmeticsRegistry.RegisterHat("igotanidea", NewModAsset.IGotanIdeaHat.LoadAsset(), new HatMetadata { Name = "i got an idea", InFront = true, NoBounce = false });
+
+        NewModCosmeticsRegistry.RegisterVisor("malicious_look", NewModAsset.MaliciousLook.LoadAsset(), new VisorMetadata { Name = "Malicious Look" });
+        NewModCosmeticsRegistry.RegisterVisor("cotton_memories", NewModAsset.CottonMemoriesVisor.LoadAsset(), new VisorMetadata { Name = "Cotton Memories Visor" });
+        NewModCosmeticsRegistry.RegisterVisor("do_worry", NewModAsset.DoWorryVisor.LoadAsset(), new VisorMetadata { Name = "Do Worry", MatchPlayerColor = true });
+        NewModCosmeticsRegistry.RegisterVisor("cosmic", NewModAsset.CosmicVisor.LoadAsset(), new VisorMetadata { Name = "Cosmic Visor" });
+        NewModCosmeticsRegistry.RegisterVisor("fogged_up", NewModAsset.FoggedUpVisor.LoadAsset(), new VisorMetadata { Name = "Fogged Up" });
+
+        NewModCosmeticsRegistry.RegisterNamePlate("nm_rave", NewModAsset.NMraveNameplate.LoadAsset(), new NamePlateMetadata { Name = "NM Rave" });
+        NewModCosmeticsRegistry.RegisterNamePlate("sunny_sky", NewModAsset.SunnyNameplate.LoadAsset(), new NamePlateMetadata { Name = "Sunny Sky" });
+        NewModCosmeticsRegistry.RegisterNamePlate("airship", NewModAsset.AirshipNameplate.LoadAsset(), new NamePlateMetadata { Name = "The Airship" });
+        NewModCosmeticsRegistry.RegisterNamePlate("polus_planet", NewModAsset.PolusPlanetNameplate.LoadAsset(), new NamePlateMetadata { Name = "Polus Planet" });
+        NewModCosmeticsRegistry.RegisterNamePlate("dance_and_fire", NewModAsset.DanceAndFireNameplate.LoadAsset(), new NamePlateMetadata { Name = "Dance and Fire" });
+        NewModCosmeticsRegistry.RegisterNamePlate("cosmic_nebula", NewModAsset.CosmicNebulaNameplate.LoadAsset(), new NamePlateMetadata { Name = "Cosmic Nebula" });
+
+        SourceRegistry.Instance.RegisterSource(new NewModCosmeticSource());
+        Initialized = true;
+
+        Message("Registered NewMod cosmetics through Corsac Cosmetics");
+    }
+}

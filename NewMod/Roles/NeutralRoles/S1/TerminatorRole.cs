@@ -1,0 +1,544 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using Il2CppInterop.Runtime.Attributes;
+using MiraAPI.Events;
+using MiraAPI.Events.Vanilla.Gameplay;
+using MiraAPI.Events.Vanilla.Meeting;
+using MiraAPI.GameEnd;
+using MiraAPI.GameOptions;
+using MiraAPI.Hud;
+using MiraAPI.Networking;
+using MiraAPI.PluginLoading;
+using MiraAPI.Roles;
+using MiraAPI.Translation;
+using MiraAPI.Utilities;
+using MiraAPI.Utilities.Assets;
+using NewMod.Buttons.Roles.S1;
+using NewMod.Components;
+using NewMod.GeneralEvents.Season1;
+using NewMod.Options.Roles.S1;
+using NewMod.Utilities;
+using Reactor.Networking.Attributes;
+using Reactor.Networking.Rpc;
+using Reactor.Utilities;
+using TMPro;
+using UnityEngine;
+
+namespace NewMod.Roles.NeutralRoles.S1;
+
+[MiraIgnore]
+public class TerminatorRole : CrewmateRole, INewModRole
+{
+    public static int MeetingsSurvived;
+    public static bool ObjectiveSpawned;
+    public static ArrowBehaviour ObjectiveArrow;
+    public static ArrowBehaviour ThreatArrow;
+    public static TextMeshPro ThreatText;
+    public static bool FinalCountdownActive;
+    public static byte FinalCountdownOwnerId = byte.MaxValue;
+    public static Vector2 ObjectivePosition;
+    public static GameObject ObjectiveMarker;
+    public static int Armor = 1;
+    public static readonly HashSet<byte> ArmorAttackers = [];
+    public string RoleName => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole");
+    public string RoleDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.IntroBlurb");
+
+    public string RoleLongDescription => MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.TabDescription");
+
+    public Color RoleColor => new Color32(217, 110, 32, 255);
+    public NewModFaction Faction => NewModFaction.Entropy;
+    public ModdedRoleTeams Team => ModdedRoleTeams.Custom;
+    public RoleOptionsGroup RoleOptionsGroup => RoleOptionsGroup.Neutral;
+
+    public CustomRoleConfiguration Configuration =>
+        new(this)
+        {
+            AffectedByLightOnAirship = false,
+            CanGetKilled = true,
+            UseVanillaKillButton = false,
+            CanUseVent = true,
+            CanUseSabotage = false,
+            TasksCountForProgress = false,
+            ShowInFreeplay = true,
+            HideSettings = false,
+            MaxRoleCount = 1,
+            OptionsScreenshot = MiraAssets.Empty,
+            Icon = NewModAsset.TerminatorIcon,
+            CanModifyChance = true,
+            RoleHintType = RoleHintType.RoleTab,
+        };
+
+    [HideFromIl2Cpp]
+    public StringBuilder SetTabText()
+    {
+        var tabText = INewModRole.GetRoleTabText(this);
+        var required = (int)OptionGroupSingleton<TerminatorOptions>.Instance.MeetingsBeforeObjective;
+        var left = Mathf.Max(0, required - MeetingsSurvived);
+
+        tabText.AppendLine();
+        tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsSurvived"), MeetingsSurvived, required));
+
+        if (FinalCountdownActive)
+            tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.HuntActive"));
+        else if (ObjectiveSpawned)
+            tabText.AppendLine(MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.ObjectiveActive"));
+        else
+            tabText.AppendLine(string.Format(CultureInfo.CurrentCulture, MiraLocaleManager.Get("NewMod.Roles.NeutralRoles.S1.TerminatorRole.Tab.MeetingsRemaining"), left, left == 1 ? string.Empty : "s"));
+
+        return tabText;
+    }
+
+    public override bool DidWin(GameOverReason gameOverReason)
+    {
+        return gameOverReason == CustomGameOver.GameOverReason<TerminatorGameOver>();
+    }
+
+    [RegisterEvent]
+    public static void OnRoundStart(RoundStartEvent evt)
+    {
+        var terminator = GetTerminator();
+
+        if (!evt.TriggeredByIntro) return;
+        ResetState();
+
+        if (terminator)
+            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#D96E20><b>WARNING:</b> The Terminator is aboard.</color>"));
+    }
+
+    [RegisterEvent]
+    public static void OnMeetingStart(StartMeetingEvent evt)
+    {
+        var terminator = GetTerminator();
+
+        if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected)
+            return;
+
+        Coroutines.Start(CoShowMeetingWarning(evt.MeetingHud));
+    }
+
+    [RegisterEvent]
+    public static void OnMeetingResolved(RoundStartEvent evt)
+    {
+        if (evt.TriggeredByIntro) return;
+
+        var terminator = GetTerminator();
+
+        if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected)
+            return;
+
+        MeetingsSurvived++;
+
+        if (!PlayerControl.LocalPlayer.IsHost() || ObjectiveSpawned)
+            return;
+
+        var required = (int)OptionGroupSingleton<TerminatorOptions>.Instance.MeetingsBeforeObjective;
+
+        if (MeetingsSurvived >= required)
+        {
+            var pos = PickObjectivePosition();
+            RpcSpawnObjective(PlayerControl.LocalPlayer, pos.x, pos.y);
+        }
+    }
+
+    private static IEnumerator CoShowMeetingWarning(MeetingHud hud)
+    {
+        while (hud && hud.CurrentState == MeetingHud.MeetingStates.Animating)
+            yield return null;
+
+        yield return new WaitForSeconds(0.35f);
+
+        var required = (int)OptionGroupSingleton<TerminatorOptions>.Instance.MeetingsBeforeObjective;
+        var state = MeetingsSurvived >= required ? "Final Objective is active." : $"Escalation {MeetingsSurvived}/{required}.";
+
+        Coroutines.Start(CoroutinesHelper.CoNotify($"<color=#D96E20>Terminator detected. {state}</color>"));
+    }
+
+    [RegisterEvent]
+    public static void OnGameEnd(GameEndEvent evt)
+    {
+        ResetState();
+    }
+
+    [MethodRpc((uint)CustomRPC.TerminatorObjective)]
+    public static void RpcSpawnObjective(PlayerControl source, float x, float y)
+    {
+        if (!source.IsHost()) return;
+
+        ObjectiveSpawned = true;
+        ObjectivePosition = new Vector2(x, y);
+
+        if (ObjectiveMarker)
+            Destroy(ObjectiveMarker);
+
+        var radius = OptionGroupSingleton<TerminatorOptions>.Instance.FinalObjectiveRadius;
+        ObjectiveMarker = Utils.CreateSphere("TerminatorFinalObjective", new Vector3(x, y, 0f), radius, new Color32(217, 110, 32, 130), 600f);
+        CreateObjectiveArrow(ObjectivePosition);
+        Coroutines.Start(CoroutinesHelper.CoNotify("<color=#D96E20><b>Terminator Final Objective revealed.</b></color>"));
+    }
+
+    [MethodRpc((uint)CustomRPC.TerminatorFinalCountdown)]
+    public static void RpcStartFinalCountdown(PlayerControl source)
+    {
+        if (!ObjectiveSpawned || FinalCountdownActive || !AbilityExchangeGE.HasRoleAbility<TerminatorRole>(source) || source.Data.IsDead || source.Data.Disconnected || MeetingHud.Instance || ExileController.Instance)
+            return;
+
+        var radius = OptionGroupSingleton<TerminatorOptions>.Instance.FinalObjectiveRadius;
+        if (Vector2.Distance(source.GetTruePosition(), ObjectivePosition) > radius)
+            return;
+
+        FinalCountdownActive = true;
+        FinalCountdownOwnerId = source.PlayerId;
+        ObjectiveSpawned = false;
+        ResetArmor((int)OptionGroupSingleton<TerminatorOptions>.Instance.ArmorSegments);
+
+        var terminateButton = CustomButtonSingleton<TerminateButton>.Instance;
+        terminateButton.SetUses(1);
+        terminateButton.SetTimer(0f);
+        terminateButton.SetActive(true, PlayerControl.LocalPlayer.Data.Role);
+
+        if (ObjectiveMarker)
+            ObjectiveMarker.GetComponent<AreaBubble>().Break();
+
+        ObjectiveMarker = null;
+        DestroyObjectiveArrow();
+        Coroutines.Start(CoFinalCountdown(source));
+    }
+
+    private static IEnumerator CoFinalCountdown(PlayerControl terminator)
+    {
+        var duration = OptionGroupSingleton<TerminatorOptions>.Instance.FinalCountdownDuration;
+        var hud = HudManager.Instance;
+
+        ThreatText = Helpers.CreateTextLabel("TerminatorThreatText", hud.transform, AspectPosition.EdgeAlignments.Top, new Vector3(0f, 0.35f, -20f), 2.2f);
+        ThreatText.color = new Color32(255, 70, 45, 255);
+        ThreatText.fontStyle = FontStyles.Bold;
+
+        if (PlayerControl.LocalPlayer.PlayerId != terminator.PlayerId)
+        {
+            var arrowObject = new GameObject("TerminatorThreatArrow") { layer = 5 };
+            var renderer = arrowObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = NewModAsset.Arrow.LoadAsset();
+            renderer.color = new Color32(255, 45, 45, 255);
+
+            ThreatArrow = arrowObject.AddComponent<ArrowBehaviour>();
+            ThreatArrow.target = terminator.transform.position;
+            ThreatArrow.alwaysMaxSize = true;
+            ThreatArrow.MaxScale = 0.8f;
+        }
+
+        var warningFlash = Instantiate(hud.FullScreen, hud.FullScreen.transform.parent);
+        warningFlash.gameObject.name = "TerminatorWarningFlash";
+        warningFlash.color = new Color(1f, 0f, 0f, 0.37254903f);
+        warningFlash.gameObject.SetActive(false);
+
+        var timeLeft = duration;
+        var flashTimer = 0f;
+
+        while (timeLeft > 0f && FinalCountdownActive && terminator && !terminator.Data.IsDead && !terminator.Data.Disconnected)
+        {
+            var inMeeting = MeetingHud.Instance || ExileController.Instance;
+
+            ThreatText.gameObject.SetActive(!inMeeting);
+            if (ThreatArrow)
+            {
+                ThreatArrow.gameObject.SetActive(!inMeeting);
+                ThreatArrow.target = terminator.transform.position;
+            }
+
+            if (inMeeting)
+            {
+                warningFlash.gameObject.SetActive(false);
+                yield return null;
+                continue;
+            }
+
+            ThreatText.text = $"STOP THE TERMINATOR  •  {Mathf.CeilToInt(timeLeft)}s\n\n<size=65%>ARMOR  <color=#FF8C32>{new string('■', Armor)}</color></size>";
+
+            flashTimer -= Time.deltaTime;
+            if (flashTimer <= 0f)
+            {
+                warningFlash.gameObject.SetActive(!warningFlash.gameObject.activeSelf);
+                if (Constants.ShouldPlaySfx())
+                    SoundManager.Instance.PlaySound(ShipStatus.Instance.SabotageSound, false, 0.9f);
+                flashTimer = 1f;
+            }
+
+            timeLeft -= Time.deltaTime;
+            yield return null;
+        }
+
+        if (ThreatArrow)
+            Destroy(ThreatArrow.gameObject);
+        if (ThreatText)
+            Destroy(ThreatText.gameObject);
+        if (warningFlash)
+            Destroy(warningFlash.gameObject);
+
+        ThreatArrow = null;
+        ThreatText = null;
+        FinalCountdownActive = false;
+        FinalCountdownOwnerId = byte.MaxValue;
+        CustomButtonSingleton<TerminateButton>.Instance.SetActive(false, PlayerControl.LocalPlayer.Data.Role);
+
+        if (timeLeft <= 0f && terminator && terminator.Data.Role is TerminatorRole && !terminator.Data.IsDead && !terminator.Data.Disconnected && AmongUsClient.Instance.AmHost)
+            CustomGameOver.Trigger<TerminatorGameOver>([terminator.Data]);
+        else if (terminator && terminator.Data.Role is not TerminatorRole && AmongUsClient.Instance.AmHost && AmongUsClient.Instance.IsGameStarted)
+            RpcSpawnObjective(PlayerControl.LocalPlayer, ObjectivePosition.x, ObjectivePosition.y);
+    }
+
+    [MethodRpc((uint)CustomRPC.TerminatorRequestEliminate)]
+    public static void RpcRequestTerminate(PlayerControl source)
+    {
+        if (!AmongUsClient.Instance.AmHost || !FinalCountdownActive || MeetingHud.Instance || ExileController.Instance || source.inVent || source.Data.IsDead || source.Data.Disconnected || source.PlayerId == FinalCountdownOwnerId)
+            return;
+
+        var terminator = GetTerminator();
+        if (!terminator || terminator.Data.IsDead || terminator.Data.Disconnected || Vector2.Distance(source.GetTruePosition(), terminator.GetTruePosition()) > OptionGroupSingleton<TerminatorOptions>.Instance.CounterAttackRange || PhysicsHelpers.AnythingBetween(source.GetTruePosition(), terminator.GetTruePosition(), Constants.ShipAndObjectsMask, false))
+            return;
+
+        if (!TryHitArmor(source.PlayerId))
+            return;
+
+        RpcResolveTerminate(PlayerControl.LocalPlayer, source.PlayerId, (byte)Armor);
+
+        if (Armor != 0)
+            return;
+
+        if (terminator.Data.Role is not TerminatorRole)
+        {
+            terminator.RpcCustomMurder(terminator, MeetingCheck.OutsideMeeting, resetKillTimer: false);
+            return;
+        }
+
+        var winners = PlayerControl.AllPlayerControls.ToArray().Where(player => !player.Data.Disconnected && player.Data.Role is not TerminatorRole).Select(player => player.Data).ToArray();
+        CustomGameOver.Trigger<TerminatorDefeatedGameOver>(winners);
+    }
+
+    [MethodRpc((uint)CustomRPC.TerminatorResolveAttack, LocalHandling = RpcLocalHandling.After)]
+    public static void RpcResolveTerminate(PlayerControl host, byte attackerId, byte armor)
+    {
+        if (!host.IsHost())
+            return;
+
+        if (!AmongUsClient.Instance.AmHost)
+            ResetArmor(armor);
+
+        if (armor == 0)
+            FinalCountdownActive = false;
+
+        if (PlayerControl.LocalPlayer.PlayerId == attackerId)
+        {
+            var suffix = armor == 1 ? string.Empty : "s";
+            Coroutines.Start(CoroutinesHelper.CoNotify(armor == 0 ? "<color=#75E6A5>Terminator destroyed.</color>" : $"<color=#FF8C32>Armor broken.</color> {armor} segment{suffix} remain."));
+        }
+    }
+
+    public static void CreateObjectiveArrow(Vector2 target)
+    {
+        DestroyObjectiveArrow();
+
+        if (!AbilityExchangeGE.HasRoleAbility<TerminatorRole>(PlayerControl.LocalPlayer))
+            return;
+
+        var go = new GameObject("TerminatorObjectiveArrow");
+        go.layer = 5;
+
+        var renderer = go.AddComponent<SpriteRenderer>();
+        renderer.sprite = NewModAsset.Arrow.LoadAsset();
+        renderer.color = new Color32(217, 110, 32, 255);
+
+        ObjectiveArrow = go.AddComponent<ArrowBehaviour>();
+        ObjectiveArrow.target = target;
+        ObjectiveArrow.alwaysMaxSize = true;
+        ObjectiveArrow.MaxScale = 0.75f;
+    }
+
+    public static void DestroyObjectiveArrow()
+    {
+        if (ObjectiveArrow)
+            Destroy(ObjectiveArrow.gameObject);
+
+        ObjectiveArrow = null;
+    }
+
+    public static PlayerControl GetTerminator()
+    {
+        if (FinalCountdownOwnerId != byte.MaxValue)
+            return Utils.PlayerById(FinalCountdownOwnerId);
+
+        foreach (var player in PlayerControl.AllPlayerControls)
+        {
+            if (player && player.Data != null && player.Data.Role is TerminatorRole)
+                return player;
+        }
+
+        return null;
+    }
+
+    public static Vector2 PickObjectivePosition()
+    {
+        var ship = ShipStatus.Instance;
+
+        if (!ship)
+            return PlayerControl.LocalPlayer.GetTruePosition();
+
+        SystemTypes[] rooms;
+
+        if (ship is AirshipStatus)
+        {
+            rooms =
+            [
+                SystemTypes.VaultRoom,
+                SystemTypes.Cockpit,
+                SystemTypes.Armory,
+                SystemTypes.Kitchen,
+                SystemTypes.ViewingDeck,
+                SystemTypes.HallOfPortraits,
+                SystemTypes.CargoBay,
+                SystemTypes.Showers,
+                SystemTypes.Engine,
+                SystemTypes.Brig,
+                SystemTypes.MeetingRoom,
+                SystemTypes.Records,
+                SystemTypes.Lounge,
+                SystemTypes.MainHall,
+                SystemTypes.Medical
+            ];
+        }
+        else
+        {
+            rooms = ship.Type switch
+            {
+                ShipStatus.MapType.Ship =>
+                [
+                    SystemTypes.Cafeteria,
+                    SystemTypes.Admin,
+                    SystemTypes.Weapons,
+                    SystemTypes.Shields,
+                    SystemTypes.Storage,
+                    SystemTypes.Electrical,
+                    SystemTypes.Security,
+                    SystemTypes.MedBay,
+                    SystemTypes.Reactor,
+                    SystemTypes.Nav
+                ],
+
+                ShipStatus.MapType.Hq =>
+                [
+                    SystemTypes.Launchpad,
+                    SystemTypes.MedBay,
+                    SystemTypes.LockerRoom,
+                    SystemTypes.Laboratory,
+                    SystemTypes.Office,
+                    SystemTypes.Admin,
+                    SystemTypes.Greenhouse,
+                    SystemTypes.Balcony
+                ],
+
+                ShipStatus.MapType.Pb =>
+                [
+                    SystemTypes.Dropship,
+                    SystemTypes.Office,
+                    SystemTypes.Laboratory,
+                    SystemTypes.Specimens,
+                    SystemTypes.Storage,
+                    SystemTypes.Electrical,
+                    SystemTypes.Weapons,
+                    SystemTypes.Comms,
+                    SystemTypes.BoilerRoom
+                ],
+
+                ShipStatus.MapType.Fungle =>
+                [
+                    SystemTypes.RecRoom,
+                    SystemTypes.Lookout,
+                    SystemTypes.Beach,
+                    SystemTypes.Highlands,
+                    SystemTypes.Jungle,
+                    SystemTypes.SleepingQuarters,
+                    SystemTypes.Kitchen,
+                    SystemTypes.MiningPit,
+                    SystemTypes.FishingDock
+                ],
+
+                _ => [],
+            };
+        }
+
+        var positions = new List<Vector2>();
+
+        if (ship.FastRooms != null)
+        {
+            foreach (var roomType in rooms)
+            {
+                if (!ship.FastRooms.TryGetValue(roomType, out var room) || !room)
+                    continue;
+
+                positions.Add(room.roomArea ? room.roomArea.bounds.center : room.transform.position);
+            }
+        }
+
+        if (positions.Count == 0 && ship.AllRooms != null)
+        {
+            foreach (var room in ship.AllRooms)
+            {
+                if (!room)
+                    continue;
+
+                if (room.RoomId is SystemTypes.Hallway or SystemTypes.Outside or SystemTypes.Ventilation or SystemTypes.Sabotage or SystemTypes.Doors)
+                    continue;
+
+                positions.Add(room.roomArea ? room.roomArea.bounds.center : room.transform.position);
+            }
+        }
+
+        if (positions.Count > 0)
+            return positions[Random.Range(0, positions.Count)];
+
+        return ship.InitialSpawnCenter != Vector2.zero ? ship.InitialSpawnCenter : PlayerControl.LocalPlayer.GetTruePosition();
+    }
+
+    public static void ResetState()
+    {
+        DestroyObjectiveArrow();
+
+        if (ThreatArrow)
+            Destroy(ThreatArrow.gameObject);
+
+        if (ThreatText)
+            Destroy(ThreatText.gameObject);
+
+        ThreatArrow = null;
+        ThreatText = null;
+
+        MeetingsSurvived = 0;
+        ObjectiveSpawned = false;
+        FinalCountdownActive = false;
+        FinalCountdownOwnerId = byte.MaxValue;
+        ObjectivePosition = Vector2.zero;
+        ResetArmor(1);
+
+        if (ObjectiveMarker)
+            Destroy(ObjectiveMarker);
+
+        ObjectiveMarker = null;
+    }
+
+    public static void ResetArmor(int armor)
+    {
+        Armor = armor;
+        ArmorAttackers.Clear();
+    }
+
+    public static bool TryHitArmor(byte attackerId)
+    {
+        if (Armor == 0 || !ArmorAttackers.Add(attackerId))
+            return false;
+
+        Armor--;
+        return true;
+    }
+}

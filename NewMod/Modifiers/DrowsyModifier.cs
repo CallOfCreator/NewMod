@@ -1,38 +1,50 @@
 using MiraAPI.GameOptions;
-using MiraAPI.Modifiers;
 using MiraAPI.Modifiers.Types;
-using MiraAPI.Utilities;
+using MiraAPI.Utilities.Assets;
 using NewMod.Options;
 using NewMod.Options.Modifiers;
 using UnityEngine;
 
-namespace NewMod.Modifiers
+namespace NewMod.Modifiers;
+
+public sealed class DrowsyModifier : GameModifier
 {
-    public sealed class DrowsyModifier : GameModifier
+    public float AppliedMultiplier = 1f;
+
+    public override string ModifierName => "Drowsy";
+    public override LoadableAsset<Sprite> ModifierIcon => NewModAsset.DrowsyIcon;
+    public override bool ShowInFreeplay => true;
+    public override Color FreeplayFileColor => new(0.6f, 0.7f, 1f);
+
+    public override string GetDescription()
     {
-        public override string ModifierName => "Drowsy";
-        public override bool ShowInFreeplay => true;
-        public override Color FreeplayFileColor => new(0.6f, 0.7f, 1f);
-        public override string GetDescription() =>
-            $"Move slower (x{OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier:0.##}).";
+        return $"Move slower (x{OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier:0.##}).";
+    }
 
-        public override int GetAssignmentChance() => (int)OptionGroupSingleton<ModifiersOptions>.Instance.DrowsyChance.Value;
+    public override int GetAssignmentChance()
+    {
+        return (int)OptionGroupSingleton<ModifiersOptions>.Instance.DrowsyChance.Value;
+    }
 
-        public override int GetAmountPerGame() => (int)OptionGroupSingleton<ModifiersOptions>.Instance.DrowsyAmount;
+    public override int GetAmountPerGame()
+    {
+        return (int)OptionGroupSingleton<ModifiersOptions>.Instance.DrowsyAmount;
+    }
 
-        public override void OnActivate()
-        {
-            Player.MyPhysics.Speed *= OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier;
-        }
+    public override void OnActivate()
+    {
+        AppliedMultiplier = OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier;
+        Player.MyPhysics.Speed *= AppliedMultiplier;
+    }
 
-        public override void OnDeactivate()
-        {
-            Player.MyPhysics.Speed /= OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier;
-        }
+    public override void OnDeactivate()
+    {
+        Player.MyPhysics.Speed /= AppliedMultiplier;
+        AppliedMultiplier = 1f;
+    }
 
-        public override void OnDeath(DeathReason reason)
-        {
-            Player.MyPhysics.Speed /= OptionGroupSingleton<DrowsyModifierOptions>.Instance.SpeedMultiplier;
-        }
+    public override void OnDeath(DeathReason reason)
+    {
+        OnDeactivate();
     }
 }

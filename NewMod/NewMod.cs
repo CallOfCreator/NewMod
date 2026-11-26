@@ -1,96 +1,118 @@
-global using MiraAPI.GameEnd;
-using System.Linq;
-using UnityEngine;
-using Object = UnityEngine.Object;
+using AchievementsAPI;
 using BepInEx;
-using BepInEx.Unity.IL2CPP;
 using BepInEx.Configuration;
+using BepInEx.Unity.IL2CPP;
+using HarmonyLib;
 using MiraAPI;
 using MiraAPI.GameOptions;
 using MiraAPI.PluginLoading;
+using MiraAPI.Translation;
 using MiraAPI.Utilities;
+using NewMod.Debugging;
+using NewMod.Options;
+using NewMod.Roles.ImpostorRoles;
+using NewMod.UI;
+using NewMod.Utilities;
+using PathfindingAPI;
 using Reactor;
+using Reactor.Networking;
 using Reactor.Networking.Attributes;
 using Reactor.Utilities;
-using HarmonyLib;
-using NewMod.Options;
-using NewMod.Utilities;
-using NewMod.Roles.ImpostorRoles;
-using MiraAPI.Events.Vanilla.Gameplay;
-using NewMod.Roles.NeutralRoles;
-using MiraAPI.Roles;
-using MiraAPI.Hud;
-using UnityEngine.Events;
-using NewMod.Options.Roles.OverloadOptions;
-using MiraAPI.Events;
-using NewMod.Patches.Compatibility;
-using NewMod.Buttons.Overload;
+using ReactUI.Plugin;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace NewMod;
 
 [BepInPlugin(Id, "NewMod", ModVersion)]
 [BepInDependency(ReactorPlugin.Id)]
 [BepInDependency(MiraApiPlugin.Id)]
-[BepInDependency(ModCompatibility.LaunchpadReloaded_GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[ReactorModFlags(Reactor.Networking.ModFlags.RequireOnAllClients)]
+[BepInDependency(PathfindingPlugin.Id)]
+[BepInDependency(DialogAPI.DialogAPIPlugin.Id)]
+[BepInDependency(CorsacPluginId, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(LaunchpadReloadedId, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(AchievementsAPIPlugin.Id)]
+[ReactorModFlags(ModFlags.RequireOnAllClients)]
 [BepInProcess("Among Us.exe")]
-public partial class NewMod : BasePlugin, IMiraPlugin
+public class NewMod : BasePlugin, IMiraPlugin
 {
     public const string Id = "com.callofcreator.newmod";
-    public const string ModVersion = "1.2.9";
-    public Harmony Harmony { get; } = new Harmony(Id);
+    public const string ModVersion = "1.3.0";
+
+    public const string CorsacPluginId = "CorsacCosmetics";
+    public const string LaunchpadReloadedId = "dev.xtracube.launchpad";
+
+    public const string NewModBackendAPI = "https://newmod-private.vercel.app";
+
     public static BasePlugin Instance;
-    public static Minigame minigame;
+    public static Minigame Minigame;
+    public static Harmony Harmony { get; } = new(Id);
     public static ConfigEntry<bool> ShouldEnableBepInExConsole { get; set; }
-    public ConfigFile GetConfigFile() => Config;
+    public static ConfigEntry<bool> ForceEnableAllSeasons { get; set; }
+    public static bool ShouldReactUIDebug { get; set; }
+
+    public ConfigFile GetConfigFile()
+    {
+        return Config;
+    }
+
     public string OptionsTitleText => "NewMod";
+
+    public NewMod()
+    {
+        MiraLocaleManager.Register("com.callofcreator.newmod");
+    }
 
     public override void Load()
     {
         Instance = this;
-        AddComponent<DebugWindow>();
-        ReactorCredits.Register("NewMod", "v1.2.9 Hotfix 5", true, ReactorCredits.AlwaysShow);
-        Harmony.PatchAll();
-        NewModEventHandler.RegisterEventsLogs();
 
-        if (ModCompatibility.IsLaunchpadLoaded())
+        if (Application.platform != RuntimePlatform.Android && ShouldReactUIDebug)
         {
-            Harmony.PatchAll(typeof(LaunchpadCompatibility));
-            Harmony.PatchAll(typeof(LaunchpadHackTextPatch));
+            ReactUIBootstrap.Initialize();
+            NewModDebugStyles.Register();
+            NewModDebugPanel.Mount();
+            ReactUIBehaviour.OnUpdate += NewModDebugPanel.OnUpdate;
+            AddComponent<DebugWindow>();
         }
+        else
+        {
+            DebugMode.Initialize(this);
+        }
+
+        ReactorCredits.Register("NewMod", ModVersion + " DEV", true, ReactorCredits.AlwaysShow);
+        Harmony.PatchAll();
+
+        ModCompatibility.Initialize();
 
         ShouldEnableBepInExConsole = Config.Bind("NewMod", "Console", true, "Whether to enable BepInEx Console for debugging");
         if (!ShouldEnableBepInExConsole.Value) ConsoleManager.DetachConsole();
 
-        Instance.Log.LogMessage($"Loaded Successfully NewMod v{ModVersion} With MiraAPI Version : {MiraApiPlugin.Version}");
-    }
+        ForceEnableAllSeasons = Config.Bind("NewMod", "ForceEnableAllSeasons", false, "Force all seasons as started");
 
-    [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
-    public class KeyboardJoystickUpdatePatch
-    {
-        public static void Postfix(KeyboardJoystick __instance)
-        {
-            InitializeKeyBinds();
-        }
+        Message($"Loaded Successfully NewMod v{ModVersion} DEV With MiraAPI Version : {MiraApiPlugin.Version}");
     }
 
     public static void InitializeKeyBinds()
     {
+        if (!PlayerControl.LocalPlayer || !PlayerControl.LocalPlayer.Data || MeetingHud.Instance || ExileController.Instance)
+            return;
+
         if (Input.GetKeyDown(KeyCode.F2) && PlayerControl.LocalPlayer.Data.IsDead && OptionGroupSingleton<GeneralOption>.Instance.AllowCams)
         {
             var sys = Utils.FindSurveillanceConsole();
             var mainCam = Camera.main;
-            if (mainCam == null) return;
+            if (!sys || !mainCam || Minigame) return;
 
-            var minigame = Object.Instantiate(sys.MinigamePrefab, mainCam.transform, false);
-            minigame.transform.localPosition = new Vector3(0f, 0f, -50f);
-            minigame.Begin(null);
+            Minigame = Object.Instantiate(sys.MinigamePrefab, mainCam.transform, false);
+            Minigame.transform.localPosition = new Vector3(0f, 0f, -50f);
+            Minigame.Begin(null);
         }
 
         if (Input.GetKeyDown(KeyCode.F3) && PlayerControl.LocalPlayer.Data.Role is NecromancerRole)
         {
             var deadBodies = Helpers.GetNearestDeadBodies(PlayerControl.LocalPlayer.GetTruePosition(), 20f, Helpers.CreateFilter(Constants.NotShipMask));
-            if (deadBodies != null && deadBodies.Count > 0)
+            if (deadBodies.Count > 0)
             {
                 var randomIndex = Random.Range(0, deadBodies.Count);
                 var randomBodyPosition = deadBodies[randomIndex].transform.position;
@@ -98,65 +120,23 @@ public partial class NewMod : BasePlugin, IMiraPlugin
             }
             else
             {
-                CoroutinesHelper.CoNotify("<b><color=#FF0000>No dead bodies nearby to teleport to.</color></b>");
+                Coroutines.Start(CoroutinesHelper.CoNotify("<b><color=#FF0000>No dead bodies nearby to teleport to.</color></b>"));
             }
         }
     }
 
-    [RegisterEvent]
-    public static void OnBeforeMurder(BeforeMurderEvent evt)
+    [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
+    public static class KeyboardJoystickUpdatePatch
     {
-        if (evt.Target != OverloadRole.chosenPrey) return;
-
-        //TODO: Use the newest MiraAPI roles for button mapping
-        if (evt.Target.Data.Role is ICustomRole customRole && Utils.RoleToButtonsMap.TryGetValue(customRole.GetType(), out var buttonsType))
+        [HarmonyPrepare]
+        public static bool Prepare()
         {
-            OverloadRole.CachedButtons = [.. CustomButtonManager.Buttons.Where(b => buttonsType.Contains(b.GetType()))];
-            Instance.Log.LogMessage($"CachedButton: {buttonsType.GetType().Name}");
-        }
-    }
-
-    [RegisterEvent]
-    public static void OnAfterMurder(AfterMurderEvent evt)
-    {
-        var source = evt.Source;
-        var target = evt.Target;
-        Utils.RecordOnKill(source, target);
-
-        if (target != OverloadRole.chosenPrey) return;
-
-        foreach (var pc in PlayerControl.AllPlayerControls.ToArray().Where(p => p.AmOwner && p.Data.Role is OverloadRole))
-        {
-            if (target.Data.Role is ICustomRole customRole)
-            {
-                foreach (var button in OverloadRole.CachedButtons)
-                {
-                    CustomButtonSingleton<OverloadButton>.Instance.Absorb(button);
-                    Debug.Log($"[Overload] Successfully absorbed ability: {button.Name}");
-                }
-            }
-            else if (target.Data.Role is not ICustomRole)
-            {
-                var btn = Object.Instantiate(HudManager.Instance.AbilityButton, HudManager.Instance.AbilityButton.transform.parent);
-                btn.SetFromSettings(target.Data.Role.Ability);
-                var pb = btn.GetComponent<PassiveButton>();
-                pb.OnClick.RemoveAllListeners();
-                pb.OnClick.AddListener((UnityAction)target.Data.Role.UseAbility);
-            }
+            return Application.platform != RuntimePlatform.Android;
         }
 
-        OverloadRole.CachedButtons.Clear();
-        OverloadRole.AbsorbedAbilityCount++;
-        OverloadRole.chosenPrey = null;
-        Coroutines.Start(CoroutinesHelper.CoNotify($"<color=green>Charge {OverloadRole.AbsorbedAbilityCount}/{OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge}</color>"));
-
-        if (OverloadRole.AbsorbedAbilityCount >= OptionGroupSingleton<OverloadOptions>.Instance.NeededCharge)
+        public static void Postfix(KeyboardJoystick __instance)
         {
-            Coroutines.Start(CoroutinesHelper.CoNotify("<color=#00FF7F>Objective completed: Final Ability unlocked!</color>"));
-        }
-        else
-        {
-            Coroutines.Start(OverloadRole.CoShowMenu(1f));
+            InitializeKeyBinds();
         }
     }
 
@@ -165,10 +145,10 @@ public partial class NewMod : BasePlugin, IMiraPlugin
     {
         public static void Postfix(TaskPanelBehaviour __instance, [HarmonyArgument(0)] string str)
         {
-            if (__instance.taskText != null && PlayerControl.LocalPlayer.Data.IsDead)
-            {
-                __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams ? "<color=blue>Press F2 For Open Cams</color>" : "<color=red>You cannot open cams because the host has disabled this setting</color>");
-            }
+            if (__instance != HudManager.Instance.TaskPanel || !PlayerControl.LocalPlayer.Data.IsDead)
+                return;
+
+            __instance.taskText.text += "\n" + (OptionGroupSingleton<GeneralOption>.Instance.AllowCams ? "<color=blue>Remote cameras enabled: press F2</color>" : "<color=red>Remote cameras disabled</color>");
         }
     }
 }

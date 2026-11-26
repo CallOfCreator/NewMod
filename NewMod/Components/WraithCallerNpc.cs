@@ -2,190 +2,220 @@ using System;
 using System.Collections;
 using Il2CppInterop.Runtime.Attributes;
 using MiraAPI.GameOptions;
+using MiraAPI.Modifiers;
 using MiraAPI.Networking;
-using NewMod.Options.Roles.WraithCallerOptions;
+using NewMod.Modifiers.S1;
+using NewMod.Options.Roles;
+using NewMod.Roles.ImpostorRoles.S1;
+using NewMod.Roles.NeutralRoles;
 using NewMod.Utilities;
 using Reactor.Utilities;
 using Reactor.Utilities.Attributes;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-namespace NewMod.Components
+namespace NewMod.Components;
+
+[RegisterInIl2Cpp]
+public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
 {
-    [RegisterInIl2Cpp]
-    public class WraithCallerNpc(IntPtr ptr) : MonoBehaviour(ptr)
+    public PlayerControl Owner;
+    public PlayerControl Target;
+    public PlayerControl Visual;
+    public PlayerControl ReflectedBy;
+    public Rigidbody2D body;
+    public PlayerAnimations animations;
+    public LightSource ownerLight;
+    public int NpcId;
+    public byte OwnerId;
+    public bool isActive;
+    public bool Reflected;
+    public bool ResolvingKill;
+    public bool HuntSucceeded;
+    public IEnumerator MoveCoroutine;
+
+    [HideFromIl2Cpp]
+    public void Initialize(PlayerControl owner, PlayerControl target, Vector2 start, int npcId)
     {
-        public PlayerControl Owner { get; set; }
-        public PlayerControl Target { get; set; }
-        public PlayerControl Visual { get; set; }
-        public Rigidbody2D body;
-        public PlayerAnimations animations;
+        Owner = owner;
+        OwnerId = owner.PlayerId;
+        Target = target;
+        NpcId = npcId;
 
-        public LightSource ownerLight;
-        public bool isActive;
+        Visual = Instantiate(AmongUsClient.Instance.PlayerPrefab);
+        Visual.transform.position = new Vector3(start.x, start.y, Owner.transform.position.z);
+        Visual.notRealPlayer = true;
+        Visual.enabled = false;
+        Visual.NetTransform.enabled = false;
+        Visual.Collider.enabled = false;
+        Visual.MyPhysics.enabled = false;
 
-        [HideFromIl2Cpp]
+        PlayerControl.AllPlayerControls.Remove(Visual);
 
-        // Inspired by: https://github.com/NuclearPowered/Reactor/blob/e27a79249ea706318f3c06f3dc56a5c42d65b1cf/Reactor.Debugger/Window/Tabs/GameTab.cs#L70
-        public void Initialize(PlayerControl owner, PlayerControl target, Vector2 start)
+        body = Visual.MyPhysics.body;
+        animations = Visual.MyPhysics.Animations;
+        body.isKinematic = false;
+
+        Visual.cosmetics.enabled = true;
+        Visual.cosmetics.Visible = true;
+        Visual.cosmetics.SetName("Wraith NPC");
+        Visual.cosmetics.ToggleName(true);
+        Visual.cosmetics.SetNamePosition(new Vector3(0f, 0.8f, -0.5f));
+        Visual.cosmetics.ToggleHat(false);
+        Visual.cosmetics.TogglePet(false);
+        Visual.cosmetics.ToggleVisor(false);
+
+        var color = Random.Range(0, Palette.PlayerColors.Length);
+        var bodySprite = Visual.cosmetics.currentBodySprite;
+        bodySprite.Visible = true;
+        Visual.cosmetics.SetBodyColor(color);
+        Visual.cosmetics.colorBlindText.text = "NPC";
+
+        var noShadow = Visual.gameObject.AddComponent<NoShadowBehaviour>();
+        noShadow.rend = bodySprite.BodySprite;
+        noShadow.hitOverride = Visual.Collider;
+
+        isActive = true;
+        MoveCoroutine = Coroutines.Start(CoMove());
+
+        if (Owner.AmOwner && OptionGroupSingleton<WraithCallerOptions>.Instance.ShouldSwitchCamToNPC)
         {
-            Owner = owner;
-            Target = target;
-
-            Visual = Instantiate(AmongUsClient.Instance.PlayerPrefab);
-            Visual.transform.position = new Vector3(start.x, start.y, Owner.transform.position.z);
-
-            Visual.notRealPlayer = true;
-            Visual.enabled = false;
-            Visual.NetTransform.enabled = false;
-            Visual.Collider.enabled = false;
-            Visual.MyPhysics.enabled = false;
-
-            PlayerControl.AllPlayerControls.Remove(Visual);
-
-            body = Visual.MyPhysics.body;
-            animations = Visual.MyPhysics.Animations;
-
-            body.isKinematic = false;
-
-            Visual.cosmetics.enabled = true;
-            Visual.cosmetics.Visible = true;
-
-            Visual.cosmetics.SetName("Wraith NPC");
-            Visual.cosmetics.ToggleName(true);
-            Visual.cosmetics.SetNamePosition(new(0f, 0.8f, -0.5f));
-            Visual.cosmetics.ToggleHat(false);
-            Visual.cosmetics.TogglePet(false);
-            Visual.cosmetics.ToggleVisor(false);
-
-            var color = UnityEngine.Random.Range(0, Palette.PlayerColors.Length);
-            var bodySprite = Visual.cosmetics.currentBodySprite;
-
-            bodySprite.Visible = true;
-            PlayerMaterial.SetColors(color, bodySprite.BodySprite);
-
-            var noShadow = Visual.gameObject.AddComponent<NoShadowBehaviour>();
-            noShadow.rend = bodySprite.BodySprite;
-            noShadow.hitOverride = Visual.Collider;
-
-            isActive = true;
-            Coroutines.Start(CoMove());
-
-            if (Owner.AmOwner && OptionGroupSingleton<WraithCallerOptions>.Instance.ShouldSwitchCamToNPC)
-            {
-                Camera.main.GetComponent<FollowerCamera>().SetTarget(Visual);
-                ownerLight = Owner.lightSource;
-                ownerLight.transform.SetParent(Visual.transform, false);
-                ownerLight.transform.localPosition = Visual.Collider.offset;
-            }
-
-            if (Target.AmOwner)
-                SoundManager.Instance.PlaySound(NewModAsset.HeartbeatSound.LoadAsset(), false, 1f);
+            Camera.main.GetComponent<FollowerCamera>().SetTarget(Visual);
+            ownerLight = Owner.lightSource;
+            ownerLight.transform.SetParent(Visual.transform, false);
+            ownerLight.transform.localPosition = Visual.Collider.offset;
         }
 
-        [HideFromIl2Cpp]
-        public IEnumerator CoMove()
+        if (Target.AmOwner)
+            SoundManager.Instance.PlaySound(NewModAsset.HeartbeatSound.LoadAsset(), false);
+    }
+
+    [HideFromIl2Cpp]
+    public void RedirectToOwner(PlayerControl mirror)
+    {
+        if (Reflected)
+            return;
+
+        Reflected = true;
+        ReflectedBy = mirror;
+        Target = Owner;
+        Visual.cosmetics.SetName("Reflected Wraith");
+
+        if (Owner.AmOwner)
+            SoundManager.Instance.PlaySound(NewModAsset.HeartbeatSound.LoadAsset(), false);
+    }
+
+    [HideFromIl2Cpp]
+    public IEnumerator CoMove()
+    {
+        var borrowedAbility = Owner.Data.Role is not WraithCaller;
+        var speed = OptionGroupSingleton<WraithCallerOptions>.Instance.NPCSpeed;
+        var endsAt = Time.time + OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration;
+        if (Target.AmOwner)
+            Coroutines.Start(CoroutinesHelper.CoNotify($"A Wraith is hunting you.\nStay away for {OptionGroupSingleton<WraithCallerOptions>.Instance.HuntDuration:0} seconds."));
+
+        while (isActive && Owner && Target && Visual && !MeetingHud.Instance && !ExileController.Instance && Time.time < endsAt && !Owner.Data.IsDead && !Owner.Data.Disconnected && (Owner.Data.Role is WraithCaller || borrowedAbility))
         {
-            var speed = OptionGroupSingleton<WraithCallerOptions>.Instance.NPCSpeed;
+            if (Target.Data.IsDead || Target.Data.Disconnected || Target.HasModifier<InVoid>())
+                break;
 
-            while (isActive && !MeetingHud.Instance)
+            var npcPos = (Vector2)Visual.transform.position;
+            var delta = Target.GetTruePosition() - npcPos;
+
+            if (AmongUsClient.Instance.AmHost && delta.sqrMagnitude <= 0.01f)
             {
-                if (Target.Data.IsDead || Target.Data.Disconnected)
-                    break;
+                body.velocity = Vector2.zero;
+                UpdateWalkAnimation(Vector2.zero);
 
-                var npcPos = (Vector2)Visual.transform.position;
-                var targetPos = Target.GetTruePosition();
-                var delta = targetPos - npcPos;
-
-                var slowDown = Mathf.Clamp(delta.magnitude * 2f, 0.05f, 1f);
-                var velocity = delta.normalized * speed * slowDown;
-
-                body.velocity = velocity;
-
-                UpdateWalkAnimation(velocity);
-
-                if (AmongUsClient.Instance.AmHost && delta.magnitude <= 0.01f)
+                if (!Reflected && MirrorBladeRole.ArmedReflections.Remove(Target.PlayerId))
                 {
-                    body.velocity = Vector2.zero;
-                    UpdateWalkAnimation(Vector2.zero);
-
-                    Owner.RpcCustomMurder(Target, true, teleportMurderer: false);
-
-                    if (Target.AmOwner)
-                    {
-                        CoroutinesHelper.CoNotify("<color=#FF4D4D><b>Oops!</b> The <i>Wraith NPC</i> got you...");
-                    }
-
-                    WraithCallerUtilities.AddKillNPC(Owner.PlayerId);
-                    break;
+                    var mirror = Target;
+                    RedirectToOwner(mirror);
+                    MirrorBladeRole.RpcReflectionTriggered(mirror, Owner.PlayerId, NpcId);
+                    yield return new WaitForSeconds(0.15f);
+                    continue;
                 }
+
+                var victim = Target;
+                ResolvingKill = true;
+
+                if (Reflected)
+                    ReflectedBy.RpcCustomMurder(victim, true, false, true, false, false, false);
+                else
+                    Owner.RpcCustomMurder(victim, true, false, teleportMurderer: false);
 
                 yield return null;
+
+                ResolvingKill = false;
+
+                break;
             }
 
+            var velocity = delta.normalized * speed;
+            body.velocity = velocity;
+            UpdateWalkAnimation(velocity);
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        Dispose();
+    }
+
+    [HideFromIl2Cpp]
+    public void UpdateWalkAnimation(Vector2 velocity)
+    {
+        var moving = velocity.sqrMagnitude >= 0.01f;
+
+        if (velocity.x < -0.01f)
+            Visual.cosmetics.SetFlipXWithoutPet(true);
+        else if (velocity.x > 0.01f)
+            Visual.cosmetics.SetFlipXWithoutPet(false);
+
+        if (moving)
+        {
+            if (!animations.IsPlayingRunAnimation())
+                animations.PlayRunAnimation();
+
+            if (Visual.cosmetics.HasSkinLoaded() && !Visual.cosmetics.IsSkinPlayingRunAnim())
+                Visual.cosmetics.AnimateSkinRun();
+        }
+        else if (animations.IsPlayingRunAnimation() || !animations.IsPlayingSomeAnimation())
+        {
+            animations.PlayIdleAnimation();
+
+            if (Visual.cosmetics.HasSkinLoaded())
+                Visual.cosmetics.AnimateSkinIdle();
+        }
+
+        var pos = Visual.transform.position;
+        pos.z = pos.y / 1000f;
+        Visual.transform.position = pos;
+    }
+
+    [HideFromIl2Cpp]
+    public void Dispose()
+    {
+        if (!isActive)
+            return;
+
+        isActive = false;
+        Coroutines.Stop(MoveCoroutine);
+        if (Owner && AmongUsClient.Instance && AmongUsClient.Instance.AmHost && !HuntSucceeded && !Owner.Data.IsDead && !Owner.Data.Disconnected)
+            WraithCallerUtilities.RpcRestoreTrace(PlayerControl.LocalPlayer, Owner.PlayerId);
+        WraithCallerUtilities.ActiveNpcs.Remove(((uint)OwnerId << 16) | (uint)NpcId);
+
+        if (Owner && Owner.AmOwner && ownerLight && Camera.main)
+        {
+            Camera.main.GetComponent<FollowerCamera>().SetTarget(Owner);
+            ownerLight.transform.SetParent(Owner.transform, false);
+            ownerLight.transform.localPosition = Owner.Collider.offset;
+        }
+
+        if (body)
             body.velocity = Vector2.zero;
-            UpdateWalkAnimation(Vector2.zero);
-            Dispose();
-        }
 
-        [HideFromIl2Cpp]
-        public void UpdateWalkAnimation(Vector2 velocity)
-        {
-            bool moving = velocity.sqrMagnitude >= 0.01f;
-
-            if (velocity.x < -0.01f)
-                Visual.cosmetics.SetFlipXWithoutPet(true);
-            else if (velocity.x > 0.01f)
-                Visual.cosmetics.SetFlipXWithoutPet(false);
-
-            if (moving)
-            {
-                if (!animations.IsPlayingRunAnimation())
-                {
-                    animations.PlayRunAnimation();
-                }
-
-                if (Visual.cosmetics.HasSkinLoaded() && !Visual.cosmetics.IsSkinPlayingRunAnim())
-                {
-                    Visual.cosmetics.AnimateSkinRun();
-                }
-            }
-            else
-            {
-                if (animations.IsPlayingRunAnimation() || !animations.IsPlayingSomeAnimation())
-                {
-                    animations.PlayIdleAnimation();
-
-                    if (Visual.cosmetics.HasSkinLoaded())
-                    {
-                        Visual.cosmetics.AnimateSkinIdle();
-                    }
-                }
-            }
-
-            var pos = Visual.transform.position;
-            pos.z = pos.y / 1000f;
-            Visual.transform.position = pos;
-        }
-
-        [HideFromIl2Cpp]
-        public void Dispose()
-        {
-            if (!isActive) return;
-
-            isActive = false;
-
-            if (Owner.AmOwner && OptionGroupSingleton<WraithCallerOptions>.Instance.ShouldSwitchCamToNPC)
-            {
-                Camera.main.GetComponent<FollowerCamera>().SetTarget(Owner);
-                ownerLight.transform.SetParent(Owner.transform, false);
-                ownerLight.transform.localPosition = Owner.Collider.offset;
-            }
-
-            if (body)
-                body.velocity = Vector2.zero;
-
+        if (Visual)
             Destroy(Visual.gameObject);
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
     }
 }
